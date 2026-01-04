@@ -32,3 +32,6 @@ catalog:
 
   # Types
   '@types/node': ^22.0.0
+
+onlyBuiltDependencies:
+  - esbuild
