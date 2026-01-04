@@ -15,9 +15,7 @@ impl TransformContext {
     /// Creates a new transform context.
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            parser_options: ParserOptions::gfm(),
-        }
+        Self { parser_options: ParserOptions::gfm() }
     }
 
     /// Creates a new transform context with custom parser options.

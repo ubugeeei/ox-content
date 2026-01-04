@@ -139,12 +139,7 @@ impl LexerState {
     /// Creates a new lexer state.
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            line: 1,
-            column: 1,
-            at_line_start: true,
-            indent: 0,
-        }
+        Self { line: 1, column: 1, at_line_start: true, indent: 0 }
     }
 
     /// Updates state after processing a token.

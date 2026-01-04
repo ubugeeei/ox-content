@@ -47,19 +47,13 @@ impl HtmlRenderer {
     /// Creates a new HTML renderer with default options.
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            options: HtmlRendererOptions::new(),
-            output: String::new(),
-        }
+        Self { options: HtmlRendererOptions::new(), output: String::new() }
     }
 
     /// Creates a new HTML renderer with the specified options.
     #[must_use]
     pub fn with_options(options: HtmlRendererOptions) -> Self {
-        Self {
-            options,
-            output: String::new(),
-        }
+        Self { options, output: String::new() }
     }
 
     /// Renders a document to HTML string.
@@ -400,9 +394,7 @@ mod tests {
     #[test]
     fn test_render_code_block() {
         let allocator = Allocator::new();
-        let doc = Parser::new(&allocator, "```rust\nfn main() {}\n```")
-            .parse()
-            .unwrap();
+        let doc = Parser::new(&allocator, "```rust\nfn main() {}\n```").parse().unwrap();
         let mut renderer = HtmlRenderer::new();
         let html = renderer.render(&doc);
         assert!(html.contains("<pre><code class=\"language-rust\">"));
@@ -411,9 +403,7 @@ mod tests {
     #[test]
     fn test_escape_html() {
         let allocator = Allocator::new();
-        let doc = Parser::new(&allocator, "<script>alert('xss')</script>")
-            .parse()
-            .unwrap();
+        let doc = Parser::new(&allocator, "<script>alert('xss')</script>").parse().unwrap();
         let mut renderer = HtmlRenderer::new();
         let html = renderer.render(&doc);
         assert!(html.contains("&lt;script&gt;"));

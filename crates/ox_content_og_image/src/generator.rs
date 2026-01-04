@@ -37,10 +37,7 @@ impl OgImageGenerator {
     /// Creates a new generator with the given configuration.
     #[must_use]
     pub fn new(config: OgImageConfig) -> Self {
-        Self {
-            config,
-            template: OgImageTemplate::default(),
-        }
+        Self { config, template: OgImageTemplate::default() }
     }
 
     /// Creates a new generator with custom config and template.
@@ -68,9 +65,7 @@ impl OgImageGenerator {
         // TODO: Implement actual image generation using an image library
         // For now, return a placeholder
         let _ = data;
-        Err(OgImageError::Encode(
-            "Image generation not yet implemented".to_string(),
-        ))
+        Err(OgImageError::Encode("Image generation not yet implemented".to_string()))
     }
 
     /// Generates an OG image and saves it to a file.
@@ -97,11 +92,7 @@ impl OgImageGenerator {
         let desc_size = self.config.description_font_size;
 
         let title = escape_xml(&data.title);
-        let description = data
-            .description
-            .as_ref()
-            .map(|d| escape_xml(d))
-            .unwrap_or_default();
+        let description = data.description.as_ref().map(|d| escape_xml(d)).unwrap_or_default();
 
         format!(
             r#"<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">

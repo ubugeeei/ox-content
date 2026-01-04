@@ -77,9 +77,7 @@ impl DocExtractor {
     /// Creates a new documentation extractor.
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            include_private: false,
-        }
+        Self { include_private: false }
     }
 
     /// Creates a new extractor that includes private items.
@@ -90,15 +88,10 @@ impl DocExtractor {
 
     /// Extracts documentation from a source file.
     pub fn extract_file(&self, path: &std::path::Path) -> ExtractResult<Vec<DocItem>> {
-        let extension = path
-            .extension()
-            .and_then(|e| e.to_str())
-            .unwrap_or("");
+        let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
 
         match extension {
-            "ts" | "tsx" | "js" | "jsx" | "mts" | "mjs" | "cts" | "cjs" => {
-                self.extract_js_ts(path)
-            }
+            "ts" | "tsx" | "js" | "jsx" | "mts" | "mjs" | "cts" | "cjs" => self.extract_js_ts(path),
             _ => Err(ExtractError::UnsupportedFile(extension.to_string())),
         }
     }

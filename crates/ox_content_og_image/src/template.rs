@@ -32,28 +32,19 @@ impl OgImageTemplate {
     /// Creates a new template with the default layout.
     #[must_use]
     pub fn new(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            layout: TemplateLayout::default(),
-        }
+        Self { name: name.to_string(), layout: TemplateLayout::default() }
     }
 
     /// Creates a template with a centered layout.
     #[must_use]
     pub fn centered(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            layout: TemplateLayout::Centered,
-        }
+        Self { name: name.to_string(), layout: TemplateLayout::Centered }
     }
 
     /// Creates a template with a split layout.
     #[must_use]
     pub fn split(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            layout: TemplateLayout::Split,
-        }
+        Self { name: name.to_string(), layout: TemplateLayout::Split }
     }
 }
 

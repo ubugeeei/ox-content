@@ -58,25 +58,13 @@ impl<'a> Parser<'a> {
     /// Creates a new parser with default options.
     #[must_use]
     pub fn new(allocator: &'a Allocator, source: &'a str) -> Self {
-        Self {
-            allocator,
-            source,
-            options: ParserOptions::default(),
-            position: 0,
-            nesting_depth: 0,
-        }
+        Self { allocator, source, options: ParserOptions::default(), position: 0, nesting_depth: 0 }
     }
 
     /// Creates a new parser with the specified options.
     #[must_use]
     pub fn with_options(allocator: &'a Allocator, source: &'a str, options: ParserOptions) -> Self {
-        Self {
-            allocator,
-            source,
-            options,
-            position: 0,
-            nesting_depth: 0,
-        }
+        Self { allocator, source, options, position: 0, nesting_depth: 0 }
     }
 
     /// Parses the source into a document AST.
@@ -259,11 +247,7 @@ impl<'a> Parser<'a> {
             children.push(Node::Text(text));
         }
 
-        Ok(Some(Node::Heading(ox_content_ast::Heading {
-            depth,
-            children,
-            span,
-        })))
+        Ok(Some(Node::Heading(ox_content_ast::Heading { depth, children, span })))
     }
 
     /// Parses a thematic break.
@@ -277,9 +261,7 @@ impl<'a> Parser<'a> {
         }
 
         let span = Span::new(start as u32, self.position as u32);
-        Ok(Some(Node::ThematicBreak(ox_content_ast::ThematicBreak {
-            span,
-        })))
+        Ok(Some(Node::ThematicBreak(ox_content_ast::ThematicBreak { span })))
     }
 
     /// Parses a fenced code block.
@@ -360,17 +342,10 @@ impl<'a> Parser<'a> {
             content_end = self.position;
         }
 
-        let value = self
-            .allocator
-            .alloc_str(&self.source[content_start..content_end]);
+        let value = self.allocator.alloc_str(&self.source[content_start..content_end]);
         let span = Span::new(start as u32, self.position as u32);
 
-        Ok(Some(Node::CodeBlock(ox_content_ast::CodeBlock {
-            lang,
-            meta,
-            value,
-            span,
-        })))
+        Ok(Some(Node::CodeBlock(ox_content_ast::CodeBlock { lang, meta, value, span })))
     }
 
     /// Parses a paragraph.
@@ -552,9 +527,7 @@ mod tests {
     #[test]
     fn test_parse_fenced_code() {
         let allocator = Allocator::new();
-        let doc = Parser::new(&allocator, "```rust\nfn main() {}\n```")
-            .parse()
-            .unwrap();
+        let doc = Parser::new(&allocator, "```rust\nfn main() {}\n```").parse().unwrap();
         assert_eq!(doc.children.len(), 1);
         match &doc.children[0] {
             Node::CodeBlock(cb) => {
@@ -567,9 +540,7 @@ mod tests {
     #[test]
     fn test_parse_inline_code() {
         let allocator = Allocator::new();
-        let doc = Parser::new(&allocator, "Use `code` here")
-            .parse()
-            .unwrap();
+        let doc = Parser::new(&allocator, "Use `code` here").parse().unwrap();
         assert_eq!(doc.children.len(), 1);
         match &doc.children[0] {
             Node::Paragraph(p) => {

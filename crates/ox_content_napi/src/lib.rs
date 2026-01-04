@@ -47,11 +47,8 @@ pub struct JsParserOptions {
 
 impl From<JsParserOptions> for ParserOptions {
     fn from(opts: JsParserOptions) -> Self {
-        let mut options = if opts.gfm.unwrap_or(false) {
-            ParserOptions::gfm()
-        } else {
-            ParserOptions::default()
-        };
+        let mut options =
+            if opts.gfm.unwrap_or(false) { ParserOptions::gfm() } else { ParserOptions::default() };
 
         if let Some(v) = opts.footnotes {
             options.footnotes = v;
@@ -89,15 +86,9 @@ pub fn parse(source: String, options: Option<JsParserOptions>) -> ParseResult {
             // Note: In a production implementation, we would use a more efficient
             // serialization method that avoids the JSON overhead
             let ast = "{\"type\":\"document\",\"children\":[]}".to_string();
-            ParseResult {
-                ast,
-                errors: vec![],
-            }
+            ParseResult { ast, errors: vec![] }
         }
-        Err(e) => ParseResult {
-            ast: String::new(),
-            errors: vec![e.to_string()],
-        },
+        Err(e) => ParseResult { ast: String::new(), errors: vec![e.to_string()] },
     }
 }
 
@@ -113,15 +104,9 @@ pub fn parse_and_render(source: String, options: Option<JsParserOptions>) -> Ren
         Ok(doc) => {
             let mut renderer = HtmlRenderer::new();
             let html = renderer.render(&doc);
-            RenderResult {
-                html,
-                errors: vec![],
-            }
+            RenderResult { html, errors: vec![] }
         }
-        Err(e) => RenderResult {
-            html: String::new(),
-            errors: vec![e.to_string()],
-        },
+        Err(e) => RenderResult { html: String::new(), errors: vec![e.to_string()] },
     }
 }
 

@@ -37,16 +37,8 @@ impl Span {
     /// Merges two spans into a single span covering both.
     #[must_use]
     pub const fn merge(self, other: Self) -> Self {
-        let start = if self.start < other.start {
-            self.start
-        } else {
-            other.start
-        };
-        let end = if self.end > other.end {
-            self.end
-        } else {
-            other.end
-        };
+        let start = if self.start < other.start { self.start } else { other.start };
+        let end = if self.end > other.end { self.end } else { other.end };
         Self { start, end }
     }
 
@@ -84,11 +76,7 @@ impl Position {
     /// Creates a new position.
     #[must_use]
     pub const fn new(line: u32, column: u32, offset: u32) -> Self {
-        Self {
-            line,
-            column,
-            offset,
-        }
+        Self { line, column, offset }
     }
 }
 

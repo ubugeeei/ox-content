@@ -26,9 +26,7 @@ impl Allocator {
     /// Creates a new allocator with the specified capacity in bytes.
     #[must_use]
     pub fn with_capacity(capacity: usize) -> Self {
-        Self {
-            bump: Bump::with_capacity(capacity),
-        }
+        Self { bump: Bump::with_capacity(capacity) }
     }
 
     /// Returns the underlying bump allocator.
