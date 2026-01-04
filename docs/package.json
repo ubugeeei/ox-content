@@ -14,7 +14,6 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-ox-content": "workspace:*",
-    "vite-plugin-ox-content-vue": "workspace:*"
+    "vite-plugin-ox-content": "workspace:*"
   }
 }

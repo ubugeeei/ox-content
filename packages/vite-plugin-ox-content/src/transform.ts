@@ -6,6 +6,8 @@
  */
 
 import type { ResolvedOptions, TransformResult, TocEntry } from './types';
+import { highlightCode } from './highlight';
+import { transformMermaid, mermaidClientScript, mermaidStyles } from './mermaid';
 
 // NAPI bindings interface
 interface NapiBindings {
@@ -58,7 +60,17 @@ export async function transformMarkdown(
   const toc = options.toc ? generateToc(content, options.tocMaxDepth) : [];
 
   // Render HTML using NAPI bindings (Rust parser) if available
-  const html = await renderToHtml(content, options);
+  let html = await renderToHtml(content, options);
+
+  // Apply syntax highlighting if enabled
+  if (options.highlight) {
+    html = await highlightCode(html, options.highlightTheme);
+  }
+
+  // Transform mermaid diagrams if enabled
+  if (options.mermaid) {
+    html = await transformMermaid(html);
+  }
 
   // Generate JavaScript module code
   const code = generateModuleCode(html, frontmatter, toc, filePath, options);

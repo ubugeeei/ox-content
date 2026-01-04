@@ -23,7 +23,12 @@
     "vite": "catalog:"
   },
   "dependencies": {
-    "@ox-content/napi": "workspace:*"
+    "@ox-content/napi": "workspace:*",
+    "unified": "^11.0.5",
+    "rehype-parse": "^9.0.1",
+    "rehype-stringify": "^10.0.1",
+    "shiki": "^1.24.0",
+    "mermaid": "^11.4.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

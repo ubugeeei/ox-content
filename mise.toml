@@ -60,7 +60,7 @@ run = "cargo clean"
 [tasks.napi-build]
 description = "Build NAPI bindings"
 dir = "crates/ox_content_napi"
-run = "napi build --release"
+run = "pnpm build"
 
 [tasks.napi-prepublish]
 description = "Prepare NAPI package for publishing"
@@ -140,13 +140,13 @@ run = "pnpm -r --filter 'vite-plugin-ox-content' --filter 'vite-plugin-ox-conten
 
 [tasks.docs]
 description = "Start documentation dev server"
-depends = ["packages-build"]
+depends = ["napi-build", "packages-build"]
 dir = "docs"
 run = "pnpm dev"
 
 [tasks.docs-build]
 description = "Build documentation site"
-depends = ["packages-build"]
+depends = ["napi-build", "packages-build"]
 dir = "docs"
 run = "pnpm build"
 

@@ -58,6 +58,11 @@ interface OxContentOptions {
      */
     highlightTheme?: string;
     /**
+     * Enable mermaid diagram rendering.
+     * @default false
+     */
+    mermaid?: boolean;
+    /**
      * Parse YAML frontmatter.
      * @default true
      */
@@ -106,6 +111,7 @@ interface ResolvedOptions {
     strikethrough: boolean;
     highlight: boolean;
     highlightTheme: string;
+    mermaid: boolean;
     frontmatter: boolean;
     toc: boolean;
     tocMaxDepth: number;

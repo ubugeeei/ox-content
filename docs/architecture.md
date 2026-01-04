@@ -6,20 +6,37 @@ This document provides a deep dive into the architecture and design decisions of
 
 Ox Content is designed as a modular, high-performance Markdown processing toolkit. The architecture follows the Oxc philosophy of prioritizing speed, memory efficiency, and correctness.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        User Applications                         │
-├─────────────────────────────────────────────────────────────────┤
-│  @ox-content/vite  │  @ox-content/og-image  │  @ox-content/docs │
-├─────────────────────────────────────────────────────────────────┤
-│                      @ox-content/napi                            │
-├─────────────────────────────────────────────────────────────────┤
-│   ox_content_renderer   │   ox_content_parser                    │
-├─────────────────────────────────────────────────────────────────┤
-│                       ox_content_ast                             │
-├─────────────────────────────────────────────────────────────────┤
-│                    ox_content_allocator                          │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Applications["User Applications"]
+        App1[Your App]
+        App2[Documentation Site]
+        App3[Blog]
+    end
+
+    subgraph Packages["JavaScript Packages"]
+        Vite["vite-plugin-ox-content"]
+        Vue["vite-plugin-ox-content-vue"]
+        React["vite-plugin-ox-content-react"]
+    end
+
+    subgraph NAPI["Node.js Bindings"]
+        NapiPkg["@ox-content/napi"]
+    end
+
+    subgraph Core["Rust Core"]
+        Renderer["ox_content_renderer"]
+        Parser["ox_content_parser"]
+        AST["ox_content_ast"]
+        Allocator["ox_content_allocator"]
+    end
+
+    Applications --> Packages
+    Packages --> NAPI
+    NAPI --> Core
+    Renderer --> AST
+    Parser --> AST
+    AST --> Allocator
 ```
 
 ## Crate Structure
@@ -47,16 +64,29 @@ Ox Content uses [bumpalo](https://docs.rs/bumpalo) for arena-based allocation. T
 
 #### How Arena Allocation Works
 
+```mermaid
+graph LR
+    subgraph Traditional["Traditional Allocation"]
+        direction TB
+        A1[A] --> H1[Heap]
+        B1[B] --> H2[Heap]
+        C1[C] --> H3[Heap]
+        D1[D] --> H4[Heap]
+    end
+
+    subgraph Arena["Arena Allocation"]
+        direction TB
+        Region["Contiguous Memory Region"]
+        A2[A] --> Region
+        B2[B] --> Region
+        C2[C] --> Region
+        D2[D] --> Region
+    end
 ```
-Traditional Allocation:          Arena Allocation:
-┌───┐ ┌───┐ ┌───┐ ┌───┐         ┌─────────────────────────┐
-│ A │ │ B │ │ C │ │ D │         │ A │ B │ C │ D │ ...     │
-└───┘ └───┘ └───┘ └───┘         └─────────────────────────┘
-  │     │     │     │                      │
-  ▼     ▼     ▼     ▼                      ▼
-  4 separate heap allocations        1 contiguous region
-  4 separate deallocations           1 deallocation (drop arena)
-```
+
+**Traditional**: 4 separate heap allocations, 4 separate deallocations
+
+**Arena**: 1 contiguous region, 1 deallocation (drop arena)
 
 #### Benefits
 
@@ -279,23 +309,16 @@ fn generate_toc(document: &Document<'_>) -> Vec<TocEntry> {
 
 ### Architecture
 
-```
-Source Text
-     │
-     ▼
-┌─────────────┐
-│   Lexer     │  Tokenizes input (logos crate)
-└─────────────┘
-     │
-     ▼
-┌─────────────┐
-│   Parser    │  Builds AST from tokens
-└─────────────┘
-     │
-     ▼
-┌─────────────┐
-│    AST      │  Arena-allocated nodes
-└─────────────┘
+```mermaid
+flowchart TB
+    Source["Source Text<br/>(Markdown)"]
+    Lexer["Lexer<br/><small>Tokenizes input (logos crate)</small>"]
+    Parser["Parser<br/><small>Builds AST from tokens</small>"]
+    AST["AST<br/><small>Arena-allocated nodes</small>"]
+
+    Source --> Lexer
+    Lexer --> Parser
+    Parser --> AST
 ```
 
 ### Parser Options
@@ -416,24 +439,16 @@ URL encoding is also handled for link/image URLs.
 
 ### Architecture
 
-```
-JavaScript/TypeScript
-        │
-        ▼
-┌─────────────────┐
-│  @ox-content/   │  TypeScript types + JS wrapper
-│     napi        │
-└─────────────────┘
-        │
-        ▼
-┌─────────────────┐
-│ ox_content_napi │  Rust NAPI binding layer
-└─────────────────┘
-        │
-        ▼
-┌─────────────────┐
-│ ox_content_*    │  Core Rust crates
-└─────────────────┘
+```mermaid
+flowchart TB
+    JS["JavaScript / TypeScript"]
+    NPM["@ox-content/napi<br/><small>TypeScript types + JS wrapper</small>"]
+    NAPI["ox_content_napi<br/><small>Rust NAPI binding layer</small>"]
+    Core["ox_content_*<br/><small>Core Rust crates</small>"]
+
+    JS --> NPM
+    NPM --> NAPI
+    NAPI --> Core
 ```
 
 ### Data Transfer

@@ -83,6 +83,186 @@ function createMarkdownEnvironment(options) {
   };
 }
 
+// src/highlight.ts
+var import_unified = require("unified");
+var import_rehype_parse = __toESM(require("rehype-parse"), 1);
+var import_rehype_stringify = __toESM(require("rehype-stringify"), 1);
+var import_shiki = require("shiki");
+var highlighterPromise = null;
+async function getHighlighter(theme) {
+  if (!highlighterPromise) {
+    highlighterPromise = (0, import_shiki.createHighlighter)({
+      themes: [theme],
+      langs: [
+        "javascript",
+        "typescript",
+        "jsx",
+        "tsx",
+        "vue",
+        "svelte",
+        "html",
+        "css",
+        "scss",
+        "json",
+        "yaml",
+        "markdown",
+        "bash",
+        "shell",
+        "rust",
+        "python",
+        "go",
+        "java",
+        "c",
+        "cpp",
+        "sql",
+        "graphql",
+        "diff",
+        "toml"
+      ]
+    });
+  }
+  return highlighterPromise;
+}
+function rehypeShikiHighlight(options) {
+  const { theme } = options;
+  return async (tree) => {
+    const highlighter = await getHighlighter(theme);
+    const visit = async (node) => {
+      if ("children" in node) {
+        for (let i = 0; i < node.children.length; i++) {
+          const child = node.children[i];
+          if (child.type === "element" && child.tagName === "pre") {
+            const codeElement = child.children.find(
+              (c) => c.type === "element" && c.tagName === "code"
+            );
+            if (codeElement) {
+              const className = codeElement.properties?.className;
+              let lang = "text";
+              if (Array.isArray(className)) {
+                const langClass = className.find(
+                  (c) => typeof c === "string" && c.startsWith("language-")
+                );
+                if (langClass && typeof langClass === "string") {
+                  lang = langClass.replace("language-", "");
+                }
+              }
+              const codeText = getTextContent(codeElement);
+              try {
+                const highlighted = highlighter.codeToHtml(codeText, {
+                  lang,
+                  theme
+                });
+                const parsed = (0, import_unified.unified)().use(import_rehype_parse.default, { fragment: true }).parse(highlighted);
+                if (parsed.children[0]) {
+                  node.children[i] = parsed.children[0];
+                }
+              } catch {
+              }
+            }
+          } else if (child.type === "element") {
+            await visit(child);
+          }
+        }
+      }
+    };
+    await visit(tree);
+  };
+}
+function getTextContent(node) {
+  let text = "";
+  if ("children" in node) {
+    for (const child of node.children) {
+      if (child.type === "text") {
+        text += child.value;
+      } else if (child.type === "element") {
+        text += getTextContent(child);
+      }
+    }
+  }
+  return text;
+}
+async function highlightCode(html, theme = "github-dark") {
+  const result = await (0, import_unified.unified)().use(import_rehype_parse.default, { fragment: true }).use(rehypeShikiHighlight, { theme }).use(import_rehype_stringify.default).process(html);
+  return String(result);
+}
+
+// src/mermaid.ts
+var import_unified2 = require("unified");
+var import_rehype_parse2 = __toESM(require("rehype-parse"), 1);
+var import_rehype_stringify2 = __toESM(require("rehype-stringify"), 1);
+function getTextContent2(node) {
+  let text = "";
+  if ("children" in node) {
+    for (const child of node.children) {
+      if (child.type === "text") {
+        text += child.value;
+      } else if (child.type === "element") {
+        text += getTextContent2(child);
+      }
+    }
+  }
+  return text;
+}
+function rehypeMermaid() {
+  return (tree) => {
+    const visit = (node) => {
+      if ("children" in node) {
+        for (let i = 0; i < node.children.length; i++) {
+          const child = node.children[i];
+          if (child.type === "element" && child.tagName === "pre") {
+            const codeElement = child.children.find(
+              (c) => c.type === "element" && c.tagName === "code"
+            );
+            if (codeElement) {
+              const className = codeElement.properties?.className;
+              let isMermaid = false;
+              if (Array.isArray(className)) {
+                isMermaid = className.some(
+                  (c) => typeof c === "string" && c.includes("mermaid")
+                );
+              }
+              if (isMermaid) {
+                const mermaidCode = getTextContent2(codeElement);
+                const wrapper = {
+                  type: "element",
+                  tagName: "div",
+                  properties: {
+                    className: ["ox-mermaid"],
+                    "data-mermaid": mermaidCode
+                  },
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "pre",
+                      properties: {
+                        className: ["ox-mermaid-source"]
+                      },
+                      children: [
+                        {
+                          type: "text",
+                          value: mermaidCode
+                        }
+                      ]
+                    }
+                  ]
+                };
+                node.children[i] = wrapper;
+              }
+            }
+          } else if (child.type === "element") {
+            visit(child);
+          }
+        }
+      }
+    };
+    visit(tree);
+  };
+}
+async function transformMermaid(html) {
+  const result = await (0, import_unified2.unified)().use(import_rehype_parse2.default, { fragment: true }).use(rehypeMermaid).use(import_rehype_stringify2.default).process(html);
+  return String(result);
+}
+
 // src/transform.ts
 var napiBindings;
 var napiLoadAttempted = false;
@@ -103,7 +283,13 @@ async function loadNapiBindings() {
 async function transformMarkdown(source, filePath, options) {
   const { content, frontmatter } = parseFrontmatter(source);
   const toc = options.toc ? generateToc(content, options.tocMaxDepth) : [];
-  const html = await renderToHtml(content, options);
+  let html = await renderToHtml(content, options);
+  if (options.highlight) {
+    html = await highlightCode(html, options.highlightTheme);
+  }
+  if (options.mermaid) {
+    html = await transformMermaid(html);
+  }
   const code = generateModuleCode(html, frontmatter, toc, filePath, options);
   return {
     code,
@@ -774,6 +960,7 @@ function resolveOptions(options) {
     strikethrough: options.strikethrough ?? true,
     highlight: options.highlight ?? false,
     highlightTheme: options.highlightTheme ?? "github-dark",
+    mermaid: options.mermaid ?? false,
     frontmatter: options.frontmatter ?? true,
     toc: options.toc ?? true,
     tocMaxDepth: options.tocMaxDepth ?? 3,

@@ -20,6 +20,13 @@ export default defineConfig({
       outDir: 'dist/docs',
       base: '/ox-content/',
 
+      // Enable syntax highlighting with Shiki
+      highlight: true,
+      highlightTheme: 'vitesse-dark',
+
+      // Enable mermaid diagrams
+      mermaid: true,
+
       // Auto-generate API docs from source
       docs: {
         enabled: true,

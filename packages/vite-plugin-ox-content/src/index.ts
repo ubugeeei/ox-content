@@ -226,6 +226,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     strikethrough: options.strikethrough ?? true,
     highlight: options.highlight ?? false,
     highlightTheme: options.highlightTheme ?? 'github-dark',
+    mermaid: options.mermaid ?? false,
     frontmatter: options.frontmatter ?? true,
     toc: options.toc ?? true,
     tocMaxDepth: options.tocMaxDepth ?? 3,
