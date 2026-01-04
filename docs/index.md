@@ -1,6 +1,6 @@
 # Ox Content
 
-A VoidZero Oxc family project - Framework-agnostic documentation tooling for Vite+.
+A framework-agnostic documentation tooling for Vite+.
 
 ## What is Ox Content?
 

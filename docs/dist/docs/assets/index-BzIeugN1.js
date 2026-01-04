@@ -1,6 +1,6 @@
 const s=`<div class="ox-content"><h1 id="ox-content">Ox Content</h1>
 
-<p>A VoidZero Oxc family project - Framework-agnostic documentation tooling for Vite+.</p>
+<p>A framework-agnostic documentation tooling for Vite+.</p>
 
 <h2 id="what-is-ox-content">What is Ox Content?</h2>
 
