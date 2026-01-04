@@ -1,42 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import MarkdownEditor from './components/MarkdownEditor.vue';
-import MarkdownPreview from './components/MarkdownPreview.vue';
-
-const markdown = ref(`# Hello Ox Content!
-
-This is a **Vue 3** integration example.
-
-## Features
-
-- Live preview
-- Syntax highlighting
-- GFM support
-
-\`\`\`typescript
-const message = 'Hello from Ox Content!';
-console.log(message);
-\`\`\`
-
-| Feature | Status |
-|---------|--------|
-| Tables | ✅ |
-| Task Lists | ✅ |
-
-- [x] Create Vue component
-- [ ] Add more features
-`);
+// Import Markdown document as Vue component
+import IndexDoc from '../docs/index.md';
 </script>
 
 <template>
   <div class="app">
     <header>
-      <h1>Ox Content + Vue 3</h1>
-      <p>High-performance Markdown rendering with Vue</p>
+      <h1>🦀 Ox Content + Vue</h1>
+      <p>Embed Vue components directly in Markdown</p>
     </header>
     <main>
-      <MarkdownEditor v-model="markdown" />
-      <MarkdownPreview :content="markdown" />
+      <IndexDoc />
     </main>
   </div>
 </template>
@@ -50,41 +24,78 @@ console.log(message);
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1a2e;
-  color: #eee;
+  background: #0f0f0f;
+  color: #e5e5e5;
   min-height: 100vh;
 }
 
 .app {
-  max-width: 1400px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 2rem;
 }
 
 header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #333;
 }
 
 header h1 {
-  color: #e94560;
-  margin-bottom: 10px;
+  color: #ff6b35;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
 }
 
 header p {
   color: #888;
+  font-size: 1.1rem;
 }
 
 main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  min-height: 600px;
+  line-height: 1.8;
 }
 
-@media (max-width: 768px) {
-  main {
-    grid-template-columns: 1fr;
-  }
+main h1, main h2, main h3 {
+  color: #ff6b35;
+  margin: 2rem 0 1rem;
+}
+
+main h1 { font-size: 2rem; }
+main h2 { font-size: 1.5rem; }
+main h3 { font-size: 1.25rem; }
+
+main p {
+  margin: 1rem 0;
+}
+
+main code {
+  background: #1a1a1a;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+}
+
+main pre {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+main pre code {
+  background: transparent;
+  padding: 0;
+}
+
+main ul, main ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+main li {
+  margin: 0.5rem 0;
 }
 </style>

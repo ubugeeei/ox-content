@@ -1,40 +1,15 @@
-<script lang="ts">
-  import MarkdownEditor from './lib/MarkdownEditor.svelte';
-  import MarkdownPreview from './lib/MarkdownPreview.svelte';
-
-  let markdown = $state(`# Hello Ox Content!
-
-This is a **Svelte 5** integration example.
-
-## Features
-
-- Live preview with reactive state
-- Syntax highlighting
-- GFM support
-
-\`\`\`typescript
-const message = 'Hello from Ox Content!';
-console.log(message);
-\`\`\`
-
-| Feature | Status |
-|---------|--------|
-| Tables | ✅ |
-| Task Lists | ✅ |
-
-- [x] Create Svelte component
-- [ ] Add more features
-`);
+<script>
+  // Import Markdown document as Svelte component
+  import IndexDoc from '../docs/index.md';
 </script>
 
 <div class="app">
   <header>
-    <h1>Ox Content + Svelte 5</h1>
-    <p>High-performance Markdown rendering with Svelte</p>
+    <h1>🦀 Ox Content + Svelte</h1>
+    <p>Embed Svelte components directly in Markdown</p>
   </header>
   <main>
-    <MarkdownEditor bind:value={markdown} />
-    <MarkdownPreview content={markdown} />
+    <IndexDoc />
   </main>
 </div>
 
@@ -47,41 +22,81 @@ console.log(message);
 
   :global(body) {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #1a1a2e;
-    color: #eee;
+    background: #0f0f0f;
+    color: #e5e5e5;
     min-height: 100vh;
   }
 
   .app {
-    max-width: 1400px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 2rem;
   }
 
   header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #333;
   }
 
   header h1 {
-    color: #e94560;
-    margin-bottom: 10px;
+    color: #ff6b35;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
   }
 
   header p {
     color: #888;
+    font-size: 1.1rem;
   }
 
   main {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    min-height: 600px;
+    line-height: 1.8;
   }
 
-  @media (max-width: 768px) {
-    main {
-      grid-template-columns: 1fr;
-    }
+  :global(main h1),
+  :global(main h2),
+  :global(main h3) {
+    color: #ff6b35;
+    margin: 2rem 0 1rem;
+  }
+
+  :global(main h1) { font-size: 2rem; }
+  :global(main h2) { font-size: 1.5rem; }
+  :global(main h3) { font-size: 1.25rem; }
+
+  :global(main p) {
+    margin: 1rem 0;
+  }
+
+  :global(main code) {
+    background: #1a1a1a;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+  }
+
+  :global(main pre) {
+    background: #1a1a1a;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+
+  :global(main pre code) {
+    background: transparent;
+    padding: 0;
+  }
+
+  :global(main ul),
+  :global(main ol) {
+    margin: 1rem 0;
+    padding-left: 2rem;
+  }
+
+  :global(main li) {
+    margin: 0.5rem 0;
   }
 </style>
