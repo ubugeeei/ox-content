@@ -3,17 +3,8 @@
 ## Table of Contents
 
 - [clamp](#clamp)
-- [clamp](#clamp)
 - [lerp](#lerp)
 - [round](#round)
-
----
-
-## clamp
-
-`function`
-
-Mathematical utility functions.
 
 ---
 

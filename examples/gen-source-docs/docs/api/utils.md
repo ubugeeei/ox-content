@@ -3,17 +3,8 @@
 ## Table of Contents
 
 - [capitalize](#capitalize)
-- [capitalize](#capitalize)
 - [truncate](#truncate)
 - [toKebabCase](#tokebabcase)
-
----
-
-## capitalize
-
-`function`
-
-A collection of utility functions for string manipulation.
 
 ---
 
