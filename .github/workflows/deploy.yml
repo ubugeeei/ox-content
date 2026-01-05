@@ -60,6 +60,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build NAPI bindings
+        working-directory: crates/ox_content_napi
+        run: pnpm build
+
+      - name: Build packages
+        run: pnpm -r --filter 'vite-plugin-ox-content' --filter 'vite-plugin-ox-content-vue' run build
+
+      - name: Build documentation site
+        working-directory: docs
+        run: pnpm build
+
       - name: Build playground
         working-directory: examples/playground
         run: pnpm build
@@ -67,23 +78,14 @@ jobs:
       - name: Prepare deployment directory
         run: |
           mkdir -p dist
-          # Copy Rust docs
+          # Copy docs site to root
+          cp -r docs/dist/docs/* dist/
+          # Copy Rust API docs
           cp -r target/doc dist/api
           # Copy playground
           cp -r examples/playground/dist dist/playground
-          # Create index.html redirect
-          echo '<!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Ox Content</title>
-            <meta http-equiv="refresh" content="0; url=./playground/">
-            <link rel="canonical" href="./playground/">
-          </head>
-          <body>
-            <p>Redirecting to <a href="./playground/">playground</a>...</p>
-          </body>
-          </html>' > dist/index.html
+          # Add .nojekyll
+          touch dist/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
