@@ -1,0 +1,16 @@
+{
+  "name": "example-unplugin-esbuild",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "unplugin-ox-content": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "typescript": "catalog:"
+  }
+}

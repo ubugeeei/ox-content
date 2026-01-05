@@ -1,0 +1,19 @@
+{
+  "name": "example-unplugin-webpack",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack --watch"
+  },
+  "dependencies": {
+    "unplugin-ox-content": "workspace:*"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "catalog:",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  }
+}

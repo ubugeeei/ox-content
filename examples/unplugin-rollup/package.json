@@ -1,0 +1,19 @@
+{
+  "name": "example-unplugin-rollup",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch"
+  },
+  "dependencies": {
+    "unplugin-ox-content": "workspace:*"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "rollup": "^4.29.1",
+    "tslib": "^2.8.1",
+    "typescript": "catalog:"
+  }
+}
