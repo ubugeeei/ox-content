@@ -1,16 +1,5 @@
-// Auto-generated loader for @ox-content/napi
-// This file loads the native module based on the current platform
-
 const { existsSync } = require('fs');
 const { join } = require('path');
-
-const platforms = {
-  'darwin-arm64': 'ox-content.darwin-arm64.node',
-  'darwin-x64': 'ox-content.darwin-x64.node',
-  'linux-x64-gnu': 'ox-content.linux-x64-gnu.node',
-  'linux-arm64-gnu': 'ox-content.linux-arm64-gnu.node',
-  'win32-x64-msvc': 'ox-content.win32-x64-msvc.node',
-};
 
 function loadBinding() {
   // Try loading the local development binary first (index.node)
@@ -22,6 +11,14 @@ function loadBinding() {
   // Try platform-specific binary
   const platform = process.platform;
   const arch = process.arch;
+
+  const platforms = {
+    'darwin-arm64': 'ox-content.darwin-arm64.node',
+    'darwin-x64': 'ox-content.darwin-x64.node',
+    'linux-x64-gnu': 'ox-content.linux-x64-gnu.node',
+    'linux-arm64-gnu': 'ox-content.linux-arm64-gnu.node',
+    'win32-x64-msvc': 'ox-content.win32-x64-msvc.node',
+  };
 
   let key;
   if (platform === 'darwin') {
@@ -42,8 +39,16 @@ function loadBinding() {
 
   throw new Error(
     `@ox-content/napi: No compatible binary found for ${platform}-${arch}. ` +
-    `Please run 'pnpm build' in crates/ox_content_napi or install a prebuilt binary.`
+    `Please run 'pnpm build' in crates/ox_content_napi.`
   );
 }
 
-module.exports = loadBinding();
+const binding = loadBinding();
+
+// Export individual functions for ESM compatibility
+module.exports = binding;
+module.exports.parse = binding.parse;
+module.exports.parseAndRender = binding.parseAndRender;
+module.exports.render = binding.render;
+module.exports.transform = binding.transform;
+module.exports.version = binding.version;
