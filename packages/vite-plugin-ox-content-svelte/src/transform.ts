@@ -89,7 +89,7 @@ export async function transformMarkdownWithSvelte(
 
   return {
     code: finalCode,
-    map: compiled.js.map,
+    map: null,
     usedComponents,
     frontmatter,
   };
