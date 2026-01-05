@@ -275,6 +275,114 @@ function extractFromContent(
 }
 
 /**
+ * Extracts parameter and return types from a TypeScript function signature.
+ *
+ * Parses function signatures to extract:
+ * - Parameter names and their type annotations
+ * - Return type annotation
+ *
+ * Handles various function declaration styles:
+ * - `function name(param: type): ReturnType`
+ * - `const name = (param: type): ReturnType => {}`
+ * - `export async function name(param: type): Promise<ReturnType>`
+ *
+ * @param signature - Multi-line function signature text
+ * @param params - Array of parameter docs with names already extracted
+ * @returns Object with extracted parameter types and return type
+ *
+ * @internal
+ */
+function extractTypesFromSignature(
+  signature: string,
+  params: ParamDoc[]
+): { paramTypes: string[]; returnType?: string } {
+  const paramTypes: string[] = [];
+
+  // Extract the parameter list from the signature
+  // Match everything between the first `(` and the closing `)` before `=>` or `{`
+  const paramListMatch = signature.match(/\(([^)]*)\)(?:\s*:\s*([^{=>]+))?/s);
+
+  if (paramListMatch && paramListMatch[1]) {
+    const paramListStr = paramListMatch[1];
+
+    // Split by comma, but be careful about nested generics
+    const paramParts = splitParameters(paramListStr);
+
+    for (const part of paramParts) {
+      const trimmed = part.trim();
+      if (!trimmed) continue;
+
+      // Extract type from "name: type" or "name: type = default"
+      // Handle nested generics properly
+      const typeMatch = /:\s*(.+?)(?:\s*=|$)/.exec(trimmed);
+      if (typeMatch) {
+        let typeStr = typeMatch[1].trim();
+        // Remove trailing equals and everything after it (default value)
+        if (typeStr.includes('=')) {
+          typeStr = typeStr.split('=')[0].trim();
+        }
+        paramTypes.push(typeStr);
+      }
+    }
+  }
+
+  // Extract return type
+  let returnType: string | undefined;
+
+  // Look for return type annotation `: Type` or `: Promise<Type>`
+  // This comes after the closing parenthesis
+  // Need to handle nested angle brackets in generics
+  const returnTypeMatch = signature.match(/\)\s*:\s*(.+?)(?={|$)/);
+  if (returnTypeMatch) {
+    returnType = returnTypeMatch[1].trim();
+  }
+
+  return {
+    paramTypes,
+    returnType,
+  };
+}
+
+/**
+ * Splits function parameters while respecting nested angle brackets (generics).
+ *
+ * Handles cases like:
+ * - `a: string, b: number` → `["a: string", "b: number"]`
+ * - `a: Promise<string>, b: Record<string, any>` → `["a: Promise<string>", "b: Record<string, any>"]`
+ *
+ * @param paramListStr - String containing all parameters
+ * @returns Array of individual parameter strings
+ *
+ * @internal
+ */
+function splitParameters(paramListStr: string): string[] {
+  const parts: string[] = [];
+  let current = '';
+  let depth = 0; // Track nested angle brackets
+
+  for (const char of paramListStr) {
+    if (char === '<') {
+      depth++;
+      current += char;
+    } else if (char === '>') {
+      depth--;
+      current += char;
+    } else if (char === ',' && depth === 0) {
+      parts.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+
+  if (current) {
+    parts.push(current);
+  }
+
+  return parts;
+}
+
+/**
  * Parses a JSDoc block and the following declaration.
  * Only matches if the declaration is immediately after the JSDoc (with only whitespace/keywords between).
  */
@@ -386,6 +494,32 @@ function parseJsdocBlock(
   }
 
   if (!name) return null;
+
+  // Extract types from function signature if needed
+  if (kind === 'function') {
+    const signatureTypes = extractTypesFromSignature(firstFewLines, params);
+
+    // Update params with extracted types if JSDoc types were missing
+    if (signatureTypes.paramTypes.length > 0) {
+      for (let i = 0; i < params.length && i < signatureTypes.paramTypes.length; i++) {
+        if (params[i].type === 'unknown') {
+          params[i].type = signatureTypes.paramTypes[i];
+        }
+      }
+    }
+
+    // Update return type if JSDoc return type was missing
+    if (signatureTypes.returnType && (!returns || returns.type === 'unknown')) {
+      if (returns) {
+        returns.type = signatureTypes.returnType;
+      } else {
+        returns = {
+          type: signatureTypes.returnType,
+          description: '',
+        };
+      }
+    }
+  }
 
   return {
     name,
