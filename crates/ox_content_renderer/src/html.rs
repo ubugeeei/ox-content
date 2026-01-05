@@ -407,7 +407,7 @@ mod tests {
         let doc = Parser::new(&allocator, "- item 1\n  - sub 1\n- item 2").parse().unwrap();
         let mut renderer = HtmlRenderer::new();
         let html = renderer.render(&doc);
-        
+
         // Normalize newlines for comparison
         let normalized = html.replace('\n', "");
         // We expect:
@@ -421,9 +421,9 @@ mod tests {
         //   <li><p>item 2</p></li>
         // </ul>
         // Note: The exact placement of <p> tags depends on how we handle list content.
-        // Assuming tight list items might not have <p> if we implement loose/tight lists, 
+        // Assuming tight list items might not have <p> if we implement loose/tight lists,
         // but currently everything is wrapped in <p> in parse_list implementation (wrapped in Paragraph).
-        
+
         // Let's just check for the structure <li>...<ul>...</ul>...</li>
         assert!(normalized.contains("<li><p>item 1</p><ul><li><p>sub 1</p></li></ul></li>"));
         assert!(normalized.contains("<li><p>item 2</p></li>"));
@@ -433,7 +433,9 @@ mod tests {
     fn test_render_table() {
         let allocator = Allocator::new();
         let parser_options = ox_content_parser::ParserOptions::gfm();
-        let doc = Parser::with_options(&allocator, "| head |\n| --- |\n| body |", parser_options).parse().unwrap();
+        let doc = Parser::with_options(&allocator, "| head |\n| --- |\n| body |", parser_options)
+            .parse()
+            .unwrap();
         let mut renderer = HtmlRenderer::new();
         let html = renderer.render(&doc);
         assert!(html.contains("<table>"));
@@ -476,7 +478,9 @@ mod tests {
     fn test_render_task_list() {
         let allocator = Allocator::new();
         let parser_options = ox_content_parser::ParserOptions::gfm();
-        let doc = Parser::with_options(&allocator, "- [x] task 1\n- [ ] task 2", parser_options).parse().unwrap();
+        let doc = Parser::with_options(&allocator, "- [x] task 1\n- [ ] task 2", parser_options)
+            .parse()
+            .unwrap();
         let mut renderer = HtmlRenderer::new();
         let html = renderer.render(&doc);
         assert!(html.contains("<input type=\"checkbox\" checked disabled> <p>task 1</p>"));

@@ -275,6 +275,39 @@ function extractFromContent(
 }
 
 /**
+ * Extracts the complete function signature for display.
+ *
+ * Captures the full function declaration from `export/async/function name(...): ReturnType`
+ * or `export const name = (...): ReturnType => {}`, handling multi-line signatures.
+ *
+ * @param signature - Multi-line function declaration text
+ * @returns Cleaned function signature or undefined if not found
+ *
+ * @internal
+ */
+function extractFunctionSignature(signature: string): string | undefined {
+  // Match function declarations: export/async function, export const, etc.
+  // Capture everything from the start until the opening brace or arrow
+  const match = signature.match(
+    /(?:export\s+)?(?:async\s+)?(?:function\s+\w+|\w+\s*=\s*(?:async\s*)?\()\([^{]*?\)(?:\s*:\s*[^{;]+)?/s
+  );
+
+  if (match) {
+    let sig = match[0].trim();
+    // Clean up excessive whitespace while preserving structure
+    // Replace multiple spaces with single space, but keep newlines in readable format
+    sig = sig
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line)
+      .join('\n  ');
+    return sig;
+  }
+
+  return undefined;
+}
+
+/**
  * Extracts parameter and return types from a TypeScript function signature.
  *
  * Parses function signatures to extract:
@@ -495,7 +528,8 @@ function parseJsdocBlock(
 
   if (!name) return null;
 
-  // Extract types from function signature if needed
+  // Extract full signature and types from function signature if needed
+  let signature: string | undefined;
   if (kind === 'function') {
     const signatureTypes = extractTypesFromSignature(firstFewLines, params);
 
@@ -519,6 +553,9 @@ function parseJsdocBlock(
         };
       }
     }
+
+    // Extract the complete function signature
+    signature = extractFunctionSignature(firstFewLines);
   }
 
   return {
@@ -532,6 +569,7 @@ function parseJsdocBlock(
     private: isPrivate,
     file,
     line,
+    signature,
   };
 }
 
@@ -626,6 +664,13 @@ function generateEntryMarkdown(entry: DocEntry, options?: ResolvedDocsOptions, a
     if (sourceLink) {
       md += sourceLink + '\n\n';
     }
+  }
+
+  // Add function signature if available
+  if (entry.signature && entry.kind === 'function') {
+    md += '```typescript\n';
+    md += entry.signature + '\n';
+    md += '```\n\n';
   }
 
   if (entry.params && entry.params.length > 0) {

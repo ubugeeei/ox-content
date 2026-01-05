@@ -1,7 +1,10 @@
 //! Markdown parser implementation.
 
 use ox_content_allocator::{Allocator, Vec};
-use ox_content_ast::{AlignKind, Document, Link, List, ListItem, Node, Paragraph, Span, Table, TableCell, TableRow, Text};
+use ox_content_ast::{
+    AlignKind, Document, Link, List, ListItem, Node, Paragraph, Span, Table, TableCell, TableRow,
+    Text,
+};
 
 use crate::error::{ParseError, ParseResult};
 
@@ -178,10 +181,7 @@ impl<'a> Parser<'a> {
         let trimmed = line.trim_start();
 
         // Unordered list: starts with -, *, or + followed by space
-        if trimmed.starts_with("- ")
-            || trimmed.starts_with("* ")
-            || trimmed.starts_with("+ ")
-        {
+        if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
             return true;
         }
 
@@ -224,27 +224,30 @@ impl<'a> Parser<'a> {
     /// Parses a list (ordered or unordered).
     fn parse_list(&mut self, start: usize) -> ParseResult<Option<Node<'a>>> {
         let baseline_indent = self.calc_indentation(start);
-        
+
         // Determine list type from the first line (already verified by try_parse_list)
         let first_line_start = self.position;
         // Skip whitespace to get to content
         let mut pos = first_line_start;
         while pos < self.source.len() {
-             let ch = self.source.as_bytes()[pos];
-             if ch != b' ' && ch != b'\t' { break; }
-             pos += 1;
+            let ch = self.source.as_bytes()[pos];
+            if ch != b' ' && ch != b'\t' {
+                break;
+            }
+            pos += 1;
         }
         let trimmed_start = &self.source[pos..];
         let ordered = trimmed_start.chars().next().map_or(false, |c| c.is_ascii_digit());
         let list_start = if ordered {
-             let num_str: String = trimmed_start.chars().take_while(|c| c.is_ascii_digit()).collect();
-             num_str.parse::<u32>().ok()
+            let num_str: String =
+                trimmed_start.chars().take_while(|c| c.is_ascii_digit()).collect();
+            num_str.parse::<u32>().ok()
         } else {
-             None
+            None
         };
 
         let mut children: Vec<'a, ListItem<'a>> = self.allocator.new_vec();
-        
+
         loop {
             if self.is_at_end() {
                 break;
@@ -253,71 +256,82 @@ impl<'a> Parser<'a> {
             let line_start = self.position;
             self.skip_whitespace();
             if self.peek() == Some('\n') || self.is_at_end() {
-                 self.position = line_start; // Backtrack to handle end of block
-                 break;
+                self.position = line_start; // Backtrack to handle end of block
+                break;
             }
-            
+
             // Check indentation
             let current_indent = self.calc_indentation(line_start);
-            
+
             // If less indented, list ends
             if current_indent < baseline_indent {
                 self.position = line_start;
                 break;
             }
-            
+
             // If indented more, check if it's a nested list
             if current_indent > baseline_indent {
                 // Peek to see if it's a list marker
                 self.position = line_start; // Reset position to check marker properly
                 if self.try_parse_list() {
-                     // Parse nested list
-                     if let Some(Node::List(nested_list)) = self.parse_list(line_start)? {
-                          // Add to the LAST item's children
-                          if let Some(last_item) = children.last_mut() {
-                               last_item.children.push(Node::List(nested_list));
-                          }
-                     }
-                     continue;
+                    // Parse nested list
+                    if let Some(Node::List(nested_list)) = self.parse_list(line_start)? {
+                        // Add to the LAST item's children
+                        if let Some(last_item) = children.last_mut() {
+                            last_item.children.push(Node::List(nested_list));
+                        }
+                    }
+                    continue;
                 } else {
                     // Continuation content?
                     // For now, we only support simple lists.
                     // Just skip line to avoid infinite loop
-                     while let Some(ch) = self.peek() {
+                    while let Some(ch) = self.peek() {
                         self.advance();
-                        if ch == '\n' { break; }
-                     }
-                     continue;
+                        if ch == '\n' {
+                            break;
+                        }
+                    }
+                    continue;
                 }
             }
-            
+
             // Same indentation (or close enough? Standard is complex, we use strict >= baseline)
             self.position = line_start; // Reset
-            
+
             // Check if it's a list item
             let remaining = self.remaining();
             let line = remaining.lines().next().unwrap_or("");
             let trimmed = line.trim_start();
-            
+
             // Check marker
-             let (is_list_item, content, checked) = if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
+            let (is_list_item, content, checked) = if trimmed.starts_with("- ")
+                || trimmed.starts_with("* ")
+                || trimmed.starts_with("+ ")
+            {
                 let mut content = &trimmed[2..];
                 let mut checked = None;
 
                 // Check for task list
                 if self.options.task_lists && content.len() >= 3 {
-                    if (content.starts_with("[x]") || content.starts_with("[X]")) && (content.len() == 3 || content.starts_with("[x] ") || content.starts_with("[X] ")) {
+                    if (content.starts_with("[x]") || content.starts_with("[X]"))
+                        && (content.len() == 3
+                            || content.starts_with("[x] ")
+                            || content.starts_with("[X] "))
+                    {
                         checked = Some(true);
                         content = if content.len() > 3 { &content[4..] } else { "" };
-                    } else if content.starts_with("[ ]") && (content.len() == 3 || content.starts_with("[ ] ")) {
+                    } else if content.starts_with("[ ]")
+                        && (content.len() == 3 || content.starts_with("[ ] "))
+                    {
                         checked = Some(false);
                         content = if content.len() > 3 { &content[4..] } else { "" };
                     }
                 }
                 (true, content.to_string(), checked)
             } else if ordered {
-                 // Simplified ordered list check
-                 // ... (reuse logic)
+                // Simplified ordered list check
+                // ... (reuse logic)
                 let mut chars = trimmed.chars().peekable();
                 let mut has_digit = false;
                 while let Some(ch) = chars.peek() {
@@ -346,35 +360,34 @@ impl<'a> Parser<'a> {
             } else {
                 (false, String::new(), None)
             };
-            
+
             if !is_list_item {
-                 // Not a list item, break
-                 break;
+                // Not a list item, break
+                break;
             }
-            
+
             // Consume line
             while let Some(ch) = self.peek() {
                 self.advance();
-                if ch == '\n' { break; }
+                if ch == '\n' {
+                    break;
+                }
             }
 
             // Create list item
             let content_str = self.allocator.alloc_str(&content);
             let item_children_inline = self.parse_inline(content_str, 0)?;
-            
+
             // Wrap in Paragraph
             let mut para_children = self.allocator.new_vec();
             for child in item_children_inline {
                 para_children.push(child);
             }
-            let para = Paragraph {
-                children: para_children,
-                span: Span::new(0, 0),
-            };
-            
+            let para = Paragraph { children: para_children, span: Span::new(0, 0) };
+
             let mut list_item_children = self.allocator.new_vec();
             list_item_children.push(Node::Paragraph(para));
-            
+
             let list_item = ListItem {
                 checked,
                 spread: false,
@@ -383,15 +396,9 @@ impl<'a> Parser<'a> {
             };
             children.push(list_item);
         }
-        
+
         let span = Span::new(start as u32, self.position as u32);
-        Ok(Some(Node::List(List {
-            ordered,
-            start: list_start,
-            spread: false,
-            children,
-            span,
-        })))
+        Ok(Some(Node::List(List { ordered, start: list_start, spread: false, children, span })))
     }
 
     /// Checks if the current position starts a heading.
@@ -458,17 +465,14 @@ impl<'a> Parser<'a> {
         }
 
         // Check delimiter row pattern: |---|---|
-        let is_delimiter = second_line
-            .split('|')
-            .filter(|s| !s.is_empty())
-            .all(|cell| {
-                let trimmed = cell.trim();
-                if trimmed.is_empty() {
-                    return true;
-                }
-                // Allow :---:, :---, ---:, ---
-                trimmed.chars().all(|c| c == '-' || c == ':')
-            });
+        let is_delimiter = second_line.split('|').filter(|s| !s.is_empty()).all(|cell| {
+            let trimmed = cell.trim();
+            if trimmed.is_empty() {
+                return true;
+            }
+            // Allow :---:, :---, ---:, ---
+            trimmed.chars().all(|c| c == '-' || c == ':')
+        });
 
         is_delimiter
     }
@@ -675,16 +679,10 @@ impl<'a> Parser<'a> {
             let mut cells: Vec<'a, TableCell<'a>> = self.allocator.new_vec();
             for cell_content in row_cells {
                 let cell_children = self.parse_inline(cell_content, 0)?;
-                let cell = TableCell {
-                    children: cell_children,
-                    span: Span::new(0, 0),
-                };
+                let cell = TableCell { children: cell_children, span: Span::new(0, 0) };
                 cells.push(cell);
             }
-            let row = TableRow {
-                children: cells,
-                span: Span::new(0, 0),
-            };
+            let row = TableRow { children: cells, span: Span::new(0, 0) };
             children.push(row);
         }
 
@@ -817,19 +815,21 @@ impl<'a> Parser<'a> {
                     while pos + count < content.len() && bytes[pos + count] == marker {
                         count += 1;
                     }
-                    
+
                     // Simple logic: find next matching sequence of same length
                     let inner_start = pos + count;
                     let mut inner_end = inner_start;
                     let mut found = false;
-                    
+
                     while inner_end < content.len() {
                         if bytes[inner_end] == marker {
                             let mut end_count = 1;
-                            while inner_end + end_count < content.len() && bytes[inner_end + end_count] == marker {
+                            while inner_end + end_count < content.len()
+                                && bytes[inner_end + end_count] == marker
+                            {
                                 end_count += 1;
                             }
-                            
+
                             if end_count >= count {
                                 found = true;
                                 break;
@@ -839,28 +839,25 @@ impl<'a> Parser<'a> {
                             inner_end += 1;
                         }
                     }
-                    
+
                     if found {
                         let inner_content = &content[inner_start..inner_end];
                         // Recursively parse inner content
-                        let inner_children = self.parse_inline(inner_content, offset + inner_start)?;
-                        
-                        let span = Span::new((offset + pos) as u32, (offset + inner_end + count) as u32);
-                        
+                        let inner_children =
+                            self.parse_inline(inner_content, offset + inner_start)?;
+
+                        let span =
+                            Span::new((offset + pos) as u32, (offset + inner_end + count) as u32);
+
                         if count >= 2 {
                             // Strong
-                            let strong = ox_content_ast::Strong {
-                                children: inner_children,
-                                span,
-                            };
+                            let strong = ox_content_ast::Strong { children: inner_children, span };
                             children.push(Node::Strong(strong));
                             pos = inner_end + count;
                         } else {
                             // Emphasis
-                            let emphasis = ox_content_ast::Emphasis {
-                                children: inner_children,
-                                span,
-                            };
+                            let emphasis =
+                                ox_content_ast::Emphasis { children: inner_children, span };
                             children.push(Node::Emphasis(emphasis));
                             pos = inner_end + count;
                         }
@@ -923,7 +920,11 @@ impl<'a> Parser<'a> {
                         }
                     }
 
-                    if pos < content.len() && bytes[pos] == b']' && pos + 1 < content.len() && bytes[pos + 1] == b'(' {
+                    if pos < content.len()
+                        && bytes[pos] == b']'
+                        && pos + 1 < content.len()
+                        && bytes[pos + 1] == b'('
+                    {
                         let link_text = &content[text_start..pos];
                         pos += 2; // skip ](
 
@@ -946,20 +947,27 @@ impl<'a> Parser<'a> {
                             pos += 1; // skip )
 
                             // Parse link text as inline content
-                            let link_children = self.parse_inline(link_text, offset + text_start)?;
+                            let link_children =
+                                self.parse_inline(link_text, offset + text_start)?;
 
                             let link = Link {
                                 url: self.allocator.alloc_str(url),
                                 title: None,
                                 children: link_children,
-                                span: Span::new((offset + link_start) as u32, (offset + pos) as u32),
+                                span: Span::new(
+                                    (offset + link_start) as u32,
+                                    (offset + pos) as u32,
+                                ),
                             };
                             children.push(Node::Link(link));
                         } else {
                             // Invalid link, treat as text
                             let text = Text {
                                 value: self.allocator.alloc_str(&content[link_start..pos]),
-                                span: Span::new((offset + link_start) as u32, (offset + pos) as u32),
+                                span: Span::new(
+                                    (offset + link_start) as u32,
+                                    (offset + pos) as u32,
+                                ),
                             };
                             children.push(Node::Text(text));
                         }
@@ -967,7 +975,10 @@ impl<'a> Parser<'a> {
                         // Not a link, just a [
                         let text = Text {
                             value: self.allocator.alloc_str("["),
-                            span: Span::new((offset + link_start) as u32, (offset + link_start + 1) as u32),
+                            span: Span::new(
+                                (offset + link_start) as u32,
+                                (offset + link_start + 1) as u32,
+                            ),
                         };
                         children.push(Node::Text(text));
                         pos = link_start + 1;
@@ -1026,8 +1037,13 @@ mod tests {
     #[test]
     fn test_parse_fenced_code() {
         let allocator = Allocator::new();
-        let doc = Parser::new(&allocator, "```rust\nfn main() {}
-```").parse().unwrap();
+        let doc = Parser::new(
+            &allocator,
+            "```rust\nfn main() {}
+```",
+        )
+        .parse()
+        .unwrap();
         assert_eq!(doc.children.len(), 1);
         match &doc.children[0] {
             Node::CodeBlock(cb) => {

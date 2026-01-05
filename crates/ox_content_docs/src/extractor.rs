@@ -125,9 +125,7 @@ impl DocExtractor {
     /// Creates a new documentation extractor.
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            include_private: false,
-        }
+        Self { include_private: false }
     }
 
     /// Creates a new extractor that includes private items.
@@ -157,12 +155,7 @@ impl DocExtractor {
         let ret = Parser::new(&allocator, source, source_type).parse();
 
         if !ret.errors.is_empty() {
-            let error_msg = ret
-                .errors
-                .iter()
-                .map(|e| e.to_string())
-                .collect::<Vec<_>>()
-                .join(", ");
+            let error_msg = ret.errors.iter().map(|e| e.to_string()).collect::<Vec<_>>().join(", ");
             return Err(ExtractError::Parse(error_msg));
         }
 
@@ -200,13 +193,7 @@ struct DocVisitor<'a> {
 
 impl<'a> DocVisitor<'a> {
     fn new(source: &'a str, file_path: &'a str, include_private: bool) -> Self {
-        Self {
-            source,
-            file_path,
-            include_private,
-            items: Vec::new(),
-            has_default_export: false,
-        }
+        Self { source, file_path, include_private, items: Vec::new(), has_default_export: false }
     }
 
     /// Extract JSDoc comment before a given position.
@@ -227,15 +214,25 @@ impl<'a> DocVisitor<'a> {
                 // Skip if there's actual code between the comment and declaration
                 // Allow: whitespace, 'export', 'default', 'async', 'function', 'class', 'interface', 'type', 'const', 'let', 'var', 'enum'
                 let allowed_keywords = [
-                    "export", "default", "async", "function", "class", "interface",
-                    "type", "const", "let", "var", "enum", "abstract", "declare",
+                    "export",
+                    "default",
+                    "async",
+                    "function",
+                    "class",
+                    "interface",
+                    "type",
+                    "const",
+                    "let",
+                    "var",
+                    "enum",
+                    "abstract",
+                    "declare",
                 ];
 
                 // Check if the content between is just allowed keywords
                 let words: Vec<&str> = between_trimmed.split_whitespace().collect();
-                let is_adjacent = words.iter().all(|word| {
-                    allowed_keywords.contains(word) || word.is_empty()
-                });
+                let is_adjacent =
+                    words.iter().all(|word| allowed_keywords.contains(word) || word.is_empty());
 
                 if is_adjacent {
                     let comment = &source_before[start_idx..end + 2];
@@ -309,23 +306,16 @@ impl<'a> DocVisitor<'a> {
         // Type parameters
         if let Some(type_params) = &func.type_parameters {
             sig.push('<');
-            let params: Vec<String> = type_params
-                .params
-                .iter()
-                .map(|p| p.name.name.to_string())
-                .collect();
+            let params: Vec<String> =
+                type_params.params.iter().map(|p| p.name.name.to_string()).collect();
             sig.push_str(&params.join(", "));
             sig.push('>');
         }
 
         // Parameters
         sig.push('(');
-        let params: Vec<String> = func
-            .params
-            .items
-            .iter()
-            .map(|p| self.format_binding_pattern(&p.pattern))
-            .collect();
+        let params: Vec<String> =
+            func.params.items.iter().map(|p| self.format_binding_pattern(&p.pattern)).collect();
         sig.push_str(&params.join(", "));
         sig.push(')');
 
@@ -378,11 +368,13 @@ impl<'a> DocVisitor<'a> {
             TSType::TSTypeReference(ref_type) => self.format_ts_type_name(&ref_type.type_name),
             TSType::TSArrayType(arr) => format!("{}[]", self.format_ts_type(&arr.element_type)),
             TSType::TSUnionType(union) => {
-                let types: Vec<String> = union.types.iter().map(|t| self.format_ts_type(t)).collect();
+                let types: Vec<String> =
+                    union.types.iter().map(|t| self.format_ts_type(t)).collect();
                 types.join(" | ")
             }
             TSType::TSIntersectionType(inter) => {
-                let types: Vec<String> = inter.types.iter().map(|t| self.format_ts_type(t)).collect();
+                let types: Vec<String> =
+                    inter.types.iter().map(|t| self.format_ts_type(t)).collect();
                 types.join(" & ")
             }
             TSType::TSFunctionType(func) => {
@@ -443,10 +435,8 @@ impl<'a> DocVisitor<'a> {
                     .as_ref()
                     .map(|t| self.format_ts_type(&t.type_annotation));
 
-                let description = tags
-                    .iter()
-                    .find(|t| t.tag == "param" && t.value.starts_with(&name))
-                    .map(|t| {
+                let description =
+                    tags.iter().find(|t| t.tag == "param" && t.value.starts_with(&name)).map(|t| {
                         t.value
                             .trim_start_matches(&name)
                             .trim_start_matches(" - ")
@@ -467,14 +457,9 @@ impl<'a> DocVisitor<'a> {
 
     /// Extract return type from tags.
     fn extract_return_type(&self, func: &Function, tags: &[DocTag]) -> Option<String> {
-        func.return_type
-            .as_ref()
-            .map(|r| self.format_ts_type(&r.type_annotation))
-            .or_else(|| {
-                tags.iter()
-                    .find(|t| t.tag == "returns" || t.tag == "return")
-                    .map(|t| t.value.clone())
-            })
+        func.return_type.as_ref().map(|r| self.format_ts_type(&r.type_annotation)).or_else(|| {
+            tags.iter().find(|t| t.tag == "returns" || t.tag == "return").map(|t| t.value.clone())
+        })
     }
 
     /// Create a DocItem from a function.
@@ -486,9 +471,8 @@ impl<'a> DocVisitor<'a> {
             return None;
         }
 
-        let (doc, tags) = self
-            .extract_jsdoc(func.span.start)
-            .unwrap_or((String::new(), Vec::new()));
+        let (doc, tags) =
+            self.extract_jsdoc(func.span.start).unwrap_or((String::new(), Vec::new()));
 
         Some(DocItem {
             name,
@@ -513,9 +497,8 @@ impl<'a> DocVisitor<'a> {
             return None;
         }
 
-        let (doc, tags) = self
-            .extract_jsdoc(class.span.start)
-            .unwrap_or((String::new(), Vec::new()));
+        let (doc, tags) =
+            self.extract_jsdoc(class.span.start).unwrap_or((String::new(), Vec::new()));
 
         let mut children = Vec::new();
 
@@ -546,11 +529,7 @@ impl<'a> DocVisitor<'a> {
                     children.push(DocItem {
                         name: method_name,
                         kind,
-                        doc: if method_doc.is_empty() {
-                            None
-                        } else {
-                            Some(method_doc)
-                        },
+                        doc: if method_doc.is_empty() { None } else { Some(method_doc) },
                         source_path: self.file_path.to_string(),
                         line: method.span.start,
                         column: 0,
@@ -572,9 +551,8 @@ impl<'a> DocVisitor<'a> {
                         continue;
                     }
 
-                    let (prop_doc, prop_tags) = self
-                        .extract_jsdoc(prop.span.start)
-                        .unwrap_or((String::new(), Vec::new()));
+                    let (prop_doc, prop_tags) =
+                        self.extract_jsdoc(prop.span.start).unwrap_or((String::new(), Vec::new()));
 
                     let type_annotation = prop
                         .type_annotation
@@ -584,11 +562,7 @@ impl<'a> DocVisitor<'a> {
                     children.push(DocItem {
                         name: prop_name,
                         kind: DocItemKind::Property,
-                        doc: if prop_doc.is_empty() {
-                            None
-                        } else {
-                            Some(prop_doc)
-                        },
+                        doc: if prop_doc.is_empty() { None } else { Some(prop_doc) },
                         source_path: self.file_path.to_string(),
                         line: prop.span.start,
                         column: 0,
@@ -751,9 +725,8 @@ impl<'a> DocVisitor<'a> {
                     return;
                 }
 
-                let (doc, tags) = self
-                    .extract_jsdoc(interface.span.start)
-                    .unwrap_or((String::new(), Vec::new()));
+                let (doc, tags) =
+                    self.extract_jsdoc(interface.span.start).unwrap_or((String::new(), Vec::new()));
 
                 let mut children = Vec::new();
 
@@ -780,11 +753,7 @@ impl<'a> DocVisitor<'a> {
                             children.push(DocItem {
                                 name: prop_name,
                                 kind: DocItemKind::Property,
-                                doc: if prop_doc.is_empty() {
-                                    None
-                                } else {
-                                    Some(prop_doc)
-                                },
+                                doc: if prop_doc.is_empty() { None } else { Some(prop_doc) },
                                 source_path: self.file_path.to_string(),
                                 line: prop.span.start,
                                 column: 0,
@@ -841,11 +810,7 @@ impl<'a> DocVisitor<'a> {
                             children.push(DocItem {
                                 name: method_name,
                                 kind: DocItemKind::Method,
-                                doc: if method_doc.is_empty() {
-                                    None
-                                } else {
-                                    Some(method_doc)
-                                },
+                                doc: if method_doc.is_empty() { None } else { Some(method_doc) },
                                 source_path: self.file_path.to_string(),
                                 line: method.span.start,
                                 column: 0,
@@ -883,9 +848,8 @@ impl<'a> DocVisitor<'a> {
                     return;
                 }
 
-                let (doc, tags) = self
-                    .extract_jsdoc(enum_decl.span.start)
-                    .unwrap_or((String::new(), Vec::new()));
+                let (doc, tags) =
+                    self.extract_jsdoc(enum_decl.span.start).unwrap_or((String::new(), Vec::new()));
 
                 let children: Vec<DocItem> = enum_decl
                     .members
@@ -951,9 +915,7 @@ export function add(a: number, b: number): number {
 "#;
 
         let extractor = DocExtractor::new();
-        let items = extractor
-            .extract_source(source, "test.ts", SourceType::ts())
-            .unwrap();
+        let items = extractor.extract_source(source, "test.ts", SourceType::ts()).unwrap();
 
         assert_eq!(items.len(), 1);
         assert_eq!(items[0].name, "add");
@@ -978,9 +940,7 @@ export interface User {
 "#;
 
         let extractor = DocExtractor::new();
-        let items = extractor
-            .extract_source(source, "test.ts", SourceType::ts())
-            .unwrap();
+        let items = extractor.extract_source(source, "test.ts", SourceType::ts()).unwrap();
 
         assert_eq!(items.len(), 1);
         assert_eq!(items[0].name, "User");

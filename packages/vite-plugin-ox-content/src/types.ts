@@ -385,6 +385,7 @@ export interface DocEntry {
   private?: boolean;
   file: string;
   line: number;
+  signature?: string; // Full function/type signature (for functions and type aliases)
 }
 
 /**
