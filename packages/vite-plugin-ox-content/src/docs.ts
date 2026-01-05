@@ -344,7 +344,7 @@ function parseJsdocBlock(
     } else if (!description) {
       description = lineText;
     } else {
-      description += ' ' + lineText;
+      description += '\n' + lineText;
     }
   }
 
