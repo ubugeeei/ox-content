@@ -62,6 +62,11 @@ description = "Build NAPI bindings"
 dir = "crates/ox_content_napi"
 run = "pnpm build"
 
+[tasks.wasm-build]
+description = "Build WASM bindings for browser"
+dir = "crates/ox_content_wasm"
+run = "wasm-pack build --target web --out-dir pkg"
+
 [tasks.napi-prepublish]
 description = "Prepare NAPI package for publishing"
 dir = "crates/ox_content_napi"

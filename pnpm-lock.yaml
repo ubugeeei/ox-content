@@ -66,6 +66,8 @@ importers:
         specifier: ^2.18.0
         version: 2.18.4
 
+  crates/ox_content_wasm/pkg: {}
+
   docs:
     dependencies:
       vue:

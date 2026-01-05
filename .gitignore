@@ -14,15 +14,23 @@ Cargo.lock
 .DS_Store
 Thumbs.db
 
-# Node.js (for NAPI bindings)
+# Node.js
 node_modules/
-*.node
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+
+# NAPI bindings (build artifacts)
+crates/ox_content_napi/*.node
+crates/ox_content_napi/index.js
+
+# WASM bindings (build artifacts)
+crates/ox_content_wasm/pkg/
 
 # Build artifacts
 /dist
+**/dist/
 *.so
 *.dylib
 *.dll

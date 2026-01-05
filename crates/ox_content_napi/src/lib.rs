@@ -206,7 +206,8 @@ pub fn transform(source: String, options: Option<JsTransformOptions>) -> Transfo
 
             TransformResult {
                 html,
-                frontmatter: serde_json::to_string(&frontmatter).unwrap_or_else(|_| "{}".to_string()),
+                frontmatter: serde_json::to_string(&frontmatter)
+                    .unwrap_or_else(|_| "{}".to_string()),
                 toc,
                 errors: vec![],
             }
@@ -256,9 +257,10 @@ fn parse_frontmatter(source: &str) -> (String, HashMap<String, serde_json::Value
             } else if let Ok(n) = value_str.parse::<i64>() {
                 serde_json::Value::Number(n.into())
             } else if let Ok(n) = value_str.parse::<f64>() {
-                serde_json::Number::from_f64(n)
-                    .map(serde_json::Value::Number)
-                    .unwrap_or_else(|| serde_json::Value::String(value_str.to_string()))
+                serde_json::Number::from_f64(n).map_or_else(
+                    || serde_json::Value::String(value_str.to_string()),
+                    serde_json::Value::Number,
+                )
             } else {
                 // Remove surrounding quotes if present
                 let s = value_str.trim_matches('"').trim_matches('\'');
@@ -276,16 +278,12 @@ fn parse_frontmatter(source: &str) -> (String, HashMap<String, serde_json::Value
 fn extract_toc(doc: &Document, max_depth: u8) -> Vec<TocEntry> {
     let mut entries = Vec::new();
 
-    for node in doc.children.iter() {
+    for node in &doc.children {
         if let Node::Heading(heading) = node {
             if heading.depth <= max_depth {
                 let text = extract_heading_text(heading);
                 let slug = slugify(&text);
-                entries.push(TocEntry {
-                    depth: heading.depth,
-                    text,
-                    slug,
-                });
+                entries.push(TocEntry { depth: heading.depth, text, slug });
             }
         }
     }
@@ -296,7 +294,7 @@ fn extract_toc(doc: &Document, max_depth: u8) -> Vec<TocEntry> {
 /// Extracts plain text from a heading node.
 fn extract_heading_text(heading: &Heading) -> String {
     let mut text = String::new();
-    for child in heading.children.iter() {
+    for child in &heading.children {
         collect_text(child, &mut text);
     }
     text
@@ -307,23 +305,23 @@ fn collect_text(node: &Node, text: &mut String) {
     match node {
         Node::Text(t) => text.push_str(t.value),
         Node::Emphasis(e) => {
-            for child in e.children.iter() {
+            for child in &e.children {
                 collect_text(child, text);
             }
         }
         Node::Strong(s) => {
-            for child in s.children.iter() {
+            for child in &s.children {
                 collect_text(child, text);
             }
         }
         Node::InlineCode(c) => text.push_str(c.value),
         Node::Delete(d) => {
-            for child in d.children.iter() {
+            for child in &d.children {
                 collect_text(child, text);
             }
         }
         Node::Link(l) => {
-            for child in l.children.iter() {
+            for child in &l.children {
                 collect_text(child, text);
             }
         }
@@ -344,11 +342,8 @@ fn slugify(text: &str) -> String {
 
 /// Converts transform options to parser options.
 fn transform_options_to_parser_options(opts: &JsTransformOptions) -> ParserOptions {
-    let mut options = if opts.gfm.unwrap_or(false) {
-        ParserOptions::gfm()
-    } else {
-        ParserOptions::default()
-    };
+    let mut options =
+        if opts.gfm.unwrap_or(false) { ParserOptions::gfm() } else { ParserOptions::default() };
 
     if let Some(v) = opts.footnotes {
         options.footnotes = v;
