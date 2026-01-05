@@ -45,12 +45,12 @@ depends = ["clippy", "fmt-check"]
 description = "Run benchmarks"
 run = "cargo bench --workspace"
 
-[tasks.doc]
-description = "Generate documentation"
+[tasks."doc:cargo"]
+description = "Generate Rust documentation"
 run = "cargo doc --workspace --no-deps"
 
-[tasks.doc-open]
-description = "Generate and open documentation"
+[tasks."doc:cargo-open"]
+description = "Generate and open Rust documentation"
 run = "cargo doc --workspace --no-deps --open"
 
 [tasks.clean]
@@ -138,19 +138,19 @@ run = "pnpm run dev"
 description = "Build all vite-plugin packages"
 run = "pnpm -r --filter 'vite-plugin-ox-content' --filter 'vite-plugin-ox-content-vue' run build"
 
-[tasks.docs]
+[tasks.dev]
 description = "Start documentation dev server"
 depends = ["napi-build", "packages-build"]
 dir = "docs"
 run = "pnpm dev"
 
-[tasks.docs-build]
+[tasks.dev-build]
 description = "Build documentation site"
 depends = ["napi-build", "packages-build"]
 dir = "docs"
 run = "pnpm build"
 
-[tasks.docs-preview]
+[tasks.dev-preview]
 description = "Preview documentation build"
 dir = "docs"
 run = "pnpm preview"

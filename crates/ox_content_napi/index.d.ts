@@ -17,6 +17,43 @@ export interface RenderResult {
   /** Render errors, if any. */
   errors: Array<string>
 }
+/** Table of contents entry. */
+export interface TocEntry {
+  /** Heading depth (1-6). */
+  depth: number
+  /** Heading text. */
+  text: string
+  /** URL-friendly slug. */
+  slug: string
+}
+/** Transform result containing HTML, frontmatter, and TOC. */
+export interface TransformResult {
+  /** The rendered HTML. */
+  html: string
+  /** Parsed frontmatter as JSON string. */
+  frontmatter: string
+  /** Table of contents entries. */
+  toc: Array<TocEntry>
+  /** Parse/render errors, if any. */
+  errors: Array<string>
+}
+/** Transform options for JavaScript. */
+export interface JsTransformOptions {
+  /** Enable GFM extensions. */
+  gfm?: boolean
+  /** Enable footnotes. */
+  footnotes?: boolean
+  /** Enable task lists. */
+  taskLists?: boolean
+  /** Enable tables. */
+  tables?: boolean
+  /** Enable strikethrough. */
+  strikethrough?: boolean
+  /** Enable autolinks. */
+  autolinks?: boolean
+  /** Maximum TOC depth (1-6). */
+  tocMaxDepth?: number
+}
 /** Parser options for JavaScript. */
 export interface JsParserOptions {
   /** Enable GFM extensions. */
@@ -44,3 +81,9 @@ export declare function parseAndRender(source: string, options?: JsParserOptions
 export declare function render(astJson: string): RenderResult
 /** Returns the version of ox_content_napi. */
 export declare function version(): string
+/**
+ * Transforms Markdown source into HTML, frontmatter, and TOC.
+ *
+ * This is the main entry point for unplugin-ox-content.
+ */
+export declare function transform(source: string, options?: JsTransformOptions | undefined | null): TransformResult

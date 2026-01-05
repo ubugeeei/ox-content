@@ -3,190 +3,70 @@ import { createUnplugin } from "unplugin";
 import { createFilter } from "@rollup/pluginutils";
 
 // src/transform.ts
-var napiBindings;
-var napiLoadAttempted = false;
+var napiBindings = null;
 async function loadNapiBindings() {
-  if (napiLoadAttempted) {
-    return napiBindings ?? null;
+  if (napiBindings) {
+    return napiBindings;
   }
-  napiLoadAttempted = true;
   try {
     const mod = await import("@ox-content/napi");
     napiBindings = mod;
     return mod;
-  } catch {
-    napiBindings = null;
-    return null;
+  } catch (error) {
+    throw new Error(
+      `[unplugin-ox-content] @ox-content/napi is required but not available. Please build the NAPI bindings first.
+Original error: ${error}`
+    );
   }
 }
 async function transformMarkdown(source, filePath, options) {
-  const { content, frontmatter } = parseFrontmatter(source);
-  const toc = options.toc ? generateToc(content, options.tocMaxDepth) : [];
-  const html = await renderToHtml(content, options);
-  const code = generateModuleCode(html, frontmatter, toc, filePath);
-  return { code, html, frontmatter, toc };
-}
-function parseFrontmatter(source) {
-  const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
-  const match = source.match(frontmatterRegex);
-  if (!match) {
-    return { content: source, frontmatter: {} };
+  const napi = await loadNapiBindings();
+  const result = napi.transform(source, {
+    gfm: options.gfm,
+    footnotes: options.footnotes,
+    taskLists: options.taskLists,
+    tables: options.tables,
+    strikethrough: options.strikethrough,
+    tocMaxDepth: options.tocMaxDepth
+  });
+  if (result.errors.length > 0) {
+    console.warn("[ox-content] Parse warnings:", result.errors);
   }
-  const frontmatterStr = match[1];
-  const content = source.slice(match[0].length);
-  const frontmatter = {};
-  const lines = frontmatterStr.split("\n");
-  for (const line of lines) {
-    const colonIndex = line.indexOf(":");
-    if (colonIndex > 0) {
-      const key = line.slice(0, colonIndex).trim();
-      let value = line.slice(colonIndex + 1).trim();
-      if (value === "true") value = true;
-      else if (value === "false") value = false;
-      else if (!isNaN(Number(value)) && value !== "") value = Number(value);
-      else if (typeof value === "string" && value.startsWith('"') && value.endsWith('"')) {
-        value = value.slice(1, -1);
-      }
-      frontmatter[key] = value;
-    }
+  let frontmatter = {};
+  try {
+    frontmatter = JSON.parse(result.frontmatter);
+  } catch {
   }
-  return { content, frontmatter };
-}
-function generateToc(content, maxDepth) {
-  const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-  const entries = [];
-  let match;
-  while ((match = headingRegex.exec(content)) !== null) {
-    const depth = match[1].length;
-    if (depth > maxDepth) continue;
-    const text = match[2].trim();
-    const slug = slugify(text);
-    entries.push({ depth, text, slug, children: [] });
-  }
-  return buildTocTree(entries);
+  const toc = buildTocTree(result.toc);
+  const code = generateModuleCode(result.html, frontmatter, toc, filePath);
+  return {
+    code,
+    html: result.html,
+    frontmatter,
+    toc
+  };
 }
 function buildTocTree(entries) {
-  const root = [];
+  const result = [];
   const stack = [];
   for (const entry of entries) {
+    const tocEntry = {
+      depth: entry.depth,
+      text: entry.text,
+      slug: entry.slug,
+      children: []
+    };
     while (stack.length > 0 && stack[stack.length - 1].depth >= entry.depth) {
       stack.pop();
     }
     if (stack.length === 0) {
-      root.push(entry);
+      result.push(tocEntry);
     } else {
-      stack[stack.length - 1].children.push(entry);
+      stack[stack.length - 1].children.push(tocEntry);
     }
-    stack.push(entry);
+    stack.push(tocEntry);
   }
-  return root;
-}
-function slugify(text) {
-  return text.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim();
-}
-async function renderToHtml(content, options) {
-  const napi = await loadNapiBindings();
-  if (napi) {
-    const result = napi.parseAndRender(content, { gfm: options.gfm });
-    if (result.errors.length > 0) {
-      console.warn("[ox-content] Parse warnings:", result.errors);
-    }
-    return result.html;
-  }
-  let html = content;
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-    const langClass = lang ? ` class="language-${lang}"` : "";
-    return `
-<pre><code${langClass}>${escapeHtml(code.trim())}</code></pre>
-`;
-  });
-  html = html.replace(
-    /^\|(.+)\|\r?\n\|[-:| ]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm,
-    (_, header, body) => {
-      const headerCells = header.split("|").map((c) => c.trim()).filter(Boolean);
-      const headerRow = headerCells.map((c) => `<th>${c}</th>`).join("");
-      const bodyRows = body.trim().split("\n").map((row) => {
-        const cells = row.split("|").map((c) => c.trim()).filter(Boolean);
-        return `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`;
-      }).join("\n");
-      return `<table>
-<thead><tr>${headerRow}</tr></thead>
-<tbody>
-${bodyRows}
-</tbody>
-</table>
-`;
-    }
-  );
-  html = html.replace(
-    /^#### (.+)$/gm,
-    (_, text) => `<h4 id="${slugify(text)}">${text}</h4>`
-  );
-  html = html.replace(
-    /^### (.+)$/gm,
-    (_, text) => `<h3 id="${slugify(text)}">${text}</h3>`
-  );
-  html = html.replace(
-    /^## (.+)$/gm,
-    (_, text) => `<h2 id="${slugify(text)}">${text}</h2>`
-  );
-  html = html.replace(
-    /^# (.+)$/gm,
-    (_, text) => `<h1 id="${slugify(text)}">${text}</h1>`
-  );
-  html = html.replace(/^(---|\*\*\*|___)\s*$/gm, "<hr>");
-  html = html.replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>");
-  html = html.replace(/<\/blockquote>\n<blockquote>/g, "\n");
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
-  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
-  html = html.replace(/__(.+?)__/g, "<strong>$1</strong>");
-  html = html.replace(/_([^_\n]+)_/g, "<em>$1</em>");
-  html = html.replace(/~~(.+?)~~/g, "<del>$1</del>");
-  html = html.replace(/`([^`\n]+)`/g, "<code>$1</code>");
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-  html = html.replace(
-    /^(\s*)- \[x\] (.+)$/gm,
-    '$1<li class="task-list-item"><input type="checkbox" checked disabled> $2</li>'
-  );
-  html = html.replace(
-    /^(\s*)- \[ \] (.+)$/gm,
-    '$1<li class="task-list-item"><input type="checkbox" disabled> $2</li>'
-  );
-  html = html.replace(/^(\s*)- (.+)$/gm, "$1<li>$2</li>");
-  html = html.replace(/^(\s*)\d+\. (.+)$/gm, "$1<li>$2</li>");
-  html = html.replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, (match) => {
-    if (match.includes("task-list-item")) {
-      return `<ul class="task-list">
-${match}</ul>
-`;
-    }
-    return `<ul>
-${match}</ul>
-`;
-  });
-  const blocks = html.split(/\n\n+/);
-  html = blocks.map((block) => {
-    block = block.trim();
-    if (!block) return "";
-    if (/^<(h[1-6]|p|div|ul|ol|li|table|thead|tbody|tr|th|td|pre|blockquote|hr|img)[\s>]/i.test(
-      block
-    )) {
-      return block;
-    }
-    if (/<\/(h[1-6]|p|div|ul|ol|table|pre|blockquote)>$/i.test(block)) {
-      return block;
-    }
-    return `<p>${block}</p>`;
-  }).join("\n\n");
-  html = html.replace(/<p>([\s\S]*?)<\/p>/g, (_, content2) => {
-    return `<p>${content2.replace(/\n/g, "<br>")}</p>`;
-  });
-  return `<div class="ox-content">${html}</div>`;
-}
-function escapeHtml(text) {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  return result;
 }
 function generateModuleCode(html, frontmatter, toc, filePath) {
   const htmlJson = JSON.stringify(html);

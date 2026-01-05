@@ -4,8 +4,10 @@
 //! enabling zero-copy AST transfer and JavaScript interoperability.
 
 use napi_derive::napi;
+use std::collections::HashMap;
 
 use ox_content_allocator::Allocator;
+use ox_content_ast::{Document, Heading, Node};
 use ox_content_parser::{Parser, ParserOptions};
 use ox_content_renderer::HtmlRenderer;
 
@@ -25,6 +27,51 @@ pub struct RenderResult {
     pub html: String,
     /// Render errors, if any.
     pub errors: Vec<String>,
+}
+
+/// Table of contents entry.
+#[napi(object)]
+#[derive(Clone)]
+pub struct TocEntry {
+    /// Heading depth (1-6).
+    pub depth: u8,
+    /// Heading text.
+    pub text: String,
+    /// URL-friendly slug.
+    pub slug: String,
+}
+
+/// Transform result containing HTML, frontmatter, and TOC.
+#[napi(object)]
+pub struct TransformResult {
+    /// The rendered HTML.
+    pub html: String,
+    /// Parsed frontmatter as JSON string.
+    pub frontmatter: String,
+    /// Table of contents entries.
+    pub toc: Vec<TocEntry>,
+    /// Parse/render errors, if any.
+    pub errors: Vec<String>,
+}
+
+/// Transform options for JavaScript.
+#[napi(object)]
+#[derive(Default)]
+pub struct JsTransformOptions {
+    /// Enable GFM extensions.
+    pub gfm: Option<bool>,
+    /// Enable footnotes.
+    pub footnotes: Option<bool>,
+    /// Enable task lists.
+    pub task_lists: Option<bool>,
+    /// Enable tables.
+    pub tables: Option<bool>,
+    /// Enable strikethrough.
+    pub strikethrough: Option<bool>,
+    /// Enable autolinks.
+    pub autolinks: Option<bool>,
+    /// Maximum TOC depth (1-6).
+    pub toc_max_depth: Option<u8>,
 }
 
 /// Parser options for JavaScript.
@@ -129,4 +176,195 @@ pub fn render(_ast_json: String) -> RenderResult {
 #[napi]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
+}
+
+/// Transforms Markdown source into HTML, frontmatter, and TOC.
+///
+/// This is the main entry point for unplugin-ox-content.
+#[napi]
+pub fn transform(source: String, options: Option<JsTransformOptions>) -> TransformResult {
+    let opts = options.unwrap_or_default();
+    let toc_max_depth = opts.toc_max_depth.unwrap_or(3);
+
+    // Parse frontmatter
+    let (content, frontmatter) = parse_frontmatter(&source);
+
+    // Parse markdown
+    let allocator = Allocator::new();
+    let parser_options = transform_options_to_parser_options(&opts);
+    let parser = Parser::with_options(&allocator, &content, parser_options);
+
+    let result = parser.parse();
+    match result {
+        Ok(doc) => {
+            // Extract TOC from headings
+            let toc = extract_toc(&doc, toc_max_depth);
+
+            // Render to HTML
+            let mut renderer = HtmlRenderer::new();
+            let html = renderer.render(&doc);
+
+            TransformResult {
+                html,
+                frontmatter: serde_json::to_string(&frontmatter).unwrap_or_else(|_| "{}".to_string()),
+                toc,
+                errors: vec![],
+            }
+        }
+        Err(e) => TransformResult {
+            html: String::new(),
+            frontmatter: "{}".to_string(),
+            toc: vec![],
+            errors: vec![e.to_string()],
+        },
+    }
+}
+
+/// Parses YAML frontmatter from Markdown content.
+fn parse_frontmatter(source: &str) -> (String, HashMap<String, serde_json::Value>) {
+    let mut frontmatter = HashMap::new();
+
+    // Check for frontmatter delimiter
+    if !source.starts_with("---") {
+        return (source.to_string(), frontmatter);
+    }
+
+    // Find the closing delimiter
+    let rest = &source[3..];
+    let Some(end_pos) = rest.find("\n---") else {
+        return (source.to_string(), frontmatter);
+    };
+
+    let frontmatter_str = &rest[..end_pos].trim_start_matches('\n');
+    let content = &rest[end_pos + 4..].trim_start_matches('\n');
+
+    // Parse simple YAML key-value pairs
+    for line in frontmatter_str.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+
+        if let Some(colon_pos) = line.find(':') {
+            let key = line[..colon_pos].trim().to_string();
+            let value_str = line[colon_pos + 1..].trim();
+
+            let value = if value_str == "true" {
+                serde_json::Value::Bool(true)
+            } else if value_str == "false" {
+                serde_json::Value::Bool(false)
+            } else if let Ok(n) = value_str.parse::<i64>() {
+                serde_json::Value::Number(n.into())
+            } else if let Ok(n) = value_str.parse::<f64>() {
+                serde_json::Number::from_f64(n)
+                    .map(serde_json::Value::Number)
+                    .unwrap_or_else(|| serde_json::Value::String(value_str.to_string()))
+            } else {
+                // Remove surrounding quotes if present
+                let s = value_str.trim_matches('"').trim_matches('\'');
+                serde_json::Value::String(s.to_string())
+            };
+
+            frontmatter.insert(key, value);
+        }
+    }
+
+    (content.to_string(), frontmatter)
+}
+
+/// Extracts table of contents from document headings.
+fn extract_toc(doc: &Document, max_depth: u8) -> Vec<TocEntry> {
+    let mut entries = Vec::new();
+
+    for node in doc.children.iter() {
+        if let Node::Heading(heading) = node {
+            if heading.depth <= max_depth {
+                let text = extract_heading_text(heading);
+                let slug = slugify(&text);
+                entries.push(TocEntry {
+                    depth: heading.depth,
+                    text,
+                    slug,
+                });
+            }
+        }
+    }
+
+    entries
+}
+
+/// Extracts plain text from a heading node.
+fn extract_heading_text(heading: &Heading) -> String {
+    let mut text = String::new();
+    for child in heading.children.iter() {
+        collect_text(child, &mut text);
+    }
+    text
+}
+
+/// Recursively collects text from nodes.
+fn collect_text(node: &Node, text: &mut String) {
+    match node {
+        Node::Text(t) => text.push_str(t.value),
+        Node::Emphasis(e) => {
+            for child in e.children.iter() {
+                collect_text(child, text);
+            }
+        }
+        Node::Strong(s) => {
+            for child in s.children.iter() {
+                collect_text(child, text);
+            }
+        }
+        Node::InlineCode(c) => text.push_str(c.value),
+        Node::Delete(d) => {
+            for child in d.children.iter() {
+                collect_text(child, text);
+            }
+        }
+        Node::Link(l) => {
+            for child in l.children.iter() {
+                collect_text(child, text);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Converts text to URL-friendly slug.
+fn slugify(text: &str) -> String {
+    text.to_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() || c == ' ' || c == '-' { c } else { ' ' })
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join("-")
+}
+
+/// Converts transform options to parser options.
+fn transform_options_to_parser_options(opts: &JsTransformOptions) -> ParserOptions {
+    let mut options = if opts.gfm.unwrap_or(false) {
+        ParserOptions::gfm()
+    } else {
+        ParserOptions::default()
+    };
+
+    if let Some(v) = opts.footnotes {
+        options.footnotes = v;
+    }
+    if let Some(v) = opts.task_lists {
+        options.task_lists = v;
+    }
+    if let Some(v) = opts.tables {
+        options.tables = v;
+    }
+    if let Some(v) = opts.strikethrough {
+        options.strikethrough = v;
+    }
+    if let Some(v) = opts.autolinks {
+        options.autolinks = v;
+    }
+
+    options
 }
