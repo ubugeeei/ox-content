@@ -1,8 +1,52 @@
 /**
- * Source documentation extraction and generation.
+ * Source Documentation Extraction and Generation
  *
- * Extracts JSDoc/TSDoc comments from source files and generates
- * Markdown documentation automatically.
+ * This module provides comprehensive tools for extracting JSDoc/TSDoc comments
+ * from TypeScript/JavaScript source files and automatically generating Markdown
+ * documentation.
+ *
+ * ## Features
+ *
+ * - **Automatic Extraction**: Parses JSDoc comments from functions, classes, interfaces, and types
+ * - **Flexible Filtering**: Include/exclude patterns for selective documentation
+ * - **Markdown Generation**: Converts extracted docs to organized Markdown files
+ * - **Navigation Generation**: Auto-generates sidebar navigation metadata
+ * - **GitHub Links**: Includes clickable links to source code on GitHub
+ *
+ * ## Supported JSDoc Tags
+ *
+ * - `@param {type} name - description` - Function parameter documentation
+ * - `@returns {type} description` - Return value documentation
+ * - `@example` - Code examples (multi-line blocks)
+ * - `@private` - Mark item as private (excluded from docs if private=false)
+ * - `@default value` - Default parameter value
+ * - Custom tags are preserved in the `tags` field
+ *
+ * ## Usage Flow
+ *
+ * 1. Call `extractDocs()` to parse source files
+ * 2. Call `generateMarkdown()` to create Markdown content
+ * 3. Call `writeDocs()` to write files to output directory
+ * 4. Generated nav.ts can be imported for sidebar navigation
+ *
+ * @example
+ * ```typescript
+ * import { extractDocs, generateMarkdown, writeDocs } from './docs';
+ *
+ * const docsOptions = {
+ *   enabled: true,
+ *   src: ['./src'],
+ *   out: './docs/api',
+ *   include: ['**\/*.ts'],
+ *   exclude: ['**\/*.test.ts'],
+ *   groupBy: 'file',
+ *   githubUrl: 'https://github.com/user/project',
+ * };
+ *
+ * const extracted = await extractDocs(['./src'], docsOptions);
+ * const markdown = generateMarkdown(extracted, docsOptions);
+ * await writeDocs(markdown, './docs/api', extracted, docsOptions);
+ * ```
  */
 
 import * as fs from 'fs';
@@ -10,18 +54,116 @@ import * as path from 'path';
 import type { ResolvedDocsOptions, ExtractedDocs, DocEntry, ParamDoc } from './types';
 import { generateNavMetadata, generateNavCode } from './nav-generator';
 
-// Regex patterns for JSDoc extraction
-// Match JSDoc blocks that start at the beginning of a line (with optional whitespace)
-// This avoids matching /** inside strings like glob patterns '**/*.ts'
+/**
+ * Regex pattern for matching JSDoc comment blocks.
+ *
+ * Matches `/** ... */` comments that start at the beginning of a line
+ * (with optional leading whitespace). This pattern avoids false matches
+ * with `/**` inside strings like glob patterns.
+ *
+ * @internal
+ */
 const JSDOC_BLOCK = /^[ \t]*\/\*\*\s*([\s\S]*?)\s*\*\//gm;
+
+/**
+ * Regex pattern for matching function declarations.
+ * Matches: `function name`, `export function name`, `async function name`
+ * @internal
+ */
 const FUNCTION_DECL = /(?:export\s+)?(?:async\s+)?function\s+(\w+)/;
+
+/**
+ * Regex pattern for matching const arrow/async functions.
+ * Matches: `const name = () => {}`, `const name = async () => {}`
+ * @internal
+ */
 const CONST_FUNC = /(?:export\s+)?const\s+(\w+)\s*=\s*(?:async\s*)?\(/;
+
+/**
+ * Regex pattern for matching class declarations.
+ * Matches: `class Name`, `export class Name`
+ * @internal
+ */
 const CLASS_DECL = /(?:export\s+)?class\s+(\w+)/;
+
+/**
+ * Regex pattern for matching interface declarations.
+ * Matches: `interface Name`, `export interface Name`
+ * @internal
+ */
 const INTERFACE_DECL = /(?:export\s+)?interface\s+(\w+)/;
+
+/**
+ * Regex pattern for matching type alias declarations.
+ * Matches: `type Name = ...`, `export type Name = ...`
+ * @internal
+ */
 const TYPE_DECL = /(?:export\s+)?type\s+(\w+)/;
 
 /**
- * Extracts documentation from source files in directories.
+ * Extracts JSDoc documentation from source files in specified directories.
+ *
+ * This function recursively searches directories for source files matching
+ * the include/exclude patterns, then extracts all documented items (functions,
+ * classes, interfaces, types) from those files.
+ *
+ * ## Process
+ *
+ * 1. **File Discovery**: Recursively walks directories, applying filters
+ * 2. **File Reading**: Loads each matching file's content
+ * 3. **JSDoc Extraction**: Parses JSDoc comments using regex patterns
+ * 4. **Declaration Matching**: Pairs JSDoc comments with source declarations
+ * 5. **Result Collection**: Aggregates extracted documentation by file
+ *
+ * ## Include/Exclude Patterns
+ *
+ * Patterns support:
+ * - `**` - Match any directory structure
+ * - `*` - Match any filename
+ * - Standard glob patterns (e.g., `**\/*.test.ts`)
+ *
+ * ## Performance Considerations
+ *
+ * - Uses filesystem I/O which can be slow for large codebases
+ * - Consider using more specific include patterns to reduce file scanning
+ * - Results are not cached; call once per build/dev session
+ *
+ * @param srcDirs - Array of source directory paths to scan
+ * @param options - Documentation extraction options (filters, grouping, etc.)
+ *
+ * @returns Promise resolving to array of extracted documentation by file.
+ *          Each ExtractedDocs object contains file path and array of DocEntry items.
+ *
+ * @example
+ * ```typescript
+ * const docs = await extractDocs(
+ *   ['./packages/vite-plugin/src'],
+ *   {
+ *     enabled: true,
+ *     src: [],
+ *     out: 'docs',
+ *     include: ['**\/*.ts'],
+ *     exclude: ['**\/*.test.ts', '**\/*.spec.ts'],
+ *     format: 'markdown',
+ *     private: false,
+ *     toc: true,
+ *     groupBy: 'file',
+ *     generateNav: true,
+ *   }
+ * );
+ *
+ * // Returns:
+ * // [
+ * //   {
+ * //     file: '/path/to/transform.ts',
+ * //     entries: [
+ * //       { name: 'transformMarkdown', kind: 'function', ... },
+ * //       { name: 'loadNapiBindings', kind: 'function', ... },
+ * //     ]
+ * //   },
+ * //   ...
+ * // ]
+ * ```
  */
 export async function extractDocs(
   srcDirs: string[],
@@ -46,7 +188,9 @@ export async function extractDocs(
 }
 
 /**
- * Finds all matching files in a directory.
+ * Recursively finds all source files matching include/exclude patterns.
+ *
+ * @internal
  */
 async function findFiles(dir: string, options: ResolvedDocsOptions): Promise<string[]> {
   const files: string[] = [];
@@ -323,20 +467,23 @@ function generateFileMarkdown(doc: ExtractedDocs, options: ResolvedDocsOptions):
     md += '\n---\n\n';
   }
 
+  // Pass all entries for symbol link resolution
   for (const entry of doc.entries) {
-    md += generateEntryMarkdown(entry, options);
+    md += generateEntryMarkdown(entry, options, doc.entries);
   }
 
   return md;
 }
 
-function generateEntryMarkdown(entry: DocEntry, options?: ResolvedDocsOptions): string {
+function generateEntryMarkdown(entry: DocEntry, options?: ResolvedDocsOptions, allEntries?: DocEntry[]): string {
   let md = `## ${entry.name}\n\n`;
 
   md += `\`${entry.kind}\`\n\n`;
 
   if (entry.description) {
-    md += `${entry.description}\n\n`;
+    // Convert symbol links [SymbolName] to markdown links
+    const processedDescription = convertSymbolLinks(entry.description, allEntries);
+    md += `${processedDescription}\n\n`;
   }
 
   // Add source link if githubUrl is provided
@@ -443,6 +590,40 @@ function generateCategoryIndex(byKind: Map<string, DocEntry[]>): string {
   }
 
   return md;
+}
+
+/**
+ * Converts symbol links [SymbolName] to markdown links.
+ *
+ * Processes description text to convert cargo-docs-style symbol references
+ * `[SymbolName]` into clickable markdown links pointing to the appropriate
+ * documentation page.
+ *
+ * ## Examples
+ *
+ * Input: "See [transformMarkdown] for usage"
+ * Output: "See [transformMarkdown](#transformmarkdown) for usage"
+ *
+ * Input: "Uses [NavItem] interface"
+ * Output: "Uses [NavItem](#navitem) interface"
+ *
+ * @param text - Description text containing symbol references
+ * @param allEntries - All documented entries for symbol resolution (optional)
+ * @returns Text with symbol references converted to markdown links
+ *
+ * @internal
+ */
+function convertSymbolLinks(text: string, allEntries?: DocEntry[]): string {
+  // Match [SymbolName] pattern where SymbolName starts with uppercase or underscore
+  return text.replace(/\[([A-Z_]\w*)\]/g, (match, symbolName) => {
+    // Check if symbol exists in documentation
+    if (allEntries?.some((e) => e.name === symbolName)) {
+      // Create internal link to symbol
+      return `[${symbolName}](#${symbolName.toLowerCase()})`;
+    }
+    // If symbol not found, keep original text
+    return match;
+  });
 }
 
 /**

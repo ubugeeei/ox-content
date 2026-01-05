@@ -1,17 +1,65 @@
 /**
- * Markdown transformation logic.
+ * Markdown Transformation Engine
  *
- * Transforms Markdown source into JavaScript modules
- * that can be imported by the application.
+ * This module handles the complete transformation pipeline for Markdown files,
+ * converting raw Markdown content into JavaScript modules that can be imported
+ * by web applications. The transformation process includes:
+ *
+ * 1. **Parsing**: Uses Rust-based parser via NAPI bindings for high performance
+ * 2. **Rendering**: Converts parsed AST to semantic HTML
+ * 3. **Enhancement**: Applies syntax highlighting, Mermaid diagram rendering, etc.
+ * 4. **Code Generation**: Generates JavaScript/TypeScript module code
+ *
+ * The generated modules export:
+ * - `html`: Rendered HTML content
+ * - `frontmatter`: Parsed YAML metadata
+ * - `toc`: Hierarchical table of contents
+ * - `render`: Client-side render function for dynamic updates
+ *
+ * @example
+ * ```typescript
+ * import { transformMarkdown } from './transform';
+ *
+ * const content = await transformMarkdown(
+ *   '# Hello\n\nWorld',
+ *   'path/to/file.md',
+ *   resolvedOptions
+ * );
+ *
+ * console.log(content.html); // '<h1>Hello</h1><p>World</p>'
+ * console.log(content.toc);  // [{ depth: 1, text: 'Hello', slug: 'hello', children: [] }]
+ * ```
  */
 
 import type { ResolvedOptions, TransformResult, TocEntry } from './types';
 import { highlightCode } from './highlight';
 import { transformMermaid } from './mermaid';
 
-// NAPI bindings interface
+/**
+ * NAPI bindings for Rust-based Markdown processing.
+ *
+ * Provides access to compiled Rust functions for high-performance
+ * Markdown parsing and rendering operations.
+ */
 interface NapiBindings {
+  /**
+   * Simple Markdown parser and renderer in one step.
+   * Faster for simple use cases but lacks advanced features.
+   *
+   * @param source - Raw Markdown content
+   * @param options - Parser configuration (GFM flag)
+   * @returns Rendered HTML and parsing errors
+   */
   parseAndRender: (source: string, options?: { gfm?: boolean }) => { html: string; errors: string[] };
+
+  /**
+   * Full-featured Markdown transformation pipeline.
+   * Handles frontmatter extraction, TOC generation, and advanced parsing.
+   *
+   * @param source - Raw Markdown content (may include frontmatter)
+   * @param options - Comprehensive transformation options
+   * @returns Transformed result with HTML, metadata, and TOC
+   */
   transform: (source: string, options?: JsTransformOptions) => {
     html: string;
     frontmatter: string;
@@ -20,27 +68,120 @@ interface NapiBindings {
   };
 }
 
+/**
+ * Options for Rust-based Markdown transformation.
+ *
+ * Controls which Markdown extensions and features are enabled
+ * during parsing and rendering.
+ */
 interface JsTransformOptions {
+  /**
+   * Enable GitHub Flavored Markdown extensions.
+   * Includes tables, task lists, strikethrough, and autolinks.
+   * @default false
+   */
   gfm?: boolean;
+
+  /**
+   * Enable footnotes syntax ([^1]: definition).
+   * @default false
+   */
   footnotes?: boolean;
+
+  /**
+   * Enable task list syntax (- [ ] unchecked, - [x] checked).
+   * @default false
+   */
   taskLists?: boolean;
+
+  /**
+   * Enable table rendering (GFM extension).
+   * Requires GFM to be enabled for full functionality.
+   * @default false
+   */
   tables?: boolean;
+
+  /**
+   * Enable strikethrough syntax (~~text~~).
+   * Requires GFM to be enabled.
+   * @default false
+   */
   strikethrough?: boolean;
+
+  /**
+   * Enable automatic link conversion (URLs become clickable).
+   * @default false
+   */
   autolinks?: boolean;
+
+  /**
+   * Maximum heading depth for table of contents.
+   * Headings deeper than this level are excluded from TOC.
+   * @default 3
+   * @min 1
+   * @max 6
+   */
   tocMaxDepth?: number;
 }
 
-// Cached NAPI bindings
+/**
+ * Cached NAPI bindings instance.
+ * Loaded on first use and reused for subsequent transformations.
+ * @internal
+ */
 let napiBindings: NapiBindings | null | undefined;
+
+/**
+ * Flag to prevent repeated NAPI loading attempts.
+ * Set to true after first load attempt (success or failure).
+ * @internal
+ */
 let napiLoadAttempted = false;
 
 /**
- * Lazily load NAPI bindings.
+ * Lazily loads and caches NAPI bindings.
+ *
+ * This function uses lazy loading to defer the import of NAPI bindings
+ * until they're actually needed. The bindings are loaded only once and
+ * cached for subsequent uses. If loading fails (e.g., bindings not built),
+ * the failure is cached to avoid repeated load attempts.
+ *
+ * ## Performance Considerations
+ *
+ * The first call to this function may have a slight performance penalty
+ * due to module loading. Subsequent calls use the cached result and are
+ * essentially zero-cost.
+ *
+ * ## Error Handling
+ *
+ * If NAPI bindings are not available (not built, wrong architecture, etc.),
+ * this function returns `null`. The caller should handle this gracefully
+ * or provide fallback behavior.
+ *
+ * @returns Promise resolving to NAPI bindings or null if unavailable
+ *
+ * @example
+ * ```typescript
+ * // Simple check with fallback
+ * const napi = await loadNapiBindings();
+ * if (!napi) {
+ *   console.warn('NAPI bindings not available, using fallback');
+ *   return fallbackRender(content);
+ * }
+ *
+ * // Use Rust implementation
+ * const result = napi.transform(content, { gfm: true });
+ * ```
+ *
+ * @internal
  */
 async function loadNapiBindings(): Promise<NapiBindings | null> {
+  // Return cached result (success or failure)
   if (napiLoadAttempted) {
     return napiBindings ?? null;
   }
+
+  // Mark attempt as made to prevent retry loops
   napiLoadAttempted = true;
 
   try {
@@ -48,8 +189,12 @@ async function loadNapiBindings(): Promise<NapiBindings | null> {
     const mod = await import('@ox-content/napi');
     napiBindings = mod;
     return mod;
-  } catch {
-    // NAPI not available, will use fallback
+  } catch (error) {
+    // NAPI not available (not built, missing dependencies, etc.)
+    // Log for debugging but don't throw - allow graceful degradation
+    if (process.env.DEBUG) {
+      console.debug('[ox-content] NAPI bindings load failed:', error);
+    }
     napiBindings = null;
     return null;
   }
@@ -58,11 +203,83 @@ async function loadNapiBindings(): Promise<NapiBindings | null> {
 /**
  * Transforms Markdown content into a JavaScript module.
  *
- * The generated module exports:
- * - `html`: The rendered HTML string
- * - `frontmatter`: Parsed YAML frontmatter object
- * - `toc`: Table of contents array
- * - `render`: Function to render with custom options
+ * This is the primary entry point for transforming Markdown files. It handles
+ * the complete transformation pipeline including parsing, rendering, syntax
+ * highlighting, and code generation.
+ *
+ * ## Pipeline Steps
+ *
+ * 1. **Parse & Render**: Uses Rust-based parser via NAPI for high performance
+ * 2. **Extract Metadata**: Parses YAML frontmatter and generates table of contents
+ * 3. **Enhance HTML**: Applies syntax highlighting and Mermaid diagram rendering
+ * 4. **Generate Code**: Creates importable JavaScript module
+ *
+ * ## Generated Module Exports
+ *
+ * - `html` (string): Rendered HTML content with all enhancements applied
+ * - `frontmatter` (object): Parsed YAML frontmatter as JavaScript object
+ * - `toc` (array): Hierarchical table of contents entries
+ * - `render` (function): Client-side render function for dynamic updates
+ *
+ * ## Markdown Features Supported
+ *
+ * The supported features depend on parser options:
+ * - **Commonmark**: Headings, paragraphs, lists, code blocks, links, images
+ * - **GFM Extensions**: Tables, task lists, strikethrough, autolinks
+ * - **Enhancements**: Syntax highlighting, Mermaid diagrams, TOC generation
+ * - **Metadata**: YAML frontmatter parsing
+ *
+ * ## Performance
+ *
+ * Uses Rust-based parsing via NAPI bindings for optimal performance. Falls back
+ * gracefully if Rust bindings are unavailable.
+ *
+ * @param source - Raw Markdown source code (may include YAML frontmatter)
+ * @param filePath - File path for source attribution and relative link resolution
+ * @param options - Resolved plugin options controlling transformation behavior
+ *
+ * @returns Promise resolving to transformation result with HTML and metadata
+ *
+ * @throws Error if NAPI bindings are unavailable (can be handled gracefully)
+ *
+ * @example
+ * ```typescript
+ * import { transformMarkdown } from './transform';
+ * import { resolveOptions } from './index';
+ *
+ * // Transform a Markdown file with YAML frontmatter
+ * const markdown = `---
+ * title: Getting Started
+ * author: john
+ * ---
+ *
+ * # Getting Started
+ *
+ * Welcome! This guide explains [transformMarkdown] function.
+ *
+ * ## Installation
+ *
+ * \`\`\`bash
+ * npm install vite-plugin-ox-content
+ * \`\`\`
+ * `;
+ *
+ * const options = resolveOptions({
+ *   highlight: true,
+ *   highlightTheme: 'github-dark',
+ *   toc: true,
+ *   gfm: true,
+ *   mermaid: true,
+ * });
+ *
+ * const result = await transformMarkdown(markdown, 'docs/getting-started.md', options);
+ *
+ * // Generated module exports
+ * console.log(result.html);        // Rendered HTML with syntax highlighting
+ * console.log(result.frontmatter); // { title: 'Getting Started', author: 'john' }
+ * console.log(result.toc);         // [{ depth: 1, text: 'Getting Started', ... }]
+ * console.log(result.code);        // ES module export statement
+ * ```
  */
 export async function transformMarkdown(
   source: string,
