@@ -10,7 +10,9 @@ import * as path from 'path';
 import type { ResolvedDocsOptions, ExtractedDocs, DocEntry, ParamDoc } from './types';
 
 // Regex patterns for JSDoc extraction
-const JSDOC_BLOCK = /\/\*\*\s*([\s\S]*?)\s*\*\//g;
+// Match JSDoc blocks that start at the beginning of a line (with optional whitespace)
+// This avoids matching /** inside strings like glob patterns '**/*.ts'
+const JSDOC_BLOCK = /^[ \t]*\/\*\*\s*([\s\S]*?)\s*\*\//gm;
 const FUNCTION_DECL = /(?:export\s+)?(?:async\s+)?function\s+(\w+)/;
 const CONST_FUNC = /(?:export\s+)?const\s+(\w+)\s*=\s*(?:async\s*)?\(/;
 const CLASS_DECL = /(?:export\s+)?class\s+(\w+)/;
@@ -129,6 +131,7 @@ function extractFromContent(
 
 /**
  * Parses a JSDoc block and the following declaration.
+ * Only matches if the declaration is immediately after the JSDoc (with only whitespace/keywords between).
  */
 function parseJsdocBlock(
   jsdoc: string,
@@ -204,24 +207,35 @@ function parseJsdocBlock(
     examples.push(currentExample.trim());
   }
 
+  // Only look at the first few lines after the JSDoc to find the declaration
+  // This prevents module-level JSDoc from matching distant declarations
+  const firstFewLines = declaration.split('\n').slice(0, 5).join('\n');
+
   let name = '';
   let kind: DocEntry['kind'] = 'function';
 
+  // Use anchored patterns to match at the start (after optional whitespace/keywords)
+  const ANCHORED_FUNCTION = /^(?:export\s+)?(?:async\s+)?function\s+(\w+)/;
+  const ANCHORED_CONST_FUNC = /^(?:export\s+)?const\s+(\w+)\s*=\s*(?:async\s*)?\(/;
+  const ANCHORED_CLASS = /^(?:export\s+)?class\s+(\w+)/;
+  const ANCHORED_INTERFACE = /^(?:export\s+)?interface\s+(\w+)/;
+  const ANCHORED_TYPE = /^(?:export\s+)?type\s+(\w+)/;
+
   let declMatch: RegExpExecArray | null;
 
-  if ((declMatch = FUNCTION_DECL.exec(declaration))) {
+  if ((declMatch = ANCHORED_FUNCTION.exec(firstFewLines))) {
     name = declMatch[1];
     kind = 'function';
-  } else if ((declMatch = CONST_FUNC.exec(declaration))) {
+  } else if ((declMatch = ANCHORED_CONST_FUNC.exec(firstFewLines))) {
     name = declMatch[1];
     kind = 'function';
-  } else if ((declMatch = CLASS_DECL.exec(declaration))) {
+  } else if ((declMatch = ANCHORED_CLASS.exec(firstFewLines))) {
     name = declMatch[1];
     kind = 'class';
-  } else if ((declMatch = INTERFACE_DECL.exec(declaration))) {
+  } else if ((declMatch = ANCHORED_INTERFACE.exec(firstFewLines))) {
     name = declMatch[1];
     kind = 'interface';
-  } else if ((declMatch = TYPE_DECL.exec(declaration))) {
+  } else if ((declMatch = ANCHORED_TYPE.exec(firstFewLines))) {
     name = declMatch[1];
     kind = 'type';
   }

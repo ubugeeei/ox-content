@@ -25,6 +25,7 @@
 - **Multi-Runtime** - Node.js (NAPI), WebAssembly, Native Rust
 - **Framework Agnostic** - Works with Vite, Webpack, Rollup, esbuild via unplugin
 - **Plugin Compatible** - Works with markdown-it, remark, rehype ecosystems
+- **API Docs Generation** - Generate docs from JSDoc/TypeScript (like `cargo doc`)
 
 ## Quick Start
 

@@ -1,6 +1,8 @@
+import * as path from 'path';
+import { transformMarkdown as baseTransformMarkdown } from 'vite-plugin-ox-content';
 import type { ResolvedReactOptions, ReactTransformResult, ComponentSlot, ComponentsMap } from './types';
 
-const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*\/?>(?:<\/\1>)?/g;
+const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>(?:[\s\S]*?)<\/\1>)/g;
 const PROP_REGEX = /([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}))?/g;
 
 export async function transformMarkdownWithReact(
@@ -43,12 +45,35 @@ export async function transformMarkdownWithReact(
     }
   }
 
+  // Transform Markdown to HTML
+  const transformed = await baseTransformMarkdown(processedContent, id, {
+    srcDir: options.srcDir,
+    outDir: options.outDir,
+    base: options.base,
+    gfm: options.gfm,
+    frontmatter: false,
+    toc: options.toc,
+    tocMaxDepth: options.tocMaxDepth,
+    footnotes: true,
+    tables: true,
+    taskLists: true,
+    strikethrough: true,
+    highlight: false,
+    highlightTheme: 'github-dark',
+    mermaid: false,
+    ogImage: false,
+    ogImageOptions: {},
+    transformers: [],
+    docs: false,
+  });
+
   const jsxCode = generateReactModule(
-    processedContent,
+    transformed.html,
     usedComponents,
     slots,
     frontmatter,
-    options
+    options,
+    id
   );
 
   return {
@@ -116,14 +141,28 @@ function generateReactModule(
   usedComponents: string[],
   slots: ComponentSlot[],
   frontmatter: Record<string, unknown>,
-  options: ResolvedReactOptions
+  options: ResolvedReactOptions & { root?: string },
+  id: string
 ): string {
+  const mdDir = path.dirname(id);
+  const root = options.root || process.cwd();
+
   const imports = usedComponents
-    .map((name) => `import ${name} from '${options.components[name]}';`)
+    .map((name) => {
+      const componentPath = options.components[name];
+      if (!componentPath) return '';
+      // Convert relative-to-root path to relative-to-md-file path
+      const absolutePath = path.resolve(root, componentPath.replace(/^\.\//, ''));
+      const relativePath = path.relative(mdDir, absolutePath).replace(/\\/g, '/');
+      // Ensure the path starts with ./ or ../
+      const importPath = relativePath.startsWith('.') ? relativePath : './' + relativePath;
+      return `import ${name} from '${importPath}';`;
+    })
+    .filter(Boolean)
     .join('\n');
 
   return `
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createElement } from 'react';
 ${imports}
 
 const frontmatter = ${JSON.stringify(frontmatter)};
@@ -140,16 +179,17 @@ export default function MarkdownContent() {
   }, []);
 
   if (!mounted) {
-    return <div className="ox-content" dangerouslySetInnerHTML={{ __html: rawHtml }} />;
+    return createElement('div', {
+      className: 'ox-content',
+      dangerouslySetInnerHTML: { __html: rawHtml }
+    });
   }
 
-  return (
-    <div className="ox-content">
-      {slots.map((slot) => {
-        const Component = components[slot.name];
-        return Component ? <Component key={slot.id} {...slot.props} /> : null;
-      })}
-    </div>
+  return createElement('div', { className: 'ox-content' },
+    slots.map((slot) => {
+      const Component = components[slot.name];
+      return Component ? createElement(Component, { key: slot.id, ...slot.props }) : null;
+    })
   );
 }
 

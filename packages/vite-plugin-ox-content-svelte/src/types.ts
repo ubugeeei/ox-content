@@ -37,6 +37,7 @@ export interface ResolvedSvelteOptions {
   tocMaxDepth: number;
   components: ComponentsMap;
   runes: boolean;
+  root?: string;
 }
 
 export interface SvelteTransformResult {

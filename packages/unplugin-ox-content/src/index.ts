@@ -8,11 +8,13 @@
 import { createUnplugin, type UnpluginFactory } from 'unplugin';
 import { createFilter } from '@rollup/pluginutils';
 import { transformMarkdown } from './transform';
-import type { OxContentOptions, ResolvedOptions } from './types';
+import type { OxContentOptions, ResolvedOptions, ResolvedDocsConfig, DocsConfig } from './types';
 
 export type {
   OxContentOptions,
   ResolvedOptions,
+  ResolvedDocsConfig,
+  DocsConfig,
   TocEntry,
   TransformResult,
   PluginConfig,
@@ -22,6 +24,48 @@ export type {
   RehypePlugin,
 } from './types';
 export { transformMarkdown } from './transform';
+
+/**
+ * Resolves docs configuration.
+ */
+function resolveDocsConfig(docs: boolean | DocsConfig | undefined): ResolvedDocsConfig {
+  if (docs === false || docs === undefined) {
+    return {
+      enabled: false,
+      src: ['./src'],
+      out: 'docs/api',
+      include: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+      exclude: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**'],
+      includePrivate: false,
+      toc: true,
+      groupBy: 'file',
+    };
+  }
+
+  if (docs === true) {
+    return {
+      enabled: true,
+      src: ['./src'],
+      out: 'docs/api',
+      include: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+      exclude: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**'],
+      includePrivate: false,
+      toc: true,
+      groupBy: 'file',
+    };
+  }
+
+  return {
+    enabled: docs.enabled ?? true,
+    src: docs.src ?? ['./src'],
+    out: docs.out ?? 'docs/api',
+    include: docs.include ?? ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    exclude: docs.exclude ?? ['**/*.test.*', '**/*.spec.*', '**/node_modules/**'],
+    includePrivate: docs.includePrivate ?? false,
+    toc: docs.toc ?? true,
+    groupBy: docs.groupBy ?? 'file',
+  };
+}
 
 /**
  * Resolves plugin options with defaults.
@@ -58,6 +102,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
       remark: options.plugin?.remark ?? [],
       rehype: options.plugin?.rehype ?? [],
     },
+    docs: resolveDocsConfig(options.docs),
   };
 }
 

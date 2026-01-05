@@ -84,6 +84,7 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
       const result = await transformMarkdownWithVue(code, id, {
         ...resolved,
         components: componentMap,
+        root: config.root,
       });
 
       return {

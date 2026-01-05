@@ -2,10 +2,12 @@
  * Markdown to Vue SFC transformation.
  */
 
+import * as path from 'path';
+import { transformMarkdown as baseTransformMarkdown } from 'vite-plugin-ox-content';
 import type { ResolvedVueOptions, VueTransformResult, ComponentSlot } from './types';
 
 // Regex to match Vue-like component tags in Markdown
-const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*\/?>(?:<\/\1>)?/g;
+const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>(?:[\s\S]*?)<\/\1>)/g;
 
 // Regex to parse component props
 const PROP_REGEX = /(?::|v-bind:)?([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}|\[([^\]]*)\]))?/g;
@@ -15,6 +17,7 @@ const PROP_REGEX = /(?::|v-bind:)?([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^
  */
 interface TransformOptions extends Omit<ResolvedVueOptions, 'components'> {
   components: Map<string, string>;
+  root?: string;
 }
 
 /**
@@ -66,9 +69,31 @@ export async function transformMarkdownWithVue(
     }
   }
 
+  // Transform Markdown to HTML using ox-content
+  const transformed = await baseTransformMarkdown(processedContent, id, {
+    srcDir: options.srcDir,
+    outDir: options.outDir,
+    base: options.base,
+    gfm: options.gfm,
+    frontmatter: false, // Already extracted
+    toc: options.toc,
+    tocMaxDepth: options.tocMaxDepth,
+    footnotes: true,
+    tables: true,
+    taskLists: true,
+    strikethrough: true,
+    highlight: false,
+    highlightTheme: 'github-dark',
+    mermaid: false,
+    ogImage: false,
+    ogImageOptions: {},
+    transformers: [],
+    docs: false,
+  });
+
   // Generate Vue SFC code
   const sfcCode = generateVueSFC(
-    processedContent,
+    transformed.html,
     usedComponents,
     slots,
     frontmatter,
@@ -174,24 +199,32 @@ function parseProps(propsString: string): Record<string, unknown> {
 }
 
 /**
- * Generates a Vue SFC from the processed Markdown.
+ * Generates a Vue component as JavaScript module from the processed Markdown.
  */
 function generateVueSFC(
   content: string,
   usedComponents: string[],
   slots: ComponentSlot[],
   frontmatter: Record<string, unknown>,
-  options: ResolvedVueOptions & { components: Map<string, string> },
-  _id: string
+  options: ResolvedVueOptions & { components: Map<string, string>; root?: string },
+  id: string
 ): string {
+  const mdDir = path.dirname(id);
+  const root = options.root || process.cwd();
+
   const componentImports = usedComponents
     .map((name) => {
-      const path = options.components.get(name);
-      return `import ${name} from '${path}';`;
+      const componentPath = options.components.get(name);
+      if (!componentPath) return '';
+      // Convert relative-to-root path to relative-to-md-file path
+      const absolutePath = path.resolve(root, componentPath.replace(/^\.\//, ''));
+      const relativePath = path.relative(mdDir, absolutePath).replace(/\\/g, '/');
+      // Ensure the path starts with ./ or ../
+      const importPath = relativePath.startsWith('.') ? relativePath : './' + relativePath;
+      return `import ${name} from '${importPath}';`;
     })
+    .filter(Boolean)
     .join('\n');
-
-  const componentRegistrations = usedComponents.join(',\n    ');
 
   // Generate slot rendering logic
   const slotRenderCases = slots
@@ -203,52 +236,45 @@ function generateVueSFC(
     .join('');
 
   return `
-<script setup lang="ts">
-import { h, ref, onMounted, VNode } from 'vue';
+import { h, ref, onMounted, defineComponent } from 'vue';
 ${componentImports}
 
-// Frontmatter
-const frontmatter = ${JSON.stringify(frontmatter)};
+export const frontmatter = ${JSON.stringify(frontmatter)};
 
-// Component registry
-const components = {
-  ${componentRegistrations}
-};
-
-// Markdown content
 const rawHtml = ${JSON.stringify(content)};
-
-// Slots data
 const slots = ${JSON.stringify(slots)};
 
-// Mounted state for hydration
-const mounted = ref(false);
-
-onMounted(() => {
-  mounted.value = true;
-});
-
-// Render slot component
-function renderSlot(slotId: string): VNode | null {
+function renderSlot(slotId) {
   switch (slotId) {${slotRenderCases}
     default:
       return null;
   }
 }
 
-// Expose frontmatter and toc
-defineExpose({
-  frontmatter,
-});
-</script>
+export default defineComponent({
+  name: 'MarkdownContent',
+  setup(_, { expose }) {
+    const mounted = ref(false);
 
-<template>
-  <div class="ox-content" v-if="!mounted" v-html="rawHtml" />
-  <div class="ox-content" v-else>
-    <template v-for="slot in slots" :key="slot.id">
-      <component :is="renderSlot(slot.id)" />
-    </template>
-  </div>
-</template>
+    onMounted(() => {
+      mounted.value = true;
+    });
+
+    expose({ frontmatter });
+
+    return () => {
+      if (!mounted.value) {
+        return h('div', {
+          class: 'ox-content',
+          innerHTML: rawHtml,
+        });
+      }
+
+      return h('div', { class: 'ox-content' },
+        slots.map((slot) => renderSlot(slot.id))
+      );
+    };
+  },
+});
 `;
 }

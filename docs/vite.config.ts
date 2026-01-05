@@ -27,23 +27,23 @@ export default defineConfig({
       // Enable mermaid diagrams
       mermaid: true,
 
-      // Auto-generate API docs from source
-      docs: {
-        enabled: true,
-        src: ['../packages/vite-plugin-ox-content/src'],
-        out: 'api',
-        include: ['**/*.ts'],
-        exclude: ['**/*.test.*'],
-        toc: true,
-        groupBy: 'file',
-      },
-
       // OG Image generation
       ogImage: true,
       ogImageOptions: {
         background: '#1a1a2e',
         textColor: '#ffffff',
         accentColor: '#bd34fe',
+      },
+
+      // API documentation generation (like cargo doc)
+      docs: {
+        enabled: true,
+        src: ['../packages/unplugin-ox-content/src'],
+        out: 'api',
+        include: ['**/*.ts'],
+        exclude: ['**/*.test.*'],
+        toc: true,
+        groupBy: 'file',
       },
     }),
   ],

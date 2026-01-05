@@ -78,6 +78,7 @@ export function oxContentReact(options: ReactIntegrationOptions = {}): PluginOpt
       const result = await transformMarkdownWithReact(code, id, {
         ...resolved,
         components: Object.fromEntries(componentMap),
+        root: config.root,
       });
 
       return {

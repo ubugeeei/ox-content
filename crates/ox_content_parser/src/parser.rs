@@ -1,7 +1,7 @@
 //! Markdown parser implementation.
 
 use ox_content_allocator::{Allocator, Vec};
-use ox_content_ast::{Document, Node, Paragraph, Span, Text};
+use ox_content_ast::{AlignKind, Document, Link, List, ListItem, Node, Paragraph, Span, Table, TableCell, TableRow, Text};
 
 use crate::error::{ParseError, ParseResult};
 
@@ -159,8 +159,190 @@ impl<'a> Parser<'a> {
             return self.parse_fenced_code(start);
         }
 
+        if self.options.tables && self.try_parse_table() {
+            return self.parse_table(start);
+        }
+
+        if self.try_parse_list() {
+            return self.parse_list(start);
+        }
+
         // Default: parse as paragraph
         self.parse_paragraph(start)
+    }
+
+    /// Checks if the current position starts a list.
+    fn try_parse_list(&self) -> bool {
+        let remaining = self.remaining();
+        let line = remaining.lines().next().unwrap_or("");
+        let trimmed = line.trim_start();
+
+        // Unordered list: starts with -, *, or + followed by space
+        if trimmed.starts_with("- ")
+            || trimmed.starts_with("* ")
+            || trimmed.starts_with("+ ")
+        {
+            return true;
+        }
+
+        // Ordered list: starts with digit(s) followed by . or ) and space
+        let mut chars = trimmed.chars().peekable();
+        let mut has_digit = false;
+        while let Some(ch) = chars.peek() {
+            if ch.is_ascii_digit() {
+                has_digit = true;
+                chars.next();
+            } else {
+                break;
+            }
+        }
+        if has_digit {
+            if let Some(ch) = chars.next() {
+                if (ch == '.' || ch == ')') && chars.peek() == Some(&' ') {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
+    /// Parses a list (ordered or unordered).
+    fn parse_list(&mut self, start: usize) -> ParseResult<Option<Node<'a>>> {
+        let mut items: std::vec::Vec<(String, Option<bool>)> = std::vec::Vec::new();
+        let first_line = self.remaining().lines().next().unwrap_or("");
+        let trimmed = first_line.trim_start();
+
+        // Determine if ordered or unordered
+        let ordered = trimmed.chars().next().map_or(false, |c| c.is_ascii_digit());
+        let list_start = if ordered {
+            // Extract the starting number
+            let num_str: String = trimmed.chars().take_while(|c| c.is_ascii_digit()).collect();
+            num_str.parse::<u32>().ok()
+        } else {
+            None
+        };
+
+        loop {
+            if self.is_at_end() {
+                break;
+            }
+
+            let line_start = self.position;
+            self.skip_whitespace();
+
+            // Check for blank line
+            if self.peek() == Some('\n') || self.is_at_end() {
+                self.position = line_start;
+                break;
+            }
+
+            self.position = line_start;
+            let remaining = self.remaining();
+            let line = remaining.lines().next().unwrap_or("");
+            let trimmed = line.trim_start();
+
+            // Check if this line is a list item
+            let (is_list_item, content, checked) = if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
+                let content = &trimmed[2..];
+                // Check for task list
+                if self.options.task_lists {
+                    if content.starts_with("[x] ") || content.starts_with("[X] ") {
+                        (true, content[4..].to_string(), Some(true))
+                    } else if content.starts_with("[ ] ") {
+                        (true, content[4..].to_string(), Some(false))
+                    } else {
+                        (true, content.to_string(), None)
+                    }
+                } else {
+                    (true, content.to_string(), None)
+                }
+            } else if ordered {
+                // Check for ordered list item
+                let mut chars = trimmed.chars().peekable();
+                let mut has_digit = false;
+                while let Some(ch) = chars.peek() {
+                    if ch.is_ascii_digit() {
+                        has_digit = true;
+                        chars.next();
+                    } else {
+                        break;
+                    }
+                }
+                if has_digit {
+                    if let Some(ch) = chars.next() {
+                        if (ch == '.' || ch == ')') && chars.peek() == Some(&' ') {
+                            chars.next(); // skip space
+                            let content: String = chars.collect();
+                            (true, content, None)
+                        } else {
+                            (false, String::new(), None)
+                        }
+                    } else {
+                        (false, String::new(), None)
+                    }
+                } else {
+                    (false, String::new(), None)
+                }
+            } else {
+                (false, String::new(), None)
+            };
+
+            if !is_list_item {
+                break;
+            }
+
+            items.push((content, checked));
+
+            // Consume the line
+            while let Some(ch) = self.peek() {
+                self.advance();
+                if ch == '\n' {
+                    break;
+                }
+            }
+        }
+
+        if items.is_empty() {
+            return Ok(None);
+        }
+
+        // Build list AST
+        let mut children: Vec<'a, ListItem<'a>> = self.allocator.new_vec();
+
+        for (content, checked) in items {
+            // Allocate content string in arena
+            let content_str = self.allocator.alloc_str(&content);
+            let item_children = self.parse_inline(content_str, 0)?;
+            // Wrap in paragraph
+            let mut para_children = self.allocator.new_vec();
+            for child in item_children {
+                para_children.push(child);
+            }
+            let para = Paragraph {
+                children: para_children,
+                span: Span::new(0, 0),
+            };
+            let mut list_item_children = self.allocator.new_vec();
+            list_item_children.push(Node::Paragraph(para));
+
+            let list_item = ListItem {
+                checked,
+                spread: false,
+                children: list_item_children,
+                span: Span::new(0, 0),
+            };
+            children.push(list_item);
+        }
+
+        let span = Span::new(start as u32, self.position as u32);
+        Ok(Some(Node::List(List {
+            ordered,
+            start: list_start,
+            spread: false,
+            children,
+            span,
+        })))
     }
 
     /// Checks if the current position starts a heading.
@@ -203,6 +385,43 @@ impl<'a> Parser<'a> {
     fn try_parse_fenced_code(&self) -> bool {
         let remaining = self.remaining();
         remaining.starts_with("```") || remaining.starts_with("~~~")
+    }
+
+    /// Checks if the current position starts a table.
+    fn try_parse_table(&self) -> bool {
+        let remaining = self.remaining();
+        let lines: std::vec::Vec<&str> = remaining.lines().take(2).collect();
+
+        if lines.len() < 2 {
+            return false;
+        }
+
+        // First line must start with | or contain |
+        let first_line = lines[0].trim();
+        if !first_line.starts_with('|') && !first_line.contains('|') {
+            return false;
+        }
+
+        // Second line must be the delimiter row (contains | and -)
+        let second_line = lines[1].trim();
+        if !second_line.contains('|') || !second_line.contains('-') {
+            return false;
+        }
+
+        // Check delimiter row pattern: |---|---|
+        let is_delimiter = second_line
+            .split('|')
+            .filter(|s| !s.is_empty())
+            .all(|cell| {
+                let trimmed = cell.trim();
+                if trimmed.is_empty() {
+                    return true;
+                }
+                // Allow :---:, :---, ---:, ---
+                trimmed.chars().all(|c| c == '-' || c == ':')
+            });
+
+        is_delimiter
     }
 
     /// Parses a heading.
@@ -348,6 +567,104 @@ impl<'a> Parser<'a> {
         Ok(Some(Node::CodeBlock(ox_content_ast::CodeBlock { lang, meta, value, span })))
     }
 
+    /// Parses a table.
+    fn parse_table(&mut self, start: usize) -> ParseResult<Option<Node<'a>>> {
+        let mut rows: std::vec::Vec<std::vec::Vec<&str>> = std::vec::Vec::new();
+        let mut align: Vec<'a, AlignKind> = self.allocator.new_vec();
+
+        // Parse header row
+        let header_line = self.consume_line();
+        let header_cells = self.parse_table_row_cells(header_line);
+        rows.push(header_cells);
+
+        // Parse delimiter row to get alignment
+        let delimiter_line = self.consume_line();
+        for cell in delimiter_line.split('|').filter(|s| !s.trim().is_empty()) {
+            let cell = cell.trim();
+            let starts_colon = cell.starts_with(':');
+            let ends_colon = cell.ends_with(':');
+            let alignment = match (starts_colon, ends_colon) {
+                (true, true) => AlignKind::Center,
+                (true, false) => AlignKind::Left,
+                (false, true) => AlignKind::Right,
+                (false, false) => AlignKind::None,
+            };
+            align.push(alignment);
+        }
+
+        // Parse body rows
+        loop {
+            if self.is_at_end() {
+                break;
+            }
+
+            let line_start = self.position;
+            self.skip_whitespace();
+
+            // Check for blank line or non-table line
+            if self.peek() == Some('\n') || self.is_at_end() {
+                self.position = line_start;
+                break;
+            }
+
+            // Check if line contains | (table continuation)
+            let remaining = self.remaining();
+            let line = remaining.lines().next().unwrap_or("");
+            if !line.contains('|') {
+                self.position = line_start;
+                break;
+            }
+
+            self.position = line_start;
+            let row_line = self.consume_line();
+            let row_cells = self.parse_table_row_cells(row_line);
+            rows.push(row_cells);
+        }
+
+        // Build the table AST
+        let mut children: Vec<'a, TableRow<'a>> = self.allocator.new_vec();
+
+        for row_cells in rows {
+            let mut cells: Vec<'a, TableCell<'a>> = self.allocator.new_vec();
+            for cell_content in row_cells {
+                let cell_children = self.parse_inline(cell_content, 0)?;
+                let cell = TableCell {
+                    children: cell_children,
+                    span: Span::new(0, 0),
+                };
+                cells.push(cell);
+            }
+            let row = TableRow {
+                children: cells,
+                span: Span::new(0, 0),
+            };
+            children.push(row);
+        }
+
+        let span = Span::new(start as u32, self.position as u32);
+        Ok(Some(Node::Table(Table { align, children, span })))
+    }
+
+    /// Consumes a line and returns it.
+    fn consume_line(&mut self) -> &'a str {
+        let start = self.position;
+        while let Some(ch) = self.peek() {
+            self.advance();
+            if ch == '\n' {
+                break;
+            }
+        }
+        &self.source[start..self.position].trim_end_matches('\n')
+    }
+
+    /// Parses table row cells from a line.
+    fn parse_table_row_cells(&self, line: &'a str) -> std::vec::Vec<&'a str> {
+        let trimmed = line.trim();
+        let trimmed = trimmed.strip_prefix('|').unwrap_or(trimmed);
+        let trimmed = trimmed.strip_suffix('|').unwrap_or(trimmed);
+        trimmed.split('|').map(|s| s.trim()).collect()
+    }
+
     /// Parses a paragraph.
     fn parse_paragraph(&mut self, start: usize) -> ParseResult<Option<Node<'a>>> {
         let mut content_end = start;
@@ -371,6 +688,8 @@ impl<'a> Parser<'a> {
             if self.try_parse_heading()
                 || self.try_parse_thematic_break()
                 || self.try_parse_fenced_code()
+                || (self.options.tables && self.try_parse_table())
+                || self.try_parse_list()
             {
                 break;
             }
@@ -474,6 +793,75 @@ impl<'a> Parser<'a> {
                         children.push(Node::Text(text));
                     }
                 }
+                b'[' => {
+                    // Link: [text](url) or [text](url "title")
+                    let link_start = pos;
+                    pos += 1;
+                    let text_start = pos;
+
+                    // Find closing ]
+                    let mut bracket_depth = 1;
+                    while pos < content.len() && bracket_depth > 0 {
+                        match bytes[pos] {
+                            b'[' => bracket_depth += 1,
+                            b']' => bracket_depth -= 1,
+                            _ => {}
+                        }
+                        if bracket_depth > 0 {
+                            pos += 1;
+                        }
+                    }
+
+                    if pos < content.len() && bytes[pos] == b']' && pos + 1 < content.len() && bytes[pos + 1] == b'(' {
+                        let link_text = &content[text_start..pos];
+                        pos += 2; // skip ](
+
+                        // Find closing )
+                        let url_start = pos;
+                        let mut paren_depth = 1;
+                        while pos < content.len() && paren_depth > 0 {
+                            match bytes[pos] {
+                                b'(' => paren_depth += 1,
+                                b')' => paren_depth -= 1,
+                                _ => {}
+                            }
+                            if paren_depth > 0 {
+                                pos += 1;
+                            }
+                        }
+
+                        if pos < content.len() && bytes[pos] == b')' {
+                            let url = &content[url_start..pos];
+                            pos += 1; // skip )
+
+                            // Parse link text as inline content
+                            let link_children = self.parse_inline(link_text, offset + text_start)?;
+
+                            let link = Link {
+                                url: self.allocator.alloc_str(url),
+                                title: None,
+                                children: link_children,
+                                span: Span::new((offset + link_start) as u32, (offset + pos) as u32),
+                            };
+                            children.push(Node::Link(link));
+                        } else {
+                            // Invalid link, treat as text
+                            let text = Text {
+                                value: self.allocator.alloc_str(&content[link_start..pos]),
+                                span: Span::new((offset + link_start) as u32, (offset + pos) as u32),
+                            };
+                            children.push(Node::Text(text));
+                        }
+                    } else {
+                        // Not a link, just a [
+                        let text = Text {
+                            value: self.allocator.alloc_str("["),
+                            span: Span::new((offset + link_start) as u32, (offset + link_start + 1) as u32),
+                        };
+                        children.push(Node::Text(text));
+                        pos = link_start + 1;
+                    }
+                }
                 _ => {
                     // Other special characters - treat as text for now
                     let text = Text {
@@ -547,6 +935,53 @@ mod tests {
                 assert!(p.children.iter().any(|n| matches!(n, Node::InlineCode(_))));
             }
             _ => panic!("expected paragraph"),
+        }
+    }
+
+    #[test]
+    fn test_parse_table() {
+        let allocator = Allocator::new();
+        let table_md = "| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |";
+        let parser = Parser::with_options(&allocator, table_md, ParserOptions::gfm());
+        let doc = parser.parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::Table(t) => {
+                assert_eq!(t.children.len(), 2); // header + 1 body row
+            }
+            _ => panic!("expected table, got {:?}", &doc.children[0]),
+        }
+    }
+
+    #[test]
+    fn test_parse_unordered_list() {
+        let allocator = Allocator::new();
+        let list_md = "- Item 1\n- Item 2\n- Item 3";
+        let parser = Parser::new(&allocator, list_md);
+        let doc = parser.parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::List(list) => {
+                assert!(!list.ordered);
+                assert_eq!(list.children.len(), 3);
+            }
+            _ => panic!("expected list, got {:?}", &doc.children[0]),
+        }
+    }
+
+    #[test]
+    fn test_parse_ordered_list() {
+        let allocator = Allocator::new();
+        let list_md = "1. First\n2. Second\n3. Third";
+        let parser = Parser::new(&allocator, list_md);
+        let doc = parser.parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::List(list) => {
+                assert!(list.ordered);
+                assert_eq!(list.children.len(), 3);
+            }
+            _ => panic!("expected list, got {:?}", &doc.children[0]),
         }
     }
 }

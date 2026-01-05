@@ -37,6 +37,7 @@ export interface ResolvedReactOptions {
   tocMaxDepth: number;
   components: ComponentsMap;
   jsxRuntime: 'automatic' | 'classic';
+  root?: string;
 }
 
 export interface ReactTransformResult {

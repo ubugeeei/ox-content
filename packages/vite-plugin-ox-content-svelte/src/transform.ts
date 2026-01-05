@@ -1,6 +1,9 @@
+import * as path from 'path';
+import { transformMarkdown as baseTransformMarkdown } from 'vite-plugin-ox-content';
+import { compile } from 'svelte/compiler';
 import type { ResolvedSvelteOptions, SvelteTransformResult, ComponentSlot, ComponentsMap } from './types';
 
-const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*\/?>(?:<\/\1>)?/g;
+const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>(?:[\s\S]*?)<\/\1>)/g;
 const PROP_REGEX = /([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}))?/g;
 
 export async function transformMarkdownWithSvelte(
@@ -43,17 +46,50 @@ export async function transformMarkdownWithSvelte(
     }
   }
 
+  // Transform Markdown to HTML
+  const transformed = await baseTransformMarkdown(processedContent, id, {
+    srcDir: options.srcDir,
+    outDir: options.outDir,
+    base: options.base,
+    gfm: options.gfm,
+    frontmatter: false,
+    toc: options.toc,
+    tocMaxDepth: options.tocMaxDepth,
+    footnotes: true,
+    tables: true,
+    taskLists: true,
+    strikethrough: true,
+    highlight: false,
+    highlightTheme: 'github-dark',
+    mermaid: false,
+    ogImage: false,
+    ogImageOptions: {},
+    transformers: [],
+    docs: false,
+  });
+
   const svelteCode = generateSvelteModule(
-    processedContent,
+    transformed.html,
     usedComponents,
     slots,
     frontmatter,
-    options
+    options,
+    id
   );
 
+  // Compile Svelte code to JavaScript
+  const compiled = compile(svelteCode, {
+    filename: id,
+    generate: 'client',
+    runes: true,
+  });
+
+  // Add frontmatter export to the compiled code
+  const finalCode = `${compiled.js.code}\nexport const frontmatter = ${JSON.stringify(frontmatter)};`;
+
   return {
-    code: svelteCode,
-    map: null,
+    code: finalCode,
+    map: compiled.js.map,
     usedComponents,
     frontmatter,
   };
@@ -116,10 +152,24 @@ function generateSvelteModule(
   usedComponents: string[],
   slots: ComponentSlot[],
   frontmatter: Record<string, unknown>,
-  options: ResolvedSvelteOptions
+  options: ResolvedSvelteOptions & { root?: string },
+  id: string
 ): string {
+  const mdDir = path.dirname(id);
+  const root = options.root || process.cwd();
+
   const imports = usedComponents
-    .map((name) => `import ${name} from '${options.components[name]}';`)
+    .map((name) => {
+      const componentPath = options.components[name];
+      if (!componentPath) return '';
+      // Convert relative-to-root path to relative-to-md-file path
+      const absolutePath = path.resolve(root, componentPath.replace(/^\.\//, ''));
+      const relativePath = path.relative(mdDir, absolutePath).replace(/\\/g, '/');
+      // Ensure the path starts with ./ or ../
+      const importPath = relativePath.startsWith('.') ? relativePath : './' + relativePath;
+      return `import ${name} from '${importPath}';`;
+    })
+    .filter(Boolean)
     .join('\n');
 
   const componentRendering = slots
