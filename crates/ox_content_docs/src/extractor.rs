@@ -155,7 +155,12 @@ impl DocExtractor {
         let ret = Parser::new(&allocator, source, source_type).parse();
 
         if !ret.errors.is_empty() {
-            let error_msg = ret.errors.iter().map(|e| e.to_string()).collect::<Vec<_>>().join(", ");
+            let error_msg = ret
+                .errors
+                .iter()
+                .map(std::string::ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(", ");
             return Err(ExtractError::Parse(error_msg));
         }
 
@@ -236,7 +241,7 @@ impl<'a> DocVisitor<'a> {
 
                 if is_adjacent {
                     let comment = &source_before[start_idx..end + 2];
-                    let (doc, tags) = self.parse_jsdoc(comment);
+                    let (doc, tags) = Self::parse_jsdoc(comment);
                     return Some((doc, tags));
                 }
             }
@@ -245,7 +250,7 @@ impl<'a> DocVisitor<'a> {
     }
 
     /// Parse JSDoc comment into description and tags.
-    fn parse_jsdoc(&self, comment: &str) -> (String, Vec<DocTag>) {
+    fn parse_jsdoc(comment: &str) -> (String, Vec<DocTag>) {
         let mut description = String::new();
         let mut tags = Vec::new();
         let mut current_tag: Option<(String, String)> = None;
@@ -361,11 +366,10 @@ impl<'a> DocVisitor<'a> {
             TSType::TSNullKeyword(_) => "null".to_string(),
             TSType::TSUndefinedKeyword(_) => "undefined".to_string(),
             TSType::TSNeverKeyword(_) => "never".to_string(),
-            TSType::TSUnknownKeyword(_) => "unknown".to_string(),
             TSType::TSBigIntKeyword(_) => "bigint".to_string(),
             TSType::TSSymbolKeyword(_) => "symbol".to_string(),
             TSType::TSObjectKeyword(_) => "object".to_string(),
-            TSType::TSTypeReference(ref_type) => self.format_ts_type_name(&ref_type.type_name),
+            TSType::TSTypeReference(ref_type) => Self::format_ts_type_name(&ref_type.type_name),
             TSType::TSArrayType(arr) => format!("{}[]", self.format_ts_type(&arr.element_type)),
             TSType::TSUnionType(union) => {
                 let types: Vec<String> =
@@ -398,9 +402,10 @@ impl<'a> DocVisitor<'a> {
             }
             TSType::TSLiteralType(lit) => match &lit.literal {
                 oxc_ast::ast::TSLiteral::StringLiteral(s) => format!("\"{}\"", s.value),
-                oxc_ast::ast::TSLiteral::NumericLiteral(n) => {
-                    n.raw.as_ref().map_or_else(|| n.value.to_string(), |r| r.to_string())
-                }
+                oxc_ast::ast::TSLiteral::NumericLiteral(n) => n
+                    .raw
+                    .as_ref()
+                    .map_or_else(|| n.value.to_string(), std::string::ToString::to_string),
                 oxc_ast::ast::TSLiteral::BooleanLiteral(b) => b.value.to_string(),
                 _ => "literal".to_string(),
             },
@@ -409,11 +414,11 @@ impl<'a> DocVisitor<'a> {
     }
 
     /// Format a TypeScript type name.
-    fn format_ts_type_name(&self, name: &TSTypeName) -> String {
+    fn format_ts_type_name(name: &TSTypeName) -> String {
         match name {
             TSTypeName::IdentifierReference(id) => id.name.to_string(),
             TSTypeName::QualifiedName(qn) => {
-                format!("{}.{}", self.format_ts_type_name(&qn.left), qn.right.name)
+                format!("{}.{}", Self::format_ts_type_name(&qn.left), qn.right.name)
             }
         }
     }
@@ -615,8 +620,7 @@ impl<'a> Visit<'a> for DocVisitor<'a> {
                         let name = class
                             .id
                             .as_ref()
-                            .map(|id| id.name.to_string())
-                            .unwrap_or_else(|| "default".to_string());
+                            .map_or_else(|| "default".to_string(), |id| id.name.to_string());
                         if let Some(item) = self.create_class_item(class, &name, true) {
                             self.items.push(item);
                         }
@@ -902,7 +906,7 @@ mod tests {
 
     #[test]
     fn test_extract_function() {
-        let source = r#"
+        let source = r"
 /**
  * Adds two numbers together.
  * @param a - The first number
@@ -912,7 +916,7 @@ mod tests {
 export function add(a: number, b: number): number {
     return a + b;
 }
-"#;
+";
 
         let extractor = DocExtractor::new();
         let items = extractor.extract_source(source, "test.ts", SourceType::ts()).unwrap();
@@ -927,7 +931,7 @@ export function add(a: number, b: number): number {
 
     #[test]
     fn test_extract_interface() {
-        let source = r#"
+        let source = r"
 /**
  * User interface.
  */
@@ -937,7 +941,7 @@ export interface User {
     /** User's age */
     age: number;
 }
-"#;
+";
 
         let extractor = DocExtractor::new();
         let items = extractor.extract_source(source, "test.ts", SourceType::ts()).unwrap();

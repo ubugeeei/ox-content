@@ -211,8 +211,8 @@ impl<'a> Parser<'a> {
     fn calc_indentation(&self, start: usize) -> usize {
         let mut indent = 0;
         let bytes = self.source.as_bytes();
-        for i in start..self.source.len() {
-            match bytes[i] {
+        for byte in bytes.iter().skip(start) {
+            match byte {
                 b' ' => indent += 1,
                 b'\t' => indent += 4, // Assume tab is 4 spaces
                 _ => break,
@@ -237,10 +237,9 @@ impl<'a> Parser<'a> {
             pos += 1;
         }
         let trimmed_start = &self.source[pos..];
-        let ordered = trimmed_start.chars().next().map_or(false, |c| c.is_ascii_digit());
+        let ordered = trimmed_start.chars().next().is_some_and(|c| c.is_ascii_digit());
         let list_start = if ordered {
-            let num_str: String =
-                trimmed_start.chars().take_while(|c| c.is_ascii_digit()).collect();
+            let num_str: String = trimmed_start.chars().take_while(char::is_ascii_digit).collect();
             num_str.parse::<u32>().ok()
         } else {
             None
@@ -281,7 +280,6 @@ impl<'a> Parser<'a> {
                             last_item.children.push(Node::List(nested_list));
                         }
                     }
-                    continue;
                 } else {
                     // Continuation content?
                     // For now, we only support simple lists.
@@ -292,8 +290,8 @@ impl<'a> Parser<'a> {
                             break;
                         }
                     }
-                    continue;
                 }
+                continue;
             }
 
             // Same indentation (or close enough? Standard is complex, we use strict >= baseline)
@@ -343,17 +341,18 @@ impl<'a> Parser<'a> {
                     }
                 }
                 if has_digit {
-                    if let Some(ch) = chars.next() {
-                        if (ch == '.' || ch == ')') && chars.peek() == Some(&' ') {
-                            chars.next(); // skip space
-                            let content: String = chars.collect();
-                            (true, content, None)
-                        } else {
-                            (false, String::new(), None)
-                        }
-                    } else {
-                        (false, String::new(), None)
-                    }
+                    chars.next().map_or_else(
+                        || (false, String::new(), None),
+                        |ch| {
+                            if (ch == '.' || ch == ')') && chars.peek() == Some(&' ') {
+                                chars.next(); // skip space
+                                let content: String = chars.collect();
+                                (true, content, None)
+                            } else {
+                                (false, String::new(), None)
+                            }
+                        },
+                    )
                 } else {
                     (false, String::new(), None)
                 }
@@ -625,7 +624,7 @@ impl<'a> Parser<'a> {
 
         // Parse header row
         let header_line = self.consume_line();
-        let header_cells = self.parse_table_row_cells(header_line);
+        let header_cells = Self::parse_table_row_cells(header_line);
         rows.push(header_cells);
 
         // Parse delimiter row to get alignment
@@ -668,7 +667,7 @@ impl<'a> Parser<'a> {
 
             self.position = line_start;
             let row_line = self.consume_line();
-            let row_cells = self.parse_table_row_cells(row_line);
+            let row_cells = Self::parse_table_row_cells(row_line);
             rows.push(row_cells);
         }
 
@@ -699,15 +698,15 @@ impl<'a> Parser<'a> {
                 break;
             }
         }
-        &self.source[start..self.position].trim_end_matches('\n')
+        self.source[start..self.position].trim_end_matches('\n')
     }
 
     /// Parses table row cells from a line.
-    fn parse_table_row_cells(&self, line: &'a str) -> std::vec::Vec<&'a str> {
+    fn parse_table_row_cells(line: &'a str) -> std::vec::Vec<&'a str> {
         let trimmed = line.trim();
         let trimmed = trimmed.strip_prefix('|').unwrap_or(trimmed);
         let trimmed = trimmed.strip_suffix('|').unwrap_or(trimmed);
-        trimmed.split('|').map(|s| s.trim()).collect()
+        trimmed.split('|').map(str::trim).collect()
     }
 
     /// Parses a paragraph.
