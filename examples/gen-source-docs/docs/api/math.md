@@ -3,7 +3,6 @@
 ## Table of Contents
 
 - [clamp](#clamp)
-- [clamp](#clamp)
 - [lerp](#lerp)
 - [round](#round)
 
@@ -13,27 +12,23 @@
 
 `function`
 
-Mathematical utility functions.
-
----
-
-## clamp
-
-`function`
-
 Clamps a number between a minimum and maximum value.
+
+```typescript
+export function clamp(value: number, min: number, max: number): number
+```
 
 ### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| `value` | `unknown` | The value to clamp |
-| `min` | `unknown` | The minimum allowed value |
-| `max` | `unknown` | The maximum allowed value |
+| `value` | `number` | The value to clamp |
+| `min` | `number` | The minimum allowed value |
+| `max` | `number` | The maximum allowed value |
 
 ### Returns
 
-`unknown` - The clamped value
+`number` - The clamped value
 
 ### Examples
 
@@ -51,17 +46,21 @@ clamp(15, 0, 10) // => 10
 
 Linearly interpolates between two values.
 
+```typescript
+export function lerp(start: number, end: number, t: number): number
+```
+
 ### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| `start` | `unknown` | The start value |
-| `end` | `unknown` | The end value |
-| `t` | `unknown` | The interpolation factor (0 to 1) |
+| `start` | `number` | The start value |
+| `end` | `number` | The end value |
+| `t` | `number` | The interpolation factor (0 to 1) |
 
 ### Returns
 
-`unknown` - The interpolated value
+`number` - The interpolated value
 
 ### Examples
 
@@ -78,16 +77,20 @@ lerp(0, 100, 0.25) // => 25
 
 Rounds a number to a specified number of decimal places.
 
+```typescript
+export function round(value: number, decimals: number): number
+```
+
 ### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| `value` | `unknown` | The value to round |
-| `decimals` | `unknown` | The number of decimal places |
+| `value` | `number` | The value to round |
+| `decimals` | `number` | The number of decimal places |
 
 ### Returns
 
-`unknown` - The rounded value
+`number` - The rounded value
 
 ### Examples
 

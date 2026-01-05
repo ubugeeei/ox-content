@@ -339,6 +339,19 @@ export interface DocsOptions {
    * @default 'file'
    */
   groupBy?: 'file' | 'category';
+
+  /**
+   * GitHub repository URL for source code links.
+   * When provided, generated documentation will include links to source code.
+   * Example: 'https://github.com/ubugeeei/ox-content'
+   */
+  githubUrl?: string;
+
+  /**
+   * Generate navigation metadata file.
+   * @default true
+   */
+  generateNav?: boolean;
 }
 
 /**
@@ -354,6 +367,8 @@ export interface ResolvedDocsOptions {
   private: boolean;
   toc: boolean;
   groupBy: 'file' | 'category';
+  githubUrl?: string;
+  generateNav: boolean;
 }
 
 /**
@@ -370,6 +385,7 @@ export interface DocEntry {
   private?: boolean;
   file: string;
   line: number;
+  signature?: string; // Full function/type signature (for functions and type aliases)
 }
 
 /**
@@ -397,4 +413,24 @@ export interface ReturnDoc {
 export interface ExtractedDocs {
   file: string;
   entries: DocEntry[];
+}
+
+/**
+ * Navigation item for sidebar navigation.
+ */
+export interface NavItem {
+  /**
+   * Display title for the navigation item.
+   */
+  title: string;
+
+  /**
+   * Path to the documentation page.
+   */
+  path: string;
+
+  /**
+   * Child navigation items (optional).
+   */
+  children?: NavItem[];
 }

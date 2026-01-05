@@ -8,7 +8,7 @@
     success: { bg: '#052e16', border: '#22c55e' },
   };
 
-  $: color = colors[type] || colors.info;
+  const color = $derived(colors[type] || colors.info);
 </script>
 
 <div

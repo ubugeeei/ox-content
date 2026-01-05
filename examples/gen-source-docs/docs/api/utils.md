@@ -3,7 +3,6 @@
 ## Table of Contents
 
 - [capitalize](#capitalize)
-- [capitalize](#capitalize)
 - [truncate](#truncate)
 - [toKebabCase](#tokebabcase)
 
@@ -13,25 +12,21 @@
 
 `function`
 
-A collection of utility functions for string manipulation.
-
----
-
-## capitalize
-
-`function`
-
 Capitalizes the first letter of a string.
+
+```typescript
+export function capitalize(str: string): string
+```
 
 ### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| `str` | `unknown` | The input string to capitalize |
+| `str` | `string` | The input string to capitalize |
 
 ### Returns
 
-`unknown` - The string with the first letter capitalized
+`string` - The string with the first letter capitalized
 
 ### Examples
 
@@ -48,17 +43,25 @@ capitalize('WORLD') // => 'WORLD'
 
 Truncates a string to a specified length.
 
+```typescript
+export function truncate(
+  str: string,
+  maxLength: number,
+  suffix: string = '...'
+  ): string
+```
+
 ### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| `str` | `unknown` | The input string to truncate |
-| `maxLength` | `unknown` | Maximum length of the output string |
-| `suffix` | `unknown` | Suffix to append when truncated (default: '...') |
+| `str` | `string` | The input string to truncate |
+| `maxLength` | `number` | Maximum length of the output string |
+| `suffix` | `string` | Suffix to append when truncated (default: '...') |
 
 ### Returns
 
-`unknown` - The truncated string
+`string` - The truncated string
 
 ### Examples
 
@@ -75,15 +78,19 @@ truncate('Hi', 10) // => 'Hi'
 
 Converts a string to kebab-case.
 
+```typescript
+export function toKebabCase(str: string): string
+```
+
 ### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| `str` | `unknown` | The input string to convert |
+| `str` | `string` | The input string to convert |
 
 ### Returns
 
-`unknown` - The kebab-cased string
+`string` - The kebab-cased string
 
 ### Examples
 

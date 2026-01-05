@@ -78,6 +78,7 @@ export function oxContentSvelte(options: SvelteIntegrationOptions = {}): PluginO
       const result = await transformMarkdownWithSvelte(code, id, {
         ...resolved,
         components: Object.fromEntries(componentMap),
+        root: config.root,
       });
 
       return {

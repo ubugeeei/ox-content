@@ -214,6 +214,52 @@ export default defineConfig({
 
 See the [examples](https://github.com/ubugeeei/ox-content/tree/main/examples) for complete integration samples.
 
+### API Documentation Generation
+
+Generate API documentation from your TypeScript/JavaScript source code (similar to `cargo doc` for Rust):
+
+```typescript
+// vite.config.ts
+import oxContent from 'unplugin-ox-content/vite';
+
+export default defineConfig({
+  plugins: [
+    oxContent({
+      // Enable API docs generation
+      docs: {
+        enabled: true,
+        src: ['./src'],           // Source directories
+        out: 'docs/api',          // Output directory
+        include: ['**/*.ts'],     // Files to include
+        exclude: ['**/*.test.*'], // Files to exclude
+        includePrivate: false,    // Skip private items (_prefixed)
+        toc: true,                // Generate table of contents
+        groupBy: 'file',          // Group by 'file' or 'kind'
+      },
+    }),
+  ],
+});
+```
+
+Documentation is extracted from:
+- **JSDoc comments** (`/** ... */`)
+- **Type signatures** (function parameters, return types)
+- **TypeScript types** (interfaces, type aliases, enums)
+
+```typescript
+/**
+ * Adds two numbers together.
+ * @param a - The first number
+ * @param b - The second number
+ * @returns The sum of a and b
+ * @example
+ * add(1, 2) // => 3
+ */
+export function add(a: number, b: number): number {
+  return a + b;
+}
+```
+
 ## Quick Links
 
 - [Getting Started](./getting-started.md) - Installation and first steps

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { apiNav } from '../api/nav';
 
 // Navigation structure
 const nav = [
@@ -14,6 +15,13 @@ const nav = [
       { title: 'React Integration', path: '/packages/react', file: () => import('../packages/vite-plugin-ox-content-react.md') },
       { title: 'Svelte Integration', path: '/packages/svelte', file: () => import('../packages/vite-plugin-ox-content-svelte.md') },
     ],
+  },
+  {
+    title: 'API Reference',
+    children: apiNav.map((item) => ({
+      ...item,
+      file: () => import(`../api/${item.path.split('/').pop()}.md`),
+    })),
   },
   {
     title: 'Examples',

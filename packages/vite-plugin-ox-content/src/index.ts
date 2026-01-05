@@ -158,7 +158,7 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
 
         if (extracted.length > 0) {
           const generated = generateMarkdown(extracted, docsOptions);
-          await writeDocs(generated, outDir);
+          await writeDocs(generated, outDir, extracted, docsOptions);
 
           console.log(
             `[ox-content] Generated ${Object.keys(generated).length} documentation files to ${docsOptions.out}`
@@ -198,7 +198,7 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
             const extracted = await extractDocs(srcDirs, docsOptions);
             if (extracted.length > 0) {
               const generated = generateMarkdown(extracted, docsOptions);
-              await writeDocs(generated, outDir);
+              await writeDocs(generated, outDir, extracted, docsOptions);
             }
           } catch {
             // Ignore errors during dev

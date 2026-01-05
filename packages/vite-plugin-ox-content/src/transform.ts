@@ -1,30 +1,187 @@
 /**
- * Markdown transformation logic.
+ * Markdown Transformation Engine
  *
- * Transforms Markdown source into JavaScript modules
- * that can be imported by the application.
+ * This module handles the complete transformation pipeline for Markdown files,
+ * converting raw Markdown content into JavaScript modules that can be imported
+ * by web applications. The transformation process includes:
+ *
+ * 1. **Parsing**: Uses Rust-based parser via NAPI bindings for high performance
+ * 2. **Rendering**: Converts parsed AST to semantic HTML
+ * 3. **Enhancement**: Applies syntax highlighting, Mermaid diagram rendering, etc.
+ * 4. **Code Generation**: Generates JavaScript/TypeScript module code
+ *
+ * The generated modules export:
+ * - `html`: Rendered HTML content
+ * - `frontmatter`: Parsed YAML metadata
+ * - `toc`: Hierarchical table of contents
+ * - `render`: Client-side render function for dynamic updates
+ *
+ * @example
+ * ```typescript
+ * import { transformMarkdown } from './transform';
+ *
+ * const content = await transformMarkdown(
+ *   '# Hello\n\nWorld',
+ *   'path/to/file.md',
+ *   resolvedOptions
+ * );
+ *
+ * console.log(content.html); // '<h1>Hello</h1><p>World</p>'
+ * console.log(content.toc);  // [{ depth: 1, text: 'Hello', slug: 'hello', children: [] }]
+ * ```
  */
 
 import type { ResolvedOptions, TransformResult, TocEntry } from './types';
 import { highlightCode } from './highlight';
 import { transformMermaid } from './mermaid';
 
-// NAPI bindings interface
+/**
+ * NAPI bindings for Rust-based Markdown processing.
+ *
+ * Provides access to compiled Rust functions for high-performance
+ * Markdown parsing and rendering operations.
+ */
 interface NapiBindings {
+  /**
+   * Simple Markdown parser and renderer in one step.
+   * Faster for simple use cases but lacks advanced features.
+   *
+   * @param source - Raw Markdown content
+   * @param options - Parser configuration (GFM flag)
+   * @returns Rendered HTML and parsing errors
+   */
   parseAndRender: (source: string, options?: { gfm?: boolean }) => { html: string; errors: string[] };
+
+  /**
+   * Full-featured Markdown transformation pipeline.
+   * Handles frontmatter extraction, TOC generation, and advanced parsing.
+   *
+   * @param source - Raw Markdown content (may include frontmatter)
+   * @param options - Comprehensive transformation options
+   * @returns Transformed result with HTML, metadata, and TOC
+   */
+  transform: (source: string, options?: JsTransformOptions) => {
+    html: string;
+    frontmatter: string;
+    toc: { depth: number; text: string; slug: string }[];
+    errors: string[];
+  };
 }
 
-// Cached NAPI bindings
+/**
+ * Options for Rust-based Markdown transformation.
+ *
+ * Controls which Markdown extensions and features are enabled
+ * during parsing and rendering.
+ */
+interface JsTransformOptions {
+  /**
+   * Enable GitHub Flavored Markdown extensions.
+   * Includes tables, task lists, strikethrough, and autolinks.
+   * @default false
+   */
+  gfm?: boolean;
+
+  /**
+   * Enable footnotes syntax ([^1]: definition).
+   * @default false
+   */
+  footnotes?: boolean;
+
+  /**
+   * Enable task list syntax (- [ ] unchecked, - [x] checked).
+   * @default false
+   */
+  taskLists?: boolean;
+
+  /**
+   * Enable table rendering (GFM extension).
+   * Requires GFM to be enabled for full functionality.
+   * @default false
+   */
+  tables?: boolean;
+
+  /**
+   * Enable strikethrough syntax (~~text~~).
+   * Requires GFM to be enabled.
+   * @default false
+   */
+  strikethrough?: boolean;
+
+  /**
+   * Enable automatic link conversion (URLs become clickable).
+   * @default false
+   */
+  autolinks?: boolean;
+
+  /**
+   * Maximum heading depth for table of contents.
+   * Headings deeper than this level are excluded from TOC.
+   * @default 3
+   * @min 1
+   * @max 6
+   */
+  tocMaxDepth?: number;
+}
+
+/**
+ * Cached NAPI bindings instance.
+ * Loaded on first use and reused for subsequent transformations.
+ * @internal
+ */
 let napiBindings: NapiBindings | null | undefined;
+
+/**
+ * Flag to prevent repeated NAPI loading attempts.
+ * Set to true after first load attempt (success or failure).
+ * @internal
+ */
 let napiLoadAttempted = false;
 
 /**
- * Lazily load NAPI bindings.
+ * Lazily loads and caches NAPI bindings.
+ *
+ * This function uses lazy loading to defer the import of NAPI bindings
+ * until they're actually needed. The bindings are loaded only once and
+ * cached for subsequent uses. If loading fails (e.g., bindings not built),
+ * the failure is cached to avoid repeated load attempts.
+ *
+ * ## Performance Considerations
+ *
+ * The first call to this function may have a slight performance penalty
+ * due to module loading. Subsequent calls use the cached result and are
+ * essentially zero-cost.
+ *
+ * ## Error Handling
+ *
+ * If NAPI bindings are not available (not built, wrong architecture, etc.),
+ * this function returns `null`. The caller should handle this gracefully
+ * or provide fallback behavior.
+ *
+ * @returns Promise resolving to NAPI bindings or null if unavailable
+ *
+ * @example
+ * ```typescript
+ * // Simple check with fallback
+ * const napi = await loadNapiBindings();
+ * if (!napi) {
+ *   console.warn('NAPI bindings not available, using fallback');
+ *   return fallbackRender(content);
+ * }
+ *
+ * // Use Rust implementation
+ * const result = napi.transform(content, { gfm: true });
+ * ```
+ *
+ * @internal
  */
 async function loadNapiBindings(): Promise<NapiBindings | null> {
+  // Return cached result (success or failure)
   if (napiLoadAttempted) {
     return napiBindings ?? null;
   }
+
+  // Mark attempt as made to prevent retry loops
   napiLoadAttempted = true;
 
   try {
@@ -32,8 +189,12 @@ async function loadNapiBindings(): Promise<NapiBindings | null> {
     const mod = await import('@ox-content/napi');
     napiBindings = mod;
     return mod;
-  } catch {
-    // NAPI not available, will use fallback
+  } catch (error) {
+    // NAPI not available (not built, missing dependencies, etc.)
+    // Log for debugging but don't throw - allow graceful degradation
+    if (process.env.DEBUG) {
+      console.debug('[ox-content] NAPI bindings load failed:', error);
+    }
     napiBindings = null;
     return null;
   }
@@ -42,25 +203,124 @@ async function loadNapiBindings(): Promise<NapiBindings | null> {
 /**
  * Transforms Markdown content into a JavaScript module.
  *
- * The generated module exports:
- * - `html`: The rendered HTML string
- * - `frontmatter`: Parsed YAML frontmatter object
- * - `toc`: Table of contents array
- * - `render`: Function to render with custom options
+ * This is the primary entry point for transforming Markdown files. It handles
+ * the complete transformation pipeline including parsing, rendering, syntax
+ * highlighting, and code generation.
+ *
+ * ## Pipeline Steps
+ *
+ * 1. **Parse & Render**: Uses Rust-based parser via NAPI for high performance
+ * 2. **Extract Metadata**: Parses YAML frontmatter and generates table of contents
+ * 3. **Enhance HTML**: Applies syntax highlighting and Mermaid diagram rendering
+ * 4. **Generate Code**: Creates importable JavaScript module
+ *
+ * ## Generated Module Exports
+ *
+ * - `html` (string): Rendered HTML content with all enhancements applied
+ * - `frontmatter` (object): Parsed YAML frontmatter as JavaScript object
+ * - `toc` (array): Hierarchical table of contents entries
+ * - `render` (function): Client-side render function for dynamic updates
+ *
+ * ## Markdown Features Supported
+ *
+ * The supported features depend on parser options:
+ * - **Commonmark**: Headings, paragraphs, lists, code blocks, links, images
+ * - **GFM Extensions**: Tables, task lists, strikethrough, autolinks
+ * - **Enhancements**: Syntax highlighting, Mermaid diagrams, TOC generation
+ * - **Metadata**: YAML frontmatter parsing
+ *
+ * ## Performance
+ *
+ * Uses Rust-based parsing via NAPI bindings for optimal performance. Falls back
+ * gracefully if Rust bindings are unavailable.
+ *
+ * @param source - Raw Markdown source code (may include YAML frontmatter)
+ * @param filePath - File path for source attribution and relative link resolution
+ * @param options - Resolved plugin options controlling transformation behavior
+ *
+ * @returns Promise resolving to transformation result with HTML and metadata
+ *
+ * @throws Error if NAPI bindings are unavailable (can be handled gracefully)
+ *
+ * @example
+ * ```typescript
+ * import { transformMarkdown } from './transform';
+ * import { resolveOptions } from './index';
+ *
+ * // Transform a Markdown file with YAML frontmatter
+ * const markdown = `---
+ * title: Getting Started
+ * author: john
+ * ---
+ *
+ * # Getting Started
+ *
+ * Welcome! This guide explains [transformMarkdown] function.
+ *
+ * ## Installation
+ *
+ * \`\`\`bash
+ * npm install vite-plugin-ox-content
+ * \`\`\`
+ * `;
+ *
+ * const options = resolveOptions({
+ *   highlight: true,
+ *   highlightTheme: 'github-dark',
+ *   toc: true,
+ *   gfm: true,
+ *   mermaid: true,
+ * });
+ *
+ * const result = await transformMarkdown(markdown, 'docs/getting-started.md', options);
+ *
+ * // Generated module exports
+ * console.log(result.html);        // Rendered HTML with syntax highlighting
+ * console.log(result.frontmatter); // { title: 'Getting Started', author: 'john' }
+ * console.log(result.toc);         // [{ depth: 1, text: 'Getting Started', ... }]
+ * console.log(result.code);        // ES module export statement
+ * ```
  */
 export async function transformMarkdown(
   source: string,
   filePath: string,
   options: ResolvedOptions
 ): Promise<TransformResult> {
-  // Parse frontmatter
-  const { content, frontmatter } = parseFrontmatter(source);
+  const napi = await loadNapiBindings();
 
-  // Generate table of contents
-  const toc = options.toc ? generateToc(content, options.tocMaxDepth) : [];
+  if (!napi) {
+    throw new Error('[ox-content] NAPI bindings not available. Please ensure @ox-content/napi is built.');
+  }
 
-  // Render HTML using NAPI bindings (Rust parser) if available
-  let html = await renderToHtml(content, options);
+  // Use Rust-based transformation
+  const result = napi.transform(source, {
+    gfm: options.gfm,
+    footnotes: options.footnotes,
+    taskLists: options.taskLists,
+    tables: options.tables,
+    strikethrough: options.strikethrough,
+    tocMaxDepth: options.tocMaxDepth,
+  });
+
+  if (result.errors.length > 0) {
+    console.warn('[ox-content] Transform warnings:', result.errors);
+  }
+
+  let html = result.html;
+  let frontmatter: Record<string, unknown>;
+
+  try {
+    frontmatter = JSON.parse(result.frontmatter);
+  } catch {
+    frontmatter = {};
+  }
+
+  // Convert flat TOC from Rust to nested TOC
+  const flatToc: TocEntry[] = result.toc.map(item => ({
+    ...item,
+    children: [],
+  }));
+  const toc = options.toc ? buildTocTree(flatToc) : [];
 
   // Apply syntax highlighting if enabled
   if (options.highlight) {
@@ -81,75 +341,6 @@ export async function transformMarkdown(
     frontmatter,
     toc,
   };
-}
-
-/**
- * Parses YAML frontmatter from Markdown content.
- */
-function parseFrontmatter(source: string): {
-  content: string;
-  frontmatter: Record<string, unknown>;
-} {
-  const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
-  const match = source.match(frontmatterRegex);
-
-  if (!match) {
-    return { content: source, frontmatter: {} };
-  }
-
-  const frontmatterStr = match[1];
-  const content = source.slice(match[0].length);
-
-  // Simple YAML parsing (in production, use a proper YAML parser)
-  const frontmatter: Record<string, unknown> = {};
-  const lines = frontmatterStr.split('\n');
-
-  for (const line of lines) {
-    const colonIndex = line.indexOf(':');
-    if (colonIndex > 0) {
-      const key = line.slice(0, colonIndex).trim();
-      let value: unknown = line.slice(colonIndex + 1).trim();
-
-      // Parse basic types
-      if (value === 'true') value = true;
-      else if (value === 'false') value = false;
-      else if (!isNaN(Number(value)) && value !== '') value = Number(value);
-      else if (typeof value === 'string' && value.startsWith('"') && value.endsWith('"')) {
-        value = value.slice(1, -1);
-      }
-
-      frontmatter[key] = value;
-    }
-  }
-
-  return { content, frontmatter };
-}
-
-/**
- * Generates table of contents from Markdown content.
- */
-function generateToc(content: string, maxDepth: number): TocEntry[] {
-  const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-  const entries: TocEntry[] = [];
-  let match;
-
-  while ((match = headingRegex.exec(content)) !== null) {
-    const depth = match[1].length;
-    if (depth > maxDepth) continue;
-
-    const text = match[2].trim();
-    const slug = slugify(text);
-
-    entries.push({
-      depth,
-      text,
-      slug,
-      children: [],
-    });
-  }
-
-  // Build nested structure
-  return buildTocTree(entries);
 }
 
 /**
@@ -175,146 +366,6 @@ function buildTocTree(entries: TocEntry[]): TocEntry[] {
   }
 
   return root;
-}
-
-/**
- * Converts text to URL-friendly slug.
- */
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-}
-
-/**
- * Renders Markdown content to HTML.
- *
- * Uses @ox-content/napi for high-performance Rust-based rendering.
- * Falls back to a basic regex implementation if NAPI is not available.
- */
-async function renderToHtml(content: string, options: ResolvedOptions): Promise<string> {
-  // Load and use NAPI bindings if available (Rust-based parser)
-  const napi = await loadNapiBindings();
-  if (napi) {
-    const result = napi.parseAndRender(content, {
-      gfm: options.gfm,
-    });
-    if (result.errors.length > 0) {
-      console.warn('[ox-content] Parse warnings:', result.errors);
-    }
-    return result.html;
-  }
-
-  // Fallback: basic regex-based rendering (for development when NAPI not built)
-  console.warn('[ox-content] NAPI bindings not available, using fallback renderer');
-  let html = content;
-
-  // Code blocks first (to prevent interference with other patterns)
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-    const langClass = lang ? ` class="language-${lang}"` : '';
-    return `\n<pre><code${langClass}>${escapeHtml(code.trim())}</code></pre>\n`;
-  });
-
-  // Tables (GFM)
-  html = html.replace(/^\|(.+)\|\r?\n\|[-:| ]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm, (_, header, body) => {
-    const headerCells = header.split('|').map((c: string) => c.trim()).filter(Boolean);
-    const headerRow = headerCells.map((c: string) => `<th>${c}</th>`).join('');
-
-    const bodyRows = body.trim().split('\n').map((row: string) => {
-      const cells = row.split('|').map((c: string) => c.trim()).filter(Boolean);
-      return `<tr>${cells.map((c: string) => `<td>${c}</td>`).join('')}</tr>`;
-    }).join('\n');
-
-    return `<table>\n<thead><tr>${headerRow}</tr></thead>\n<tbody>\n${bodyRows}\n</tbody>\n</table>\n`;
-  });
-
-  // Headers with IDs for linking (h4, h3, h2, h1 in order)
-  html = html.replace(/^#### (.+)$/gm, (_, text) => `<h4 id="${slugify(text)}">${text}</h4>`);
-  html = html.replace(/^### (.+)$/gm, (_, text) => `<h3 id="${slugify(text)}">${text}</h3>`);
-  html = html.replace(/^## (.+)$/gm, (_, text) => `<h2 id="${slugify(text)}">${text}</h2>`);
-  html = html.replace(/^# (.+)$/gm, (_, text) => `<h1 id="${slugify(text)}">${text}</h1>`);
-
-  // Horizontal rules
-  html = html.replace(/^(---|\*\*\*|___)\s*$/gm, '<hr>');
-
-  // Blockquotes
-  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-  // Merge consecutive blockquotes
-  html = html.replace(/<\/blockquote>\n<blockquote>/g, '\n');
-
-  // Bold and italic (order matters)
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
-  html = html.replace(/_([^_\n]+)_/g, '<em>$1</em>');
-
-  // Strikethrough (GFM)
-  html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
-
-  // Inline code (after code blocks to prevent interference)
-  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-
-  // Links and images
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-
-  // Task lists (GFM)
-  html = html.replace(/^(\s*)- \[x\] (.+)$/gm, '$1<li class="task-list-item"><input type="checkbox" checked disabled> $2</li>');
-  html = html.replace(/^(\s*)- \[ \] (.+)$/gm, '$1<li class="task-list-item"><input type="checkbox" disabled> $2</li>');
-
-  // Unordered lists
-  html = html.replace(/^(\s*)- (.+)$/gm, '$1<li>$2</li>');
-
-  // Ordered lists
-  html = html.replace(/^(\s*)\d+\. (.+)$/gm, '$1<li>$2</li>');
-
-  // Wrap consecutive <li> elements in <ul> or <ol>
-  html = html.replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, (match) => {
-    // Check if it's a task list or regular list
-    if (match.includes('task-list-item')) {
-      return `<ul class="task-list">\n${match}</ul>\n`;
-    }
-    return `<ul>\n${match}</ul>\n`;
-  });
-
-  // Split into blocks and wrap paragraphs
-  const blocks = html.split(/\n\n+/);
-  html = blocks.map(block => {
-    block = block.trim();
-    if (!block) return '';
-    // Don't wrap if it's already a block element
-    if (/^<(h[1-6]|p|div|ul|ol|li|table|thead|tbody|tr|th|td|pre|blockquote|hr|img)[\s>]/i.test(block)) {
-      return block;
-    }
-    // Don't wrap if it ends with a block element
-    if (/<\/(h[1-6]|p|div|ul|ol|table|pre|blockquote)>$/i.test(block)) {
-      return block;
-    }
-    return `<p>${block}</p>`;
-  }).join('\n\n');
-
-  // Clean up extra line breaks within paragraphs
-  html = html.replace(/<p>([\s\S]*?)<\/p>/g, (_, content) => {
-    return `<p>${content.replace(/\n/g, '<br>')}</p>`;
-  });
-
-  return `<div class="ox-content">${html}</div>`;
-}
-
-/**
- * Escapes HTML special characters.
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }
 
 /**

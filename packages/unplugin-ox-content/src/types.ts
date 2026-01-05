@@ -34,6 +34,60 @@ export type RehypePlugin = unknown | [unknown, unknown];
 export type OxContentPlugin = (html: string) => string | Promise<string>;
 
 /**
+ * API documentation generation configuration.
+ * Similar to cargo docs for Rust.
+ */
+export interface DocsConfig {
+  /**
+   * Enable API documentation generation.
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Source directories to scan for documentation.
+   * @default ['./src']
+   */
+  src?: string[];
+
+  /**
+   * Output directory for generated documentation.
+   * @default 'docs/api'
+   */
+  out?: string;
+
+  /**
+   * File patterns to include.
+   * @default ['**\/*.ts', '**\/*.tsx', '**\/*.js', '**\/*.jsx']
+   */
+  include?: string[];
+
+  /**
+   * File patterns to exclude.
+   * @default ['**\/*.test.*', '**\/*.spec.*', '**\/node_modules/**']
+   */
+  exclude?: string[];
+
+  /**
+   * Include private items (starting with _).
+   * @default false
+   */
+  includePrivate?: boolean;
+
+  /**
+   * Generate table of contents.
+   * @default true
+   */
+  toc?: boolean;
+
+  /**
+   * Group documentation by file or by kind.
+   * @default 'file'
+   */
+  groupBy?: 'file' | 'kind';
+}
+
+/**
  * Plugin configuration for various markdown ecosystems.
  */
 export interface PluginConfig {
@@ -158,6 +212,28 @@ export interface OxContentOptions {
    * Plugin configuration for markdown processing.
    */
   plugin?: PluginConfig;
+
+  /**
+   * API documentation generation configuration.
+   * Set to false to disable, true to enable with defaults,
+   * or provide a DocsConfig object for customization.
+   * @default false
+   */
+  docs?: boolean | DocsConfig;
+}
+
+/**
+ * Resolved docs configuration.
+ */
+export interface ResolvedDocsConfig {
+  enabled: boolean;
+  src: string[];
+  out: string;
+  include: string[];
+  exclude: string[];
+  includePrivate: boolean;
+  toc: boolean;
+  groupBy: 'file' | 'kind';
 }
 
 /**
@@ -180,6 +256,7 @@ export interface ResolvedOptions {
   include: (string | RegExp)[];
   exclude: (string | RegExp)[];
   plugin: Required<PluginConfig>;
+  docs: ResolvedDocsConfig;
 }
 
 /**

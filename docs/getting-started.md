@@ -412,6 +412,79 @@ nvm use 22
 - [GitHub Issues](https://github.com/ubugeeei/ox-content/issues) - Bug reports and feature requests
 - [Discussions](https://github.com/ubugeeei/ox-content/discussions) - Questions and ideas
 
+## API Documentation Generation
+
+Ox Content can generate API documentation from your TypeScript/JavaScript source code, similar to `cargo doc` for Rust.
+
+### Configuration
+
+```typescript
+// vite.config.ts
+import oxContent from 'unplugin-ox-content/vite';
+
+export default defineConfig({
+  plugins: [
+    oxContent({
+      docs: {
+        enabled: true,
+        src: ['./src'],
+        out: 'docs/api',
+      },
+    }),
+  ],
+});
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `false` | Enable API docs generation |
+| `src` | `string[]` | `['./src']` | Source directories to scan |
+| `out` | `string` | `'docs/api'` | Output directory |
+| `include` | `string[]` | `['**/*.ts', ...]` | File patterns to include |
+| `exclude` | `string[]` | `['**/*.test.*', ...]` | File patterns to exclude |
+| `includePrivate` | `boolean` | `false` | Include private items (`_` prefixed) |
+| `toc` | `boolean` | `true` | Generate table of contents |
+| `groupBy` | `'file' \| 'kind'` | `'file'` | How to group documentation |
+
+### Writing Documentation
+
+Use JSDoc comments to document your code:
+
+```typescript
+/**
+ * A user in the system.
+ */
+export interface User {
+  /** The user's unique identifier */
+  id: string;
+  /** The user's display name */
+  name: string;
+  /** The user's email address */
+  email: string;
+}
+
+/**
+ * Creates a new user.
+ * @param name - The user's name
+ * @param email - The user's email
+ * @returns The created user object
+ * @example
+ * const user = createUser('Alice', 'alice@example.com');
+ */
+export function createUser(name: string, email: string): User {
+  return { id: crypto.randomUUID(), name, email };
+}
+```
+
+Supported JSDoc tags:
+- `@param` - Parameter description
+- `@returns` / `@return` - Return value description
+- `@example` - Usage examples
+- `@deprecated` - Mark as deprecated
+- `@see` - Reference to related items
+
 ## Next Steps
 
 - [Architecture Overview](./architecture.md) - Learn about the design
