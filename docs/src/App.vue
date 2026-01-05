@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { apiNav } from '../api/nav';
 
 // Navigation structure
 const nav = [
@@ -17,15 +18,10 @@ const nav = [
   },
   {
     title: 'API Reference',
-    children: [
-      { title: 'Overview', path: '/api/index', file: () => import('../api/index.md') },
-      { title: 'Types', path: '/api/types', file: () => import('../api/types.md') },
-      { title: 'Transform', path: '/api/transform', file: () => import('../api/transform.md') },
-      { title: 'Environment', path: '/api/environment', file: () => import('../api/environment.md') },
-      { title: 'Docs', path: '/api/docs', file: () => import('../api/docs.md') },
-      { title: 'Highlight', path: '/api/highlight', file: () => import('../api/highlight.md') },
-      { title: 'Mermaid', path: '/api/mermaid', file: () => import('../api/mermaid.md') },
-    ],
+    children: apiNav.map((item) => ({
+      ...item,
+      file: () => import(`../api/${item.path.split('/').pop()}.md`),
+    })),
   },
   {
     title: 'Examples',

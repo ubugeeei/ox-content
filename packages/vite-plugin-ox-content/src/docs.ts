@@ -8,6 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { ResolvedDocsOptions, ExtractedDocs, DocEntry, ParamDoc } from './types';
+import { generateNavMetadata, generateNavCode } from './nav-generator';
 
 // Regex patterns for JSDoc extraction
 // Match JSDoc blocks that start at the beginning of a line (with optional whitespace)
@@ -306,6 +307,14 @@ function generateFileMarkdown(doc: ExtractedDocs, options: ResolvedDocsOptions):
   const fileName = path.basename(doc.file);
   let md = `# ${fileName}\n\n`;
 
+  // Add source link if githubUrl is provided
+  if (options.githubUrl) {
+    const sourceLink = generateSourceLink(doc.file, options.githubUrl);
+    if (sourceLink) {
+      md += sourceLink + '\n\n';
+    }
+  }
+
   if (options.toc && doc.entries.length > 1) {
     md += '## Table of Contents\n\n';
     for (const entry of doc.entries) {
@@ -315,19 +324,27 @@ function generateFileMarkdown(doc: ExtractedDocs, options: ResolvedDocsOptions):
   }
 
   for (const entry of doc.entries) {
-    md += generateEntryMarkdown(entry);
+    md += generateEntryMarkdown(entry, options);
   }
 
   return md;
 }
 
-function generateEntryMarkdown(entry: DocEntry): string {
+function generateEntryMarkdown(entry: DocEntry, options?: ResolvedDocsOptions): string {
   let md = `## ${entry.name}\n\n`;
 
   md += `\`${entry.kind}\`\n\n`;
 
   if (entry.description) {
     md += `${entry.description}\n\n`;
+  }
+
+  // Add source link if githubUrl is provided
+  if (options?.githubUrl) {
+    const sourceLink = generateSourceLink(entry.file, options.githubUrl, entry.line);
+    if (sourceLink) {
+      md += sourceLink + '\n\n';
+    }
   }
 
   if (entry.params && entry.params.length > 0) {
@@ -404,7 +421,7 @@ function generateCategoryMarkdown(
   }
 
   for (const entry of entries) {
-    md += generateEntryMarkdown(entry);
+    md += generateEntryMarkdown(entry, options);
   }
 
   return md;
@@ -433,7 +450,9 @@ function generateCategoryIndex(byKind: Map<string, DocEntry[]>): string {
  */
 export async function writeDocs(
   docs: Record<string, string>,
-  outDir: string
+  outDir: string,
+  extractedDocs?: ExtractedDocs[],
+  options?: ResolvedDocsOptions
 ): Promise<void> {
   await fs.promises.mkdir(outDir, { recursive: true });
 
@@ -441,11 +460,38 @@ export async function writeDocs(
     const filePath = path.join(outDir, fileName);
     await fs.promises.writeFile(filePath, content, 'utf-8');
   }
+
+  // Generate and write navigation metadata if enabled
+  if (extractedDocs && options?.generateNav && options.groupBy === 'file') {
+    const navItems = generateNavMetadata(extractedDocs, '/api');
+    const navCode = generateNavCode(navItems, 'apiNav');
+    const navFilePath = path.join(outDir, 'nav.ts');
+    await fs.promises.writeFile(navFilePath, navCode, 'utf-8');
+  }
 }
 
 /**
  * Resolves docs options with defaults.
  */
+/**
+ * Generates a GitHub source link for a file and optional line number.
+ *
+ * @param filePath - Full path to the source file
+ * @param githubUrl - Base GitHub repository URL
+ * @param lineNumber - Optional line number to link to
+ * @returns Markdown link to source code
+ */
+function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: number): string {
+  // Convert absolute path to relative path from repository root
+  // Assume the file path contains the relative structure we need
+  const relativePath = filePath.replace(/^.*?(packages|crates)/, '$1');
+
+  const fragment = lineNumber ? `#L${lineNumber}` : '';
+  const link = `${githubUrl}/blob/main/${relativePath}${fragment}`;
+
+  return `**[Source](${link})**`;
+}
+
 export function resolveDocsOptions(
   options: import('./types').DocsOptions | false | undefined
 ): ResolvedDocsOptions | false {
@@ -465,5 +511,7 @@ export function resolveDocsOptions(
     private: opts.private ?? false,
     toc: opts.toc ?? true,
     groupBy: opts.groupBy ?? 'file',
+    githubUrl: opts.githubUrl,
+    generateNav: opts.generateNav ?? true,
   };
 }

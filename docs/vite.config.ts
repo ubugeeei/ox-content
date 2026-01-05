@@ -38,12 +38,14 @@ export default defineConfig({
       // API documentation generation (like cargo doc)
       docs: {
         enabled: true,
-        src: ['../packages/unplugin-ox-content/src'],
+        src: ['../packages/vite-plugin-ox-content/src'],
         out: 'api',
         include: ['**/*.ts'],
         exclude: ['**/*.test.*'],
         toc: true,
         groupBy: 'file',
+        githubUrl: 'https://github.com/ubugeeei/ox-content',
+        generateNav: true,
       },
     }),
   ],
