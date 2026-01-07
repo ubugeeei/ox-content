@@ -87,3 +87,7 @@ export declare function version(): string
  * This is the main entry point for unplugin-ox-content.
  */
 export declare function transform(source: string, options?: JsTransformOptions | undefined | null): TransformResult
+/** Parses Markdown and renders to HTML asynchronously (runs on worker thread). */
+export declare function parseAndRenderAsync(source: string, options?: JsParserOptions | undefined | null): Promise<unknown>
+/** Transforms Markdown source asynchronously (runs on worker thread). */
+export declare function transformAsync(source: string, options?: JsTransformOptions | undefined | null): Promise<unknown>

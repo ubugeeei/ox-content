@@ -3,6 +3,8 @@
 //! This crate provides NAPI bindings for using Ox Content from Node.js,
 //! enabling zero-copy AST transfer and JavaScript interoperability.
 
+use napi::bindgen_prelude::*;
+use napi::Task;
 use napi_derive::napi;
 use std::collections::HashMap;
 
@@ -362,4 +364,108 @@ fn transform_options_to_parser_options(opts: &JsTransformOptions) -> ParserOptio
     }
 
     options
+}
+
+// =============================================================================
+// Async (Multi-threaded) API
+// =============================================================================
+
+/// Async task for parse_and_render.
+struct ParseAndRenderTask {
+    source: String,
+    options: ParserOptions,
+}
+
+impl Task for ParseAndRenderTask {
+    type Output = RenderResult;
+    type JsValue = RenderResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let allocator = Allocator::new();
+        let parser = Parser::with_options(&allocator, &self.source, self.options.clone());
+
+        let result = match parser.parse() {
+            Ok(doc) => {
+                let mut renderer = HtmlRenderer::new();
+                let html = renderer.render(&doc);
+                RenderResult { html, errors: vec![] }
+            }
+            Err(e) => RenderResult { html: String::new(), errors: vec![e.to_string()] },
+        };
+        Ok(result)
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        Ok(output)
+    }
+}
+
+/// Parses Markdown and renders to HTML asynchronously (runs on worker thread).
+#[napi]
+pub fn parse_and_render_async(
+    source: String,
+    options: Option<JsParserOptions>,
+) -> AsyncTask<ParseAndRenderTask> {
+    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
+    AsyncTask::new(ParseAndRenderTask { source, options: parser_options })
+}
+
+/// Async task for transform.
+struct TransformTask {
+    source: String,
+    options: JsTransformOptions,
+}
+
+impl Task for TransformTask {
+    type Output = TransformResult;
+    type JsValue = TransformResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let toc_max_depth = self.options.toc_max_depth.unwrap_or(3);
+
+        // Parse frontmatter
+        let (content, frontmatter) = parse_frontmatter(&self.source);
+
+        // Parse markdown
+        let allocator = Allocator::new();
+        let parser_options = transform_options_to_parser_options(&self.options);
+        let parser = Parser::with_options(&allocator, &content, parser_options);
+
+        let result = match parser.parse() {
+            Ok(doc) => {
+                let toc = extract_toc(&doc, toc_max_depth);
+                let mut renderer = HtmlRenderer::new();
+                let html = renderer.render(&doc);
+
+                TransformResult {
+                    html,
+                    frontmatter: serde_json::to_string(&frontmatter)
+                        .unwrap_or_else(|_| "{}".to_string()),
+                    toc,
+                    errors: vec![],
+                }
+            }
+            Err(e) => TransformResult {
+                html: String::new(),
+                frontmatter: "{}".to_string(),
+                toc: vec![],
+                errors: vec![e.to_string()],
+            },
+        };
+        Ok(result)
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        Ok(output)
+    }
+}
+
+/// Transforms Markdown source asynchronously (runs on worker thread).
+#[napi]
+pub fn transform_async(
+    source: String,
+    options: Option<JsTransformOptions>,
+) -> AsyncTask<TransformTask> {
+    let opts = options.unwrap_or_default();
+    AsyncTask::new(TransformTask { source, options: opts })
 }

@@ -1,0 +1,18 @@
+{
+  "name": "benchmark-ox-content-vue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vue": "catalog:",
+    "vite-plugin-ox-content": "workspace:*",
+    "vite-plugin-ox-content-vue": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "vite": "catalog:"
+  }
+}

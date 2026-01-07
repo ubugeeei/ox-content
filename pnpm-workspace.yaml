@@ -9,6 +9,9 @@ packages:
   - 'docs'
   # Examples
   - 'examples/*'
+  # Benchmarks
+  - 'benchmarks/*'
+  - 'benchmarks/bundle-size/apps/*'
 
 catalog:
   # Build tools

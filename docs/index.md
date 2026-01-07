@@ -8,13 +8,61 @@ Ox Content is a high-performance documentation toolkit built in Rust, designed t
 
 ### Why Ox Content?
 
-| Feature | Ox Content | Traditional JS Parsers |
-|---------|------------|------------------------|
-| Parse Speed | **~10x faster** | Baseline |
-| Memory Usage | **Zero-copy** | Multiple allocations |
-| Type Safety | **Rust + TypeScript** | Runtime checks only |
-| AST Spec | **mdast compatible** | Varies by library |
-| Bundle Size | **Native binary** | Large JS bundles |
+| Feature         | Ox Content           | Traditional SSG        |
+|-----------------|----------------------|------------------------|
+| Build Output    | **2.7 KB (gzip)**    | 3.5 KB - 721 KB        |
+| Memory Usage    | **Zero-copy**        | Multiple allocations   |
+| Type Safety     | **Rust + TypeScript**| Runtime checks only    |
+| AST Spec        | **mdast compatible** | Varies by library      |
+| Vue Integration | **25.5 KB (gzip)**   | 33.2 KB - 721 KB       |
+
+## Benchmarks
+
+### Parse Speed (Parse Only)
+
+| Library              | Small (0.5KB)        | Large (48.7KB)      | Throughput       | Ratio    |
+|----------------------|----------------------|---------------------|------------------|----------|
+| **@ox-content/napi** | **253,941 ops/s**    | **2,924 ops/s**     | **139.16 MB/s**  | **1.00x**|
+| marked               | 12,396 ops/s         | 323 ops/s           | 15.38 MB/s       | 9.05x    |
+| markdown-it          | 9,744 ops/s          | 488 ops/s           | 23.22 MB/s       | 5.99x    |
+| remark               | 1,868 ops/s          | 21 ops/s            | 1.01 MB/s        | 138.05x  |
+
+### Render Speed (Parse + Render)
+
+| Library              | Small (0.5KB)        | Large (48.7KB)      | Throughput       | Ratio    |
+|----------------------|----------------------|---------------------|------------------|----------|
+| **@ox-content/napi** | **157,367 ops/s**    | **2,380 ops/s**     | **113.24 MB/s**  | **1.00x**|
+| marked               | 14,297 ops/s         | 294 ops/s           | 13.99 MB/s       | 8.09x    |
+| markdown-it          | 10,285 ops/s         | 402 ops/s           | 19.15 MB/s       | 5.91x    |
+| micromark            | 1,910 ops/s          | 23 ops/s            | 1.08 MB/s        | 104.68x  |
+| remark               | 1,839 ops/s          | 17 ops/s            | 0.82 MB/s        | 138.76x  |
+
+*Higher ops/sec is better. Lower ratio is better. @ox-content/napi is 6-9x faster than other libraries.*
+
+### Async Worker Thread
+
+For non-blocking rendering on large documents:
+
+| API                  | Large (48.7KB)      | Throughput       |
+|----------------------|---------------------|------------------|
+| parseAndRender       | 2,380 ops/s         | 113.24 MB/s      |
+| parseAndRenderAsync  | 1,930 ops/s         | 91.82 MB/s       |
+
+*Async runs on worker thread, keeping main thread responsive.*
+
+### Build Output Size
+
+| Framework          | Total      | Gzipped     | Ratio        |
+|--------------------|------------|-------------|--------------|
+| **ox-content**     | **7.7 KB** | **2.7 KB**  | **1.00x**    |
+| Astro              | 18.6 KB    | 3.5 KB      | 1.30x        |
+| ox-content + Vue   | 68.2 KB    | 25.5 KB     | 9.34x        |
+| Astro + Vue        | 91.1 KB    | 33.2 KB     | 12.18x       |
+| VitePress          | 984.6 KB   | 721.8 KB    | 264.92x      |
+
+*Lower is better. Same 4 Markdown pages across all frameworks.*
+
+> **Note:** ox-content produces the smallest bundles by pre-rendering Markdown to static HTML at build time, without shipping a JavaScript runtime for content rendering.
 
 ### Core Philosophy
 
@@ -134,17 +182,19 @@ const image = await generateOgImage({
 High-performance NAPI bindings for seamless JavaScript integration:
 
 ```javascript
-import { parseMarkdown, parseAndRender } from '@ox-content/napi';
+import { parse, parseAndRender, parseAndRenderAsync } from '@ox-content/napi';
 
 // Parse to AST
-const ast = parseMarkdown('# Hello', { gfm: true });
+const { ast } = parse('# Hello', { gfm: true });
 
-// Parse and render in one call
-const { html, frontmatter } = parseAndRender(content, {
-  gfm: true,
-  highlight: true,
-});
+// Parse and render in one call (sync)
+const { html } = parseAndRender(content, { gfm: true });
+
+// Parse and render async (runs on worker thread, non-blocking)
+const result = await parseAndRenderAsync(content, { gfm: true });
 ```
+
+The async API (`parseAndRenderAsync`, `transformAsync`) runs on a worker thread, keeping the main thread responsive for large documents.
 
 ## Packages
 

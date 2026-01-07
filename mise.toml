@@ -42,8 +42,20 @@ description = "Run all lints (clippy + fmt-check)"
 depends = ["clippy", "fmt-check"]
 
 [tasks.bench]
-description = "Run benchmarks"
+description = "Run all benchmarks (Rust + JS)"
+depends = ["bench:rust", "bench:parse", "bench:bundle"]
+
+[tasks."bench:rust"]
+description = "Run Rust benchmarks"
 run = "cargo bench --workspace"
+
+[tasks."bench:parse"]
+description = "Run parse/render speed benchmarks"
+run = "pnpm -r --filter='ox-content-bundle-size-benchmark' run benchmark:parse"
+
+[tasks."bench:bundle"]
+description = "Run bundle size benchmarks"
+run = "pnpm -r --filter='ox-content-bundle-size-benchmark' run benchmark"
 
 [tasks."doc:cargo"]
 description = "Generate Rust documentation"

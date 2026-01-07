@@ -232,6 +232,12 @@ mise run docs-open      # Generate and open in browser
 mise run playground         # Start playground dev server
 mise run playground-build   # Build playground for production
 mise run playground-install # Install playground dependencies
+
+# Benchmarks
+mise run bench              # Run all benchmarks (Rust + JS)
+mise run bench:rust         # Run Rust benchmarks only
+mise run bench:parse        # Run parse/render speed benchmarks
+mise run bench:bundle       # Run bundle size benchmarks
 ```
 
 ### Project Structure
@@ -329,6 +335,28 @@ mise run watch
 # or
 cargo watch -x "test --workspace"
 ```
+
+## Running Benchmarks
+
+Ox Content includes comprehensive benchmarks to measure performance:
+
+```bash
+# Run all benchmarks
+mise run bench
+
+# Run only Rust benchmarks (cargo bench)
+mise run bench:rust
+
+# Run parse/render speed benchmarks (compares with marked, markdown-it, etc.)
+mise run bench:parse
+
+# Run bundle size benchmarks (compares with VitePress, Astro, etc.)
+mise run bench:bundle
+```
+
+### Benchmark Results
+
+See the [Benchmarks section](./index.md#benchmarks) for the latest results.
 
 ## Using the Playground
 

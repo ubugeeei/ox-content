@@ -27,6 +27,31 @@
 - **Plugin Compatible** - Works with markdown-it, remark, rehype ecosystems
 - **API Docs Generation** - Generate docs from JSDoc/TypeScript (like `cargo doc`)
 
+## Benchmarks
+
+### Parse/Render Speed
+
+| Library              | Small (0.5KB)        | Large (48.7KB)     | Throughput       | Ratio    |
+|----------------------|----------------------|--------------------|------------------|----------|
+| **@ox-content/napi** | **157,367 ops/s**    | **2,380 ops/s**    | **113.24 MB/s**  | **1.00x**|
+| marked               | 14,297 ops/s         | 294 ops/s          | 13.99 MB/s       | 8.09x    |
+| markdown-it          | 10,285 ops/s         | 402 ops/s          | 19.15 MB/s       | 5.91x    |
+| remark               | 1,839 ops/s          | 17 ops/s           | 0.82 MB/s        | 138.76x  |
+
+*Higher ops/sec is better. Lower ratio is better.*
+
+### Build Output Size
+
+| Framework          | Gzipped      | Ratio       |
+|--------------------|--------------|-------------|
+| **ox-content**     | **2.7 KB**   | **1.00x**   |
+| Astro              | 3.5 KB       | 1.30x       |
+| ox-content + Vue   | 25.5 KB      | 9.34x       |
+| Astro + Vue        | 33.2 KB      | 12.18x      |
+| VitePress          | 721.8 KB     | 264.92x     |
+
+*Same 4 Markdown pages. Lower is better.*
+
 ## Quick Start
 
 ```bash
