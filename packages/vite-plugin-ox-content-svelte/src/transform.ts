@@ -51,6 +51,7 @@ export async function transformMarkdownWithSvelte(
     srcDir: options.srcDir,
     outDir: options.outDir,
     base: options.base,
+    ssg: { enabled: false, extension: '.html', clean: false, bare: false, generateOgImage: false },
     gfm: options.gfm,
     frontmatter: false,
     toc: options.toc,

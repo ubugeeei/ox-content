@@ -432,15 +432,22 @@ function parseJsdocBlock(
   let returns: { type: string; description: string } | undefined;
   let isPrivate = false;
 
-  const cleanedLines = jsdoc
-    .split('\n')
-    .map((l) => l.replace(/^\s*\*\s?/, '').trim())
-    .filter((l) => l);
+  // Split lines and remove JSDoc markers but preserve indentation for code examples
+  const rawLines = jsdoc.split('\n').map((l) => l.replace(/^\s*\*\s?/, ''));
+  const cleanedLines = rawLines.map((l) => l.trim()).filter((l) => l);
 
   let currentExample = '';
   let inExample = false;
+  let rawLineIndex = 0;
 
   for (const lineText of cleanedLines) {
+    // Find the corresponding raw line to get original indentation for examples
+    while (rawLineIndex < rawLines.length && rawLines[rawLineIndex].trim() !== lineText) {
+      rawLineIndex++;
+    }
+    const rawLine = rawLineIndex < rawLines.length ? rawLines[rawLineIndex] : lineText;
+    rawLineIndex++;
+
     if (lineText.startsWith('@')) {
       if (inExample) {
         examples.push(currentExample.trim());
@@ -481,7 +488,8 @@ function parseJsdocBlock(
         }
       }
     } else if (inExample) {
-      currentExample += lineText + '\n';
+      // Use raw line to preserve indentation in code examples
+      currentExample += rawLine + '\n';
     } else if (!description) {
       description = lineText;
     } else {

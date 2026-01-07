@@ -551,10 +551,8 @@ mod tests {
     fn test_render_image_xhtml() {
         let allocator = Allocator::new();
         let doc = Parser::new(&allocator, "![Logo](/logo.svg)").parse().unwrap();
-        let mut renderer = HtmlRenderer::with_options(HtmlRendererOptions {
-            xhtml: true,
-            ..Default::default()
-        });
+        let mut renderer =
+            HtmlRenderer::with_options(HtmlRendererOptions { xhtml: true, ..Default::default() });
         let html = renderer.render(&doc);
         assert!(html.contains("<img src=\"/logo.svg\" alt=\"Logo\" />"));
     }

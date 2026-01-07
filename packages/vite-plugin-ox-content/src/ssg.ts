@@ -118,6 +118,16 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       color: var(--color-text);
     }
     .header-title:hover { text-decoration: none; }
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      margin-right: 0.75rem;
+    }
+    .menu-toggle svg { display: block; }
+    .menu-toggle path { stroke: var(--color-text); }
 
     /* Layout */
     .layout {
@@ -251,23 +261,47 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     .content th { background: var(--color-bg-alt); font-weight: 600; }
     .content img { max-width: 100%; height: auto; border-radius: 8px; }
     .content img[alt*="Logo"] { max-width: 200px; display: block; margin: 1rem 0; }
-    .content img[alt*="Architecture"] { max-width: 700px; }
+    .content img[alt*="Architecture"] { max-width: 600px; }
+    .content img[alt*="Benchmark"] { max-width: 550px; }
     .content hr { border: none; border-top: 1px solid var(--color-border); margin: 2rem 0; }
 
     /* Responsive */
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 99;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 1.5rem 1rem; }
+      .content h1 { font-size: 1.75rem; }
+      .content h2 { font-size: 1.25rem; }
+      .content pre { padding: 0.75rem 1rem; font-size: 0.75rem; }
+      .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 98;
+      }
+      .overlay.open { display: block; }
     }
   </style>
 </head>
 <body>
   <header class="header">
+    <button class="menu-toggle" aria-label="Toggle menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
     <a href="{{base}}index.html" class="header-title">
       <img src="{{base}}logo.svg" alt="" width="28" height="28" style="margin-right: 8px; vertical-align: middle;" />
       {{siteName}}
     </a>
   </header>
+  <div class="overlay"></div>
   <div class="layout">
     <aside class="sidebar">
       <nav>
@@ -288,6 +322,20 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     </aside>
 {{/hasToc}}
   </div>
+  <script>
+    const toggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.overlay');
+    if (toggle && sidebar && overlay) {
+      const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); };
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      });
+      overlay.addEventListener('click', close);
+      sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+    }
+  </script>
 </body>
 </html>`;
 

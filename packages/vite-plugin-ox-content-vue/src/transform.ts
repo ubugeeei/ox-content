@@ -74,6 +74,7 @@ export async function transformMarkdownWithVue(
     srcDir: options.srcDir,
     outDir: options.outDir,
     base: options.base,
+    ssg: { enabled: false, extension: '.html', clean: false, bare: false, generateOgImage: false },
     gfm: options.gfm,
     frontmatter: false, // Already extracted
     toc: options.toc,
