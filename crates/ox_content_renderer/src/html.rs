@@ -21,6 +21,10 @@ pub struct HtmlRendererOptions {
     pub highlight: bool,
     /// Sanitize HTML output.
     pub sanitize: bool,
+    /// Convert `.md` links to `.html` links for SSG output.
+    pub convert_md_links: bool,
+    /// Base URL for absolute link conversion (e.g., "/" or "/docs/").
+    pub base_url: String,
 }
 
 impl HtmlRendererOptions {
@@ -33,6 +37,8 @@ impl HtmlRendererOptions {
             hard_break: "<br>\n".to_string(),
             highlight: false,
             sanitize: false,
+            convert_md_links: false,
+            base_url: "/".to_string(),
         }
     }
 }
@@ -90,6 +96,51 @@ impl HtmlRenderer {
                 '"' => self.output.push_str("%22"),
                 ' ' => self.output.push_str("%20"),
                 _ => self.output.push(ch),
+            }
+        }
+    }
+
+    /// Converts a `.md` URL to `.html` URL for SSG output.
+    fn convert_md_url(&self, url: &str) -> String {
+        let is_md = std::path::Path::new(url)
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
+
+        if !self.options.convert_md_links || !is_md {
+            return url.to_string();
+        }
+
+        // Remove the .md extension
+        let path_without_ext = &url[..url.len() - 3];
+
+        // Check if the URL is absolute (starts with /)
+        if url.starts_with('/') {
+            // Absolute path: /getting-started.md -> {base}getting-started/index.html
+            let path_without_slash = &path_without_ext[1..];
+            let base = &self.options.base_url;
+            if path_without_slash.is_empty() || path_without_slash == "index" {
+                format!("{base}index.html")
+            } else {
+                format!("{base}{path_without_slash}/index.html")
+            }
+        } else {
+            // Relative path: ./getting-started.md -> ./getting-started/index.html
+            if path_without_ext == "index"
+                || path_without_ext == "./index"
+                || path_without_ext.ends_with("/index")
+            {
+                let dir = if path_without_ext == "index" {
+                    ".".to_string()
+                } else {
+                    path_without_ext
+                        .trim_end_matches("/index")
+                        .trim_end_matches("index")
+                        .to_string()
+                };
+                let dir = if dir.is_empty() { ".".to_string() } else { dir };
+                format!("{dir}/index.html")
+            } else {
+                format!("{path_without_ext}/index.html")
             }
         }
     }
@@ -272,7 +323,8 @@ impl<'a> Visit<'a> for HtmlRenderer {
 
     fn visit_link(&mut self, link: &Link<'a>) {
         self.write("<a href=\"");
-        self.write_url_escaped(link.url);
+        let url = self.convert_md_url(link.url);
+        self.write_url_escaped(&url);
         self.write("\"");
         if let Some(title) = link.title {
             self.write(" title=\"");

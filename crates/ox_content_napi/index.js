@@ -54,3 +54,4 @@ module.exports.render = binding.render;
 module.exports.transform = binding.transform;
 module.exports.transformAsync = binding.transformAsync;
 module.exports.version = binding.version;
+module.exports.generateOgImageSvg = binding.generateOgImageSvg;

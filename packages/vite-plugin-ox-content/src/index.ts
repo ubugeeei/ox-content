@@ -10,6 +10,7 @@ import type { Plugin, ViteDevServer, ResolvedConfig } from 'vite';
 import { createMarkdownEnvironment } from './environment';
 import { transformMarkdown } from './transform';
 import { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from './docs';
+import { buildSsg, resolveSsgOptions } from './ssg';
 import type { OxContentOptions, ResolvedOptions } from './types';
 
 export type { OxContentOptions } from './types';
@@ -20,6 +21,8 @@ export type {
   ParamDoc,
   ReturnDoc,
   ExtractedDocs,
+  SsgOptions,
+  ResolvedSsgOptions,
 } from './types';
 
 /**
@@ -208,7 +211,39 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
     },
   };
 
-  return [mainPlugin, environmentPlugin, docsPlugin];
+  // SSG plugin (builtin, opt-in by default)
+  const ssgPlugin: Plugin = {
+    name: 'ox-content:ssg',
+
+    async closeBundle() {
+      const ssgOptions = resolvedOptions.ssg;
+      if (!ssgOptions.enabled) {
+        return;
+      }
+
+      const root = config?.root || process.cwd();
+
+      try {
+        const result = await buildSsg(resolvedOptions, root);
+
+        if (result.files.length > 0) {
+          console.log(
+            `[ox-content] Generated ${result.files.length} HTML files`
+          );
+        }
+
+        if (result.errors.length > 0) {
+          for (const error of result.errors) {
+            console.warn(`[ox-content] ${error}`);
+          }
+        }
+      } catch (err) {
+        console.error('[ox-content] SSG build failed:', err);
+      }
+    },
+  };
+
+  return [mainPlugin, environmentPlugin, docsPlugin, ssgPlugin];
 }
 
 /**
@@ -219,6 +254,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     srcDir: options.srcDir ?? 'docs',
     outDir: options.outDir ?? 'dist',
     base: options.base ?? '/',
+    ssg: resolveSsgOptions(options.ssg),
     gfm: options.gfm ?? true,
     footnotes: options.footnotes ?? true,
     tables: options.tables ?? true,
@@ -268,4 +304,5 @@ function generateVirtualModule(
 export { createMarkdownEnvironment } from './environment';
 export { transformMarkdown } from './transform';
 export { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from './docs';
+export { buildSsg, resolveSsgOptions, DEFAULT_HTML_TEMPLATE } from './ssg';
 export * from './types';

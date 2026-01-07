@@ -110,8 +110,19 @@ async function benchmarkAsync(name, fn, input, iterations = 100) {
  */
 function printTable(title, results) {
   console.log(`\n### ${title}\n`);
-  console.log("| Library              | ops/sec    | avg time  | throughput  | ratio   |");
-  console.log("|----------------------|------------|-----------|-------------|---------|");
+
+  // Calculate dynamic column widths
+  const nameWidth = Math.max(7, ...results.map((r) => r.name.length)); // min 7 for "Library"
+  const opsWidth = 10;
+  const avgWidth = 9;
+  const throughputWidth = 11;
+  const ratioWidth = 7;
+
+  // Print header
+  const header = `| ${"Library".padEnd(nameWidth)} | ${"ops/sec".padStart(opsWidth)} | ${"avg time".padStart(avgWidth)} | ${"throughput".padStart(throughputWidth)} | ${"ratio".padStart(ratioWidth)} |`;
+  const separator = `|${"-".repeat(nameWidth + 2)}|${"-".repeat(opsWidth + 2)}|${"-".repeat(avgWidth + 2)}|${"-".repeat(throughputWidth + 2)}|${"-".repeat(ratioWidth + 2)}|`;
+  console.log(header);
+  console.log(separator);
 
   // Find the fastest (highest ops/sec) for ratio calculation
   const validResults = results.filter((r) => !r.error && r.opsPerSec > 0);
@@ -119,15 +130,15 @@ function printTable(title, results) {
 
   for (const result of results) {
     if (result.error) {
-      console.log(`| ${result.name.padEnd(20)} | Error      | -         | -           | -       |`);
+      console.log(`| ${result.name.padEnd(nameWidth)} | ${"Error".padStart(opsWidth)} | ${"-".padStart(avgWidth)} | ${"-".padStart(throughputWidth)} | ${"-".padStart(ratioWidth)} |`);
       continue;
     }
-    const name = result.name.padEnd(20);
-    const opsPerSec = result.opsPerSec.toFixed(0).padStart(10);
-    const avgMs = (result.avgMs.toFixed(2) + "ms").padStart(9);
-    const throughput = (result.throughputMBs.toFixed(2) + " MB/s").padStart(11);
+    const name = result.name.padEnd(nameWidth);
+    const opsPerSec = result.opsPerSec.toFixed(0).padStart(opsWidth);
+    const avgMs = (result.avgMs.toFixed(2) + "ms").padStart(avgWidth);
+    const throughput = (result.throughputMBs.toFixed(2) + " MB/s").padStart(throughputWidth);
     const ratio = (fastest / result.opsPerSec).toFixed(2) + "x";
-    console.log(`| ${name} | ${opsPerSec} | ${avgMs} | ${throughput} | ${ratio.padStart(7)} |`);
+    console.log(`| ${name} | ${opsPerSec} | ${avgMs} | ${throughput} | ${ratio.padStart(ratioWidth)} |`);
   }
 }
 

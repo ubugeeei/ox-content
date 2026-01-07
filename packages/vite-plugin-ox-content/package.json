@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@ox-content/napi": "workspace:*",
+    "glob": "^11.0.0",
     "unified": "^11.0.5",
     "rehype-parse": "^9.0.1",
     "rehype-stringify": "^10.0.1",

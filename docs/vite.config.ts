@@ -20,6 +20,13 @@ export default defineConfig({
       outDir: 'dist/docs',
       base: '/ox-content/',
 
+      // SSG options with per-page OG image generation (uses Rust)
+      ssg: {
+        siteName: 'Ox Content',
+        ogImage: 'https://ubugeeei.github.io/ox-content/og-image.svg', // fallback
+        generateOgImage: true, // Enable per-page OG image generation via Rust
+      },
+
       // Enable syntax highlighting with Shiki
       highlight: true,
       highlightTheme: 'vitesse-dark',

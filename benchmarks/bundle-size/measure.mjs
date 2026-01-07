@@ -66,7 +66,13 @@ function formatBytes(bytes) {
 /** @type {AppConfig[]} */
 const apps = [
   {
-    name: "ox-content",
+    name: "ox-content (bare)",
+    dir: join(__dirname, "apps/ox-content-bare"),
+    distDir: "dist",
+    buildCmd: "pnpm build",
+  },
+  {
+    name: "ox-content (default)",
     dir: join(__dirname, "apps/ox-content"),
     distDir: "dist",
     buildCmd: "pnpm build",
@@ -78,7 +84,13 @@ const apps = [
     buildCmd: "pnpm build",
   },
   {
-    name: "VitePress",
+    name: "VitePress (bare)",
+    dir: join(__dirname, "apps/vitepress-bare"),
+    distDir: ".vitepress/dist",
+    buildCmd: "pnpm build",
+  },
+  {
+    name: "VitePress (default)",
     dir: join(__dirname, "apps/vitepress"),
     distDir: ".vitepress/dist",
     buildCmd: "pnpm build",
@@ -152,9 +164,9 @@ async function main() {
     console.log(`  Files: ${size.files}\n`);
   }
 
-  // Find baseline (smallest gzipped size)
-  const validResults = results.filter((r) => !r.error && r.gzipped > 0);
-  const baseline = Math.min(...validResults.map((r) => r.gzipped));
+  // Find baseline (ox-content bare)
+  const oxContentBare = results.find((r) => r.name === "ox-content (bare)");
+  const baseline = oxContentBare && !oxContentBare.error ? oxContentBare.gzipped : Math.min(...results.filter((r) => !r.error && r.gzipped > 0).map((r) => r.gzipped));
 
   // Sort by gzipped size
   results.sort((a, b) => {
@@ -166,21 +178,30 @@ async function main() {
   console.log("\nResults (sorted by gzipped size):");
   console.log("=================================\n");
 
+  // Calculate dynamic column widths
+  const nameWidth = Math.max(9, ...results.map((r) => r.name.length)); // min 9 for "Framework"
+  const totalWidth = 10;
+  const gzippedWidth = 10;
+  const ratioWidth = 9;
+  const filesWidth = 5;
+
   // Print markdown table
-  console.log("| Framework          | Total      | Gzipped    | Ratio     | Files |");
-  console.log("|--------------------|------------|------------|-----------|-------|");
+  const header = `| ${"Framework".padEnd(nameWidth)} | ${"Total".padEnd(totalWidth)} | ${"Gzipped".padEnd(gzippedWidth)} | ${"Ratio".padEnd(ratioWidth)} | ${"Files".padEnd(filesWidth)} |`;
+  const separator = `|${"-".repeat(nameWidth + 2)}|${"-".repeat(totalWidth + 2)}|${"-".repeat(gzippedWidth + 2)}|${"-".repeat(ratioWidth + 2)}|${"-".repeat(filesWidth + 2)}|`;
+  console.log(header);
+  console.log(separator);
 
   for (const result of results) {
     if (result.error) {
-      console.log(`| ${result.name.padEnd(18)} | Error      | -          | -         | -     |`);
+      console.log(`| ${result.name.padEnd(nameWidth)} | ${"Error".padEnd(totalWidth)} | ${"-".padEnd(gzippedWidth)} | ${"-".padEnd(ratioWidth)} | ${"-".padEnd(filesWidth)} |`);
       continue;
     }
 
-    const name = result.name.padEnd(18);
-    const total = formatBytes(result.total).padEnd(10);
-    const gzipped = formatBytes(result.gzipped).padEnd(10);
-    const ratio = ((result.gzipped / baseline).toFixed(2) + "x").padEnd(9);
-    const files = String(result.files).padEnd(5);
+    const name = result.name.padEnd(nameWidth);
+    const total = formatBytes(result.total).padEnd(totalWidth);
+    const gzipped = formatBytes(result.gzipped).padEnd(gzippedWidth);
+    const ratio = ((result.gzipped / baseline).toFixed(2) + "x").padEnd(ratioWidth);
+    const files = String(result.files).padEnd(filesWidth);
     console.log(`| ${name} | ${total} | ${gzipped} | ${ratio} | ${files} |`);
   }
 

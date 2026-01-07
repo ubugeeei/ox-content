@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use ox_content_allocator::Allocator;
 use ox_content_ast::{Document, Heading, Node};
 use ox_content_parser::{Parser, ParserOptions};
-use ox_content_renderer::HtmlRenderer;
+use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 
 /// Parse result containing the AST as JSON.
 #[napi(object)]
@@ -58,7 +58,7 @@ pub struct TransformResult {
 
 /// Transform options for JavaScript.
 #[napi(object)]
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct JsTransformOptions {
     /// Enable GFM extensions.
     pub gfm: Option<bool>,
@@ -74,6 +74,10 @@ pub struct JsTransformOptions {
     pub autolinks: Option<bool>,
     /// Maximum TOC depth (1-6).
     pub toc_max_depth: Option<u8>,
+    /// Convert `.md` links to `.html` links for SSG output.
+    pub convert_md_links: Option<bool>,
+    /// Base URL for absolute link conversion (e.g., "/" or "/docs/").
+    pub base_url: Option<String>,
 }
 
 /// Parser options for JavaScript.
@@ -203,7 +207,8 @@ pub fn transform(source: String, options: Option<JsTransformOptions>) -> Transfo
             let toc = extract_toc(&doc, toc_max_depth);
 
             // Render to HTML
-            let mut renderer = HtmlRenderer::new();
+            let renderer_options = transform_options_to_renderer_options(&opts);
+            let mut renderer = HtmlRenderer::with_options(renderer_options);
             let html = renderer.render(&doc);
 
             TransformResult {
@@ -366,12 +371,26 @@ fn transform_options_to_parser_options(opts: &JsTransformOptions) -> ParserOptio
     options
 }
 
+/// Converts transform options to renderer options.
+fn transform_options_to_renderer_options(opts: &JsTransformOptions) -> HtmlRendererOptions {
+    let mut options = HtmlRendererOptions::new();
+
+    if let Some(v) = opts.convert_md_links {
+        options.convert_md_links = v;
+    }
+    if let Some(ref v) = opts.base_url {
+        options.base_url.clone_from(v);
+    }
+
+    options
+}
+
 // =============================================================================
 // Async (Multi-threaded) API
 // =============================================================================
 
 /// Async task for parse_and_render.
-struct ParseAndRenderTask {
+pub struct ParseAndRenderTask {
     source: String,
     options: ParserOptions,
 }
@@ -411,7 +430,7 @@ pub fn parse_and_render_async(
 }
 
 /// Async task for transform.
-struct TransformTask {
+pub struct TransformTask {
     source: String,
     options: JsTransformOptions,
 }
@@ -434,7 +453,8 @@ impl Task for TransformTask {
         let result = match parser.parse() {
             Ok(doc) => {
                 let toc = extract_toc(&doc, toc_max_depth);
-                let mut renderer = HtmlRenderer::new();
+                let renderer_options = transform_options_to_renderer_options(&self.options);
+                let mut renderer = HtmlRenderer::with_options(renderer_options);
                 let html = renderer.render(&doc);
 
                 TransformResult {
@@ -468,4 +488,82 @@ pub fn transform_async(
 ) -> AsyncTask<TransformTask> {
     let opts = options.unwrap_or_default();
     AsyncTask::new(TransformTask { source, options: opts })
+}
+
+// =============================================================================
+// OG Image Generation API
+// =============================================================================
+
+/// OG image configuration for JavaScript.
+#[napi(object)]
+#[derive(Default, Clone)]
+pub struct JsOgImageConfig {
+    /// Image width in pixels.
+    pub width: Option<u32>,
+    /// Image height in pixels.
+    pub height: Option<u32>,
+    /// Background color (hex).
+    pub background_color: Option<String>,
+    /// Text color (hex).
+    pub text_color: Option<String>,
+    /// Title font size.
+    pub title_font_size: Option<u32>,
+    /// Description font size.
+    pub description_font_size: Option<u32>,
+}
+
+/// OG image data for JavaScript.
+#[napi(object)]
+pub struct JsOgImageData {
+    /// Page title.
+    pub title: String,
+    /// Page description.
+    pub description: Option<String>,
+    /// Site name.
+    pub site_name: Option<String>,
+    /// Author name.
+    pub author: Option<String>,
+}
+
+/// Generates an OG image as SVG.
+///
+/// This function generates an SVG representation of an OG image
+/// that can be used for social media previews.
+#[napi]
+pub fn generate_og_image_svg(data: JsOgImageData, config: Option<JsOgImageConfig>) -> String {
+    use ox_content_og_image::{OgImageConfig, OgImageData, OgImageGenerator};
+
+    let cfg = config.unwrap_or_default();
+    let mut og_config = OgImageConfig::default();
+
+    if let Some(w) = cfg.width {
+        og_config.width = w;
+    }
+    if let Some(h) = cfg.height {
+        og_config.height = h;
+    }
+    if let Some(ref bg) = cfg.background_color {
+        og_config.background_color.clone_from(bg);
+    }
+    if let Some(ref tc) = cfg.text_color {
+        og_config.text_color.clone_from(tc);
+    }
+    if let Some(ts) = cfg.title_font_size {
+        og_config.title_font_size = ts;
+    }
+    if let Some(ds) = cfg.description_font_size {
+        og_config.description_font_size = ds;
+    }
+
+    let og_data = OgImageData {
+        title: data.title,
+        description: data.description,
+        site_name: data.site_name,
+        author: data.author,
+        date: None,
+        tags: vec![],
+    };
+
+    let generator = OgImageGenerator::new(og_config);
+    generator.generate_svg(&og_data)
 }

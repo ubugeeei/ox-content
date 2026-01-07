@@ -1,70 +1,48 @@
-# Ox Content
+---
+title: Ox Content
+description: High-performance documentation toolkit built in Rust. Framework-agnostic, zero-copy parsing, NAPI bindings for Node.js.
+---
 
-A framework-agnostic documentation tooling for Vite+.
+<div align="center">
+  <img src="/ox-content/logo.svg" alt="Ox Content" width="120" height="120" />
+  <h1>Ox Content</h1>
+  <p><strong>A framework-agnostic documentation tooling for Vite+</strong></p>
+</div>
 
-## What is Ox Content?
+---
 
-Ox Content is a high-performance documentation toolkit built in Rust, designed to bring the speed and reliability of the Oxc ecosystem to Markdown processing. It provides everything you need to build documentation sites, technical blogs, and content-driven applications.
+## Vision
 
-### Why Ox Content?
+Ox Content brings **Rust-level performance** to the JavaScript documentation ecosystem. We believe that building documentation should be as fast as building your code.
 
-| Feature         | Ox Content           | Traditional SSG        |
-|-----------------|----------------------|------------------------|
-| Build Output    | **2.7 KB (gzip)**    | 3.5 KB - 721 KB        |
-| Memory Usage    | **Zero-copy**        | Multiple allocations   |
-| Type Safety     | **Rust + TypeScript**| Runtime checks only    |
-| AST Spec        | **mdast compatible** | Varies by library      |
-| Vue Integration | **25.5 KB (gzip)**   | 33.2 KB - 721 KB       |
+### The Problem
 
-## Benchmarks
+Modern documentation tools often sacrifice performance for features:
+- Heavy JavaScript bundles slow down page loads
+- Markdown parsing becomes a bottleneck in large projects
+- Build times grow linearly with content size
 
-### Parse Speed (Parse Only)
+### Our Solution
 
-| Library              | Small (0.5KB)        | Large (48.7KB)      | Throughput       | Ratio    |
-|----------------------|----------------------|---------------------|------------------|----------|
-| **@ox-content/napi** | **253,941 ops/s**    | **2,924 ops/s**     | **139.16 MB/s**  | **1.00x**|
-| marked               | 12,396 ops/s         | 323 ops/s           | 15.38 MB/s       | 9.05x    |
-| markdown-it          | 9,744 ops/s          | 488 ops/s           | 23.22 MB/s       | 5.99x    |
-| remark               | 1,868 ops/s          | 21 ops/s            | 1.01 MB/s        | 138.05x  |
+Ox Content leverages the [Oxc](https://oxc.rs/) philosophy:
+- **Arena-based allocation** - Zero-copy parsing with bumpalo
+- **Native performance** - Rust core with NAPI bindings
+- **Minimal output** - SSG-first approach, ship only what you need
 
-### Render Speed (Parse + Render)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Ox Content                          │
+├─────────────────────────────────────────────────────────────┤
+│  Rust Core          │  NAPI Bindings    │  Vite Plugins    │
+│  ┌───────────────┐  │  ┌─────────────┐  │  ┌────────────┐  │
+│  │ Parser        │──┼─▶│ @ox-content │──┼─▶│ Vue        │  │
+│  │ Renderer      │  │  │ /napi       │  │  │ React      │  │
+│  │ Allocator     │  │  └─────────────┘  │  │ Svelte     │  │
+│  └───────────────┘  │                   │  └────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-| Library              | Small (0.5KB)        | Large (48.7KB)      | Throughput       | Ratio    |
-|----------------------|----------------------|---------------------|------------------|----------|
-| **@ox-content/napi** | **157,367 ops/s**    | **2,380 ops/s**     | **113.24 MB/s**  | **1.00x**|
-| marked               | 14,297 ops/s         | 294 ops/s           | 13.99 MB/s       | 8.09x    |
-| markdown-it          | 10,285 ops/s         | 402 ops/s           | 19.15 MB/s       | 5.91x    |
-| micromark            | 1,910 ops/s          | 23 ops/s            | 1.08 MB/s        | 104.68x  |
-| remark               | 1,839 ops/s          | 17 ops/s            | 0.82 MB/s        | 138.76x  |
-
-*Higher ops/sec is better. Lower ratio is better. @ox-content/napi is 6-9x faster than other libraries.*
-
-### Async Worker Thread
-
-For non-blocking rendering on large documents:
-
-| API                  | Large (48.7KB)      | Throughput       |
-|----------------------|---------------------|------------------|
-| parseAndRender       | 2,380 ops/s         | 113.24 MB/s      |
-| parseAndRenderAsync  | 1,930 ops/s         | 91.82 MB/s       |
-
-*Async runs on worker thread, keeping main thread responsive.*
-
-### Build Output Size
-
-| Framework          | Total      | Gzipped     | Ratio        |
-|--------------------|------------|-------------|--------------|
-| **ox-content**     | **7.7 KB** | **2.7 KB**  | **1.00x**    |
-| Astro              | 18.6 KB    | 3.5 KB      | 1.30x        |
-| ox-content + Vue   | 68.2 KB    | 25.5 KB     | 9.34x        |
-| Astro + Vue        | 91.1 KB    | 33.2 KB     | 12.18x       |
-| VitePress          | 984.6 KB   | 721.8 KB    | 264.92x      |
-
-*Lower is better. Same 4 Markdown pages across all frameworks.*
-
-> **Note:** ox-content produces the smallest bundles by pre-rendering Markdown to static HTML at build time, without shipping a JavaScript runtime for content rendering.
-
-### Core Philosophy
+## Core Philosophy
 
 1. **Performance First** - Arena-based allocation for zero-copy parsing
 2. **Standards Compliant** - Full CommonMark + GFM support with mdast-compatible AST
@@ -162,21 +140,6 @@ export default defineConfig({
 });
 ```
 
-### OG Image Generation
-
-Automatic social media preview images for your content:
-
-```typescript
-import { generateOgImage } from '@ox-content/og-image';
-
-const image = await generateOgImage({
-  title: 'My Article Title',
-  description: 'A brief description',
-  background: '#1a1a2e',
-  textColor: '#ffffff',
-});
-```
-
 ### Node.js Bindings
 
 High-performance NAPI bindings for seamless JavaScript integration:
@@ -195,6 +158,26 @@ const result = await parseAndRenderAsync(content, { gfm: true });
 ```
 
 The async API (`parseAndRenderAsync`, `transformAsync`) runs on a worker thread, keeping the main thread responsive for large documents.
+
+---
+
+## Benchmarks
+
+### Parse Speed
+
+<img src="/ox-content/benchmark-parse.svg" alt="Parse Benchmark" width="600" />
+
+### Render Speed
+
+<img src="/ox-content/benchmark-render.svg" alt="Render Benchmark" width="600" />
+
+### Build Output Size
+
+<img src="/ox-content/benchmark-bundle.svg" alt="Bundle Size Benchmark" width="600" />
+
+> **Note:** ox-content (bare) produces pure HTML without JavaScript/CSS, ideal for custom themes or benchmarking. VitePress always includes Vue runtime for client-side hydration.
+
+---
 
 ## Packages
 
@@ -314,8 +297,8 @@ export function add(a: number, b: number): number {
 
 - [Getting Started](./getting-started.md) - Installation and first steps
 - [Architecture](./architecture.md) - Deep dive into the design
-- [API Reference](./api/) - Generated Rust documentation
-- [Playground](/playground/) - Try it in your browser
+- [API Reference](./api/index.md) - Generated API documentation
+- [Playground](/ox-content/playground/) - Try it in your browser
 - [GitHub](https://github.com/ubugeeei/ox-content) - Source code and issues
 
 ## License

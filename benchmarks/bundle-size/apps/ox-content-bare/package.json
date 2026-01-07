@@ -1,0 +1,15 @@
+{
+  "name": "benchmark-ox-content-bare",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vite-plugin-ox-content": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "catalog:"
+  }
+}

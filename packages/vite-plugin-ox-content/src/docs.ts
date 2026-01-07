@@ -581,6 +581,7 @@ export function generateMarkdown(
   options: ResolvedDocsOptions
 ): Record<string, string> {
   const result: Record<string, string> = {};
+  const symbolMap = buildSymbolMap(docs);
 
   if (options.groupBy === 'file') {
     const docToFile = new Map<ExtractedDocs, string>();
@@ -593,7 +594,7 @@ export function generateMarkdown(
       }
       docToFile.set(doc, fileName);
 
-      const markdown = generateFileMarkdown(doc, options);
+      const markdown = generateFileMarkdown(doc, options, fileName, symbolMap);
       result[`${fileName}.md`] = markdown;
     }
 
@@ -610,7 +611,7 @@ export function generateMarkdown(
     }
 
     for (const [kind, entries] of byKind) {
-      result[`${kind}s.md`] = generateCategoryMarkdown(kind, entries, options);
+      result[`${kind}s.md`] = generateCategoryMarkdown(kind, entries, options, symbolMap);
     }
 
     result['index.md'] = generateCategoryIndex(byKind);
@@ -619,9 +620,14 @@ export function generateMarkdown(
   return result;
 }
 
-function generateFileMarkdown(doc: ExtractedDocs, options: ResolvedDocsOptions): string {
-  const fileName = path.basename(doc.file);
-  let md = `# ${fileName}\n\n`;
+function generateFileMarkdown(
+  doc: ExtractedDocs,
+  options: ResolvedDocsOptions,
+  currentFileName: string,
+  symbolMap: Map<string, SymbolLocation>
+): string {
+  const displayName = path.basename(doc.file);
+  let md = `# ${displayName}\n\n`;
 
   // Add source link if githubUrl is provided
   if (options.githubUrl) {
@@ -639,22 +645,29 @@ function generateFileMarkdown(doc: ExtractedDocs, options: ResolvedDocsOptions):
     md += '\n---\n\n';
   }
 
-  // Pass all entries for symbol link resolution
+  // Pass symbol map for cross-file link resolution
   for (const entry of doc.entries) {
-    md += generateEntryMarkdown(entry, options, doc.entries);
+    md += generateEntryMarkdown(entry, options, currentFileName, symbolMap);
   }
 
   return md;
 }
 
-function generateEntryMarkdown(entry: DocEntry, options?: ResolvedDocsOptions, allEntries?: DocEntry[]): string {
+function generateEntryMarkdown(
+  entry: DocEntry,
+  options?: ResolvedDocsOptions,
+  currentFileName?: string,
+  symbolMap?: Map<string, SymbolLocation>
+): string {
   let md = `## ${entry.name}\n\n`;
 
   md += `\`${entry.kind}\`\n\n`;
 
   if (entry.description) {
     // Convert symbol links [SymbolName] to markdown links
-    const processedDescription = convertSymbolLinks(entry.description, allEntries);
+    const processedDescription = currentFileName && symbolMap
+      ? convertSymbolLinks(entry.description, currentFileName, symbolMap)
+      : entry.description;
     md += `${processedDescription}\n\n`;
   }
 
@@ -734,8 +747,10 @@ function generateIndex(docs: ExtractedDocs[], docToFile?: Map<ExtractedDocs, str
 function generateCategoryMarkdown(
   kind: string,
   entries: DocEntry[],
-  options: ResolvedDocsOptions
+  options: ResolvedDocsOptions,
+  symbolMap: Map<string, SymbolLocation>
 ): string {
+  const categoryFileName = `${kind}s`;
   let md = `# ${kind.charAt(0).toUpperCase() + kind.slice(1)}s\n\n`;
 
   if (options.toc) {
@@ -747,7 +762,7 @@ function generateCategoryMarkdown(
   }
 
   for (const entry of entries) {
-    md += generateEntryMarkdown(entry, options);
+    md += generateEntryMarkdown(entry, options, categoryFileName, symbolMap);
   }
 
   return md;
@@ -772,6 +787,15 @@ function generateCategoryIndex(byKind: Map<string, DocEntry[]>): string {
 }
 
 /**
+ * Symbol location info for cross-file linking.
+ */
+interface SymbolLocation {
+  name: string;
+  file: string;
+  fileName: string;
+}
+
+/**
  * Converts symbol links [SymbolName] to markdown links.
  *
  * Processes description text to convert cargo-docs-style symbol references
@@ -780,29 +804,65 @@ function generateCategoryIndex(byKind: Map<string, DocEntry[]>): string {
  *
  * ## Examples
  *
- * Input: "See [transformMarkdown] for usage"
+ * Input: "See [transformMarkdown] for usage" (same file)
  * Output: "See [transformMarkdown](#transformmarkdown) for usage"
  *
- * Input: "Uses [NavItem] interface"
- * Output: "Uses [NavItem](#navitem) interface"
+ * Input: "Uses [NavItem] interface" (different file: types.ts)
+ * Output: "Uses [NavItem](./types.md#navitem) interface"
  *
  * @param text - Description text containing symbol references
- * @param allEntries - All documented entries for symbol resolution (optional)
+ * @param currentFileName - Current file name (without extension) for same-file detection
+ * @param symbolMap - Map of symbol names to their file locations
  * @returns Text with symbol references converted to markdown links
  *
  * @internal
  */
-function convertSymbolLinks(text: string, allEntries?: DocEntry[]): string {
+function convertSymbolLinks(
+  text: string,
+  currentFileName: string,
+  symbolMap: Map<string, SymbolLocation>
+): string {
   // Match [SymbolName] pattern where SymbolName starts with uppercase or underscore
-  return text.replace(/\[([A-Z_]\w*)\]/g, (match, symbolName) => {
-    // Check if symbol exists in documentation
-    if (allEntries?.some((e) => e.name === symbolName)) {
-      // Create internal link to symbol
-      return `[${symbolName}](#${symbolName.toLowerCase()})`;
+  // Negative lookahead (?!\() ensures we don't match [Name] that's already part of [Name](url)
+  return text.replace(/\[([A-Z_]\w*)\](?!\()/g, (match, symbolName) => {
+    const location = symbolMap.get(symbolName);
+    if (!location) {
+      // Symbol not found, keep original text
+      return match;
     }
-    // If symbol not found, keep original text
-    return match;
+
+    if (location.fileName === currentFileName) {
+      // Same file - use anchor only
+      return `[${symbolName}](#${symbolName.toLowerCase()})`;
+    } else {
+      // Different file - use cross-file link
+      return `[${symbolName}](./${location.fileName}.md#${symbolName.toLowerCase()})`;
+    }
   });
+}
+
+/**
+ * Builds a map of all symbols to their file locations.
+ */
+function buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation> {
+  const map = new Map<string, SymbolLocation>();
+
+  for (const doc of docs) {
+    let fileName = path.basename(doc.file, path.extname(doc.file));
+    if (fileName === 'index') {
+      fileName = 'index-module';
+    }
+
+    for (const entry of doc.entries) {
+      map.set(entry.name, {
+        name: entry.name,
+        file: doc.file,
+        fileName,
+      });
+    }
+  }
+
+  return map;
 }
 
 /**

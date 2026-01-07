@@ -3,6 +3,67 @@
  */
 
 /**
+ * SSG (Static Site Generation) options.
+ */
+export interface SsgOptions {
+  /**
+   * Enable SSG mode.
+   * @default true
+   */
+  enabled?: boolean;
+
+  /**
+   * Output file extension.
+   * @default '.html'
+   */
+  extension?: string;
+
+  /**
+   * Clean output directory before build.
+   * @default false
+   */
+  clean?: boolean;
+
+  /**
+   * Bare HTML output (no navigation, no styles).
+   * Useful for benchmarking or when using custom layouts.
+   * @default false
+   */
+  bare?: boolean;
+
+  /**
+   * Site name for header and title suffix.
+   */
+  siteName?: string;
+
+  /**
+   * OG image URL for social sharing (static URL).
+   * If generateOgImage is enabled, this serves as the fallback.
+   */
+  ogImage?: string;
+
+  /**
+   * Generate OG images per page using Rust-based generator.
+   * When enabled, each page will have a unique OG image.
+   * @default false
+   */
+  generateOgImage?: boolean;
+}
+
+/**
+ * Resolved SSG options.
+ */
+export interface ResolvedSsgOptions {
+  enabled: boolean;
+  extension: string;
+  clean: boolean;
+  bare: boolean;
+  siteName?: string;
+  ogImage?: string;
+  generateOgImage: boolean;
+}
+
+/**
  * Plugin options.
  */
 export interface OxContentOptions {
@@ -23,6 +84,13 @@ export interface OxContentOptions {
    * @default '/'
    */
   base?: string;
+
+  /**
+   * SSG (Static Site Generation) options.
+   * Set to false to disable SSG completely.
+   * @default { enabled: true }
+   */
+  ssg?: SsgOptions | boolean;
 
   /**
    * Enable GitHub Flavored Markdown extensions.
@@ -121,6 +189,7 @@ export interface ResolvedOptions {
   srcDir: string;
   outDir: string;
   base: string;
+  ssg: ResolvedSsgOptions;
   gfm: boolean;
   footnotes: boolean;
   tables: boolean;

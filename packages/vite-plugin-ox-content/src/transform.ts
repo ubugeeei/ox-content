@@ -66,6 +66,47 @@ interface NapiBindings {
     toc: { depth: number; text: string; slug: string }[];
     errors: string[];
   };
+
+  /**
+   * Generates an OG image as SVG.
+   *
+   * @param data - OG image data (title, description, etc.)
+   * @param config - Optional OG image configuration
+   * @returns SVG string
+   */
+  generateOgImageSvg: (data: OgImageData, config?: OgImageConfig) => string;
+}
+
+/**
+ * OG image data for generating social media preview images.
+ */
+export interface OgImageData {
+  /** Page title */
+  title: string;
+  /** Page description */
+  description?: string;
+  /** Site name */
+  siteName?: string;
+  /** Author name */
+  author?: string;
+}
+
+/**
+ * OG image configuration.
+ */
+export interface OgImageConfig {
+  /** Image width in pixels */
+  width?: number;
+  /** Image height in pixels */
+  height?: number;
+  /** Background color (hex) */
+  backgroundColor?: string;
+  /** Text color (hex) */
+  textColor?: string;
+  /** Title font size */
+  titleFontSize?: number;
+  /** Description font size */
+  descriptionFontSize?: number;
 }
 
 /**
@@ -122,6 +163,18 @@ interface JsTransformOptions {
    * @max 6
    */
   tocMaxDepth?: number;
+
+  /**
+   * Convert `.md` links to `.html` links for SSG output.
+   * @default false
+   */
+  convertMdLinks?: boolean;
+
+  /**
+   * Base URL for absolute link conversion (e.g., "/" or "/docs/").
+   * @default "/"
+   */
+  baseUrl?: string;
 }
 
 /**
@@ -281,10 +334,21 @@ async function loadNapiBindings(): Promise<NapiBindings | null> {
  * console.log(result.code);        // ES module export statement
  * ```
  */
+/**
+ * SSG-specific transform options.
+ */
+export interface SsgTransformOptions {
+  /** Convert `.md` links to `.html` links */
+  convertMdLinks?: boolean;
+  /** Base URL for absolute link conversion */
+  baseUrl?: string;
+}
+
 export async function transformMarkdown(
   source: string,
   filePath: string,
-  options: ResolvedOptions
+  options: ResolvedOptions,
+  ssgOptions?: SsgTransformOptions
 ): Promise<TransformResult> {
   const napi = await loadNapiBindings();
 
@@ -300,6 +364,8 @@ export async function transformMarkdown(
     tables: options.tables,
     strikethrough: options.strikethrough,
     tocMaxDepth: options.tocMaxDepth,
+    convertMdLinks: ssgOptions?.convertMdLinks,
+    baseUrl: ssgOptions?.baseUrl,
   });
 
   if (result.errors.length > 0) {
@@ -437,4 +503,42 @@ export function extractImports(content: string): string[] {
   }
 
   return imports;
+}
+
+/**
+ * Generates an OG image SVG using the Rust-based generator.
+ *
+ * This function uses the Rust NAPI bindings to generate SVG-based
+ * OG images for social media previews. The SVG can be served directly
+ * or converted to PNG/JPEG for broader compatibility.
+ *
+ * In the future, custom JS templates can be provided to override
+ * the default Rust-based template.
+ *
+ * @param data - OG image data (title, description, etc.)
+ * @param config - Optional OG image configuration
+ * @returns SVG string or null if NAPI bindings are unavailable
+ */
+export async function generateOgImageSvg(
+  data: OgImageData,
+  config?: OgImageConfig
+): Promise<string | null> {
+  const napi = await loadNapiBindings();
+  if (!napi) {
+    return null;
+  }
+
+  // Convert config to NAPI format (camelCase to snake_case)
+  const napiConfig = config
+    ? {
+        width: config.width,
+        height: config.height,
+        backgroundColor: config.backgroundColor,
+        textColor: config.textColor,
+        titleFontSize: config.titleFontSize,
+        descriptionFontSize: config.descriptionFontSize,
+      }
+    : undefined;
+
+  return napi.generateOgImageSvg(data, napiConfig);
 }

@@ -40,6 +40,50 @@ Source directory for Markdown files.
 
 Output directory for built files.
 
+### ssg
+
+- Type: `SsgOptions | boolean`
+- Default: `{ enabled: true }`
+
+SSG (Static Site Generation) options. By default, ox-content generates static HTML files for each Markdown file during build.
+
+```ts
+oxContent({
+  ssg: {
+    enabled: true,
+    extension: '.html',
+    clean: false,
+  },
+})
+```
+
+#### SsgOptions
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable/disable SSG mode |
+| `extension` | `string` | `'.html'` | Output file extension |
+| `clean` | `boolean` | `false` | Clean output directory before build |
+| `bare` | `boolean` | `false` | Bare HTML output (no navigation, no styles) |
+
+### Bare Mode (for benchmarking)
+
+```ts
+oxContent({
+  ssg: {
+    bare: true, // Output minimal HTML without navigation/styles
+  },
+})
+```
+
+### Disabling SSG
+
+```ts
+oxContent({
+  ssg: false, // Disable SSG, use as module transformer only
+})
+```
+
 ### gfm
 
 - Type: `boolean`
