@@ -20,12 +20,10 @@ export default defineConfig({
       outDir: 'dist/docs',
       base: '/ox-content/',
 
-      // SSG options with per-page OG image generation (uses Rust)
+      // SSG options
       ssg: {
         siteName: 'Ox Content',
-        siteUrl: 'https://ubugeeei.github.io', // Required for absolute OG image URLs
-        ogImage: 'https://ubugeeei.github.io/ox-content/og-image.svg', // fallback
-        generateOgImage: true, // Enable per-page OG image generation via Rust
+        ogImage: 'https://ubugeeei.github.io/ox-content/og-image.png',
       },
 
       // Enable syntax highlighting with Shiki
@@ -34,14 +32,6 @@ export default defineConfig({
 
       // Mermaid diagrams disabled (using SVG instead)
       mermaid: false,
-
-      // OG Image generation
-      ogImage: true,
-      ogImageOptions: {
-        background: '#1a1a2e',
-        textColor: '#ffffff',
-        accentColor: '#bd34fe',
-      },
 
       // API documentation generation (like cargo doc)
       docs: {
