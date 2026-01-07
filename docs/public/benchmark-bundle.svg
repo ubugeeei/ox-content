@@ -44,11 +44,11 @@
   <text x="171" y="88" class="value">3.5 KB</text>
   <text x="213" y="88" class="ratio">1.26x</text>
 
-  <!-- ox-content (default): 12.6 KB -->
+  <!-- ox-content (default): 13.0 KB -->
   <text x="140" y="118" text-anchor="end" class="label">ox-content (default)</text>
-  <rect x="150" y="105" width="50" height="20" rx="4" fill="url(#oxGrad2)"/>
-  <text x="207" y="118" class="value">12.6 KB</text>
-  <text x="258" y="118" class="ratio">4.47x</text>
+  <rect x="150" y="105" width="52" height="20" rx="4" fill="url(#oxGrad2)"/>
+  <text x="209" y="118" class="value">13.0 KB</text>
+  <text x="260" y="118" class="ratio">4.59x</text>
 
   <!-- Astro + Vue: 33.2 KB -->
   <text x="140" y="148" text-anchor="end" class="label">Astro + Vue</text>
@@ -56,11 +56,11 @@
   <text x="289" y="148" class="value">33.2 KB</text>
   <text x="340" y="148" class="ratio">11.75x</text>
 
-  <!-- ox-content + Vue: 35.4 KB -->
+  <!-- ox-content + Vue: 35.7 KB -->
   <text x="140" y="178" text-anchor="end" class="label">ox-content + Vue</text>
-  <rect x="150" y="165" width="141" height="20" rx="4" fill="url(#oxGrad2)"/>
-  <text x="298" y="178" class="value">35.4 KB</text>
-  <text x="349" y="178" class="ratio">12.53x</text>
+  <rect x="150" y="165" width="143" height="20" rx="4" fill="url(#oxGrad2)"/>
+  <text x="300" y="178" class="value">35.7 KB</text>
+  <text x="351" y="178" class="ratio">12.66x</text>
 
   <!-- VitePress (bare): 48.8 KB -->
   <text x="140" y="208" text-anchor="end" class="label">VitePress (bare)</text>

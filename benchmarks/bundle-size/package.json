@@ -6,6 +6,7 @@
   "scripts": {
     "benchmark": "node measure.mjs",
     "benchmark:parse": "node parse-benchmark.mjs",
+    "benchmark:build": "node build-time-benchmark.mjs",
     "clean": "rm -rf apps/*/dist apps/*/.vitepress/dist"
   },
   "dependencies": {

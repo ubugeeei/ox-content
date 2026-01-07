@@ -69,8 +69,8 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       --color-text: #1a1a1a;
       --color-text-muted: #666666;
       --color-border: #e5e7eb;
-      --color-primary: #3b82f6;
-      --color-primary-hover: #2563eb;
+      --color-primary: #b7410e;
+      --color-primary-hover: #ce5937;
       --color-code-bg: #1e293b;
       --color-code-text: #e2e8f0;
     }
@@ -81,8 +81,8 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
         --color-text: #e2e8f0;
         --color-text-muted: #94a3b8;
         --color-border: #334155;
-        --color-primary: #60a5fa;
-        --color-primary-hover: #93c5fd;
+        --color-primary: #e67e4d;
+        --color-primary-hover: #f4a07a;
         --color-code-bg: #0f172a;
         --color-code-text: #e2e8f0;
       }
@@ -261,17 +261,15 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
 </head>
 <body>
   <header class="header">
-    <a href="{{base}}index.html" class="header-title">{{siteName}}</a>
+    <a href="{{base}}index.html" class="header-title">
+      <img src="{{base}}logo.svg" alt="" width="28" height="28" style="margin-right: 8px; vertical-align: middle;" />
+      {{siteName}}
+    </a>
   </header>
   <div class="layout">
     <aside class="sidebar">
       <nav>
-        <div class="nav-section">
-          <div class="nav-title">Documentation</div>
-          <ul class="nav-list">
 {{navigation}}
-          </ul>
-        </div>
       </nav>
     </aside>
     <main class="main">
@@ -381,14 +379,25 @@ function extractTitle(
 }
 
 /**
- * Generates navigation HTML from nav items.
+ * Generates navigation HTML from nav groups.
  */
-function generateNavHtml(navItems: SsgNavItem[], currentPath: string): string {
-  return navItems
-    .map((item) => {
-      const isActive = item.path === currentPath;
-      const activeClass = isActive ? ' active' : '';
-      return `            <li class="nav-item"><a href="${item.href}" class="nav-link${activeClass}">${item.title}</a></li>`;
+function generateNavHtml(navGroups: NavGroup[], currentPath: string): string {
+  return navGroups
+    .map((group) => {
+      const items = group.items
+        .map((item) => {
+          const isActive = item.path === currentPath;
+          const activeClass = isActive ? ' active' : '';
+          return `              <li class="nav-item"><a href="${item.href}" class="nav-link${activeClass}">${item.title}</a></li>`;
+        })
+        .join('\n');
+
+      return `          <div class="nav-section">
+            <div class="nav-title">${group.title}</div>
+            <ul class="nav-list">
+${items}
+            </ul>
+          </div>`;
     })
     .join('\n');
 }
@@ -430,12 +439,12 @@ export function generateBareHtmlPage(
  */
 export function generateHtmlPage(
   pageData: SsgPageData,
-  navItems: SsgNavItem[],
+  navGroups: NavGroup[],
   siteName: string,
   base: string,
   ogImage?: string
 ): string {
-  const navigationHtml = generateNavHtml(navItems, pageData.path);
+  const navigationHtml = generateNavHtml(navGroups, pageData.path);
   const tocHtml = generateTocHtml(pageData.toc);
 
   return renderTemplate(DEFAULT_HTML_TEMPLATE, {
@@ -553,24 +562,81 @@ function formatTitle(name: string): string {
  */
 export async function collectMarkdownFiles(srcDir: string): Promise<string[]> {
   const pattern = path.join(srcDir, '**/*.{md,markdown}');
-  const files = await glob(pattern, { nodir: true });
+  const files = await glob(pattern, {
+    nodir: true,
+    ignore: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+  });
   return files.sort();
 }
 
 /**
- * Builds navigation items from markdown files.
+ * Navigation group for hierarchical navigation.
+ */
+interface NavGroup {
+  title: string;
+  items: SsgNavItem[];
+}
+
+/**
+ * Builds navigation items from markdown files, grouped by directory.
  */
 function buildNavItems(
   markdownFiles: string[],
   srcDir: string,
   base: string,
   extension: string
-): SsgNavItem[] {
-  return markdownFiles.map((file) => ({
-    title: getDisplayTitle(file),
-    path: getUrlPath(file, srcDir),
-    href: getHref(file, srcDir, base, extension),
-  }));
+): NavGroup[] {
+  const groups = new Map<string, SsgNavItem[]>();
+
+  // Define the order of groups
+  const groupOrder = ['', 'api', 'examples', 'packages'];
+
+  for (const file of markdownFiles) {
+    const relativePath = path.relative(srcDir, file);
+    const parts = relativePath.split(path.sep);
+
+    // Determine group: first directory or '' for root files
+    let groupKey = '';
+    if (parts.length > 1) {
+      groupKey = parts[0];
+    }
+
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, []);
+    }
+
+    groups.get(groupKey)!.push({
+      title: getDisplayTitle(file),
+      path: getUrlPath(file, srcDir),
+      href: getHref(file, srcDir, base, extension),
+    });
+  }
+
+  // Convert to array and sort by group order
+  const result: NavGroup[] = [];
+
+  for (const key of groupOrder) {
+    const items = groups.get(key);
+    if (items && items.length > 0) {
+      result.push({
+        title: key === '' ? 'Guide' : formatTitle(key),
+        items,
+      });
+      groups.delete(key);
+    }
+  }
+
+  // Add any remaining groups
+  for (const [key, items] of groups) {
+    if (items.length > 0) {
+      result.push({
+        title: formatTitle(key),
+        items,
+      });
+    }
+  }
+
+  return result;
 }
 
 /**

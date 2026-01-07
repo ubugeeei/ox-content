@@ -3,11 +3,11 @@ title: Ox Content
 description: High-performance documentation toolkit built in Rust. Framework-agnostic, zero-copy parsing, NAPI bindings for Node.js.
 ---
 
-<div align="center">
-  <img src="/ox-content/logo.svg" alt="Ox Content" width="120" height="120" />
-  <h1>Ox Content</h1>
-  <p><strong>A framework-agnostic documentation tooling for Vite+</strong></p>
-</div>
+# Ox Content
+
+**A framework-agnostic documentation tooling for Vite+**
+
+![Ox Content Logo](/ox-content/logo.svg)
 
 ---
 
@@ -29,18 +29,7 @@ Ox Content leverages the [Oxc](https://oxc.rs/) philosophy:
 - **Native performance** - Rust core with NAPI bindings
 - **Minimal output** - SSG-first approach, ship only what you need
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        Ox Content                          │
-├─────────────────────────────────────────────────────────────┤
-│  Rust Core          │  NAPI Bindings    │  Vite Plugins    │
-│  ┌───────────────┐  │  ┌─────────────┐  │  ┌────────────┐  │
-│  │ Parser        │──┼─▶│ @ox-content │──┼─▶│ Vue        │  │
-│  │ Renderer      │  │  │ /napi       │  │  │ React      │  │
-│  │ Allocator     │  │  └─────────────┘  │  │ Svelte     │  │
-│  └───────────────┘  │                   │  └────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
+![Architecture](/ox-content/architecture.svg)
 
 ## Core Philosophy
 
@@ -165,15 +154,19 @@ The async API (`parseAndRenderAsync`, `transformAsync`) runs on a worker thread,
 
 ### Parse Speed
 
-<img src="/ox-content/benchmark-parse.svg" alt="Parse Benchmark" width="600" />
+![Parse Benchmark](/ox-content/benchmark-parse.svg)
 
 ### Render Speed
 
-<img src="/ox-content/benchmark-render.svg" alt="Render Benchmark" width="600" />
+![Render Benchmark](/ox-content/benchmark-render.svg)
 
 ### Build Output Size
 
-<img src="/ox-content/benchmark-bundle.svg" alt="Bundle Size Benchmark" width="600" />
+![Bundle Size Benchmark](/ox-content/benchmark-bundle.svg)
+
+### Production Build Time
+
+![Build Time Benchmark](/ox-content/benchmark-build.svg)
 
 > **Note:** ox-content (bare) produces pure HTML without JavaScript/CSS, ideal for custom themes or benchmarking. VitePress always includes Vue runtime for client-side hydration.
 
