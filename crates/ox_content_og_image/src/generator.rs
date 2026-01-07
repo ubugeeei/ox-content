@@ -98,22 +98,17 @@ impl OgImageGenerator {
             .map(|d| truncate_text(d, 120))
             .map(|d| escape_xml(&d))
             .unwrap_or_default();
-        let site_name = data
-            .site_name
-            .as_ref()
-            .map_or_else(|| "Ox Content".to_string(), |s| escape_xml(s));
+        let site_name =
+            data.site_name.as_ref().map_or_else(|| "Ox Content".to_string(), |s| escape_xml(s));
 
         // Generate description lines (wrap at ~60 chars)
         let desc_lines = wrap_text(&description, 60);
-        let desc_svg = desc_lines.iter().enumerate().fold(
-            String::new(),
-            |mut acc, (i, line)| {
-                use std::fmt::Write;
-                let dy = if i == 0 { "0" } else { "1.4em" };
-                let _ = write!(acc, r#"<tspan x="80" dy="{dy}">{line}</tspan>"#);
-                acc
-            },
-        );
+        let desc_svg = desc_lines.iter().enumerate().fold(String::new(), |mut acc, (i, line)| {
+            use std::fmt::Write;
+            let dy = if i == 0 { "0" } else { "1.4em" };
+            let _ = write!(acc, r#"<tspan x="80" dy="{dy}">{line}</tspan>"#);
+            acc
+        });
 
         format!(
             r#"<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
