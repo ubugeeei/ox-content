@@ -17,6 +17,9 @@
     .unit { font: 10px system-ui, sans-serif; fill: #718096; }
   </style>
 
+  <!-- Background -->
+  <rect width="600" height="220" fill="#f8f9fa" rx="8"/>
+
   <!-- Title -->
   <text x="300" y="24" text-anchor="middle" class="title">Parse + Render Speed (Large 48.7KB)</text>
 
