@@ -61,7 +61,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     :root {
       --sidebar-width: 260px;
       --header-height: 60px;
-      --max-content-width: 800px;
+      --max-content-width: 960px;
       --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
       --color-bg: #ffffff;
@@ -250,6 +250,8 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     }
     .content th { background: var(--color-bg-alt); font-weight: 600; }
     .content img { max-width: 100%; height: auto; border-radius: 8px; }
+    .content img[alt*="Logo"] { max-width: 200px; display: block; margin: 1rem 0; }
+    .content img[alt*="Architecture"] { max-width: 700px; }
     .content hr { border: none; border-top: 1px solid var(--color-border); margin: 2rem 0; }
 
     /* Responsive */

@@ -31,8 +31,8 @@ export default defineConfig({
       highlight: true,
       highlightTheme: 'vitesse-dark',
 
-      // Enable mermaid diagrams
-      mermaid: true,
+      // Mermaid diagrams disabled (using SVG instead)
+      mermaid: false,
 
       // OG Image generation
       ogImage: true,
