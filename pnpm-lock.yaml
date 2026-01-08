@@ -175,14 +175,7 @@ importers:
   crates/ox_content_wasm/pkg: {}
 
   docs:
-    dependencies:
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.26(typescript@5.9.3)
     devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: 'catalog:'
-        version: 5.2.4(vite@7.3.0(@types/node@22.19.3)(terser@5.44.1))(vue@3.5.26(typescript@5.9.3))
       vite:
         specifier: 'catalog:'
         version: 7.3.0(@types/node@22.19.3)(terser@5.44.1)
