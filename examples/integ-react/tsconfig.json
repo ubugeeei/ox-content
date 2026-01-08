@@ -16,7 +16,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "vite-plugin-ox-content-react": ["../../packages/vite-plugin-ox-content-react/src/index.ts"]
+      "vite-plugin-ox-content-react": ["../../npm/vite-plugin-ox-content-react/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts"]
