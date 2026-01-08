@@ -213,10 +213,15 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       flex: 1;
       margin-left: var(--sidebar-width);
       padding: 2rem;
+      min-width: 0;
+      overflow-x: hidden;
     }
     .content {
       max-width: var(--max-content-width);
       margin: 0 auto;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
     }
 
     /* TOC (right sidebar) */
@@ -263,6 +268,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       background: var(--color-bg-alt);
       padding: 0.2em 0.4em;
       border-radius: 4px;
+      word-break: break-all;
     }
     .content pre {
       background: var(--color-code-bg);
@@ -290,7 +296,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       text-align: left;
     }
     .content th { background: var(--color-bg-alt); font-weight: 600; }
-    .content img { max-width: 100%; height: auto; border-radius: 8px; }
+    .content img { max-width: 100%; height: auto; border-radius: 8px; display: block; }
     .content img[alt*="Logo"] { max-width: 200px; display: block; margin: 1rem 0; }
     .content img[alt*="Architecture"] { max-width: 600px; }
     .content img[alt*="Benchmark"] { max-width: 550px; }

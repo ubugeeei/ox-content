@@ -29,8 +29,7 @@ async function getOxContent() {
 export function resolveSearchOptions(
   options: SearchOptions | boolean | undefined
 ): ResolvedSearchOptions {
-  // Search is disabled by default until NAPI bindings are implemented
-  if (options === false || options === undefined) {
+  if (options === false) {
     return {
       enabled: false,
       limit: 10,
@@ -43,7 +42,7 @@ export function resolveSearchOptions(
   const opts = typeof options === 'object' ? options : {};
 
   return {
-    enabled: opts.enabled ?? false, // Disabled until NAPI search is implemented
+    enabled: opts.enabled ?? true,
     limit: opts.limit ?? 10,
     prefix: opts.prefix ?? true,
     placeholder: opts.placeholder ?? 'Search documentation...',

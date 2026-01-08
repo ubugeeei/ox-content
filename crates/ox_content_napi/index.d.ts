@@ -128,3 +128,63 @@ export interface JsOgImageData {
  * that can be used for social media previews.
  */
 export declare function generateOgImageSvg(data: JsOgImageData, config?: JsOgImageConfig | undefined | null): string
+/** Search document for JavaScript. */
+export interface JsSearchDocument {
+  /** Unique document identifier. */
+  id: string
+  /** Document title. */
+  title: string
+  /** Document URL. */
+  url: string
+  /** Document body text. */
+  body: string
+  /** Document headings. */
+  headings: Array<string>
+  /** Code snippets. */
+  code: Array<string>
+}
+/** Search result for JavaScript. */
+export interface JsSearchResult {
+  /** Document ID. */
+  id: string
+  /** Document title. */
+  title: string
+  /** Document URL. */
+  url: string
+  /** Relevance score. */
+  score: number
+  /** Matched terms. */
+  matches: Array<string>
+  /** Content snippet. */
+  snippet: string
+}
+/** Search options for JavaScript. */
+export interface JsSearchOptions {
+  /** Maximum number of results. */
+  limit?: number
+  /** Enable prefix matching. */
+  prefix?: boolean
+  /** Enable fuzzy matching. */
+  fuzzy?: boolean
+  /** Minimum score threshold. */
+  threshold?: number
+}
+/**
+ * Builds a search index from documents.
+ *
+ * Takes an array of documents and returns a serialized search index as JSON.
+ */
+export declare function buildSearchIndex(documents: Array<JsSearchDocument>): string
+/**
+ * Searches a serialized index.
+ *
+ * Takes a JSON-serialized index, query string, and options.
+ * Returns an array of search results.
+ */
+export declare function searchIndex(indexJson: string, query: string, options?: JsSearchOptions | undefined | null): Array<JsSearchResult>
+/**
+ * Extracts searchable content from Markdown source.
+ *
+ * Parses the Markdown and extracts title, body text, headings, and code.
+ */
+export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument
