@@ -6,38 +6,54 @@ This document provides a deep dive into the architecture and design decisions of
 
 Ox Content is designed as a modular, high-performance Markdown processing toolkit. The architecture follows the Oxc philosophy of prioritizing speed, memory efficiency, and correctness.
 
-```mermaid
-graph TB
-    subgraph Applications["User Applications"]
-        App1[Your App]
-        App2[Documentation Site]
-        App3[Blog]
-    end
-
-    subgraph Packages["JavaScript Packages"]
-        Vite["vite-plugin-ox-content"]
-        Vue["vite-plugin-ox-content-vue"]
-        React["vite-plugin-ox-content-react"]
-    end
-
-    subgraph NAPI["Node.js Bindings"]
-        NapiPkg["@ox-content/napi"]
-    end
-
-    subgraph Core["Rust Core"]
-        Renderer["ox_content_renderer"]
-        Parser["ox_content_parser"]
-        AST["ox_content_ast"]
-        Allocator["ox_content_allocator"]
-    end
-
-    Applications --> Packages
-    Packages --> NAPI
-    NAPI --> Core
-    Renderer --> AST
-    Parser --> AST
-    AST --> Allocator
-```
+<svg width="600" height="480" viewBox="0 0 600 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+  <!-- User Applications -->
+  <rect x="40" y="20" width="520" height="80" rx="8" fill="#e8f4f8" stroke="#5ba3c0" stroke-width="2"/>
+  <text x="300" y="45" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#2c7a9c">User Applications</text>
+  <rect x="60" y="55" width="100" height="35" rx="4" fill="#fff" stroke="#5ba3c0"/>
+  <text x="110" y="78" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#333">Your App</text>
+  <rect x="180" y="55" width="140" height="35" rx="4" fill="#fff" stroke="#5ba3c0"/>
+  <text x="250" y="78" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#333">Documentation Site</text>
+  <rect x="340" y="55" width="100" height="35" rx="4" fill="#fff" stroke="#5ba3c0"/>
+  <text x="390" y="78" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#333">Blog</text>
+  <!-- JavaScript Packages -->
+  <rect x="40" y="130" width="520" height="80" rx="8" fill="#f0e8f8" stroke="#9b59b6" stroke-width="2"/>
+  <text x="300" y="155" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#7d3c98">JavaScript Packages</text>
+  <rect x="60" y="165" width="160" height="35" rx="4" fill="#fff" stroke="#9b59b6"/>
+  <text x="140" y="188" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">vite-plugin-ox-content</text>
+  <rect x="240" y="165" width="180" height="35" rx="4" fill="#fff" stroke="#9b59b6"/>
+  <text x="330" y="188" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">vite-plugin-ox-content-vue</text>
+  <rect x="440" y="165" width="100" height="35" rx="4" fill="#fff" stroke="#9b59b6"/>
+  <text x="490" y="188" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">...-react</text>
+  <!-- NAPI -->
+  <rect x="40" y="240" width="520" height="60" rx="8" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="300" y="265" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#b7950b">Node.js Bindings</text>
+  <rect x="200" y="275" width="200" height="20" rx="4" fill="#fff" stroke="#f39c12"/>
+  <text x="300" y="290" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">@ox-content/napi</text>
+  <!-- Rust Core -->
+  <rect x="40" y="330" width="520" height="130" rx="8" fill="#fdebd0" stroke="#e67e22" stroke-width="2"/>
+  <text x="300" y="355" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#ca6f1e">Rust Core</text>
+  <rect x="60" y="370" width="140" height="35" rx="4" fill="#fff" stroke="#e67e22"/>
+  <text x="130" y="393" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">ox_content_renderer</text>
+  <rect x="220" y="370" width="140" height="35" rx="4" fill="#fff" stroke="#e67e22"/>
+  <text x="290" y="393" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">ox_content_parser</text>
+  <rect x="150" y="420" width="130" height="30" rx="4" fill="#fff" stroke="#e67e22"/>
+  <text x="215" y="440" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">ox_content_ast</text>
+  <rect x="300" y="420" width="150" height="30" rx="4" fill="#fff" stroke="#e67e22"/>
+  <text x="375" y="440" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">ox_content_allocator</text>
+  <!-- Arrows -->
+  <line x1="300" y1="100" x2="300" y2="125" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="300" y1="210" x2="300" y2="235" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="300" y1="300" x2="300" y2="325" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="130" y1="405" x2="180" y2="420" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="290" y1="405" x2="240" y2="420" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="280" y1="435" x2="300" y2="435" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>
 
 ## Crate Structure
 
@@ -64,25 +80,45 @@ Ox Content uses [bumpalo](https://docs.rs/bumpalo) for arena-based allocation. T
 
 #### How Arena Allocation Works
 
-```mermaid
-graph LR
-    subgraph Traditional["Traditional Allocation"]
-        direction TB
-        A1[A] --> H1[Heap]
-        B1[B] --> H2[Heap]
-        C1[C] --> H3[Heap]
-        D1[D] --> H4[Heap]
-    end
-
-    subgraph Arena["Arena Allocation"]
-        direction TB
-        Region["Contiguous Memory Region"]
-        A2[A] --> Region
-        B2[B] --> Region
-        C2[C] --> Region
-        D2[D] --> Region
-    end
-```
+<svg width="600" height="200" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L8,3 z" fill="#666"/>
+    </marker>
+  </defs>
+  <!-- Traditional Allocation -->
+  <rect x="20" y="20" width="260" height="160" rx="8" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="150" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#880e4f">Traditional Allocation</text>
+  <rect x="40" y="65" width="30" height="25" rx="3" fill="#fff" stroke="#e91e63"/>
+  <text x="55" y="82" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">A</text>
+  <rect x="40" y="100" width="30" height="25" rx="3" fill="#fff" stroke="#e91e63"/>
+  <text x="55" y="117" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">B</text>
+  <rect x="40" y="135" width="30" height="25" rx="3" fill="#fff" stroke="#e91e63"/>
+  <text x="55" y="152" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">C</text>
+  <line x1="70" y1="77" x2="120" y2="77" stroke="#666" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <line x1="70" y1="112" x2="160" y2="112" stroke="#666" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <line x1="70" y1="147" x2="200" y2="147" stroke="#666" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <rect x="130" y="65" width="50" height="25" rx="3" fill="#ffcdd2" stroke="#e91e63"/>
+  <text x="155" y="82" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Heap</text>
+  <rect x="170" y="100" width="50" height="25" rx="3" fill="#ffcdd2" stroke="#e91e63"/>
+  <text x="195" y="117" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Heap</text>
+  <rect x="210" y="135" width="50" height="25" rx="3" fill="#ffcdd2" stroke="#e91e63"/>
+  <text x="235" y="152" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Heap</text>
+  <!-- Arena Allocation -->
+  <rect x="320" y="20" width="260" height="160" rx="8" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+  <text x="450" y="45" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1b5e20">Arena Allocation</text>
+  <rect x="340" y="65" width="30" height="25" rx="3" fill="#fff" stroke="#4caf50"/>
+  <text x="355" y="82" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">A</text>
+  <rect x="340" y="100" width="30" height="25" rx="3" fill="#fff" stroke="#4caf50"/>
+  <text x="355" y="117" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">B</text>
+  <rect x="340" y="135" width="30" height="25" rx="3" fill="#fff" stroke="#4caf50"/>
+  <text x="355" y="152" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333">C</text>
+  <line x1="370" y1="77" x2="410" y2="100" stroke="#666" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <line x1="370" y1="112" x2="410" y2="112" stroke="#666" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <line x1="370" y1="147" x2="410" y2="124" stroke="#666" stroke-width="1.5" marker-end="url(#arrow2)"/>
+  <rect x="420" y="70" width="140" height="80" rx="4" fill="#c8e6c9" stroke="#4caf50" stroke-width="2"/>
+  <text x="490" y="115" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1b5e20">Contiguous Memory</text>
+</svg>
 
 **Traditional**: 4 separate heap allocations, 4 separate deallocations
 
@@ -309,17 +345,35 @@ fn generate_toc(document: &Document<'_>) -> Vec<TocEntry> {
 
 ### Architecture
 
-```mermaid
-flowchart TB
-    Source["Source Text<br/>(Markdown)"]
-    Lexer["Lexer<br/><small>Tokenizes input (logos crate)</small>"]
-    Parser["Parser<br/><small>Builds AST from tokens</small>"]
-    AST["AST<br/><small>Arena-allocated nodes</small>"]
-
-    Source --> Lexer
-    Lexer --> Parser
-    Parser --> AST
-```
+<svg width="500" height="280" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow3" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+  <!-- Source Text -->
+  <rect x="175" y="20" width="150" height="50" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="250" y="42" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#0d47a1">Source Text</text>
+  <text x="250" y="58" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">(Markdown)</text>
+  <!-- Arrow -->
+  <line x1="250" y1="70" x2="250" y2="90" stroke="#666" stroke-width="2" marker-end="url(#arrow3)"/>
+  <!-- Lexer -->
+  <rect x="150" y="95" width="200" height="50" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="250" y="117" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#e65100">Lexer</text>
+  <text x="250" y="133" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">Tokenizes input (logos crate)</text>
+  <!-- Arrow -->
+  <line x1="250" y1="145" x2="250" y2="165" stroke="#666" stroke-width="2" marker-end="url(#arrow3)"/>
+  <!-- Parser -->
+  <rect x="150" y="170" width="200" height="50" rx="8" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="250" y="192" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#6a1b9a">Parser</text>
+  <text x="250" y="208" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">Builds AST from tokens</text>
+  <!-- Arrow -->
+  <line x1="250" y1="220" x2="250" y2="240" stroke="#666" stroke-width="2" marker-end="url(#arrow3)"/>
+  <!-- AST -->
+  <rect x="150" y="245" width="200" height="50" rx="8" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+  <text x="250" y="267" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1b5e20">AST</text>
+  <text x="250" y="283" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">Arena-allocated nodes</text>
+</svg>
 
 ### Parser Options
 
@@ -439,17 +493,34 @@ URL encoding is also handled for link/image URLs.
 
 ### Architecture
 
-```mermaid
-flowchart TB
-    JS["JavaScript / TypeScript"]
-    NPM["@ox-content/napi<br/><small>TypeScript types + JS wrapper</small>"]
-    NAPI["ox_content_napi<br/><small>Rust NAPI binding layer</small>"]
-    Core["ox_content_*<br/><small>Core Rust crates</small>"]
-
-    JS --> NPM
-    NPM --> NAPI
-    NAPI --> Core
-```
+<svg width="400" height="280" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow4" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+  <!-- JavaScript / TypeScript -->
+  <rect x="100" y="15" width="200" height="45" rx="8" fill="#fff9c4" stroke="#fbc02d" stroke-width="2"/>
+  <text x="200" y="42" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#f57f17">JavaScript / TypeScript</text>
+  <!-- Arrow -->
+  <line x1="200" y1="60" x2="200" y2="75" stroke="#666" stroke-width="2" marker-end="url(#arrow4)"/>
+  <!-- NPM Package -->
+  <rect x="75" y="80" width="250" height="50" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="200" y="102" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#0d47a1">@ox-content/napi</text>
+  <text x="200" y="118" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">TypeScript types + JS wrapper</text>
+  <!-- Arrow -->
+  <line x1="200" y1="130" x2="200" y2="145" stroke="#666" stroke-width="2" marker-end="url(#arrow4)"/>
+  <!-- NAPI Binding -->
+  <rect x="75" y="150" width="250" height="50" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="200" y="172" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#e65100">ox_content_napi</text>
+  <text x="200" y="188" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">Rust NAPI binding layer</text>
+  <!-- Arrow -->
+  <line x1="200" y1="200" x2="200" y2="215" stroke="#666" stroke-width="2" marker-end="url(#arrow4)"/>
+  <!-- Core -->
+  <rect x="75" y="220" width="250" height="50" rx="8" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="200" y="242" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#880e4f">ox_content_*</text>
+  <text x="200" y="258" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">Core Rust crates</text>
+</svg>
 
 ### Data Transfer
 

@@ -324,8 +324,8 @@ const pageTitle = computed(() => {
 <template>
   <div class="Layout">
     <!-- Nav Bar -->
-    <nav class="VPNav">
-      <div class="VPNavBar">
+    <nav class="OXNav">
+      <div class="OXNavBar">
         <div class="container">
           <div class="title">
             <a href="#/" class="logo" @click.prevent="navigate('/')">
@@ -336,7 +336,7 @@ const pageTitle = computed(() => {
           <div class="content">
             <div class="curtain" />
             <div class="content-body">
-              <div class="VPNavBarSearch">
+              <div class="OXNavBarSearch">
                 <button class="search-button" @click="openSearch" aria-label="Search">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
@@ -348,11 +348,11 @@ const pageTitle = computed(() => {
                   </span>
                 </button>
               </div>
-              <nav class="VPNavBarMenu">
-                <a href="#/" class="VPNavBarMenuLink" @click.prevent="navigate('/')">Guide</a>
-                <a href="https://github.com/ubugeeei/ox-content" target="_blank" class="VPNavBarMenuLink">GitHub</a>
+              <nav class="OXNavBarMenu">
+                <a href="#/" class="OXNavBarMenuLink" @click.prevent="navigate('/')">Guide</a>
+                <a href="https://github.com/ubugeeei/ox-content" target="_blank" class="OXNavBarMenuLink">GitHub</a>
               </nav>
-              <div class="VPNavBarAppearance" />
+              <div class="OXNavBarAppearance" />
             </div>
           </div>
           <div class="hamburger" :class="{ active: sidebarOpen }" @click="sidebarOpen = !sidebarOpen">
@@ -365,7 +365,7 @@ const pageTitle = computed(() => {
     </nav>
 
     <!-- Sidebar -->
-    <aside class="VPSidebar" :class="{ open: sidebarOpen }">
+    <aside class="OXSidebar" :class="{ open: sidebarOpen }">
       <div class="curtain" @click="sidebarOpen = false" />
       <nav class="nav">
         <template v-for="group in nav" :key="group.path || group.title">
@@ -399,13 +399,13 @@ const pageTitle = computed(() => {
     </aside>
 
     <!-- Main Content -->
-    <main class="VPContent">
-      <div class="VPDoc">
+    <main class="OXContent">
+      <div class="OXDoc">
         <div class="container">
           <div class="content">
             <div class="content-container">
               <article class="main" v-if="content">
-                <div class="vp-doc" v-html="content.html" />
+                <div class="ox-doc" v-html="content.html" />
               </article>
               <div v-else class="loading">Loading...</div>
             </div>
@@ -415,7 +415,7 @@ const pageTitle = computed(() => {
           <div class="aside" v-if="content?.toc?.length">
             <div class="aside-container">
               <div class="aside-content">
-                <nav class="VPDocAsideOutline">
+                <nav class="OXDocAsideOutline">
                   <div class="content">
                     <div class="outline-title">On this page</div>
                     <nav class="outline-nav">
@@ -500,31 +500,31 @@ const pageTitle = computed(() => {
 
 <style>
 :root {
-  --vp-c-brand-1: #bd34fe;
-  --vp-c-brand-2: #a855f7;
-  --vp-c-brand-3: #9333ea;
-  --vp-c-brand-soft: rgba(189, 52, 254, 0.14);
+  --ox-c-brand-1: #bd34fe;
+  --ox-c-brand-2: #a855f7;
+  --ox-c-brand-3: #9333ea;
+  --ox-c-brand-soft: rgba(189, 52, 254, 0.14);
 
-  --vp-c-bg: #1b1b1f;
-  --vp-c-bg-soft: #222224;
-  --vp-c-bg-mute: #2a2a2d;
-  --vp-c-bg-alt: #161618;
+  --ox-c-bg: #1b1b1f;
+  --ox-c-bg-soft: #222224;
+  --ox-c-bg-mute: #2a2a2d;
+  --ox-c-bg-alt: #161618;
 
-  --vp-c-text-1: rgba(255, 255, 245, 0.86);
-  --vp-c-text-2: rgba(235, 235, 245, 0.6);
-  --vp-c-text-3: rgba(235, 235, 245, 0.38);
+  --ox-c-text-1: rgba(255, 255, 245, 0.86);
+  --ox-c-text-2: rgba(235, 235, 245, 0.6);
+  --ox-c-text-3: rgba(235, 235, 245, 0.38);
 
-  --vp-c-divider: rgba(82, 82, 89, 0.32);
-  --vp-c-border: rgba(82, 82, 89, 0.68);
+  --ox-c-divider: rgba(82, 82, 89, 0.32);
+  --ox-c-border: rgba(82, 82, 89, 0.68);
 
-  --vp-c-green-1: #3dd68c;
-  --vp-c-green-soft: rgba(61, 214, 140, 0.14);
+  --ox-c-green-1: #3dd68c;
+  --ox-c-green-soft: rgba(61, 214, 140, 0.14);
 
-  --vp-sidebar-width: 272px;
-  --vp-nav-height: 64px;
+  --ox-sidebar-width: 272px;
+  --ox-nav-height: 64px;
 
-  --vp-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  --vp-font-family-mono: 'JetBrains Mono', 'Fira Code', Menlo, Monaco, Consolas, 'Courier New', monospace;
+  --ox-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --ox-font-family-mono: 'JetBrains Mono', 'Fira Code', Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 * {
@@ -535,16 +535,16 @@ const pageTitle = computed(() => {
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--vp-nav-height) + 24px);
+  scroll-padding-top: calc(var(--ox-nav-height) + 24px);
 }
 
 body {
-  font-family: var(--vp-font-family-base);
+  font-family: var(--ox-font-family-base);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.7;
-  color: var(--vp-c-text-1);
-  background-color: var(--vp-c-bg);
+  color: var(--ox-c-text-1);
+  background-color: var(--ox-c-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -556,22 +556,22 @@ body {
 }
 
 /* Nav */
-.VPNav {
+.OXNav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 40;
-  height: var(--vp-nav-height);
-  background-color: var(--vp-c-bg);
-  border-bottom: 1px solid var(--vp-c-divider);
+  height: var(--ox-nav-height);
+  background-color: var(--ox-c-bg);
+  border-bottom: 1px solid var(--ox-c-divider);
 }
 
-.VPNavBar {
+.OXNavBar {
   height: 100%;
 }
 
-.VPNavBar .container {
+.OXNavBar .container {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -580,11 +580,11 @@ body {
   padding: 0 24px 0 24px;
 }
 
-.VPNavBar .title {
+.OXNavBar .title {
   flex-shrink: 0;
 }
 
-.VPNavBar .logo {
+.OXNavBar .logo {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -593,8 +593,8 @@ body {
   font-size: 16px;
 }
 
-.VPNavBar .logo-icon {
-  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, #41d1ff 100%);
+.OXNavBar .logo-icon {
+  background: linear-gradient(135deg, var(--ox-c-brand-1) 0%, #41d1ff 100%);
   color: white;
   padding: 4px 8px;
   border-radius: 6px;
@@ -602,11 +602,11 @@ body {
   font-size: 14px;
 }
 
-.VPNavBar .logo-text {
-  color: var(--vp-c-text-1);
+.OXNavBar .logo-text {
+  color: var(--ox-c-text-1);
 }
 
-.VPNavBar .content {
+.OXNavBar .content {
   flex: 1;
   display: flex;
   justify-content: flex-end;
@@ -614,27 +614,27 @@ body {
   gap: 16px;
 }
 
-.VPNavBar .content-body {
+.OXNavBar .content-body {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.VPNavBarMenu {
+.OXNavBarMenu {
   display: flex;
   gap: 24px;
 }
 
-.VPNavBarMenuLink {
-  color: var(--vp-c-text-1);
+.OXNavBarMenuLink {
+  color: var(--ox-c-text-1);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
   transition: color 0.25s;
 }
 
-.VPNavBarMenuLink:hover {
-  color: var(--vp-c-brand-1);
+.OXNavBarMenuLink:hover {
+  color: var(--ox-c-brand-1);
 }
 
 .hamburger {
@@ -649,145 +649,145 @@ body {
   display: block;
   width: 20px;
   height: 2px;
-  background: var(--vp-c-text-1);
+  background: var(--ox-c-text-1);
   transition: all 0.25s;
 }
 
 /* Sidebar */
-.VPSidebar {
+.OXSidebar {
   position: fixed;
-  top: var(--vp-nav-height);
+  top: var(--ox-nav-height);
   bottom: 0;
   left: 0;
   z-index: 30;
-  width: var(--vp-sidebar-width);
+  width: var(--ox-sidebar-width);
   padding: 32px 32px 96px;
-  background-color: var(--vp-c-bg-alt);
+  background-color: var(--ox-c-bg-alt);
   overflow-y: auto;
   transform: translateX(0);
   transition: transform 0.3s ease;
 }
 
-.VPSidebar .nav {
+.OXSidebar .nav {
   width: 100%;
 }
 
-.VPSidebar .group {
+.OXSidebar .group {
   margin-bottom: 24px;
 }
 
-.VPSidebar .title {
+.OXSidebar .title {
   font-size: 13px;
   font-weight: 700;
-  color: var(--vp-c-text-1);
+  color: var(--ox-c-text-1);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 8px;
 }
 
-.VPSidebar .items {
+.OXSidebar .items {
   display: flex;
   flex-direction: column;
 }
 
-.VPSidebar .link {
+.OXSidebar .link {
   display: block;
   padding: 6px 0;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
   transition: color 0.25s;
 }
 
-.VPSidebar .link:hover {
-  color: var(--vp-c-text-1);
+.OXSidebar .link:hover {
+  color: var(--ox-c-text-1);
 }
 
-.VPSidebar .link.active {
-  color: var(--vp-c-brand-1);
+.OXSidebar .link.active {
+  color: var(--ox-c-brand-1);
 }
 
 /* Content */
-.VPContent {
+.OXContent {
   flex: 1;
-  padding-top: var(--vp-nav-height);
-  padding-left: var(--vp-sidebar-width);
+  padding-top: var(--ox-nav-height);
+  padding-left: var(--ox-sidebar-width);
 }
 
-.VPDoc .container {
+.OXDoc .container {
   display: flex;
   margin: 0 auto;
   max-width: 1440px;
 }
 
-.VPDoc .content {
+.OXDoc .content {
   flex: 1;
   min-width: 0;
   padding: 48px 32px 96px;
   max-width: 784px;
 }
 
-.VPDoc .content-container {
+.OXDoc .content-container {
   margin: 0 auto;
 }
 
-.VPDoc .aside {
+.OXDoc .aside {
   flex-shrink: 0;
   width: 224px;
   padding: 48px 32px 32px 0;
 }
 
-.VPDoc .aside-container {
+.OXDoc .aside-container {
   position: sticky;
-  top: calc(var(--vp-nav-height) + 32px);
+  top: calc(var(--ox-nav-height) + 32px);
 }
 
 /* TOC */
-.VPDocAsideOutline .outline-title {
+.OXDocAsideOutline .outline-title {
   font-size: 13px;
   font-weight: 700;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 12px;
 }
 
-.VPDocAsideOutline .outline-nav {
+.OXDocAsideOutline .outline-nav {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--vp-c-divider);
+  border-left: 1px solid var(--ox-c-divider);
 }
 
-.VPDocAsideOutline .outline-link {
+.OXDocAsideOutline .outline-link {
   display: block;
   padding: 4px 0 4px 16px;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
   transition: color 0.25s;
 }
 
-.VPDocAsideOutline .outline-link:hover {
-  color: var(--vp-c-text-1);
+.OXDocAsideOutline .outline-link:hover {
+  color: var(--ox-c-text-1);
 }
 
-.VPDocAsideOutline .outline-link.level-3 {
+.OXDocAsideOutline .outline-link.level-3 {
   padding-left: 28px;
 }
 
-.VPDocAsideOutline .outline-link.level-4 {
+.OXDocAsideOutline .outline-link.level-4 {
   padding-left: 40px;
 }
 
 /* VitePress Doc Styles */
-.vp-doc {
+.ox-doc {
   font-size: 16px;
   line-height: 1.7;
 }
 
-.vp-doc h1 {
+.ox-doc h1 {
   font-size: 32px;
   font-weight: 600;
   line-height: 1.25;
@@ -795,29 +795,29 @@ body {
   letter-spacing: -0.02em;
 }
 
-.vp-doc h1 + p {
+.ox-doc h1 + p {
   margin-top: 16px;
   font-size: 18px;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
 }
 
-.vp-doc h2 {
+.ox-doc h2 {
   font-size: 24px;
   font-weight: 600;
   line-height: 1.25;
   margin: 48px 0 16px;
   padding-top: 24px;
-  border-top: 1px solid var(--vp-c-divider);
+  border-top: 1px solid var(--ox-c-divider);
   letter-spacing: -0.02em;
 }
 
-.vp-doc h2:first-child {
+.ox-doc h2:first-child {
   border-top: none;
   padding-top: 0;
   margin-top: 0;
 }
 
-.vp-doc h3 {
+.ox-doc h3 {
   font-size: 20px;
   font-weight: 600;
   line-height: 1.25;
@@ -825,133 +825,133 @@ body {
   letter-spacing: -0.01em;
 }
 
-.vp-doc h4 {
+.ox-doc h4 {
   font-size: 18px;
   font-weight: 600;
   line-height: 1.25;
   margin: 24px 0 8px;
 }
 
-.vp-doc p {
+.ox-doc p {
   margin: 16px 0;
-  color: var(--vp-c-text-1);
+  color: var(--ox-c-text-1);
 }
 
-.vp-doc a {
-  color: var(--vp-c-brand-1);
+.ox-doc a {
+  color: var(--ox-c-brand-1);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.25s;
 }
 
-.vp-doc a:hover {
-  color: var(--vp-c-brand-2);
+.ox-doc a:hover {
+  color: var(--ox-c-brand-2);
   text-decoration: underline;
 }
 
-.vp-doc strong {
+.ox-doc strong {
   font-weight: 600;
 }
 
-.vp-doc code {
-  font-family: var(--vp-font-family-mono);
+.ox-doc code {
+  font-family: var(--ox-font-family-mono);
   font-size: 0.875em;
-  background-color: var(--vp-c-bg-mute);
+  background-color: var(--ox-c-bg-mute);
   padding: 3px 6px;
   border-radius: 4px;
 }
 
-.vp-doc pre {
+.ox-doc pre {
   margin: 16px 0;
   padding: 20px 24px;
-  background-color: var(--vp-c-bg-alt);
+  background-color: var(--ox-c-bg-alt);
   border-radius: 8px;
   overflow-x: auto;
 }
 
-.vp-doc pre code {
+.ox-doc pre code {
   background: none;
   padding: 0;
   font-size: 14px;
   line-height: 1.6;
 }
 
-.vp-doc ul,
-.vp-doc ol {
+.ox-doc ul,
+.ox-doc ol {
   margin: 16px 0;
   padding-left: 24px;
 }
 
-.vp-doc li {
+.ox-doc li {
   margin: 8px 0;
 }
 
-.vp-doc li::marker {
-  color: var(--vp-c-text-3);
+.ox-doc li::marker {
+  color: var(--ox-c-text-3);
 }
 
-.vp-doc blockquote {
+.ox-doc blockquote {
   margin: 16px 0;
   padding: 12px 16px;
-  background-color: var(--vp-c-bg-soft);
-  border-left: 4px solid var(--vp-c-brand-1);
+  background-color: var(--ox-c-bg-soft);
+  border-left: 4px solid var(--ox-c-brand-1);
   border-radius: 4px;
 }
 
-.vp-doc blockquote p {
+.ox-doc blockquote p {
   margin: 0;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
 }
 
-.vp-doc hr {
+.ox-doc hr {
   margin: 32px 0;
   border: none;
-  border-top: 1px solid var(--vp-c-divider);
+  border-top: 1px solid var(--ox-c-divider);
 }
 
-.vp-doc table {
+.ox-doc table {
   width: 100%;
   margin: 16px 0;
   border-collapse: collapse;
 }
 
-.vp-doc th,
-.vp-doc td {
+.ox-doc th,
+.ox-doc td {
   padding: 12px 16px;
   text-align: left;
-  border: 1px solid var(--vp-c-divider);
+  border: 1px solid var(--ox-c-divider);
 }
 
-.vp-doc th {
-  background-color: var(--vp-c-bg-soft);
+.ox-doc th {
+  background-color: var(--ox-c-bg-soft);
   font-weight: 600;
 }
 
-.vp-doc img {
+.ox-doc img {
   max-width: 100%;
   border-radius: 8px;
 }
 
 /* Shiki Theme Override */
-.vp-doc pre .shiki {
+.ox-doc pre .shiki {
   background-color: transparent !important;
 }
 
 /* Loading */
 .loading {
   padding: 48px;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
 }
 
 /* Responsive */
 @media (max-width: 1280px) {
-  .VPDoc .aside {
+  .OXDoc .aside {
     display: none;
   }
 }
 
 /* Search Button */
-.VPNavBarSearch {
+.OXNavBarSearch {
   display: flex;
   align-items: center;
 }
@@ -959,41 +959,53 @@ body {
 .search-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 8px 12px;
-  background-color: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
+  padding: 8px;
+  background-color: var(--ox-c-bg-soft);
+  border: 1px solid var(--ox-c-divider);
   border-radius: 8px;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
   cursor: pointer;
   font-size: 14px;
   transition: all 0.25s;
 }
 
 .search-button:hover {
-  border-color: var(--vp-c-brand-1);
-  color: var(--vp-c-text-1);
+  border-color: var(--ox-c-brand-1);
+  color: var(--ox-c-text-1);
 }
 
 .search-text {
   display: none;
 }
 
+.search-shortcut {
+  display: none;
+}
+
 @media (min-width: 640px) {
+  .search-button {
+    padding: 8px 12px;
+    min-width: 180px;
+    justify-content: flex-start;
+  }
+
   .search-text {
     display: inline;
   }
 
-  .search-button {
-    min-width: 180px;
+  .search-shortcut {
+    display: inline;
+    margin-left: auto;
   }
 }
 
 .search-shortcut kbd {
   padding: 2px 6px;
-  background-color: var(--vp-c-bg-mute);
+  background-color: var(--ox-c-bg-mute);
   border-radius: 4px;
-  font-family: var(--vp-font-family-mono);
+  font-family: var(--ox-font-family-mono);
   font-size: 12px;
 }
 
@@ -1014,8 +1026,8 @@ body {
   width: 100%;
   max-width: 600px;
   margin: 0 16px;
-  background-color: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-divider);
+  background-color: var(--ox-c-bg);
+  border: 1px solid var(--ox-c-divider);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -1026,12 +1038,12 @@ body {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid var(--ox-c-divider);
 }
 
 .search-icon {
   flex-shrink: 0;
-  color: var(--vp-c-text-3);
+  color: var(--ox-c-text-3);
 }
 
 .search-input {
@@ -1040,11 +1052,11 @@ body {
   border: none;
   outline: none;
   font-size: 16px;
-  color: var(--vp-c-text-1);
+  color: var(--ox-c-text-1);
 }
 
 .search-input::placeholder {
-  color: var(--vp-c-text-3);
+  color: var(--ox-c-text-3);
 }
 
 .search-close {
@@ -1057,11 +1069,11 @@ body {
 
 .search-close kbd {
   padding: 4px 8px;
-  background-color: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
+  background-color: var(--ox-c-bg-soft);
+  border: 1px solid var(--ox-c-divider);
   border-radius: 4px;
-  color: var(--vp-c-text-2);
-  font-family: var(--vp-font-family-mono);
+  color: var(--ox-c-text-2);
+  font-family: var(--ox-font-family-mono);
   font-size: 12px;
 }
 
@@ -1076,14 +1088,14 @@ body {
   padding: 12px 16px;
   border-radius: 8px;
   text-decoration: none;
-  color: var(--vp-c-text-1);
+  color: var(--ox-c-text-1);
   cursor: pointer;
   transition: background-color 0.15s;
 }
 
 .search-result:hover,
 .search-result.selected {
-  background-color: var(--vp-c-bg-soft);
+  background-color: var(--ox-c-bg-soft);
 }
 
 .result-title {
@@ -1094,7 +1106,7 @@ body {
 
 .result-snippet {
   font-size: 13px;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
   line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1106,7 +1118,7 @@ body {
 .search-empty {
   padding: 32px 16px;
   text-align: center;
-  color: var(--vp-c-text-2);
+  color: var(--ox-c-text-2);
 }
 
 .search-footer {
@@ -1115,8 +1127,8 @@ body {
   justify-content: center;
   gap: 16px;
   padding: 12px 16px;
-  border-top: 1px solid var(--vp-c-divider);
-  background-color: var(--vp-c-bg-soft);
+  border-top: 1px solid var(--ox-c-divider);
+  background-color: var(--ox-c-bg-soft);
 }
 
 .search-hint {
@@ -1124,15 +1136,15 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--vp-c-text-3);
+  color: var(--ox-c-text-3);
 }
 
 .search-hint kbd {
   padding: 2px 6px;
-  background-color: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-divider);
+  background-color: var(--ox-c-bg);
+  border: 1px solid var(--ox-c-divider);
   border-radius: 4px;
-  font-family: var(--vp-font-family-mono);
+  font-family: var(--ox-font-family-mono);
   font-size: 11px;
 }
 
@@ -1140,8 +1152,50 @@ body {
   padding: 2px 4px;
 }
 
+/* Mobile search modal adjustments */
+@media (max-width: 640px) {
+  .search-modal-overlay {
+    padding-top: 0;
+    align-items: stretch;
+  }
+
+  .search-modal {
+    margin: 0;
+    max-width: 100%;
+    border-radius: 0;
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .search-modal-header {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .search-results {
+    flex: 1;
+    max-height: none;
+  }
+
+  .search-footer {
+    gap: 8px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+  }
+
+  .search-hint {
+    font-size: 11px;
+  }
+
+  .search-hint:first-child {
+    display: none;
+  }
+}
+
 @media (max-width: 960px) {
-  .VPNavBarMenu {
+  .OXNavBarMenu {
     display: none;
   }
 
@@ -1149,22 +1203,22 @@ body {
     display: flex;
   }
 
-  .VPContent {
+  .OXContent {
     padding-left: 0;
   }
 
-  .VPSidebar {
+  .OXSidebar {
     transform: translateX(-100%);
     width: 100%;
     max-width: 320px;
-    background-color: var(--vp-c-bg);
+    background-color: var(--ox-c-bg);
   }
 
-  .VPSidebar.open {
+  .OXSidebar.open {
     transform: translateX(0);
   }
 
-  .VPSidebar .curtain {
+  .OXSidebar .curtain {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
@@ -1174,12 +1228,12 @@ body {
     pointer-events: none;
   }
 
-  .VPSidebar.open .curtain {
+  .OXSidebar.open .curtain {
     opacity: 1;
     pointer-events: auto;
   }
 
-  .VPDoc .content {
+  .OXDoc .content {
     padding: 24px 24px 96px;
   }
 }
