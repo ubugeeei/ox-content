@@ -7,7 +7,7 @@ description: High-performance documentation toolkit built in Rust. Framework-agn
 
 **A framework-agnostic documentation tooling for Vite+**
 
-![Ox Content Logo](/ox-content/logo.svg)
+![Ox Content Logo](./logo.svg)
 
 ---
 
@@ -29,7 +29,7 @@ Ox Content leverages the [Oxc](https://oxc.rs/) philosophy:
 - **Native performance** - Rust core with NAPI bindings
 - **Minimal output** - SSG-first approach, ship only what you need
 
-![Architecture](/ox-content/architecture.svg)
+![Architecture](./architecture.svg)
 
 ## Core Philosophy
 
@@ -184,19 +184,19 @@ The async API (`parseAndRenderAsync`, `transformAsync`) runs on a worker thread,
 
 ### Parse Speed
 
-![Parse Benchmark](/ox-content/benchmark-parse.svg)
+![Parse Benchmark](./benchmark-parse.svg)
 
 ### Render Speed
 
-![Render Benchmark](/ox-content/benchmark-render.svg)
+![Render Benchmark](./benchmark-render.svg)
 
 ### Build Output Size
 
-![Bundle Size Benchmark](/ox-content/benchmark-bundle.svg)
+![Bundle Size Benchmark](./benchmark-bundle.svg)
 
 ### Production Build Time
 
-![Build Time Benchmark](/ox-content/benchmark-build.svg)
+![Build Time Benchmark](./benchmark-build.svg)
 
 > **Note:** ox-content (bare) produces pure HTML without JavaScript/CSS, ideal for custom themes or benchmarking. VitePress always includes Vue runtime for client-side hydration.
 

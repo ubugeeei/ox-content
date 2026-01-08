@@ -15,7 +15,7 @@
     .label { font: 12px system-ui, sans-serif; fill: #4a5568; }
     .value { font: bold 11px system-ui, sans-serif; fill: #1a202c; }
     .unit { font: 10px system-ui, sans-serif; fill: #718096; }
-    .ratio { font: bold 10px system-ui, sans-serif; fill: #718096; }
+    .ratio { font: bold 10px system-ui, sans-serif; fill: #2d3748; }
   </style>
 
   <!-- Background -->

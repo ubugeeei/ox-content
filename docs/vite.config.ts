@@ -8,17 +8,21 @@ import { oxContent } from 'vite-plugin-ox-content';
  * Dogfooding: Using ox-content to build ox-content's own documentation.
  * Uses the base oxContent plugin which transforms .md to JavaScript modules.
  */
-export default defineConfig({
-  // Site base path (for GitHub Pages)
-  base: '/ox-content/',
+export default defineConfig(({ mode }) => {
+  const isProd = mode === 'production';
+  const base = isProd ? '/ox-content/' : '/';
 
-  plugins: [
-    vue(),
+  return {
+    // Site base path (for GitHub Pages in prod, root for dev)
+    base,
 
-    oxContent({
-      srcDir: '.',
-      outDir: 'dist/docs',
-      base: '/ox-content/',
+    plugins: [
+      vue(),
+
+      oxContent({
+        srcDir: '.',
+        outDir: 'dist/docs',
+        base,
 
       // SSG options
       ssg: {
@@ -46,9 +50,10 @@ export default defineConfig({
         generateNav: true,
       },
     }),
-  ],
+    ],
 
-  build: {
-    outDir: 'dist/docs',
-  },
+    build: {
+      outDir: 'dist/docs',
+    },
+  };
 });

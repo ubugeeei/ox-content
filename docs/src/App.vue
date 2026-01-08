@@ -547,6 +547,7 @@ body {
   background-color: var(--ox-c-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 .Layout {
@@ -726,6 +727,7 @@ body {
   min-width: 0;
   padding: 48px 32px 96px;
   max-width: 784px;
+  overflow-x: hidden;
 }
 
 .OXDoc .content-container {
@@ -785,6 +787,9 @@ body {
 .ox-doc {
   font-size: 16px;
   line-height: 1.7;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .ox-doc h1 {
@@ -859,6 +864,7 @@ body {
   background-color: var(--ox-c-bg-mute);
   padding: 3px 6px;
   border-radius: 4px;
+  word-break: break-all;
 }
 
 .ox-doc pre {
@@ -913,6 +919,9 @@ body {
   width: 100%;
   margin: 16px 0;
   border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ox-doc th,
@@ -929,7 +938,9 @@ body {
 
 .ox-doc img {
   max-width: 100%;
+  height: auto;
   border-radius: 8px;
+  display: block;
 }
 
 /* Shiki Theme Override */

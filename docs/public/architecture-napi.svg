@@ -1,0 +1,28 @@
+<svg width="400" height="280" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow4" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+  <!-- JavaScript / TypeScript -->
+  <rect x="100" y="15" width="200" height="45" rx="8" fill="#fff9c4" stroke="#fbc02d" stroke-width="2"/>
+  <text x="200" y="42" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#f57f17">JavaScript / TypeScript</text>
+  <!-- Arrow -->
+  <line x1="200" y1="60" x2="200" y2="75" stroke="#666" stroke-width="2" marker-end="url(#arrow4)"/>
+  <!-- NPM Package -->
+  <rect x="75" y="80" width="250" height="50" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="200" y="102" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#0d47a1">@ox-content/napi</text>
+  <text x="200" y="118" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">TypeScript types + JS wrapper</text>
+  <!-- Arrow -->
+  <line x1="200" y1="130" x2="200" y2="145" stroke="#666" stroke-width="2" marker-end="url(#arrow4)"/>
+  <!-- NAPI Binding -->
+  <rect x="75" y="150" width="250" height="50" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="200" y="172" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#e65100">ox_content_napi</text>
+  <text x="200" y="188" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">Rust NAPI binding layer</text>
+  <!-- Arrow -->
+  <line x1="200" y1="200" x2="200" y2="215" stroke="#666" stroke-width="2" marker-end="url(#arrow4)"/>
+  <!-- Core -->
+  <rect x="75" y="220" width="250" height="50" rx="8" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="200" y="242" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#880e4f">ox_content_*</text>
+  <text x="200" y="258" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666">Core Rust crates</text>
+</svg>

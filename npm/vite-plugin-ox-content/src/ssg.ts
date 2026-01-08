@@ -299,7 +299,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     .content img { max-width: 100%; height: auto; border-radius: 8px; display: block; }
     .content img[alt*="Logo"] { max-width: 200px; display: block; margin: 1rem 0; }
     .content img[alt*="Architecture"] { max-width: 600px; }
-    .content img[alt*="Benchmark"] { max-width: 550px; }
+    .content img[alt*="Benchmark"] { max-width: 680px; }
     .content hr { border: none; border-top: 1px solid var(--color-border); margin: 2rem 0; }
 
     /* Responsive */

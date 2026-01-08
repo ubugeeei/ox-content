@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250">
   <defs>
     <linearGradient id="oxGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#ff6b35"/>
@@ -23,11 +23,11 @@
     .label { font: 12px system-ui, sans-serif; fill: #4a5568; }
     .value { font: bold 11px system-ui, sans-serif; fill: #1a202c; }
     .unit { font: 10px system-ui, sans-serif; fill: #718096; }
-    .ratio { font: bold 10px system-ui, sans-serif; fill: #718096; }
+    .ratio { font: bold 10px system-ui, sans-serif; fill: #2d3748; }
   </style>
 
   <!-- Background -->
-  <rect width="600" height="250" fill="#f8f9fa" rx="8"/>
+  <rect width="680" height="250" fill="#f8f9fa" rx="8"/>
 
   <!-- Title -->
   <text x="300" y="24" text-anchor="middle" class="title">Build Output Size (Gzipped)</text>
