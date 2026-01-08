@@ -1,6 +1,6 @@
 {
   "name": "@ox-content/napi",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "description": "Node.js bindings for Ox Content - High-performance Markdown parser",
   "main": "index.js",
   "types": "index.d.ts",
@@ -29,7 +29,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/ox-content"
+    "url": "https://github.com/ubugeeei/ox-content.git",
+    "directory": "crates/ox_content_napi"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
   },
   "keywords": [
     "markdown",

@@ -1,6 +1,7 @@
 [tools]
 rust = "1.92"
 node = "22"
+bun = "latest"
 
 [env]
 RUST_BACKTRACE = "1"
@@ -42,8 +43,20 @@ description = "Run all lints (clippy + fmt-check)"
 depends = ["clippy", "fmt-check"]
 
 [tasks.bench]
-description = "Run benchmarks"
+description = "Run all benchmarks (Rust + JS)"
+depends = ["bench:rust", "bench:parse", "bench:bundle"]
+
+[tasks."bench:rust"]
+description = "Run Rust benchmarks"
 run = "cargo bench --workspace"
+
+[tasks."bench:parse"]
+description = "Run parse/render speed benchmarks"
+run = "pnpm -r --filter='ox-content-bundle-size-benchmark' run benchmark:parse"
+
+[tasks."bench:bundle"]
+description = "Run bundle size benchmarks"
+run = "pnpm -r --filter='ox-content-bundle-size-benchmark' run benchmark"
 
 [tasks."doc:cargo"]
 description = "Generate Rust documentation"
@@ -139,19 +152,19 @@ description = "Run source docs generator example"
 dir = "examples/gen-source-docs"
 run = "pnpm run dev"
 
-[tasks.packages-build]
-description = "Build all vite-plugin packages"
-run = "pnpm -r --filter 'vite-plugin-ox-content' --filter 'vite-plugin-ox-content-vue' run build"
+[tasks.npm-build]
+description = "Build all npm packages"
+run = "pnpm -r --filter './npm/*' run build"
 
 [tasks.dev]
 description = "Start documentation dev server"
-depends = ["napi-build", "packages-build"]
+depends = ["napi-build", "npm-build"]
 dir = "docs"
 run = "pnpm dev"
 
 [tasks.dev-build]
 description = "Build documentation site"
-depends = ["napi-build", "packages-build"]
+depends = ["napi-build", "npm-build"]
 dir = "docs"
 run = "pnpm build"
 
@@ -164,6 +177,14 @@ run = "pnpm preview"
 description = "Install all dependencies with pnpm"
 run = "pnpm install"
 
+[tasks.release]
+description = "Release a new version (usage: mise run release -- patch|minor|major|x.y.z)"
+run = "bun scripts/release.ts"
+
 [tasks.examples-install]
 description = "Install all example dependencies"
 depends = ["install"]
+
+[tasks.ogimage]
+description = "Run ox_content_og_image CLI"
+run = "cargo run -p ox_content_og_image --features cli --"

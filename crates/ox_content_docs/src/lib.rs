@@ -9,5 +9,7 @@ mod extractor;
 mod generator;
 
 pub use config::DocsConfig;
-pub use extractor::{DocExtractor, DocItem, DocItemKind, ExtractError, ExtractResult};
+pub use extractor::{
+    DocExtractor, DocItem, DocItemKind, DocTag, ExtractError, ExtractResult, ParamDoc,
+};
 pub use generator::{DocsGenerator, GenerateError, GenerateResult};

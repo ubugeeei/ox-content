@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200">
+  <defs>
+    <linearGradient id="rustGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b7410e"/>
+      <stop offset="100%" style="stop-color:#ce5937"/>
+    </linearGradient>
+    <linearGradient id="napiGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#68a063"/>
+      <stop offset="100%" style="stop-color:#8bc34a"/>
+    </linearGradient>
+    <linearGradient id="viteGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#646cff"/>
+      <stop offset="100%" style="stop-color:#9f7aea"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    .title { font: bold 12px system-ui, sans-serif; fill: #fff; }
+    .subtitle { font: 10px system-ui, sans-serif; fill: rgba(255,255,255,0.8); }
+    .arrow { fill: none; stroke: #666; stroke-width: 2; marker-end: url(#arrowhead); }
+  </style>
+
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+  </marker>
+
+  <!-- Rust Core -->
+  <rect x="20" y="30" width="180" height="140" rx="8" fill="url(#rustGrad)"/>
+  <text x="110" y="55" text-anchor="middle" class="title">Rust Core</text>
+
+  <rect x="35" y="70" width="150" height="25" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <text x="110" y="87" text-anchor="middle" class="subtitle">Parser (bumpalo)</text>
+
+  <rect x="35" y="100" width="150" height="25" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <text x="110" y="117" text-anchor="middle" class="subtitle">Renderer</text>
+
+  <rect x="35" y="130" width="150" height="25" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <text x="110" y="147" text-anchor="middle" class="subtitle">Allocator</text>
+
+  <!-- Arrow 1 -->
+  <path d="M 210 100 L 250 100" class="arrow"/>
+
+  <!-- NAPI Bindings -->
+  <rect x="260" y="50" width="160" height="100" rx="8" fill="url(#napiGrad)"/>
+  <text x="340" y="80" text-anchor="middle" class="title">NAPI Bindings</text>
+  <text x="340" y="100" text-anchor="middle" class="subtitle">@ox-content/napi</text>
+  <text x="340" y="120" text-anchor="middle" class="subtitle">Zero-copy transfer</text>
+
+  <!-- Arrow 2 -->
+  <path d="M 430 100 L 470 100" class="arrow"/>
+
+  <!-- Vite Plugins -->
+  <rect x="480" y="30" width="180" height="140" rx="8" fill="url(#viteGrad)"/>
+  <text x="570" y="55" text-anchor="middle" class="title">Vite Plugins</text>
+
+  <rect x="495" y="70" width="150" height="25" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <text x="570" y="87" text-anchor="middle" class="subtitle">Vue</text>
+
+  <rect x="495" y="100" width="150" height="25" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <text x="570" y="117" text-anchor="middle" class="subtitle">React</text>
+
+  <rect x="495" y="130" width="150" height="25" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <text x="570" y="147" text-anchor="middle" class="subtitle">Svelte</text>
+</svg>

@@ -1,6 +1,7 @@
 {
-  "name": "ox-content-monorepo",
+  "name": "ox-content",
   "private": true,
+  "version": "0.0.0",
   "packageManager": "pnpm@10.27.0",
   "scripts": {
     "build": "pnpm -r run build",

@@ -142,6 +142,73 @@ type InlineNode =
   | 'footnoteReference';
 ```
 
+## Search API
+
+The NAPI bindings include a full-text search engine.
+
+### buildSearchIndex(documents)
+
+Builds a search index from an array of documents.
+
+```ts
+import { buildSearchIndex } from '@ox-content/napi';
+
+const documents = [
+  {
+    id: 'getting-started',
+    title: 'Getting Started',
+    url: '/getting-started',
+    body: 'Welcome to the documentation...',
+    headings: ['Installation', 'Quick Start'],
+    code: ['npm install package'],
+  },
+];
+
+const indexJson = buildSearchIndex(documents);
+```
+
+### searchIndex(indexJson, query, options?)
+
+Searches a serialized index.
+
+```ts
+import { searchIndex } from '@ox-content/napi';
+
+const results = searchIndex(indexJson, 'getting started', {
+  limit: 10,
+  prefix: true,
+});
+
+// results: Array<{
+//   id: string;
+//   title: string;
+//   url: string;
+//   score: number;
+//   matches: string[];
+//   snippet: string;
+// }>
+```
+
+### extractSearchContent(source, id, url, options?)
+
+Extracts searchable content from Markdown source.
+
+```ts
+import { extractSearchContent } from '@ox-content/napi';
+
+const markdown = '# Hello World\n\nThis is content.';
+const doc = extractSearchContent(markdown, 'hello', '/hello', { gfm: true });
+
+// doc: {
+//   id: 'hello',
+//   title: 'Hello World',
+//   url: '/hello',
+//   body: 'This is content.',
+//   headings: ['Hello World'],
+//   code: [],
+// }
+```
+
 ## Performance
 
 The NAPI bindings provide near-native performance:

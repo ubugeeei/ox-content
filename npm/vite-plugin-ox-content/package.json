@@ -1,0 +1,60 @@
+{
+  "name": "vite-plugin-ox-content",
+  "version": "0.3.0",
+  "description": "Vite plugin for Ox Content - High-performance Markdown processing with Environment API",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vite": "catalog:"
+  },
+  "dependencies": {
+    "@ox-content/napi": "workspace:*",
+    "glob": "^11.0.0",
+    "unified": "^11.0.5",
+    "rehype-parse": "^9.0.1",
+    "rehype-stringify": "^10.0.1",
+    "shiki": "^1.24.0",
+    "mermaid": "^11.4.0"
+  },
+  "devDependencies": {
+    "@types/hast": "^3.0.4",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "markdown",
+    "ox-content",
+    "ssg",
+    "environment-api"
+  ],
+  "license": "MIT",
+  "author": "ubugeeei",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/ox-content.git",
+    "directory": "npm/vite-plugin-ox-content"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  }
+}

@@ -16,7 +16,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "vite-plugin-ox-content-vue": ["../../packages/vite-plugin-ox-content-vue/src/index.ts"]
+      "vite-plugin-ox-content-vue": ["../../npm/vite-plugin-ox-content-vue/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"]

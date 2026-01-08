@@ -1,54 +1,56 @@
 import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
 import { oxContent } from 'vite-plugin-ox-content';
 
 /**
  * Ox Content Documentation Site
  *
  * Dogfooding: Using ox-content to build ox-content's own documentation.
- * Uses the base oxContent plugin which transforms .md to JavaScript modules.
+ * Uses SSG to generate static HTML from Markdown files.
  */
-export default defineConfig({
-  // Site base path (for GitHub Pages)
-  base: '/ox-content/',
+export default defineConfig(({ mode }) => {
+  const isProd = mode === 'production';
+  const base = isProd ? '/ox-content/' : '/';
 
-  plugins: [
-    vue(),
+  return {
+    // Site base path (for GitHub Pages in prod, root for dev)
+    base,
 
-    oxContent({
-      srcDir: '.',
-      outDir: 'dist/docs',
-      base: '/ox-content/',
+    plugins: [
+      oxContent({
+        srcDir: '.',
+        outDir: 'dist/docs',
+        base,
+
+      // SSG options
+      ssg: {
+        siteName: 'Ox Content',
+        ogImage: 'https://ubugeeei.github.io/ox-content/og-image.png',
+      },
 
       // Enable syntax highlighting with Shiki
       highlight: true,
       highlightTheme: 'vitesse-dark',
 
-      // Enable mermaid diagrams
-      mermaid: true,
+      // Mermaid diagrams disabled (using SVG instead)
+      mermaid: false,
 
-      // Auto-generate API docs from source
+      // API documentation generation (like cargo doc)
       docs: {
         enabled: true,
-        src: ['../packages/vite-plugin-ox-content/src'],
+        src: ['../npm/vite-plugin-ox-content/src'],
         out: 'api',
         include: ['**/*.ts'],
         exclude: ['**/*.test.*'],
         toc: true,
         groupBy: 'file',
-      },
-
-      // OG Image generation
-      ogImage: true,
-      ogImageOptions: {
-        background: '#1a1a2e',
-        textColor: '#ffffff',
-        accentColor: '#bd34fe',
+        githubUrl: 'https://github.com/ubugeeei/ox-content',
+        generateNav: true,
       },
     }),
-  ],
+    ],
 
-  build: {
-    outDir: 'dist/docs',
-  },
+    build: {
+      outDir: 'dist/docs',
+    },
+  };
 });

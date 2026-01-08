@@ -1,0 +1,12 @@
+{
+  "name": "benchmark-vitepress",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vitepress build"
+  },
+  "devDependencies": {
+    "vitepress": "^1.5.0"
+  }
+}

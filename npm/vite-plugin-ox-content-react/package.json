@@ -1,0 +1,60 @@
+{
+  "name": "vite-plugin-ox-content-react",
+  "version": "0.3.0",
+  "description": "React integration for Ox Content - Embed React components in Markdown",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vite": "catalog:"
+  },
+  "dependencies": {
+    "vite-plugin-ox-content": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "react",
+    "markdown",
+    "ox-content",
+    "mdx"
+  ],
+  "license": "MIT",
+  "author": "ubugeeei",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/ox-content.git",
+    "directory": "npm/vite-plugin-ox-content-react"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  }
+}

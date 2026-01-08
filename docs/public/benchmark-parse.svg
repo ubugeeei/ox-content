@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 200">
+  <defs>
+    <linearGradient id="oxGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b35"/>
+      <stop offset="100%" style="stop-color:#f7931a"/>
+    </linearGradient>
+    <linearGradient id="grayGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4a5568"/>
+      <stop offset="100%" style="stop-color:#718096"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    .title { font: bold 14px system-ui, sans-serif; fill: #1a202c; }
+    .label { font: 12px system-ui, sans-serif; fill: #4a5568; }
+    .value { font: bold 11px system-ui, sans-serif; fill: #1a202c; }
+    .unit { font: 10px system-ui, sans-serif; fill: #718096; }
+    .ratio { font: bold 10px system-ui, sans-serif; fill: #2d3748; }
+  </style>
+
+  <!-- Background -->
+  <rect width="650" height="200" fill="#f8f9fa" rx="8"/>
+
+  <!-- Title -->
+  <text x="325" y="24" text-anchor="middle" class="title">Parse Speed (Large 48.7KB)</text>
+
+  <!-- ox-content: 2,880 ops/s = 1.00x -->
+  <text x="120" y="58" text-anchor="end" class="label">@ox-content/napi</text>
+  <rect x="130" y="45" width="400" height="20" rx="4" fill="url(#oxGrad)"/>
+  <text x="500" y="58" class="ratio" fill="#fff">1.00x</text>
+  <text x="540" y="58" class="value">2,880</text>
+  <text x="585" y="58" class="unit">ops/s</text>
+
+  <!-- markdown-it: 506 ops/s = 5.69x -->
+  <text x="120" y="88" text-anchor="end" class="label">markdown-it</text>
+  <rect x="130" y="75" width="70" height="20" rx="4" fill="url(#grayGrad)"/>
+  <text x="208" y="88" class="value">506</text>
+  <text x="240" y="88" class="unit">ops/s</text>
+  <text x="290" y="88" class="ratio">5.69x</text>
+
+  <!-- marked: 313 ops/s = 9.20x -->
+  <text x="120" y="118" text-anchor="end" class="label">marked</text>
+  <rect x="130" y="105" width="43" height="20" rx="4" fill="url(#grayGrad)"/>
+  <text x="180" y="118" class="value">313</text>
+  <text x="212" y="118" class="unit">ops/s</text>
+  <text x="262" y="118" class="ratio">9.20x</text>
+
+  <!-- remark: 21 ops/s = 137x -->
+  <text x="120" y="148" text-anchor="end" class="label">remark</text>
+  <rect x="130" y="135" width="3" height="20" rx="1" fill="url(#grayGrad)"/>
+  <text x="140" y="148" class="value">21</text>
+  <text x="160" y="148" class="unit">ops/s</text>
+  <text x="205" y="148" class="ratio">137x</text>
+
+  <!-- Footer -->
+  <text x="325" y="180" text-anchor="middle" class="unit">Higher is better. Ratio shows how much slower vs ox-content.</text>
+</svg>

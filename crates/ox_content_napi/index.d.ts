@@ -53,6 +53,10 @@ export interface JsTransformOptions {
   autolinks?: boolean
   /** Maximum TOC depth (1-6). */
   tocMaxDepth?: number
+  /** Convert `.md` links to `.html` links for SSG output. */
+  convertMdLinks?: boolean
+  /** Base URL for absolute link conversion (e.g., "/" or "/docs/"). */
+  baseUrl?: string
 }
 /** Parser options for JavaScript. */
 export interface JsParserOptions {
@@ -87,3 +91,140 @@ export declare function version(): string
  * This is the main entry point for unplugin-ox-content.
  */
 export declare function transform(source: string, options?: JsTransformOptions | undefined | null): TransformResult
+/** Parses Markdown and renders to HTML asynchronously (runs on worker thread). */
+export declare function parseAndRenderAsync(source: string, options?: JsParserOptions | undefined | null): Promise<unknown>
+/** Transforms Markdown source asynchronously (runs on worker thread). */
+export declare function transformAsync(source: string, options?: JsTransformOptions | undefined | null): Promise<unknown>
+/** OG image configuration for JavaScript. */
+export interface JsOgImageConfig {
+  /** Image width in pixels. */
+  width?: number
+  /** Image height in pixels. */
+  height?: number
+  /** Background color (hex). */
+  backgroundColor?: string
+  /** Text color (hex). */
+  textColor?: string
+  /** Title font size. */
+  titleFontSize?: number
+  /** Description font size. */
+  descriptionFontSize?: number
+}
+/** OG image data for JavaScript. */
+export interface JsOgImageData {
+  /** Page title. */
+  title: string
+  /** Page description. */
+  description?: string
+  /** Site name. */
+  siteName?: string
+  /** Author name. */
+  author?: string
+}
+/**
+ * Generates an OG image as SVG.
+ *
+ * This function generates an SVG representation of an OG image
+ * that can be used for social media previews.
+ */
+export declare function generateOgImageSvg(data: JsOgImageData, config?: JsOgImageConfig | undefined | null): string
+/** Search document for JavaScript. */
+export interface JsSearchDocument {
+  /** Unique document identifier. */
+  id: string
+  /** Document title. */
+  title: string
+  /** Document URL. */
+  url: string
+  /** Document body text. */
+  body: string
+  /** Document headings. */
+  headings: Array<string>
+  /** Code snippets. */
+  code: Array<string>
+}
+/** Search result for JavaScript. */
+export interface JsSearchResult {
+  /** Document ID. */
+  id: string
+  /** Document title. */
+  title: string
+  /** Document URL. */
+  url: string
+  /** Relevance score. */
+  score: number
+  /** Matched terms. */
+  matches: Array<string>
+  /** Content snippet. */
+  snippet: string
+}
+/** Search options for JavaScript. */
+export interface JsSearchOptions {
+  /** Maximum number of results. */
+  limit?: number
+  /** Enable prefix matching. */
+  prefix?: boolean
+  /** Enable fuzzy matching. */
+  fuzzy?: boolean
+  /** Minimum score threshold. */
+  threshold?: number
+}
+/**
+ * Builds a search index from documents.
+ *
+ * Takes an array of documents and returns a serialized search index as JSON.
+ */
+export declare function buildSearchIndex(documents: Array<JsSearchDocument>): string
+/**
+ * Searches a serialized index.
+ *
+ * Takes a JSON-serialized index, query string, and options.
+ * Returns an array of search results.
+ */
+export declare function searchIndex(indexJson: string, query: string, options?: JsSearchOptions | undefined | null): Array<JsSearchResult>
+/** Navigation item for SSG. */
+export interface JsSsgNavItem {
+  /** Display title. */
+  title: string
+  /** URL path. */
+  path: string
+  /** Full href. */
+  href: string
+}
+/** Navigation group for SSG. */
+export interface JsSsgNavGroup {
+  /** Group title. */
+  title: string
+  /** Navigation items. */
+  items: Array<JsSsgNavItem>
+}
+/** Page data for SSG. */
+export interface JsSsgPageData {
+  /** Page title. */
+  title: string
+  /** Page description. */
+  description?: string
+  /** Page content HTML. */
+  content: string
+  /** Table of contents entries. */
+  toc: Array<TocEntry>
+  /** URL path. */
+  path: string
+}
+/** SSG configuration. */
+export interface JsSsgConfig {
+  /** Site name. */
+  siteName: string
+  /** Base URL path. */
+  base: string
+  /** OG image URL. */
+  ogImage?: string
+}
+/** Generates SSG HTML page with navigation and search. */
+export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Array<JsSsgNavGroup>, config: JsSsgConfig): string
+/**
+ * Extracts searchable content from Markdown source.
+ *
+ * Parses the Markdown and extracts title, body text, headings, and code.
+ */
+export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument

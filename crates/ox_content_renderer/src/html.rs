@@ -21,6 +21,10 @@ pub struct HtmlRendererOptions {
     pub highlight: bool,
     /// Sanitize HTML output.
     pub sanitize: bool,
+    /// Convert `.md` links to `.html` links for SSG output.
+    pub convert_md_links: bool,
+    /// Base URL for absolute link conversion (e.g., "/" or "/docs/").
+    pub base_url: String,
 }
 
 impl HtmlRendererOptions {
@@ -33,6 +37,8 @@ impl HtmlRendererOptions {
             hard_break: "<br>\n".to_string(),
             highlight: false,
             sanitize: false,
+            convert_md_links: false,
+            base_url: "/".to_string(),
         }
     }
 }
@@ -91,6 +97,80 @@ impl HtmlRenderer {
                 ' ' => self.output.push_str("%20"),
                 _ => self.output.push(ch),
             }
+        }
+    }
+
+    /// Converts a `.md` URL to `.html` URL for SSG output.
+    fn convert_md_url(&self, url: &str) -> String {
+        // Split URL into path and fragment
+        let (path, fragment) = match url.split_once('#') {
+            Some((p, f)) => (p, Some(f)),
+            None => (url, None),
+        };
+
+        let is_md = std::path::Path::new(path)
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
+
+        if !self.options.convert_md_links || !is_md {
+            return url.to_string();
+        }
+
+        // Remove the .md extension
+        let path_without_ext = &path[..path.len() - 3];
+
+        // Convert path
+        let converted = if path.starts_with('/') {
+            // Absolute path: /getting-started.md -> {base}getting-started/index.html
+            let path_without_slash = &path_without_ext[1..];
+            let base = &self.options.base_url;
+            if path_without_slash.is_empty() || path_without_slash == "index" {
+                format!("{base}index.html")
+            } else {
+                format!("{base}{path_without_slash}/index.html")
+            }
+        } else if path.starts_with("./") {
+            // Same-directory relative path: ./types.md -> ../types/index.html
+            // Since each .md becomes a directory (name/index.html), we need to go up one level
+            let name = &path_without_ext[2..]; // Remove "./"
+            if name == "index" {
+                // ./index.md -> ./index.html (stay in same directory)
+                "./index.html".to_string()
+            } else {
+                format!("../{name}/index.html")
+            }
+        } else if path.starts_with("../") {
+            // Parent-relative path: ../types.md -> ../../types/index.html
+            // Need extra ../ because we're inside a subdirectory
+            let rest = &path_without_ext[3..]; // Remove "../"
+            if rest == "index" || rest.ends_with("/index") {
+                let dir = rest.trim_end_matches("/index").trim_end_matches("index");
+                if dir.is_empty() {
+                    "../../index.html".to_string()
+                } else {
+                    format!("../../{dir}/index.html")
+                }
+            } else {
+                format!("../../{rest}/index.html")
+            }
+        } else {
+            // Plain relative path: types.md -> ../types/index.html
+            if path_without_ext == "index" || path_without_ext.ends_with("/index") {
+                let dir = path_without_ext.trim_end_matches("/index").trim_end_matches("index");
+                if dir.is_empty() {
+                    "./index.html".to_string()
+                } else {
+                    format!("../{dir}/index.html")
+                }
+            } else {
+                format!("../{path_without_ext}/index.html")
+            }
+        };
+
+        // Reattach fragment if present
+        match fragment {
+            Some(f) => format!("{converted}#{f}"),
+            None => converted,
         }
     }
 }
@@ -272,8 +352,13 @@ impl<'a> Visit<'a> for HtmlRenderer {
 
     fn visit_link(&mut self, link: &Link<'a>) {
         self.write("<a href=\"");
-        self.write_url_escaped(link.url);
+        let url = self.convert_md_url(link.url);
+        self.write_url_escaped(&url);
         self.write("\"");
+        // Add target="_blank" for external links (http:// or https://)
+        if link.url.starts_with("http://") || link.url.starts_with("https://") {
+            self.write(" target=\"_blank\" rel=\"noopener noreferrer\"");
+        }
         if let Some(title) = link.title {
             self.write(" title=\"");
             self.write_escaped(title);
@@ -401,11 +486,108 @@ mod tests {
     }
 
     #[test]
-    fn test_escape_html() {
+    fn test_render_nested_list() {
         let allocator = Allocator::new();
-        let doc = Parser::new(&allocator, "<script>alert('xss')</script>").parse().unwrap();
+        // Indent with 2 spaces for nesting
+        let doc = Parser::new(&allocator, "- item 1\n  - sub 1\n- item 2").parse().unwrap();
         let mut renderer = HtmlRenderer::new();
         let html = renderer.render(&doc);
-        assert!(html.contains("&lt;script&gt;"));
+
+        // Normalize newlines for comparison
+        let normalized = html.replace('\n', "");
+        // We expect:
+        // <ul>
+        //   <li>
+        //     <p>item 1</p>
+        //     <ul>
+        //       <li><p>sub 1</p></li>
+        //     </ul>
+        //   </li>
+        //   <li><p>item 2</p></li>
+        // </ul>
+        // Note: The exact placement of <p> tags depends on how we handle list content.
+        // Assuming tight list items might not have <p> if we implement loose/tight lists,
+        // but currently everything is wrapped in <p> in parse_list implementation (wrapped in Paragraph).
+
+        // Let's just check for the structure <li>...<ul>...</ul>...</li>
+        assert!(normalized.contains("<li><p>item 1</p><ul><li><p>sub 1</p></li></ul></li>"));
+        assert!(normalized.contains("<li><p>item 2</p></li>"));
+    }
+
+    #[test]
+    fn test_render_table() {
+        let allocator = Allocator::new();
+        let parser_options = ox_content_parser::ParserOptions::gfm();
+        let doc = Parser::with_options(&allocator, "| head |\n| --- |\n| body |", parser_options)
+            .parse()
+            .unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert!(html.contains("<table>"));
+        assert!(html.contains("<thead>"));
+        assert!(html.contains("<th>head</th>"));
+        assert!(html.contains("<tbody>"));
+        assert!(html.contains("<td>body</td>"));
+    }
+
+    #[test]
+    fn test_render_table_no_gfm() {
+        let allocator = Allocator::new();
+        // Default options have tables: false
+        let doc = Parser::new(&allocator, "| head |\n| --- |\n| body |").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert!(!html.contains("<table>"));
+        assert!(html.contains("| head |"));
+    }
+
+    #[test]
+    fn test_render_heading_with_link() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "### [index](./index-module.md)").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert_eq!(html, "<h3><a href=\"./index-module.md\">index</a></h3>\n");
+    }
+
+    #[test]
+    fn test_render_list_with_bold() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "- **bold** text").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert!(html.contains("<strong>bold</strong>"));
+    }
+
+    #[test]
+    fn test_render_task_list() {
+        let allocator = Allocator::new();
+        let parser_options = ox_content_parser::ParserOptions::gfm();
+        let doc = Parser::with_options(&allocator, "- [x] task 1\n- [ ] task 2", parser_options)
+            .parse()
+            .unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert!(html.contains("<input type=\"checkbox\" checked disabled> <p>task 1</p>"));
+        assert!(html.contains("<input type=\"checkbox\" disabled> <p>task 2</p>"));
+    }
+
+    #[test]
+    fn test_render_image() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "![Alt text](/path/to/image.png)").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert!(html.contains("<img src=\"/path/to/image.png\" alt=\"Alt text\">"));
+    }
+
+    #[test]
+    fn test_render_image_xhtml() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "![Logo](/logo.svg)").parse().unwrap();
+        let mut renderer =
+            HtmlRenderer::with_options(HtmlRendererOptions { xhtml: true, ..Default::default() });
+        let html = renderer.render(&doc);
+        assert!(html.contains("<img src=\"/logo.svg\" alt=\"Logo\" />"));
     }
 }

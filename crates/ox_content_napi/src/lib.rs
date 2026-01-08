@@ -3,13 +3,16 @@
 //! This crate provides NAPI bindings for using Ox Content from Node.js,
 //! enabling zero-copy AST transfer and JavaScript interoperability.
 
+use napi::bindgen_prelude::*;
+use napi::Task;
 use napi_derive::napi;
 use std::collections::HashMap;
 
 use ox_content_allocator::Allocator;
 use ox_content_ast::{Document, Heading, Node};
 use ox_content_parser::{Parser, ParserOptions};
-use ox_content_renderer::HtmlRenderer;
+use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
+use ox_content_search::{DocumentIndexer, SearchIndex, SearchIndexBuilder, SearchOptions};
 
 /// Parse result containing the AST as JSON.
 #[napi(object)]
@@ -56,7 +59,7 @@ pub struct TransformResult {
 
 /// Transform options for JavaScript.
 #[napi(object)]
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct JsTransformOptions {
     /// Enable GFM extensions.
     pub gfm: Option<bool>,
@@ -72,6 +75,10 @@ pub struct JsTransformOptions {
     pub autolinks: Option<bool>,
     /// Maximum TOC depth (1-6).
     pub toc_max_depth: Option<u8>,
+    /// Convert `.md` links to `.html` links for SSG output.
+    pub convert_md_links: Option<bool>,
+    /// Base URL for absolute link conversion (e.g., "/" or "/docs/").
+    pub base_url: Option<String>,
 }
 
 /// Parser options for JavaScript.
@@ -201,7 +208,8 @@ pub fn transform(source: String, options: Option<JsTransformOptions>) -> Transfo
             let toc = extract_toc(&doc, toc_max_depth);
 
             // Render to HTML
-            let mut renderer = HtmlRenderer::new();
+            let renderer_options = transform_options_to_renderer_options(&opts);
+            let mut renderer = HtmlRenderer::with_options(renderer_options);
             let html = renderer.render(&doc);
 
             TransformResult {
@@ -362,4 +370,450 @@ fn transform_options_to_parser_options(opts: &JsTransformOptions) -> ParserOptio
     }
 
     options
+}
+
+/// Converts transform options to renderer options.
+fn transform_options_to_renderer_options(opts: &JsTransformOptions) -> HtmlRendererOptions {
+    let mut options = HtmlRendererOptions::new();
+
+    if let Some(v) = opts.convert_md_links {
+        options.convert_md_links = v;
+    }
+    if let Some(ref v) = opts.base_url {
+        options.base_url.clone_from(v);
+    }
+
+    options
+}
+
+// =============================================================================
+// Async (Multi-threaded) API
+// =============================================================================
+
+/// Async task for parse_and_render.
+pub struct ParseAndRenderTask {
+    source: String,
+    options: ParserOptions,
+}
+
+impl Task for ParseAndRenderTask {
+    type Output = RenderResult;
+    type JsValue = RenderResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let allocator = Allocator::new();
+        let parser = Parser::with_options(&allocator, &self.source, self.options.clone());
+
+        let result = match parser.parse() {
+            Ok(doc) => {
+                let mut renderer = HtmlRenderer::new();
+                let html = renderer.render(&doc);
+                RenderResult { html, errors: vec![] }
+            }
+            Err(e) => RenderResult { html: String::new(), errors: vec![e.to_string()] },
+        };
+        Ok(result)
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        Ok(output)
+    }
+}
+
+/// Parses Markdown and renders to HTML asynchronously (runs on worker thread).
+#[napi]
+pub fn parse_and_render_async(
+    source: String,
+    options: Option<JsParserOptions>,
+) -> AsyncTask<ParseAndRenderTask> {
+    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
+    AsyncTask::new(ParseAndRenderTask { source, options: parser_options })
+}
+
+/// Async task for transform.
+pub struct TransformTask {
+    source: String,
+    options: JsTransformOptions,
+}
+
+impl Task for TransformTask {
+    type Output = TransformResult;
+    type JsValue = TransformResult;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let toc_max_depth = self.options.toc_max_depth.unwrap_or(3);
+
+        // Parse frontmatter
+        let (content, frontmatter) = parse_frontmatter(&self.source);
+
+        // Parse markdown
+        let allocator = Allocator::new();
+        let parser_options = transform_options_to_parser_options(&self.options);
+        let parser = Parser::with_options(&allocator, &content, parser_options);
+
+        let result = match parser.parse() {
+            Ok(doc) => {
+                let toc = extract_toc(&doc, toc_max_depth);
+                let renderer_options = transform_options_to_renderer_options(&self.options);
+                let mut renderer = HtmlRenderer::with_options(renderer_options);
+                let html = renderer.render(&doc);
+
+                TransformResult {
+                    html,
+                    frontmatter: serde_json::to_string(&frontmatter)
+                        .unwrap_or_else(|_| "{}".to_string()),
+                    toc,
+                    errors: vec![],
+                }
+            }
+            Err(e) => TransformResult {
+                html: String::new(),
+                frontmatter: "{}".to_string(),
+                toc: vec![],
+                errors: vec![e.to_string()],
+            },
+        };
+        Ok(result)
+    }
+
+    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+        Ok(output)
+    }
+}
+
+/// Transforms Markdown source asynchronously (runs on worker thread).
+#[napi]
+pub fn transform_async(
+    source: String,
+    options: Option<JsTransformOptions>,
+) -> AsyncTask<TransformTask> {
+    let opts = options.unwrap_or_default();
+    AsyncTask::new(TransformTask { source, options: opts })
+}
+
+// =============================================================================
+// OG Image Generation API
+// =============================================================================
+
+/// OG image configuration for JavaScript.
+#[napi(object)]
+#[derive(Default, Clone)]
+pub struct JsOgImageConfig {
+    /// Image width in pixels.
+    pub width: Option<u32>,
+    /// Image height in pixels.
+    pub height: Option<u32>,
+    /// Background color (hex).
+    pub background_color: Option<String>,
+    /// Text color (hex).
+    pub text_color: Option<String>,
+    /// Title font size.
+    pub title_font_size: Option<u32>,
+    /// Description font size.
+    pub description_font_size: Option<u32>,
+}
+
+/// OG image data for JavaScript.
+#[napi(object)]
+pub struct JsOgImageData {
+    /// Page title.
+    pub title: String,
+    /// Page description.
+    pub description: Option<String>,
+    /// Site name.
+    pub site_name: Option<String>,
+    /// Author name.
+    pub author: Option<String>,
+}
+
+/// Generates an OG image as SVG.
+///
+/// This function generates an SVG representation of an OG image
+/// that can be used for social media previews.
+#[napi]
+pub fn generate_og_image_svg(data: JsOgImageData, config: Option<JsOgImageConfig>) -> String {
+    use ox_content_og_image::{OgImageConfig, OgImageData, OgImageGenerator};
+
+    let cfg = config.unwrap_or_default();
+    let mut og_config = OgImageConfig::default();
+
+    if let Some(w) = cfg.width {
+        og_config.width = w;
+    }
+    if let Some(h) = cfg.height {
+        og_config.height = h;
+    }
+    if let Some(ref bg) = cfg.background_color {
+        og_config.background_color.clone_from(bg);
+    }
+    if let Some(ref tc) = cfg.text_color {
+        og_config.text_color.clone_from(tc);
+    }
+    if let Some(ts) = cfg.title_font_size {
+        og_config.title_font_size = ts;
+    }
+    if let Some(ds) = cfg.description_font_size {
+        og_config.description_font_size = ds;
+    }
+
+    let og_data = OgImageData {
+        title: data.title,
+        description: data.description,
+        site_name: data.site_name,
+        author: data.author,
+        date: None,
+        tags: vec![],
+    };
+
+    let generator = OgImageGenerator::new(og_config);
+    generator.generate_svg(&og_data)
+}
+
+// =============================================================================
+// Full-text Search API
+// =============================================================================
+
+/// Search document for JavaScript.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSearchDocument {
+    /// Unique document identifier.
+    pub id: String,
+    /// Document title.
+    pub title: String,
+    /// Document URL.
+    pub url: String,
+    /// Document body text.
+    pub body: String,
+    /// Document headings.
+    pub headings: Vec<String>,
+    /// Code snippets.
+    pub code: Vec<String>,
+}
+
+/// Search result for JavaScript.
+#[napi(object)]
+pub struct JsSearchResult {
+    /// Document ID.
+    pub id: String,
+    /// Document title.
+    pub title: String,
+    /// Document URL.
+    pub url: String,
+    /// Relevance score.
+    pub score: f64,
+    /// Matched terms.
+    pub matches: Vec<String>,
+    /// Content snippet.
+    pub snippet: String,
+}
+
+/// Search options for JavaScript.
+#[napi(object)]
+#[derive(Default, Clone)]
+pub struct JsSearchOptions {
+    /// Maximum number of results.
+    pub limit: Option<u32>,
+    /// Enable prefix matching.
+    pub prefix: Option<bool>,
+    /// Enable fuzzy matching.
+    pub fuzzy: Option<bool>,
+    /// Minimum score threshold.
+    pub threshold: Option<f64>,
+}
+
+impl From<JsSearchOptions> for SearchOptions {
+    fn from(opts: JsSearchOptions) -> Self {
+        Self {
+            limit: opts.limit.unwrap_or(10) as usize,
+            prefix: opts.prefix.unwrap_or(true),
+            fuzzy: opts.fuzzy.unwrap_or(false),
+            threshold: opts.threshold.unwrap_or(0.0),
+        }
+    }
+}
+
+/// Builds a search index from documents.
+///
+/// Takes an array of documents and returns a serialized search index as JSON.
+#[napi]
+pub fn build_search_index(documents: Vec<JsSearchDocument>) -> String {
+    let mut builder = SearchIndexBuilder::new();
+
+    for doc in documents {
+        builder.add_document(ox_content_search::SearchDocument {
+            id: doc.id,
+            title: doc.title,
+            url: doc.url,
+            body: doc.body,
+            headings: doc.headings,
+            code: doc.code,
+        });
+    }
+
+    let index = builder.build();
+    index.to_json()
+}
+
+/// Searches a serialized index.
+///
+/// Takes a JSON-serialized index, query string, and options.
+/// Returns an array of search results.
+#[napi]
+pub fn search_index(
+    index_json: String,
+    query: String,
+    options: Option<JsSearchOptions>,
+) -> Vec<JsSearchResult> {
+    let Ok(index) = SearchIndex::from_json(&index_json) else {
+        return Vec::new();
+    };
+
+    let opts = options.map(SearchOptions::from).unwrap_or_default();
+    let results = index.search(&query, &opts);
+
+    results
+        .into_iter()
+        .map(|r| JsSearchResult {
+            id: r.id,
+            title: r.title,
+            url: r.url,
+            score: r.score,
+            matches: r.matches,
+            snippet: r.snippet,
+        })
+        .collect()
+}
+
+// =============================================================================
+// SSG HTML Generation API
+// =============================================================================
+
+/// Navigation item for SSG.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSsgNavItem {
+    /// Display title.
+    pub title: String,
+    /// URL path.
+    pub path: String,
+    /// Full href.
+    pub href: String,
+}
+
+/// Navigation group for SSG.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSsgNavGroup {
+    /// Group title.
+    pub title: String,
+    /// Navigation items.
+    pub items: Vec<JsSsgNavItem>,
+}
+
+/// Page data for SSG.
+#[napi(object)]
+pub struct JsSsgPageData {
+    /// Page title.
+    pub title: String,
+    /// Page description.
+    pub description: Option<String>,
+    /// Page content HTML.
+    pub content: String,
+    /// Table of contents entries.
+    pub toc: Vec<TocEntry>,
+    /// URL path.
+    pub path: String,
+}
+
+/// SSG configuration.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSsgConfig {
+    /// Site name.
+    pub site_name: String,
+    /// Base URL path.
+    pub base: String,
+    /// OG image URL.
+    pub og_image: Option<String>,
+}
+
+/// Generates SSG HTML page with navigation and search.
+#[napi]
+pub fn generate_ssg_html(
+    page_data: JsSsgPageData,
+    nav_groups: Vec<JsSsgNavGroup>,
+    config: JsSsgConfig,
+) -> String {
+    // Convert NAPI types to ox_content_ssg types
+    let ssg_page_data = ox_content_ssg::PageData {
+        title: page_data.title,
+        description: page_data.description,
+        content: page_data.content,
+        toc: page_data
+            .toc
+            .into_iter()
+            .map(|t| ox_content_ssg::TocEntry { depth: t.depth, text: t.text, slug: t.slug })
+            .collect(),
+        path: page_data.path,
+    };
+
+    let ssg_nav_groups: Vec<ox_content_ssg::NavGroup> = nav_groups
+        .into_iter()
+        .map(|g| ox_content_ssg::NavGroup {
+            title: g.title,
+            items: g
+                .items
+                .into_iter()
+                .map(|i| ox_content_ssg::NavItem { title: i.title, path: i.path, href: i.href })
+                .collect(),
+        })
+        .collect();
+
+    let ssg_config = ox_content_ssg::SsgConfig {
+        site_name: config.site_name,
+        base: config.base,
+        og_image: config.og_image,
+    };
+
+    ox_content_ssg::generate_html(&ssg_page_data, &ssg_nav_groups, &ssg_config)
+}
+
+/// Extracts searchable content from Markdown source.
+///
+/// Parses the Markdown and extracts title, body text, headings, and code.
+#[napi]
+pub fn extract_search_content(
+    source: String,
+    id: String,
+    url: String,
+    options: Option<JsParserOptions>,
+) -> JsSearchDocument {
+    let allocator = Allocator::new();
+    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
+
+    // Parse frontmatter first
+    let (content, frontmatter) = parse_frontmatter(&source);
+
+    // Try to get title from frontmatter
+    let frontmatter_title = frontmatter.get("title").and_then(|v| v.as_str()).map(String::from);
+
+    let parser = Parser::with_options(&allocator, &content, parser_options);
+
+    let result = parser.parse();
+    let (title, body, headings, code) = if let Ok(ref doc) = result {
+        let mut indexer = DocumentIndexer::new();
+        indexer.extract(doc);
+
+        let title = frontmatter_title
+            .unwrap_or_else(|| indexer.title().map(String::from).unwrap_or_default());
+
+        (title, indexer.body().to_string(), indexer.headings().to_vec(), indexer.code().to_vec())
+    } else {
+        (frontmatter_title.unwrap_or_default(), String::new(), Vec::new(), Vec::new())
+    };
+    // Explicitly drop the result to release the borrow
+    drop(result);
+
+    JsSearchDocument { id, title, url, body, headings, code }
 }

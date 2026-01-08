@@ -179,25 +179,58 @@ console.log(result.html);
 
 ### With Vite
 
+```bash
+npm install vite-plugin-ox-content @ox-content/napi
+```
+
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { oxContent } from '@ox-content/vite';
+import { oxContent } from 'vite-plugin-ox-content';
 
 export default defineConfig({
   plugins: [
     oxContent({
       srcDir: 'docs',
-      outDir: 'dist',
+      outDir: 'dist/docs',
       // Enable syntax highlighting
       highlight: true,
-      // Generate OG images
-      ogImage: {
+      // SSG with automatic OG images
+      ssg: {
+        siteName: 'My Docs',
+        ogImage: 'https://example.com/og-image.png',
+      },
+      // Built-in full-text search (enabled by default)
+      search: {
         enabled: true,
-        background: '#1a1a2e',
+        placeholder: 'Search docs...',
       },
     }),
   ],
+});
+```
+
+### With Framework Integration
+
+```bash
+# Vue
+npm install vite-plugin-ox-content-vue @ox-content/napi
+
+# React
+npm install vite-plugin-ox-content-react @ox-content/napi
+
+# Svelte
+npm install vite-plugin-ox-content-svelte @ox-content/napi
+```
+
+```typescript
+// vite.config.ts (Vue example)
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { oxContentVue } from 'vite-plugin-ox-content-vue';
+
+export default defineConfig({
+  plugins: [vue(), oxContentVue()],
 });
 ```
 
@@ -232,6 +265,12 @@ mise run docs-open      # Generate and open in browser
 mise run playground         # Start playground dev server
 mise run playground-build   # Build playground for production
 mise run playground-install # Install playground dependencies
+
+# Benchmarks
+mise run bench              # Run all benchmarks (Rust + JS)
+mise run bench:rust         # Run Rust benchmarks only
+mise run bench:parse        # Run parse/render speed benchmarks
+mise run bench:bundle       # Run bundle size benchmarks
 ```
 
 ### Project Structure
@@ -239,62 +278,27 @@ mise run playground-install # Install playground dependencies
 ```
 ox-content/
 ├── Cargo.toml              # Workspace configuration
-├── Cargo.lock              # Locked dependencies
 ├── mise.toml               # mise task definitions
-├── crates/
-│   ├── ox_content_allocator/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       └── lib.rs      # Arena allocator
-│   ├── ox_content_ast/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs      # Module exports
-│   │       ├── ast.rs      # Node definitions
-│   │       ├── span.rs     # Source locations
-│   │       └── visit.rs    # Visitor pattern
-│   ├── ox_content_parser/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs      # Module exports
-│   │       ├── parser.rs   # Main parser
-│   │       ├── lexer.rs    # Tokenizer
-│   │       └── error.rs    # Error types
-│   ├── ox_content_renderer/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs      # Module exports
-│   │       ├── html.rs     # HTML renderer
-│   │       └── render.rs   # Renderer trait
-│   ├── ox_content_napi/
-│   │   ├── Cargo.toml
-│   │   ├── package.json    # npm package config
-│   │   └── src/
-│   │       └── lib.rs      # NAPI bindings
-│   ├── ox_content_vite/
-│   │   └── ...             # Vite plugin
-│   ├── ox_content_og_image/
-│   │   └── ...             # OG image generation
-│   ├── ox_content_docs/
-│   │   └── ...             # Source code documentation
-│   └── ox_content_wasm/
-│       └── ...             # WebAssembly bindings
-├── playground/             # Interactive web playground
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── index.html
-│   └── src/
-│       └── main.ts
-├── docs/                   # Documentation (you are here!)
-│   ├── index.md
-│   ├── getting-started.md
-│   ├── architecture.md
-│   └── ox-content.config.ts
-└── .github/
-    └── workflows/
-        ├── ci.yml          # Continuous integration
-        ├── deploy.yml      # GitHub Pages deployment
-        └── release.yml     # npm release automation
+├── crates/                 # Rust crates
+│   ├── ox_content_allocator/   # Arena allocator
+│   ├── ox_content_ast/         # AST node definitions
+│   ├── ox_content_parser/      # Markdown parser
+│   ├── ox_content_renderer/    # HTML renderer
+│   ├── ox_content_search/      # Full-text search engine
+│   ├── ox_content_napi/        # Node.js NAPI bindings
+│   ├── ox_content_wasm/        # WebAssembly bindings
+│   └── ox_content_og_image/    # OG image generation
+├── npm/                    # npm packages
+│   ├── vite-plugin-ox-content/       # Vite plugin with SSG
+│   ├── vite-plugin-ox-content-vue/   # Vue integration
+│   ├── vite-plugin-ox-content-react/ # React integration
+│   ├── vite-plugin-ox-content-svelte/# Svelte integration
+│   └── unplugin-ox-content/          # Universal plugin
+├── examples/               # Usage examples
+├── docs/                   # Documentation (this site)
+└── .github/workflows/      # CI/CD
+    ├── ci.yml              # Continuous integration
+    └── publish.yml         # npm release automation
 ```
 
 ## Running Tests
@@ -329,6 +333,28 @@ mise run watch
 # or
 cargo watch -x "test --workspace"
 ```
+
+## Running Benchmarks
+
+Ox Content includes comprehensive benchmarks to measure performance:
+
+```bash
+# Run all benchmarks
+mise run bench
+
+# Run only Rust benchmarks (cargo bench)
+mise run bench:rust
+
+# Run parse/render speed benchmarks (compares with marked, markdown-it, etc.)
+mise run bench:parse
+
+# Run bundle size benchmarks (compares with VitePress, Astro, etc.)
+mise run bench:bundle
+```
+
+### Benchmark Results
+
+See the [Benchmarks section](./index.md#benchmarks) for the latest results.
 
 ## Using the Playground
 
@@ -411,6 +437,79 @@ nvm use 22
 
 - [GitHub Issues](https://github.com/ubugeeei/ox-content/issues) - Bug reports and feature requests
 - [Discussions](https://github.com/ubugeeei/ox-content/discussions) - Questions and ideas
+
+## API Documentation Generation
+
+Ox Content can generate API documentation from your TypeScript/JavaScript source code, similar to `cargo doc` for Rust.
+
+### Configuration
+
+```typescript
+// vite.config.ts
+import oxContent from 'unplugin-ox-content/vite';
+
+export default defineConfig({
+  plugins: [
+    oxContent({
+      docs: {
+        enabled: true,
+        src: ['./src'],
+        out: 'docs/api',
+      },
+    }),
+  ],
+});
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `false` | Enable API docs generation |
+| `src` | `string[]` | `['./src']` | Source directories to scan |
+| `out` | `string` | `'docs/api'` | Output directory |
+| `include` | `string[]` | `['**/*.ts', ...]` | File patterns to include |
+| `exclude` | `string[]` | `['**/*.test.*', ...]` | File patterns to exclude |
+| `includePrivate` | `boolean` | `false` | Include private items (`_` prefixed) |
+| `toc` | `boolean` | `true` | Generate table of contents |
+| `groupBy` | `'file' \| 'kind'` | `'file'` | How to group documentation |
+
+### Writing Documentation
+
+Use JSDoc comments to document your code:
+
+```typescript
+/**
+ * A user in the system.
+ */
+export interface User {
+  /** The user's unique identifier */
+  id: string;
+  /** The user's display name */
+  name: string;
+  /** The user's email address */
+  email: string;
+}
+
+/**
+ * Creates a new user.
+ * @param name - The user's name
+ * @param email - The user's email
+ * @returns The created user object
+ * @example
+ * const user = createUser('Alice', 'alice@example.com');
+ */
+export function createUser(name: string, email: string): User {
+  return { id: crypto.randomUUID(), name, email };
+}
+```
+
+Supported JSDoc tags:
+- `@param` - Parameter description
+- `@returns` / `@return` - Return value description
+- `@example` - Usage examples
+- `@deprecated` - Mark as deprecated
+- `@see` - Reference to related items
 
 ## Next Steps
 

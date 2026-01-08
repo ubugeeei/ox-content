@@ -1,0 +1,26 @@
+{
+  "name": "ox-content-bundle-size-benchmark",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "benchmark": "node measure.mjs",
+    "benchmark:parse": "node parse-benchmark.mjs",
+    "benchmark:build": "node build-time-benchmark.mjs",
+    "clean": "rm -rf apps/*/dist apps/*/.vitepress/dist"
+  },
+  "dependencies": {
+    "@ox-content/napi": "workspace:*",
+    "@ox-content/wasm": "workspace:*",
+    "marked": "^15.0.0",
+    "markdown-it": "^14.1.0",
+    "micromark": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-html": "^16.0.1",
+    "unified": "^11.0.5",
+    "showdown": "^2.1.0"
+  },
+  "devDependencies": {
+    "gzip-size": "^7.0.0"
+  }
+}

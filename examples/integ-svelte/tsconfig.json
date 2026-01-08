@@ -15,7 +15,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "vite-plugin-ox-content-svelte": ["../../packages/vite-plugin-ox-content-svelte/src/index.ts"]
+      "vite-plugin-ox-content-svelte": ["../../npm/vite-plugin-ox-content-svelte/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte", "vite.config.ts"]

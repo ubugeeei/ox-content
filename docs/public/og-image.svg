@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="oxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b35"/>
+      <stop offset="50%" style="stop-color:#f7931a"/>
+      <stop offset="100%" style="stop-color:#e85d04"/>
+    </linearGradient>
+    <linearGradient id="oxGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffb347"/>
+      <stop offset="100%" style="stop-color:#ff6b35"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Decorative dots -->
+  <g fill="url(#oxGrad2)" opacity="0.3">
+    <circle cx="100" cy="100" r="40"/>
+    <circle cx="1100" cy="530" r="50"/>
+    <circle cx="1050" cy="80" r="25"/>
+    <circle cx="150" cy="550" r="30"/>
+  </g>
+
+  <!-- Logo blocks (scaled version of main logo) -->
+  <g transform="translate(100, 165)">
+    <!-- Top block -->
+    <rect x="40" y="24" width="140" height="36" rx="7"
+          fill="url(#oxGrad)"
+          transform="rotate(-8 110 42)"/>
+
+    <!-- Connector particles -->
+    <circle cx="200" cy="50" r="6" fill="url(#oxGrad2)"/>
+    <circle cx="210" cy="70" r="4" fill="url(#oxGrad2)" opacity="0.7"/>
+
+    <!-- Second block -->
+    <rect x="50" y="74" width="160" height="44" rx="8"
+          fill="url(#oxGrad)"
+          transform="rotate(-3 130 96)"/>
+
+    <!-- Middle main block -->
+    <rect x="28" y="130" width="200" height="50" rx="9"
+          fill="url(#oxGrad)"/>
+
+    <!-- Fourth block -->
+    <rect x="50" y="192" width="160" height="44" rx="8"
+          fill="url(#oxGrad)"
+          transform="rotate(3 130 214)"/>
+
+    <!-- Connector particles bottom -->
+    <circle cx="56" cy="244" r="6" fill="url(#oxGrad2)"/>
+    <circle cx="44" cy="230" r="4" fill="url(#oxGrad2)" opacity="0.7"/>
+
+    <!-- Content lines -->
+    <g fill="#fff">
+      <rect x="55" y="34" width="70" height="4" rx="2" transform="rotate(-8 90 36)" opacity="0.9"/>
+      <rect x="55" y="44" width="45" height="4" rx="2" transform="rotate(-8 77 46)" opacity="0.7"/>
+      <rect x="68" y="86" width="90" height="5" rx="2.5" transform="rotate(-3 113 88)" opacity="0.9"/>
+      <rect x="68" y="98" width="60" height="5" rx="2.5" transform="rotate(-3 98 100)" opacity="0.7"/>
+      <rect x="48" y="144" width="120" height="7" rx="3.5" opacity="0.95"/>
+      <rect x="48" y="158" width="150" height="7" rx="3.5" opacity="0.85"/>
+      <rect x="48" y="172" width="90" height="7" rx="3.5" opacity="0.75"/>
+      <rect x="68" y="204" width="80" height="5" rx="2.5" transform="rotate(3 108 206)" opacity="0.9"/>
+      <rect x="68" y="216" width="50" height="5" rx="2.5" transform="rotate(3 93 218)" opacity="0.7"/>
+    </g>
+  </g>
+
+  <!-- Title -->
+  <text x="420" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="#ffffff">
+    Ox Content
+  </text>
+
+  <!-- Tagline -->
+  <text x="420" y="360" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">
+    High-performance documentation toolkit
+  </text>
+
+  <!-- Features -->
+  <g font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b">
+    <text x="420" y="430">Rust-powered Markdown parser</text>
+    <text x="420" y="465">Framework-agnostic Vite plugins</text>
+    <text x="420" y="500">Zero-copy AST with NAPI bindings</text>
+  </g>
+
+  <!-- Accent bar -->
+  <rect x="420" y="390" width="60" height="4" rx="2" fill="url(#oxGrad)"/>
+</svg>

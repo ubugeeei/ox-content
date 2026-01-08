@@ -6,38 +6,7 @@ This document provides a deep dive into the architecture and design decisions of
 
 Ox Content is designed as a modular, high-performance Markdown processing toolkit. The architecture follows the Oxc philosophy of prioritizing speed, memory efficiency, and correctness.
 
-```mermaid
-graph TB
-    subgraph Applications["User Applications"]
-        App1[Your App]
-        App2[Documentation Site]
-        App3[Blog]
-    end
-
-    subgraph Packages["JavaScript Packages"]
-        Vite["vite-plugin-ox-content"]
-        Vue["vite-plugin-ox-content-vue"]
-        React["vite-plugin-ox-content-react"]
-    end
-
-    subgraph NAPI["Node.js Bindings"]
-        NapiPkg["@ox-content/napi"]
-    end
-
-    subgraph Core["Rust Core"]
-        Renderer["ox_content_renderer"]
-        Parser["ox_content_parser"]
-        AST["ox_content_ast"]
-        Allocator["ox_content_allocator"]
-    end
-
-    Applications --> Packages
-    Packages --> NAPI
-    NAPI --> Core
-    Renderer --> AST
-    Parser --> AST
-    AST --> Allocator
-```
+![Architecture Overview](../architecture-overview.svg)
 
 ## Crate Structure
 
@@ -48,7 +17,10 @@ ox-content/
 │   ├── ox_content_ast/         # Core: AST definitions
 │   ├── ox_content_parser/      # Core: Markdown parser
 │   ├── ox_content_renderer/    # Core: HTML renderer
+│   ├── ox_content_search/      # Core: Full-text search engine
+│   ├── ox_content_ssg/         # Core: Static site generation
 │   ├── ox_content_napi/        # Bindings: Node.js via napi-rs
+│   ├── ox_content_wasm/        # Bindings: WebAssembly
 │   ├── ox_content_vite/        # Integration: Vite plugin
 │   ├── ox_content_og_image/    # Feature: OG image generation
 │   └── ox_content_docs/        # Feature: Source code documentation
@@ -64,25 +36,7 @@ Ox Content uses [bumpalo](https://docs.rs/bumpalo) for arena-based allocation. T
 
 #### How Arena Allocation Works
 
-```mermaid
-graph LR
-    subgraph Traditional["Traditional Allocation"]
-        direction TB
-        A1[A] --> H1[Heap]
-        B1[B] --> H2[Heap]
-        C1[C] --> H3[Heap]
-        D1[D] --> H4[Heap]
-    end
-
-    subgraph Arena["Arena Allocation"]
-        direction TB
-        Region["Contiguous Memory Region"]
-        A2[A] --> Region
-        B2[B] --> Region
-        C2[C] --> Region
-        D2[D] --> Region
-    end
-```
+![Arena Allocation](../architecture-arena.svg)
 
 **Traditional**: 4 separate heap allocations, 4 separate deallocations
 
@@ -309,17 +263,7 @@ fn generate_toc(document: &Document<'_>) -> Vec<TocEntry> {
 
 ### Architecture
 
-```mermaid
-flowchart TB
-    Source["Source Text<br/>(Markdown)"]
-    Lexer["Lexer<br/><small>Tokenizes input (logos crate)</small>"]
-    Parser["Parser<br/><small>Builds AST from tokens</small>"]
-    AST["AST<br/><small>Arena-allocated nodes</small>"]
-
-    Source --> Lexer
-    Lexer --> Parser
-    Parser --> AST
-```
+![Parser Architecture](../architecture-parser.svg)
 
 ### Parser Options
 
@@ -439,17 +383,7 @@ URL encoding is also handled for link/image URLs.
 
 ### Architecture
 
-```mermaid
-flowchart TB
-    JS["JavaScript / TypeScript"]
-    NPM["@ox-content/napi<br/><small>TypeScript types + JS wrapper</small>"]
-    NAPI["ox_content_napi<br/><small>Rust NAPI binding layer</small>"]
-    Core["ox_content_*<br/><small>Core Rust crates</small>"]
-
-    JS --> NPM
-    NPM --> NAPI
-    NAPI --> Core
-```
+![NAPI Architecture](../architecture-napi.svg)
 
 ### Data Transfer
 

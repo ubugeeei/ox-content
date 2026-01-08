@@ -1,22 +1,37 @@
+---
+title: Ox Content
+description: High-performance documentation toolkit built in Rust. Framework-agnostic, zero-copy parsing, NAPI bindings for Node.js.
+---
+
 # Ox Content
 
-A framework-agnostic documentation tooling for Vite+.
+**A framework-agnostic documentation tooling for Vite+**
 
-## What is Ox Content?
+![Ox Content Logo](./logo.svg)
 
-Ox Content is a high-performance documentation toolkit built in Rust, designed to bring the speed and reliability of the Oxc ecosystem to Markdown processing. It provides everything you need to build documentation sites, technical blogs, and content-driven applications.
+---
 
-### Why Ox Content?
+## Vision
 
-| Feature | Ox Content | Traditional JS Parsers |
-|---------|------------|------------------------|
-| Parse Speed | **~10x faster** | Baseline |
-| Memory Usage | **Zero-copy** | Multiple allocations |
-| Type Safety | **Rust + TypeScript** | Runtime checks only |
-| AST Spec | **mdast compatible** | Varies by library |
-| Bundle Size | **Native binary** | Large JS bundles |
+Ox Content brings **Rust-level performance** to the JavaScript documentation ecosystem. We believe that building documentation should be as fast as building your code.
 
-### Core Philosophy
+### The Problem
+
+Modern documentation tools often sacrifice performance for features:
+- Heavy JavaScript bundles slow down page loads
+- Markdown parsing becomes a bottleneck in large projects
+- Build times grow linearly with content size
+
+### Our Solution
+
+Ox Content leverages the [Oxc](https://oxc.rs/) philosophy:
+- **Arena-based allocation** - Zero-copy parsing with bumpalo
+- **Native performance** - Rust core with NAPI bindings
+- **Minimal output** - SSG-first approach, ship only what you need
+
+![Architecture](./architecture.svg)
+
+## Core Philosophy
 
 1. **Performance First** - Arena-based allocation for zero-copy parsing
 2. **Standards Compliant** - Full CommonMark + GFM support with mdast-compatible AST
@@ -91,6 +106,36 @@ Here is a footnote[^1].
 [^1]: Footnote content.
 ```
 
+### Built-in Full-text Search
+
+Ox Content includes a high-performance full-text search engine written in Rust:
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import { oxContent } from 'vite-plugin-ox-content';
+
+export default defineConfig({
+  plugins: [
+    oxContent({
+      search: {
+        enabled: true,
+        limit: 10,
+        placeholder: 'Search documentation...',
+      },
+    })
+  ]
+});
+```
+
+**Features:**
+- **BM25 Scoring** - Industry-standard relevance ranking
+- **Multi-field Search** - Title, headings, body, and code blocks with weighted scoring
+- **Japanese/CJK Support** - Proper tokenization for Asian languages
+- **Prefix Matching** - Type-ahead suggestions for autocomplete
+- **Keyboard Shortcuts** - Press `/` or `Cmd/Ctrl+K` to open search
+- **Zero Dependencies** - No external search service required
+
 ### Vite Environment API Integration
 
 SSG-focused rendering with Astro-like islands architecture:
@@ -114,37 +159,48 @@ export default defineConfig({
 });
 ```
 
-### OG Image Generation
-
-Automatic social media preview images for your content:
-
-```typescript
-import { generateOgImage } from '@ox-content/og-image';
-
-const image = await generateOgImage({
-  title: 'My Article Title',
-  description: 'A brief description',
-  background: '#1a1a2e',
-  textColor: '#ffffff',
-});
-```
-
 ### Node.js Bindings
 
 High-performance NAPI bindings for seamless JavaScript integration:
 
 ```javascript
-import { parseMarkdown, parseAndRender } from '@ox-content/napi';
+import { parse, parseAndRender, parseAndRenderAsync } from '@ox-content/napi';
 
 // Parse to AST
-const ast = parseMarkdown('# Hello', { gfm: true });
+const { ast } = parse('# Hello', { gfm: true });
 
-// Parse and render in one call
-const { html, frontmatter } = parseAndRender(content, {
-  gfm: true,
-  highlight: true,
-});
+// Parse and render in one call (sync)
+const { html } = parseAndRender(content, { gfm: true });
+
+// Parse and render async (runs on worker thread, non-blocking)
+const result = await parseAndRenderAsync(content, { gfm: true });
 ```
+
+The async API (`parseAndRenderAsync`, `transformAsync`) runs on a worker thread, keeping the main thread responsive for large documents.
+
+---
+
+## Benchmarks
+
+### Parse Speed
+
+![Parse Benchmark](./benchmark-parse.svg)
+
+### Render Speed
+
+![Render Benchmark](./benchmark-render.svg)
+
+### Build Output Size
+
+![Bundle Size Benchmark](./benchmark-bundle.svg)
+
+### Production Build Time
+
+![Build Time Benchmark](./benchmark-build.svg)
+
+> **Note:** ox-content (bare) produces pure HTML without JavaScript/CSS, ideal for custom themes or benchmarking. VitePress always includes Vue runtime for client-side hydration.
+
+---
 
 ## Packages
 
@@ -156,9 +212,12 @@ const { html, frontmatter } = parseAndRender(content, {
 | `ox_content_ast` | AST definitions | mdast-compatible nodes, Visitor pattern |
 | `ox_content_parser` | Markdown parser | CommonMark + GFM, streaming support |
 | `ox_content_renderer` | HTML renderer | Customizable, XHTML support, sanitization |
+| `ox_content_search` | Full-text search | BM25 scoring, CJK support, prefix matching |
+| `ox_content_ssg` | Static site generation | HTML templates, navigation, theming |
 | `ox_content_napi` | Node.js bindings | napi-rs, TypeScript types |
 | `ox_content_wasm` | WebAssembly bindings | wasm-bindgen, Browser & Deno support |
 | `ox_content_og_image` | OG images | SVG-based, customizable templates |
+| `ox_content_docs` | API docs generator | JSDoc/TypeScript extraction (like cargo doc) |
 
 ### Unplugin
 
@@ -214,12 +273,58 @@ export default defineConfig({
 
 See the [examples](https://github.com/ubugeeei/ox-content/tree/main/examples) for complete integration samples.
 
+### API Documentation Generation
+
+Generate API documentation from your TypeScript/JavaScript source code (similar to `cargo doc` for Rust):
+
+```typescript
+// vite.config.ts
+import oxContent from 'unplugin-ox-content/vite';
+
+export default defineConfig({
+  plugins: [
+    oxContent({
+      // Enable API docs generation
+      docs: {
+        enabled: true,
+        src: ['./src'],           // Source directories
+        out: 'docs/api',          // Output directory
+        include: ['**/*.ts'],     // Files to include
+        exclude: ['**/*.test.*'], // Files to exclude
+        includePrivate: false,    // Skip private items (_prefixed)
+        toc: true,                // Generate table of contents
+        groupBy: 'file',          // Group by 'file' or 'kind'
+      },
+    }),
+  ],
+});
+```
+
+Documentation is extracted from:
+- **JSDoc comments** (`/** ... */`)
+- **Type signatures** (function parameters, return types)
+- **TypeScript types** (interfaces, type aliases, enums)
+
+```typescript
+/**
+ * Adds two numbers together.
+ * @param a - The first number
+ * @param b - The second number
+ * @returns The sum of a and b
+ * @example
+ * add(1, 2) // => 3
+ */
+export function add(a: number, b: number): number {
+  return a + b;
+}
+```
+
 ## Quick Links
 
 - [Getting Started](./getting-started.md) - Installation and first steps
 - [Architecture](./architecture.md) - Deep dive into the design
-- [API Reference](./api/) - Generated Rust documentation
-- [Playground](/playground/) - Try it in your browser
+- [API Reference](./api/index.md) - Generated API documentation
+- [Playground](/ox-content/playground/) - Try it in your browser
 - [GitHub](https://github.com/ubugeeei/ox-content) - Source code and issues
 
 ## License

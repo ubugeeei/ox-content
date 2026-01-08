@@ -1,0 +1,192 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-napi:
+    name: Build NAPI - ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install zig (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Install cargo-zigbuild (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: cargo install cargo-zigbuild
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build NAPI
+        working-directory: crates/ox_content_napi
+        run: pnpm build --target ${{ matrix.target }} ${{ matrix.target == 'aarch64-unknown-linux-gnu' && '--use-zig' || '' }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: napi-${{ matrix.target }}
+          path: crates/ox_content_napi/*.node
+          if-no-files-found: error
+
+  publish-napi:
+    name: Publish @ox-content/napi
+    runs-on: ubuntu-latest
+    needs: build-napi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: crates/ox_content_napi/artifacts
+
+      - name: Move artifacts
+        working-directory: crates/ox_content_napi
+        run: |
+          for dir in artifacts/napi-*; do
+            mv "$dir"/*.node . 2>/dev/null || true
+          done
+          ls -la *.node || echo "No .node files found"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Publish
+        working-directory: crates/ox_content_napi
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-packages:
+    name: Publish npm packages
+    runs-on: ubuntu-latest
+    needs: publish-napi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build NAPI (for local use)
+        run: pnpm -C crates/ox_content_napi build
+
+      - name: Build packages
+        run: pnpm -r --filter './npm/*' run build
+
+      - name: Publish vite-plugin-ox-content
+        working-directory: npm/vite-plugin-ox-content
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish vite-plugin-ox-content-vue
+        working-directory: npm/vite-plugin-ox-content-vue
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish vite-plugin-ox-content-react
+        working-directory: npm/vite-plugin-ox-content-react
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish vite-plugin-ox-content-svelte
+        working-directory: npm/vite-plugin-ox-content-svelte
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish unplugin-ox-content
+        working-directory: npm/unplugin-ox-content
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: publish-packages
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
