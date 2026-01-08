@@ -1096,8 +1096,8 @@ function buildNavItems(
 ): NavGroup[] {
   const groups = new Map<string, SsgNavItem[]>();
 
-  // Define the order of groups
-  const groupOrder = ['', 'api', 'examples', 'packages'];
+  // Define the order of groups (api at the bottom)
+  const groupOrder = ['', 'examples', 'packages', 'api'];
 
   for (const file of markdownFiles) {
     const relativePath = path.relative(srcDir, file);

@@ -102,18 +102,24 @@ impl HtmlRenderer {
 
     /// Converts a `.md` URL to `.html` URL for SSG output.
     fn convert_md_url(&self, url: &str) -> String {
+        // Split URL into path and fragment
+        let (path, fragment) = match url.split_once('#') {
+            Some((p, f)) => (p, Some(f)),
+            None => (url, None),
+        };
+
         let is_md =
-            std::path::Path::new(url).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
+            std::path::Path::new(path).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
 
         if !self.options.convert_md_links || !is_md {
             return url.to_string();
         }
 
         // Remove the .md extension
-        let path_without_ext = &url[..url.len() - 3];
+        let path_without_ext = &path[..path.len() - 3];
 
-        // Check if the URL is absolute (starts with /)
-        if url.starts_with('/') {
+        // Convert path
+        let converted = if path.starts_with('/') {
             // Absolute path: /getting-started.md -> {base}getting-started/index.html
             let path_without_slash = &path_without_ext[1..];
             let base = &self.options.base_url;
@@ -141,6 +147,12 @@ impl HtmlRenderer {
             } else {
                 format!("{path_without_ext}/index.html")
             }
+        };
+
+        // Reattach fragment if present
+        match fragment {
+            Some(f) => format!("{converted}#{f}"),
+            None => converted,
         }
     }
 }

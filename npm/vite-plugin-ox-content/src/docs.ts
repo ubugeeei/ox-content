@@ -911,8 +911,8 @@ export async function writeDocs(
  */
 function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: number): string {
   // Convert absolute path to relative path from repository root
-  // Assume the file path contains the relative structure we need
-  const relativePath = filePath.replace(/^.*?(packages|crates)/, '$1');
+  // Match common project directory patterns: npm/, packages/, crates/, src/
+  const relativePath = filePath.replace(/^.*?\/(npm|packages|crates|src)\//, '$1/');
 
   const fragment = lineNumber ? `#L${lineNumber}` : '';
   const link = `${githubUrl}/blob/main/${relativePath}${fragment}`;
