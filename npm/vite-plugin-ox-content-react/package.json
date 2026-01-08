@@ -46,5 +46,15 @@
     "ox-content",
     "mdx"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "author": "ubugeeei",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/ox-content.git",
+    "directory": "npm/vite-plugin-ox-content-react"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  }
 }

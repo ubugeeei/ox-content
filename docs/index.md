@@ -106,6 +106,36 @@ Here is a footnote[^1].
 [^1]: Footnote content.
 ```
 
+### Built-in Full-text Search
+
+Ox Content includes a high-performance full-text search engine written in Rust:
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import { oxContent } from 'vite-plugin-ox-content';
+
+export default defineConfig({
+  plugins: [
+    oxContent({
+      search: {
+        enabled: true,
+        limit: 10,
+        placeholder: 'Search documentation...',
+      },
+    })
+  ]
+});
+```
+
+**Features:**
+- **BM25 Scoring** - Industry-standard relevance ranking
+- **Multi-field Search** - Title, headings, body, and code blocks with weighted scoring
+- **Japanese/CJK Support** - Proper tokenization for Asian languages
+- **Prefix Matching** - Type-ahead suggestions for autocomplete
+- **Keyboard Shortcuts** - Press `/` or `Cmd/Ctrl+K` to open search
+- **Zero Dependencies** - No external search service required
+
 ### Vite Environment API Integration
 
 SSG-focused rendering with Astro-like islands architecture:
@@ -182,6 +212,7 @@ The async API (`parseAndRenderAsync`, `transformAsync`) runs on a worker thread,
 | `ox_content_ast` | AST definitions | mdast-compatible nodes, Visitor pattern |
 | `ox_content_parser` | Markdown parser | CommonMark + GFM, streaming support |
 | `ox_content_renderer` | HTML renderer | Customizable, XHTML support, sanitization |
+| `ox_content_search` | Full-text search | BM25 scoring, CJK support, prefix matching |
 | `ox_content_napi` | Node.js bindings | napi-rs, TypeScript types |
 | `ox_content_wasm` | WebAssembly bindings | wasm-bindgen, Browser & Deno support |
 | `ox_content_og_image` | OG images | SVG-based, customizable templates |

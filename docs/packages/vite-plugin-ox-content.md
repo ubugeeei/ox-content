@@ -142,6 +142,75 @@ oxContent({
 })
 ```
 
+### search
+
+- Type: `SearchOptions | boolean`
+- Default: `{ enabled: true }`
+
+Full-text search options. Ox Content includes a built-in search engine powered by Rust with BM25 scoring.
+
+```ts
+oxContent({
+  search: {
+    enabled: true,
+    limit: 10,
+    prefix: true,
+    placeholder: 'Search documentation...',
+    hotkey: '/',
+  },
+})
+```
+
+#### SearchOptions
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable/disable search functionality |
+| `limit` | `number` | `10` | Maximum number of search results |
+| `prefix` | `boolean` | `true` | Enable prefix matching for autocomplete |
+| `placeholder` | `string` | `'Search documentation...'` | Placeholder text for search input |
+| `hotkey` | `string` | `'/'` | Keyboard shortcut to open search |
+
+#### How It Works
+
+1. **Build Time**: The plugin scans all Markdown files and builds a search index using the Rust-based search engine
+2. **Index Storage**: The index is written to `search-index.json` in the output directory
+3. **Client-Side Search**: The search index is loaded on-demand and searched entirely client-side
+
+#### Features
+
+- **BM25 Scoring**: Industry-standard relevance ranking algorithm
+- **Multi-field Search**: Title, headings, body, and code are indexed with different weights
+- **Japanese/CJK Support**: Proper tokenization for CJK characters
+- **Prefix Matching**: Type-ahead suggestions for autocomplete
+- **Zero Dependencies**: No external search service required
+
+### Disabling Search
+
+```ts
+oxContent({
+  search: false, // Disable built-in search
+})
+```
+
+### Using with Custom Search UI
+
+You can access the search index programmatically via the virtual module:
+
+```ts
+import { search, searchOptions } from 'virtual:ox-content/search';
+
+// Search the index
+const results = await search('query text', { limit: 5 });
+
+// Results include:
+// - id: document ID
+// - title: document title
+// - url: document URL
+// - score: relevance score
+// - snippet: text snippet with context
+```
+
 ## Environment API
 
 The plugin creates a `markdown` environment using Vite's Environment API for SSG-focused rendering.
@@ -165,8 +234,13 @@ The plugin provides virtual modules:
 
 - `virtual:ox-content/config` - Resolved plugin configuration
 - `virtual:ox-content/runtime` - Runtime utilities
+- `virtual:ox-content/search` - Search functionality
 
 ```ts
 import config from 'virtual:ox-content/config';
 import { useMarkdown } from 'virtual:ox-content/runtime';
+import { search, searchOptions } from 'virtual:ox-content/search';
+
+// Use the search function
+const results = await search('query', { limit: 10 });
 ```

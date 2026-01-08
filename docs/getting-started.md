@@ -200,6 +200,11 @@ export default defineConfig({
         siteName: 'My Docs',
         ogImage: 'https://example.com/og-image.png',
       },
+      // Built-in full-text search (enabled by default)
+      search: {
+        enabled: true,
+        placeholder: 'Search docs...',
+      },
     }),
   ],
 });
@@ -279,6 +284,7 @@ ox-content/
 │   ├── ox_content_ast/         # AST node definitions
 │   ├── ox_content_parser/      # Markdown parser
 │   ├── ox_content_renderer/    # HTML renderer
+│   ├── ox_content_search/      # Full-text search engine
 │   ├── ox_content_napi/        # Node.js NAPI bindings
 │   ├── ox_content_wasm/        # WebAssembly bindings
 │   └── ox_content_og_image/    # OG image generation

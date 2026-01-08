@@ -37,8 +37,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -86,8 +84,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -107,7 +103,7 @@ jobs:
 
       - name: Publish
         working-directory: crates/ox_content_napi
-        run: npm publish --provenance --access public
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -129,8 +125,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -149,31 +143,31 @@ jobs:
 
       - name: Publish vite-plugin-ox-content
         working-directory: npm/vite-plugin-ox-content
-        run: npm publish --provenance --access public
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish vite-plugin-ox-content-vue
         working-directory: npm/vite-plugin-ox-content-vue
-        run: npm publish --provenance --access public
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish vite-plugin-ox-content-react
         working-directory: npm/vite-plugin-ox-content-react
-        run: npm publish --provenance --access public
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish vite-plugin-ox-content-svelte
         working-directory: npm/vite-plugin-ox-content-svelte
-        run: npm publish --provenance --access public
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish unplugin-ox-content
         working-directory: npm/unplugin-ox-content
-        run: npm publish --provenance --access public
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

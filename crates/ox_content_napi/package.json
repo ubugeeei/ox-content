@@ -29,7 +29,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/ox-content"
+    "url": "https://github.com/ubugeeei/ox-content.git",
+    "directory": "crates/ox_content_napi"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
   },
   "keywords": [
     "markdown",
