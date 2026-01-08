@@ -645,14 +645,6 @@ function generateFileMarkdown(
     }
   }
 
-  if (options.toc && doc.entries.length > 1) {
-    md += '## Table of Contents\n\n';
-    for (const entry of doc.entries) {
-      md += `- [${entry.name}](#${entry.name.toLowerCase()})\n`;
-    }
-    md += '\n---\n\n';
-  }
-
   // Pass symbol map for cross-file link resolution
   for (const entry of doc.entries) {
     md += generateEntryMarkdown(entry, options, currentFileName, symbolMap);
@@ -760,14 +752,6 @@ function generateCategoryMarkdown(
 ): string {
   const categoryFileName = `${kind}s`;
   let md = `# ${kind.charAt(0).toUpperCase() + kind.slice(1)}s\n\n`;
-
-  if (options.toc) {
-    md += '## Table of Contents\n\n';
-    for (const entry of entries) {
-      md += `- [${entry.name}](#${entry.name.toLowerCase()})\n`;
-    }
-    md += '\n---\n\n';
-  }
 
   for (const entry of entries) {
     md += generateEntryMarkdown(entry, options, categoryFileName, symbolMap);
@@ -937,7 +921,7 @@ export function resolveDocsOptions(
     exclude: opts.exclude ?? ['**/*.test.*', '**/*.spec.*', 'node_modules'],
     format: opts.format ?? 'markdown',
     private: opts.private ?? false,
-    toc: opts.toc ?? true,
+    toc: false,
     groupBy: opts.groupBy ?? 'file',
     githubUrl: opts.githubUrl,
     generateNav: opts.generateNav ?? true,

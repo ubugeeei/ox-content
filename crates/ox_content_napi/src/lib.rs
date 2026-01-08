@@ -753,11 +753,7 @@ pub fn generate_ssg_html(
         toc: page_data
             .toc
             .into_iter()
-            .map(|t| ox_content_ssg::TocEntry {
-                depth: t.depth,
-                text: t.text,
-                slug: t.slug,
-            })
+            .map(|t| ox_content_ssg::TocEntry { depth: t.depth, text: t.text, slug: t.slug })
             .collect(),
         path: page_data.path,
     };
@@ -769,11 +765,7 @@ pub fn generate_ssg_html(
             items: g
                 .items
                 .into_iter()
-                .map(|i| ox_content_ssg::NavItem {
-                    title: i.title,
-                    path: i.path,
-                    href: i.href,
-                })
+                .map(|i| ox_content_ssg::NavItem { title: i.title, path: i.path, href: i.href })
                 .collect(),
         })
         .collect();

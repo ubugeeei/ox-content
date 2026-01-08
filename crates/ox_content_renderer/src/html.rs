@@ -108,8 +108,9 @@ impl HtmlRenderer {
             None => (url, None),
         };
 
-        let is_md =
-            std::path::Path::new(path).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
+        let is_md = std::path::Path::new(path)
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
 
         if !self.options.convert_md_links || !is_md {
             return url.to_string();
@@ -128,24 +129,41 @@ impl HtmlRenderer {
             } else {
                 format!("{base}{path_without_slash}/index.html")
             }
-        } else {
-            // Relative path: ./getting-started.md -> ./getting-started/index.html
-            if path_without_ext == "index"
-                || path_without_ext == "./index"
-                || path_without_ext.ends_with("/index")
-            {
-                let dir = if path_without_ext == "index" {
-                    ".".to_string()
-                } else {
-                    path_without_ext
-                        .trim_end_matches("/index")
-                        .trim_end_matches("index")
-                        .to_string()
-                };
-                let dir = if dir.is_empty() { ".".to_string() } else { dir };
-                format!("{dir}/index.html")
+        } else if path.starts_with("./") {
+            // Same-directory relative path: ./types.md -> ../types/index.html
+            // Since each .md becomes a directory (name/index.html), we need to go up one level
+            let name = &path_without_ext[2..]; // Remove "./"
+            if name == "index" {
+                // ./index.md -> ./index.html (stay in same directory)
+                "./index.html".to_string()
             } else {
-                format!("{path_without_ext}/index.html")
+                format!("../{name}/index.html")
+            }
+        } else if path.starts_with("../") {
+            // Parent-relative path: ../types.md -> ../../types/index.html
+            // Need extra ../ because we're inside a subdirectory
+            let rest = &path_without_ext[3..]; // Remove "../"
+            if rest == "index" || rest.ends_with("/index") {
+                let dir = rest.trim_end_matches("/index").trim_end_matches("index");
+                if dir.is_empty() {
+                    "../../index.html".to_string()
+                } else {
+                    format!("../../{dir}/index.html")
+                }
+            } else {
+                format!("../../{rest}/index.html")
+            }
+        } else {
+            // Plain relative path: types.md -> ../types/index.html
+            if path_without_ext == "index" || path_without_ext.ends_with("/index") {
+                let dir = path_without_ext.trim_end_matches("/index").trim_end_matches("index");
+                if dir.is_empty() {
+                    "./index.html".to_string()
+                } else {
+                    format!("../{dir}/index.html")
+                }
+            } else {
+                format!("../{path_without_ext}/index.html")
             }
         };
 
@@ -337,6 +355,10 @@ impl<'a> Visit<'a> for HtmlRenderer {
         let url = self.convert_md_url(link.url);
         self.write_url_escaped(&url);
         self.write("\"");
+        // Add target="_blank" for external links (http:// or https://)
+        if link.url.starts_with("http://") || link.url.starts_with("https://") {
+            self.write(" target=\"_blank\" rel=\"noopener noreferrer\"");
+        }
         if let Some(title) = link.title {
             self.write(" title=\"");
             self.write_escaped(title);

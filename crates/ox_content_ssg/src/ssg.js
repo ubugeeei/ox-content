@@ -13,3 +13,7 @@ searchBtn?.addEventListener('click',openSearch);searchClose?.addEventListener('c
 let timeout=null;searchInput?.addEventListener('input',()=>{if(timeout)clearTimeout(timeout);timeout=setTimeout(()=>search(searchInput.value),150)});
 searchInput?.addEventListener('keydown',e=>{if(e.key==='Escape')closeSearch();else if(e.key==='ArrowDown'){e.preventDefault();if(selectedIdx<results.length-1){selectedIdx++;render()}}else if(e.key==='ArrowUp'){e.preventDefault();if(selectedIdx>0){selectedIdx--;render()}}else if(e.key==='Enter'&&results[selectedIdx]){e.preventDefault();location.href=results[selectedIdx].url}});
 document.addEventListener('keydown',e=>{if((e.key==='/'&&!(e.target instanceof HTMLInputElement))||((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k')){e.preventDefault();openSearch()}});
+// Scroll to hash on page load and handle hash link clicks
+const scrollToHash=()=>{const hash=location.hash;if(hash){const target=document.querySelector(hash);if(target){setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),100)}}};
+scrollToHash();window.addEventListener('hashchange',scrollToHash);
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const hash=a.getAttribute('href');const target=document.querySelector(hash);if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'});history.pushState(null,null,hash)}}));

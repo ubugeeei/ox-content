@@ -71,8 +71,6 @@ const SSG_JS: &str = include_str!("ssg.js");
 /// content area, table of contents, search functionality, and theme toggle.
 pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &SsgConfig) -> String {
     let nav_html = generate_nav_html(nav_groups, &page_data.path);
-    let toc_html = generate_toc_html(&page_data.toc);
-    let has_toc = !page_data.toc.is_empty();
 
     let description_meta = page_data.description.as_ref().map_or(String::new(), |d| {
         format!(
@@ -87,28 +85,13 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
 
     let og_image_meta = config.og_image.as_ref().map_or(String::new(), |img| {
         format!(
-            r#"<meta property="og:image" content="{}">
-  <meta name="twitter:image" content="{}">"#,
-            img, img
+            r#"<meta property="og:image" content="{img}">
+  <meta name="twitter:image" content="{img}">"#
         )
     });
 
-    let toc_section = if has_toc {
-        format!(
-            r#"<aside class="toc">
-      <div class="toc-title">On this page</div>
-      <ul class="toc-list">
-{}
-      </ul>
-    </aside>"#,
-            toc_html
-        )
-    } else {
-        String::new()
-    };
-
     format!(
-        r##"<!DOCTYPE html>
+        r#"<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -181,11 +164,10 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
 {content}
       </article>
     </main>
-{toc_section}
   </div>
   <script>{js}</script>
 </body>
-</html>"##,
+</html>"#,
         title = html_escape(&page_data.title),
         site_name = html_escape(&config.site_name),
         base = &config.base,
@@ -194,16 +176,12 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         css = SSG_CSS,
         navigation = nav_html,
         content = page_data.content,
-        toc_section = toc_section,
         js = SSG_JS.replace("{{base}}", &config.base),
     )
 }
 
 fn html_escape(s: &str) -> String {
-    s.replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
+    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
 }
 
 fn generate_nav_html(nav_groups: &[NavGroup], current_path: &str) -> String {
@@ -238,18 +216,6 @@ fn generate_nav_html(nav_groups: &[NavGroup], current_path: &str) -> String {
         .join("\n")
 }
 
-fn generate_toc_html(toc: &[TocEntry]) -> String {
-    toc.iter()
-        .map(|entry| {
-            format!(
-                "        <li class=\"toc-item\"><a href=\"#{}\" class=\"toc-link\" style=\"--depth: {}\">{}</a></li>",
-                entry.slug, entry.depth, html_escape(&entry.text)
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -267,11 +233,7 @@ mod tests {
             title: "Test Page".to_string(),
             description: Some("Test description".to_string()),
             content: "<h1>Hello</h1>".to_string(),
-            toc: vec![TocEntry {
-                depth: 1,
-                text: "Hello".to_string(),
-                slug: "hello".to_string(),
-            }],
+            toc: vec![TocEntry { depth: 1, text: "Hello".to_string(), slug: "hello".to_string() }],
             path: "test".to_string(),
         };
 
