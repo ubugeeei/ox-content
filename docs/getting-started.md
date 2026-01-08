@@ -179,25 +179,53 @@ console.log(result.html);
 
 ### With Vite
 
+```bash
+npm install vite-plugin-ox-content @ox-content/napi
+```
+
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { oxContent } from '@ox-content/vite';
+import { oxContent } from 'vite-plugin-ox-content';
 
 export default defineConfig({
   plugins: [
     oxContent({
       srcDir: 'docs',
-      outDir: 'dist',
+      outDir: 'dist/docs',
       // Enable syntax highlighting
       highlight: true,
-      // Generate OG images
-      ogImage: {
-        enabled: true,
-        background: '#1a1a2e',
+      // SSG with automatic OG images
+      ssg: {
+        siteName: 'My Docs',
+        ogImage: 'https://example.com/og-image.png',
       },
     }),
   ],
+});
+```
+
+### With Framework Integration
+
+```bash
+# Vue
+npm install vite-plugin-ox-content-vue @ox-content/napi
+
+# React
+npm install vite-plugin-ox-content-react @ox-content/napi
+
+# Svelte
+npm install vite-plugin-ox-content-svelte @ox-content/napi
+```
+
+```typescript
+// vite.config.ts (Vue example)
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { oxContentVue } from 'vite-plugin-ox-content-vue';
+
+export default defineConfig({
+  plugins: [vue(), oxContentVue()],
 });
 ```
 
@@ -245,62 +273,26 @@ mise run bench:bundle       # Run bundle size benchmarks
 ```
 ox-content/
 ├── Cargo.toml              # Workspace configuration
-├── Cargo.lock              # Locked dependencies
 ├── mise.toml               # mise task definitions
-├── crates/
-│   ├── ox_content_allocator/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       └── lib.rs      # Arena allocator
-│   ├── ox_content_ast/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs      # Module exports
-│   │       ├── ast.rs      # Node definitions
-│   │       ├── span.rs     # Source locations
-│   │       └── visit.rs    # Visitor pattern
-│   ├── ox_content_parser/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs      # Module exports
-│   │       ├── parser.rs   # Main parser
-│   │       ├── lexer.rs    # Tokenizer
-│   │       └── error.rs    # Error types
-│   ├── ox_content_renderer/
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs      # Module exports
-│   │       ├── html.rs     # HTML renderer
-│   │       └── render.rs   # Renderer trait
-│   ├── ox_content_napi/
-│   │   ├── Cargo.toml
-│   │   ├── package.json    # npm package config
-│   │   └── src/
-│   │       └── lib.rs      # NAPI bindings
-│   ├── ox_content_vite/
-│   │   └── ...             # Vite plugin
-│   ├── ox_content_og_image/
-│   │   └── ...             # OG image generation
-│   ├── ox_content_docs/
-│   │   └── ...             # Source code documentation
-│   └── ox_content_wasm/
-│       └── ...             # WebAssembly bindings
-├── playground/             # Interactive web playground
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── index.html
-│   └── src/
-│       └── main.ts
-├── docs/                   # Documentation (you are here!)
-│   ├── index.md
-│   ├── getting-started.md
-│   ├── architecture.md
-│   └── ox-content.config.ts
-└── .github/
-    └── workflows/
-        ├── ci.yml          # Continuous integration
-        ├── deploy.yml      # GitHub Pages deployment
-        └── release.yml     # npm release automation
+├── crates/                 # Rust crates
+│   ├── ox_content_allocator/   # Arena allocator
+│   ├── ox_content_ast/         # AST node definitions
+│   ├── ox_content_parser/      # Markdown parser
+│   ├── ox_content_renderer/    # HTML renderer
+│   ├── ox_content_napi/        # Node.js NAPI bindings
+│   ├── ox_content_wasm/        # WebAssembly bindings
+│   └── ox_content_og_image/    # OG image generation
+├── npm/                    # npm packages
+│   ├── vite-plugin-ox-content/       # Vite plugin with SSG
+│   ├── vite-plugin-ox-content-vue/   # Vue integration
+│   ├── vite-plugin-ox-content-react/ # React integration
+│   ├── vite-plugin-ox-content-svelte/# Svelte integration
+│   └── unplugin-ox-content/          # Universal plugin
+├── examples/               # Usage examples
+├── docs/                   # Documentation (this site)
+└── .github/workflows/      # CI/CD
+    ├── ci.yml              # Continuous integration
+    └── publish.yml         # npm release automation
 ```
 
 ## Running Tests

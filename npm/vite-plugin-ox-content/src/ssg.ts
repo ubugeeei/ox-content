@@ -74,8 +74,19 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       --color-code-bg: #1e293b;
       --color-code-text: #e2e8f0;
     }
+    [data-theme="dark"] {
+      --color-bg: #0f172a;
+      --color-bg-alt: #1e293b;
+      --color-text: #e2e8f0;
+      --color-text-muted: #94a3b8;
+      --color-border: #334155;
+      --color-primary: #e67e4d;
+      --color-primary-hover: #f4a07a;
+      --color-code-bg: #0f172a;
+      --color-code-text: #e2e8f0;
+    }
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme="light"]) {
         --color-bg: #0f172a;
         --color-bg-alt: #1e293b;
         --color-text: #e2e8f0;
@@ -128,6 +139,26 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     }
     .menu-toggle svg { display: block; }
     .menu-toggle path { stroke: var(--color-text); }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      color: var(--color-text-muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .theme-toggle:hover { background: var(--color-bg-alt); color: var(--color-text); }
+    .theme-toggle svg { display: block; width: 20px; height: 20px; }
+    .theme-toggle .icon-sun { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
+      :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
+    }
 
     /* Layout */
     .layout {
@@ -272,12 +303,42 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         z-index: 99;
+        width: 280px;
       }
       .sidebar.open { transform: translateX(0); }
-      .main { margin-left: 0; padding: 1.5rem 1rem; }
-      .content h1 { font-size: 1.75rem; }
-      .content h2 { font-size: 1.25rem; }
-      .content pre { padding: 0.75rem 1rem; font-size: 0.75rem; }
+      .main { margin-left: 0; padding: 1rem 0.75rem; }
+      .content { padding: 0 0.25rem; }
+      .content h1 { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.75rem; }
+      .content h2 { font-size: 1.2rem; margin-top: 2rem; }
+      .content h3 { font-size: 1.1rem; }
+      .content p { font-size: 0.9375rem; margin-bottom: 0.875rem; }
+      .content ul, .content ol { padding-left: 1.25rem; font-size: 0.9375rem; }
+      .content pre {
+        padding: 0.75rem;
+        font-size: 0.75rem;
+        margin: 1rem -0.75rem;
+        border-radius: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .content code { font-size: 0.8125em; }
+      .content table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        font-size: 0.8125rem;
+        margin: 1rem -0.75rem;
+        width: calc(100% + 1.5rem);
+      }
+      .content th, .content td { padding: 0.5rem 0.75rem; white-space: nowrap; }
+      .content img { margin: 1rem 0; }
+      .content img[alt*="Logo"] { max-width: 150px; }
+      .content img[alt*="Architecture"] { max-width: 100%; }
+      .content img[alt*="Benchmark"] { max-width: 100%; }
+      .content blockquote { padding: 0.5rem 0.75rem; margin: 1rem 0; font-size: 0.9375rem; }
+      .header { padding: 0 1rem; }
+      .header-title { font-size: 1rem; }
+      .header-title img { width: 24px; height: 24px; }
       .overlay {
         display: none;
         position: fixed;
@@ -286,6 +347,15 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
         z-index: 98;
       }
       .overlay.open { display: block; }
+    }
+
+    /* Extra small devices */
+    @media (max-width: 480px) {
+      .main { padding: 0.75rem 0.5rem; }
+      .content h1 { font-size: 1.35rem; }
+      .content pre { font-size: 0.6875rem; padding: 0.625rem; }
+      .content table { font-size: 0.75rem; }
+      .content th, .content td { padding: 0.375rem 0.5rem; }
     }
   </style>
 </head>
@@ -300,6 +370,16 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       <img src="{{base}}logo.svg" alt="" width="28" height="28" style="margin-right: 8px; vertical-align: middle;" />
       {{siteName}}
     </a>
+    <div class="header-actions">
+      <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
   </header>
   <div class="overlay"></div>
   <div class="layout">
@@ -323,6 +403,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
 {{/hasToc}}
   </div>
   <script>
+    // Menu toggle
     const toggle = document.querySelector('.menu-toggle');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.overlay');
@@ -334,6 +415,26 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       });
       overlay.addEventListener('click', close);
       sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+    }
+
+    // Theme toggle
+    const themeToggle = document.querySelector('.theme-toggle');
+    const getPreferredTheme = () => {
+      const stored = localStorage.getItem('theme');
+      if (stored) return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    const setTheme = (theme) => {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+    };
+    // Initialize theme
+    setTheme(getPreferredTheme());
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || getPreferredTheme();
+        setTheme(current === 'dark' ? 'light' : 'dark');
+      });
     }
   </script>
 </body>

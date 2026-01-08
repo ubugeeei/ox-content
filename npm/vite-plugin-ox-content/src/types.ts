@@ -188,6 +188,13 @@ export interface OxContentOptions {
    * @default { enabled: true }
    */
   docs?: DocsOptions | false;
+
+  /**
+   * Full-text search options.
+   * Set to false to disable search.
+   * @default { enabled: true }
+   */
+  search?: SearchOptions | boolean;
 }
 
 /**
@@ -213,6 +220,7 @@ export interface ResolvedOptions {
   ogImageOptions: OgImageOptions;
   transformers: MarkdownTransformer[];
   docs: ResolvedDocsOptions | false;
+  search: ResolvedSearchOptions;
 }
 
 /**
@@ -510,4 +518,78 @@ export interface NavItem {
    * Child navigation items (optional).
    */
   children?: NavItem[];
+}
+
+// ============================================
+// Search Types
+// ============================================
+
+/**
+ * Options for full-text search.
+ */
+export interface SearchOptions {
+  /**
+   * Enable search functionality.
+   * @default true
+   */
+  enabled?: boolean;
+
+  /**
+   * Maximum number of search results.
+   * @default 10
+   */
+  limit?: number;
+
+  /**
+   * Enable prefix matching for autocomplete.
+   * @default true
+   */
+  prefix?: boolean;
+
+  /**
+   * Placeholder text for the search input.
+   * @default 'Search documentation...'
+   */
+  placeholder?: string;
+
+  /**
+   * Keyboard shortcut to focus search (without modifier).
+   * @default '/'
+   */
+  hotkey?: string;
+}
+
+/**
+ * Resolved search options.
+ */
+export interface ResolvedSearchOptions {
+  enabled: boolean;
+  limit: number;
+  prefix: boolean;
+  placeholder: string;
+  hotkey: string;
+}
+
+/**
+ * Search document structure.
+ */
+export interface SearchDocument {
+  id: string;
+  title: string;
+  url: string;
+  body: string;
+  headings: string[];
+  code: string[];
+}
+
+/**
+ * Search result structure.
+ */
+export interface SearchResult {
+  id: string;
+  title: string;
+  url: string;
+  score: number;
+  matches: string[];
+  snippet: string;
 }

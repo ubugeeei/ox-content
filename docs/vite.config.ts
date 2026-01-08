@@ -36,7 +36,7 @@ export default defineConfig({
       // API documentation generation (like cargo doc)
       docs: {
         enabled: true,
-        src: ['../packages/vite-plugin-ox-content/src'],
+        src: ['../npm/vite-plugin-ox-content/src'],
         out: 'api',
         include: ['**/*.ts'],
         exclude: ['**/*.test.*'],

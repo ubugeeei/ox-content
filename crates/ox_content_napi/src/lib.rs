@@ -12,6 +12,7 @@ use ox_content_allocator::Allocator;
 use ox_content_ast::{Document, Heading, Node};
 use ox_content_parser::{Parser, ParserOptions};
 use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
+use ox_content_search::{DocumentIndexer, SearchIndex, SearchIndexBuilder, SearchOptions};
 
 /// Parse result containing the AST as JSON.
 #[napi(object)]
@@ -566,4 +567,171 @@ pub fn generate_og_image_svg(data: JsOgImageData, config: Option<JsOgImageConfig
 
     let generator = OgImageGenerator::new(og_config);
     generator.generate_svg(&og_data)
+}
+
+// =============================================================================
+// Full-text Search API
+// =============================================================================
+
+/// Search document for JavaScript.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSearchDocument {
+    /// Unique document identifier.
+    pub id: String,
+    /// Document title.
+    pub title: String,
+    /// Document URL.
+    pub url: String,
+    /// Document body text.
+    pub body: String,
+    /// Document headings.
+    pub headings: Vec<String>,
+    /// Code snippets.
+    pub code: Vec<String>,
+}
+
+/// Search result for JavaScript.
+#[napi(object)]
+pub struct JsSearchResult {
+    /// Document ID.
+    pub id: String,
+    /// Document title.
+    pub title: String,
+    /// Document URL.
+    pub url: String,
+    /// Relevance score.
+    pub score: f64,
+    /// Matched terms.
+    pub matches: Vec<String>,
+    /// Content snippet.
+    pub snippet: String,
+}
+
+/// Search options for JavaScript.
+#[napi(object)]
+#[derive(Default, Clone)]
+pub struct JsSearchOptions {
+    /// Maximum number of results.
+    pub limit: Option<u32>,
+    /// Enable prefix matching.
+    pub prefix: Option<bool>,
+    /// Enable fuzzy matching.
+    pub fuzzy: Option<bool>,
+    /// Minimum score threshold.
+    pub threshold: Option<f64>,
+}
+
+impl From<JsSearchOptions> for SearchOptions {
+    fn from(opts: JsSearchOptions) -> Self {
+        Self {
+            limit: opts.limit.unwrap_or(10) as usize,
+            prefix: opts.prefix.unwrap_or(true),
+            fuzzy: opts.fuzzy.unwrap_or(false),
+            threshold: opts.threshold.unwrap_or(0.0),
+        }
+    }
+}
+
+/// Builds a search index from documents.
+///
+/// Takes an array of documents and returns a serialized search index as JSON.
+#[napi]
+pub fn build_search_index(documents: Vec<JsSearchDocument>) -> String {
+    let mut builder = SearchIndexBuilder::new();
+
+    for doc in documents {
+        builder.add_document(ox_content_search::SearchDocument {
+            id: doc.id,
+            title: doc.title,
+            url: doc.url,
+            body: doc.body,
+            headings: doc.headings,
+            code: doc.code,
+        });
+    }
+
+    let index = builder.build();
+    index.to_json()
+}
+
+/// Searches a serialized index.
+///
+/// Takes a JSON-serialized index, query string, and options.
+/// Returns an array of search results.
+#[napi]
+pub fn search_index(
+    index_json: String,
+    query: String,
+    options: Option<JsSearchOptions>,
+) -> Vec<JsSearchResult> {
+    let Ok(index) = SearchIndex::from_json(&index_json) else {
+        return Vec::new();
+    };
+
+    let opts = options.map(SearchOptions::from).unwrap_or_default();
+    let results = index.search(&query, &opts);
+
+    results
+        .into_iter()
+        .map(|r| JsSearchResult {
+            id: r.id,
+            title: r.title,
+            url: r.url,
+            score: r.score,
+            matches: r.matches,
+            snippet: r.snippet,
+        })
+        .collect()
+}
+
+/// Extracts searchable content from Markdown source.
+///
+/// Parses the Markdown and extracts title, body text, headings, and code.
+#[napi]
+pub fn extract_search_content(
+    source: String,
+    id: String,
+    url: String,
+    options: Option<JsParserOptions>,
+) -> JsSearchDocument {
+    let allocator = Allocator::new();
+    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
+
+    // Parse frontmatter first
+    let (content, frontmatter) = parse_frontmatter(&source);
+
+    // Try to get title from frontmatter
+    let frontmatter_title = frontmatter.get("title").and_then(|v| v.as_str()).map(String::from);
+
+    let parser = Parser::with_options(&allocator, &content, parser_options);
+
+    let result = parser.parse();
+    let (title, body, headings, code) = match result {
+        Ok(ref doc) => {
+            let mut indexer = DocumentIndexer::new();
+            indexer.extract(doc);
+
+            let title = frontmatter_title.clone().unwrap_or_else(|| {
+                indexer.title().map(String::from).unwrap_or_default()
+            });
+
+            (
+                title,
+                indexer.body().to_string(),
+                indexer.headings().to_vec(),
+                indexer.code().to_vec(),
+            )
+        }
+        Err(_) => (
+            frontmatter_title.clone().unwrap_or_default(),
+            String::new(),
+            Vec::new(),
+            Vec::new(),
+        ),
+    };
+    // Explicitly drop the result to release the borrow
+    drop(result);
+
+    JsSearchDocument { id, title, url, body, headings, code }
 }

@@ -66,6 +66,7 @@ ox_content_napi = { path = "crates/ox_content_napi" }
 ox_content_vite = { path = "crates/ox_content_vite" }
 ox_content_og_image = { path = "crates/ox_content_og_image" }
 ox_content_docs = { path = "crates/ox_content_docs" }
+ox_content_search = { path = "crates/ox_content_search" }
 
 # Memory allocation
 bumpalo = "3.16"

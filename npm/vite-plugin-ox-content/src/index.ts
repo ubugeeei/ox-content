@@ -11,6 +11,7 @@ import { createMarkdownEnvironment } from './environment';
 import { transformMarkdown } from './transform';
 import { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from './docs';
 import { buildSsg, resolveSsgOptions } from './ssg';
+import { resolveSearchOptions, buildSearchIndex, writeSearchIndex, generateSearchModule } from './search';
 import type { OxContentOptions, ResolvedOptions } from './types';
 
 export type { OxContentOptions } from './types';
@@ -23,6 +24,10 @@ export type {
   ExtractedDocs,
   SsgOptions,
   ResolvedSsgOptions,
+  SearchOptions,
+  ResolvedSearchOptions,
+  SearchDocument,
+  SearchResult,
 } from './types';
 
 /**
@@ -243,7 +248,67 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
     },
   };
 
-  return [mainPlugin, environmentPlugin, docsPlugin, ssgPlugin];
+  // Search plugin
+  let searchIndexJson = '';
+  const searchPlugin: Plugin = {
+    name: 'ox-content:search',
+
+    resolveId(id) {
+      if (id === 'virtual:ox-content/search') {
+        return '\0virtual:ox-content/search';
+      }
+      return null;
+    },
+
+    async load(id) {
+      if (id === '\0virtual:ox-content/search') {
+        const searchOptions = resolvedOptions.search;
+        if (!searchOptions.enabled) {
+          return 'export const search = () => []; export const searchOptions = { enabled: false }; export default { search, searchOptions };';
+        }
+
+        const indexPath = resolvedOptions.base + 'search-index.json';
+        return generateSearchModule(searchOptions, indexPath);
+      }
+      return null;
+    },
+
+    async buildStart() {
+      const searchOptions = resolvedOptions.search;
+      if (!searchOptions.enabled) {
+        return;
+      }
+
+      const root = config?.root || process.cwd();
+      const srcDir = path.resolve(root, resolvedOptions.srcDir);
+
+      try {
+        searchIndexJson = await buildSearchIndex(srcDir, resolvedOptions.base);
+        console.log('[ox-content] Search index built');
+      } catch (err) {
+        console.warn('[ox-content] Failed to build search index:', err);
+      }
+    },
+
+    async closeBundle() {
+      const searchOptions = resolvedOptions.search;
+      if (!searchOptions.enabled || !searchIndexJson) {
+        return;
+      }
+
+      const root = config?.root || process.cwd();
+      const outDir = path.resolve(root, resolvedOptions.outDir);
+
+      try {
+        await writeSearchIndex(searchIndexJson, outDir);
+        console.log('[ox-content] Search index written to', path.join(outDir, 'search-index.json'));
+      } catch (err) {
+        console.warn('[ox-content] Failed to write search index:', err);
+      }
+    },
+  };
+
+  return [mainPlugin, environmentPlugin, docsPlugin, ssgPlugin, searchPlugin];
 }
 
 /**
@@ -270,6 +335,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     ogImageOptions: options.ogImageOptions ?? {},
     transformers: options.transformers ?? [],
     docs: resolveDocsOptions(options.docs),
+    search: resolveSearchOptions(options.search),
   };
 }
 
@@ -305,4 +371,5 @@ export { createMarkdownEnvironment } from './environment';
 export { transformMarkdown } from './transform';
 export { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from './docs';
 export { buildSsg, resolveSsgOptions, DEFAULT_HTML_TEMPLATE } from './ssg';
+export { resolveSearchOptions, buildSearchIndex, writeSearchIndex } from './search';
 export * from './types';

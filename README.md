@@ -54,6 +54,8 @@
 
 ## Quick Start
 
+### Basic Usage (Node.js)
+
 ```bash
 npm install @ox-content/napi
 ```
@@ -64,6 +66,55 @@ import { parseAndRender } from '@ox-content/napi';
 const { html } = parseAndRender('# Hello World', { gfm: true });
 ```
 
+### Vite Plugin
+
+```bash
+npm install vite-plugin-ox-content @ox-content/napi
+```
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import { oxContent } from 'vite-plugin-ox-content';
+
+export default defineConfig({
+  plugins: [
+    oxContent({
+      srcDir: 'docs',
+      outDir: 'dist/docs',
+      highlight: true,
+      ssg: {
+        siteName: 'My Docs',
+      },
+    }),
+  ],
+});
+```
+
+### Framework Integration
+
+```bash
+# Vue
+npm install vite-plugin-ox-content-vue @ox-content/napi
+
+# React
+npm install vite-plugin-ox-content-react @ox-content/napi
+
+# Svelte
+npm install vite-plugin-ox-content-svelte @ox-content/napi
+```
+
+```typescript
+// vite.config.ts (Vue example)
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { oxContentVue } from 'vite-plugin-ox-content-vue';
+
+export default defineConfig({
+  plugins: [vue(), oxContentVue()],
+});
+```
+
 **[Read the full documentation →](https://ubugeeei.github.io/ox-content/)**
 
 ## Packages
@@ -72,7 +123,30 @@ const { html } = parseAndRender('# Hello World', { gfm: true });
 | ------- | ----------- |
 | [`@ox-content/napi`](./crates/ox_content_napi) | Node.js bindings |
 | [`@ox-content/wasm`](./crates/ox_content_wasm) | WebAssembly bindings |
-| [`unplugin-ox-content`](./packages/unplugin-ox-content) | Universal plugin (Vite/Webpack/Rollup/esbuild) |
+| [`vite-plugin-ox-content`](./npm/vite-plugin-ox-content) | Vite plugin with SSG support |
+| [`vite-plugin-ox-content-vue`](./npm/vite-plugin-ox-content-vue) | Vue integration |
+| [`vite-plugin-ox-content-react`](./npm/vite-plugin-ox-content-react) | React integration |
+| [`vite-plugin-ox-content-svelte`](./npm/vite-plugin-ox-content-svelte) | Svelte integration |
+| [`unplugin-ox-content`](./npm/unplugin-ox-content) | Universal plugin (Vite/Webpack/Rollup/esbuild) |
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build NAPI bindings
+mise run napi-build
+
+# Build npm packages
+mise run npm-build
+
+# Run tests
+mise run test
+
+# Release a new version
+mise run release -- patch  # or minor, major, x.y.z
+```
 
 ## License
 

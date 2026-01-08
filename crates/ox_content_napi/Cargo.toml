@@ -24,6 +24,7 @@ ox_content_parser = { workspace = true }
 ox_content_renderer = { workspace = true }
 ox_content_docs = { workspace = true }
 ox_content_og_image = { workspace = true }
+ox_content_search = { workspace = true }
 napi = { workspace = true }
 napi-derive = { workspace = true }
 serde = { workspace = true }

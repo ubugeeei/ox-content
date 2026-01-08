@@ -1,6 +1,238 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { apiNav } from '../api/nav';
+
+// Search state
+const searchQuery = ref('');
+const searchResults = ref<Array<{ id: string; title: string; url: string; score: number; snippet: string }>>([]);
+const showSearchModal = ref(false);
+const searchInputRef = ref<HTMLInputElement | null>(null);
+const selectedIndex = ref(0);
+let searchIndex: any = null;
+let searchTimeout: number | null = null;
+
+// BM25 scoring
+function computeIdf(df: number, docCount: number): number {
+  return Math.log((docCount - df + 0.5) / (df + 0.5) + 1.0);
+}
+
+function getFieldBoost(field: string): number {
+  switch (field) {
+    case 'Title': return 10.0;
+    case 'Heading': return 5.0;
+    case 'Body': return 1.0;
+    case 'Code': return 0.5;
+    default: return 1.0;
+  }
+}
+
+// Tokenizer for queries
+function tokenizeQuery(text: string): string[] {
+  const tokens: string[] = [];
+  let current = '';
+
+  for (const char of text) {
+    const isCjk = /[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(char);
+
+    if (isCjk) {
+      if (current) {
+        tokens.push(current.toLowerCase());
+        current = '';
+      }
+      tokens.push(char);
+    } else if (/[a-zA-Z0-9_]/.test(char)) {
+      current += char;
+    } else if (current) {
+      tokens.push(current.toLowerCase());
+      current = '';
+    }
+  }
+
+  if (current) {
+    tokens.push(current.toLowerCase());
+  }
+
+  return tokens;
+}
+
+// Load search index
+async function loadSearchIndex() {
+  if (searchIndex) return;
+
+  try {
+    const base = import.meta.env.BASE_URL || '/ox-content/';
+    const res = await fetch(`${base}search-index.json`);
+    searchIndex = await res.json();
+  } catch (err) {
+    console.warn('[ox-content] Failed to load search index:', err);
+  }
+}
+
+// Search function
+async function performSearch(query: string) {
+  if (!query.trim()) {
+    searchResults.value = [];
+    return;
+  }
+
+  await loadSearchIndex();
+
+  if (!searchIndex) {
+    searchResults.value = [];
+    return;
+  }
+
+  const tokens = tokenizeQuery(query);
+  if (tokens.length === 0) {
+    searchResults.value = [];
+    return;
+  }
+
+  const k1 = 1.2;
+  const b = 0.75;
+  const docScores = new Map<number, { score: number; matches: Set<string> }>();
+
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    const isLast = i === tokens.length - 1;
+
+    // Find matching terms
+    let matchingTerms: string[] = [];
+    if (isLast && token.length >= 2) {
+      matchingTerms = Object.keys(searchIndex.index).filter((term: string) => term.startsWith(token));
+    } else if (searchIndex.index[token]) {
+      matchingTerms = [token];
+    }
+
+    for (const term of matchingTerms) {
+      const postings = searchIndex.index[term] || [];
+      const df = searchIndex.df[term] || 1;
+      const idf = computeIdf(df, searchIndex.doc_count);
+
+      for (const posting of postings) {
+        const doc = searchIndex.documents[posting.doc_idx];
+        if (!doc) continue;
+
+        const docLen = doc.body.length;
+        const tf = posting.tf;
+        const boost = getFieldBoost(posting.field);
+
+        const score = idf * ((tf * (k1 + 1.0)) / (tf + k1 * (1.0 - b + b * docLen / searchIndex.avg_dl))) * boost;
+
+        if (!docScores.has(posting.doc_idx)) {
+          docScores.set(posting.doc_idx, { score: 0, matches: new Set() });
+        }
+        const entry = docScores.get(posting.doc_idx)!;
+        entry.score += score;
+        entry.matches.add(term);
+      }
+    }
+  }
+
+  // Convert to results
+  const results = Array.from(docScores.entries())
+    .map(([docIdx, data]) => {
+      const doc = searchIndex.documents[docIdx];
+      const matches = Array.from(data.matches);
+
+      // Generate snippet
+      let snippet = '';
+      if (doc.body) {
+        const bodyLower = doc.body.toLowerCase();
+        let firstPos = -1;
+        for (const match of matches) {
+          const pos = bodyLower.indexOf(match);
+          if (pos !== -1 && (firstPos === -1 || pos < firstPos)) {
+            firstPos = pos;
+          }
+        }
+
+        const start = Math.max(0, firstPos - 50);
+        const end = Math.min(doc.body.length, start + 150);
+        snippet = doc.body.slice(start, end);
+        if (start > 0) snippet = '...' + snippet;
+        if (end < doc.body.length) snippet = snippet + '...';
+      }
+
+      return {
+        id: doc.id,
+        title: doc.title,
+        url: doc.url,
+        score: data.score,
+        snippet,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+
+  searchResults.value = results;
+  selectedIndex.value = 0;
+}
+
+// Debounced search
+function onSearchInput() {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  searchTimeout = window.setTimeout(() => {
+    performSearch(searchQuery.value);
+  }, 150);
+}
+
+// Open search modal
+function openSearch() {
+  showSearchModal.value = true;
+  nextTick(() => {
+    searchInputRef.value?.focus();
+  });
+}
+
+// Close search modal
+function closeSearch() {
+  showSearchModal.value = false;
+  searchQuery.value = '';
+  searchResults.value = [];
+  selectedIndex.value = 0;
+}
+
+// Handle keyboard navigation in search
+function handleSearchKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    closeSearch();
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (selectedIndex.value < searchResults.value.length - 1) {
+      selectedIndex.value++;
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (selectedIndex.value > 0) {
+      selectedIndex.value--;
+    }
+  } else if (e.key === 'Enter' && searchResults.value[selectedIndex.value]) {
+    e.preventDefault();
+    navigateToResult(searchResults.value[selectedIndex.value]);
+  }
+}
+
+// Navigate to search result
+function navigateToResult(result: { url: string }) {
+  const path = result.url.replace(/^\/ox-content/, '');
+  navigate(path);
+  closeSearch();
+}
+
+// Global keyboard shortcut
+function handleGlobalKeydown(e: KeyboardEvent) {
+  // Open search with / or Cmd/Ctrl+K
+  if (
+    (e.key === '/' && !showSearchModal.value && !(e.target instanceof HTMLInputElement)) ||
+    ((e.metaKey || e.ctrlKey) && e.key === 'k')
+  ) {
+    e.preventDefault();
+    openSearch();
+  }
+}
 
 // Navigation structure
 const nav = [
@@ -74,6 +306,13 @@ onMounted(() => {
     currentPath.value = window.location.hash.slice(1) || '/';
     loadContent(currentPath.value);
   });
+
+  // Add keyboard shortcut listener
+  window.addEventListener('keydown', handleGlobalKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleGlobalKeydown);
 });
 
 const pageTitle = computed(() => {
@@ -97,7 +336,18 @@ const pageTitle = computed(() => {
           <div class="content">
             <div class="curtain" />
             <div class="content-body">
-              <div class="VPNavBarSearch" />
+              <div class="VPNavBarSearch">
+                <button class="search-button" @click="openSearch" aria-label="Search">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                  </svg>
+                  <span class="search-text">Search</span>
+                  <span class="search-shortcut">
+                    <kbd>/</kbd>
+                  </span>
+                </button>
+              </div>
               <nav class="VPNavBarMenu">
                 <a href="#/" class="VPNavBarMenuLink" @click.prevent="navigate('/')">Guide</a>
                 <a href="https://github.com/ubugeeei/ox-content" target="_blank" class="VPNavBarMenuLink">GitHub</a>
@@ -187,6 +437,64 @@ const pageTitle = computed(() => {
         </div>
       </div>
     </main>
+
+    <!-- Search Modal -->
+    <Teleport to="body">
+      <div v-if="showSearchModal" class="search-modal-overlay" @click.self="closeSearch">
+        <div class="search-modal">
+          <div class="search-modal-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+            <input
+              ref="searchInputRef"
+              v-model="searchQuery"
+              type="text"
+              class="search-input"
+              placeholder="Search documentation..."
+              @input="onSearchInput"
+              @keydown="handleSearchKeydown"
+            />
+            <button class="search-close" @click="closeSearch">
+              <kbd>Esc</kbd>
+            </button>
+          </div>
+          <div class="search-results" v-if="searchResults.length > 0">
+            <a
+              v-for="(result, index) in searchResults"
+              :key="result.id"
+              :href="'#' + result.url.replace(/^\/ox-content/, '')"
+              class="search-result"
+              :class="{ selected: index === selectedIndex }"
+              @click.prevent="navigateToResult(result)"
+              @mouseenter="selectedIndex = index"
+            >
+              <div class="result-title">{{ result.title }}</div>
+              <div class="result-snippet" v-if="result.snippet">{{ result.snippet }}</div>
+            </a>
+          </div>
+          <div class="search-empty" v-else-if="searchQuery && !searchResults.length">
+            <p>No results found for "{{ searchQuery }}"</p>
+          </div>
+          <div class="search-footer">
+            <span class="search-hint">
+              <kbd class="arrow-key">&uarr;</kbd>
+              <kbd class="arrow-key">&darr;</kbd>
+              to navigate
+            </span>
+            <span class="search-hint">
+              <kbd>Enter</kbd>
+              to select
+            </span>
+            <span class="search-hint">
+              <kbd>Esc</kbd>
+              to close
+            </span>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -640,6 +948,196 @@ body {
   .VPDoc .aside {
     display: none;
   }
+}
+
+/* Search Button */
+.VPNavBarSearch {
+  display: flex;
+  align-items: center;
+}
+
+.search-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.25s;
+}
+
+.search-button:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-text-1);
+}
+
+.search-text {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .search-text {
+    display: inline;
+  }
+
+  .search-button {
+    min-width: 180px;
+  }
+}
+
+.search-shortcut kbd {
+  padding: 2px 6px;
+  background-color: var(--vp-c-bg-mute);
+  border-radius: 4px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 12px;
+}
+
+/* Search Modal */
+.search-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.search-modal {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 16px;
+  background-color: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.search-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.search-icon {
+  flex-shrink: 0;
+  color: var(--vp-c-text-3);
+}
+
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: var(--vp-c-text-1);
+}
+
+.search-input::placeholder {
+  color: var(--vp-c-text-3);
+}
+
+.search-close {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.search-close kbd {
+  padding: 4px 8px;
+  background-color: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  color: var(--vp-c-text-2);
+  font-family: var(--vp-font-family-mono);
+  font-size: 12px;
+}
+
+.search-results {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.search-result {
+  display: block;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--vp-c-text-1);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.search-result:hover,
+.search-result.selected {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.result-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.result-snippet {
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.search-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--vp-c-text-2);
+}
+
+.search-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg-soft);
+}
+
+.search-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--vp-c-text-3);
+}
+
+.search-hint kbd {
+  padding: 2px 6px;
+  background-color: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+}
+
+.search-hint kbd.arrow-key {
+  padding: 2px 4px;
 }
 
 @media (max-width: 960px) {

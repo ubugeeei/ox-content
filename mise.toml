@@ -151,19 +151,19 @@ description = "Run source docs generator example"
 dir = "examples/gen-source-docs"
 run = "pnpm run dev"
 
-[tasks.packages-build]
-description = "Build all vite-plugin packages"
-run = "pnpm -r --filter 'vite-plugin-ox-content' --filter 'vite-plugin-ox-content-vue' run build"
+[tasks.npm-build]
+description = "Build all npm packages"
+run = "pnpm -r --filter './npm/*' run build"
 
 [tasks.dev]
 description = "Start documentation dev server"
-depends = ["napi-build", "packages-build"]
+depends = ["napi-build", "npm-build"]
 dir = "docs"
 run = "pnpm dev"
 
 [tasks.dev-build]
 description = "Build documentation site"
-depends = ["napi-build", "packages-build"]
+depends = ["napi-build", "npm-build"]
 dir = "docs"
 run = "pnpm build"
 
@@ -175,6 +175,10 @@ run = "pnpm preview"
 [tasks.install]
 description = "Install all dependencies with pnpm"
 run = "pnpm install"
+
+[tasks.release]
+description = "Release a new version (usage: mise run release -- patch|minor|major|x.y.z)"
+run = "npx tsx scripts/release.ts"
 
 [tasks.examples-install]
 description = "Install all example dependencies"
