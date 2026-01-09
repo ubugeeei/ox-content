@@ -117,6 +117,10 @@ export interface ComponentSlot {
    * Slot placeholder ID.
    */
   id: string;
+  /**
+   * Raw slot content extracted from Markdown.
+   */
+  content?: string;
 }
 
 /**
