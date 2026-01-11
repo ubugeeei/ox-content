@@ -63,16 +63,36 @@ function setPackageVersion(pkgPath: string, version: string): void {
 function setCargoVersion(version: string): void {
   const fullPath = path.join(ROOT, CARGO_TOML);
   let content = fs.readFileSync(fullPath, 'utf-8');
+  // Update workspace.package version
   content = content.replace(
     /(\[workspace\.package\]\s*\n(?:[^\[]*\n)*?version\s*=\s*)"[^"]+"/,
+    `$1"${version}"`
+  );
+  // Update workspace.dependencies versions for internal crates
+  content = content.replace(
+    /(ox_content_\w+\s*=\s*\{\s*version\s*=\s*)"[^"]+"/g,
     `$1"${version}"`
   );
   fs.writeFileSync(fullPath, content, 'utf-8');
   console.log(`  Updated Cargo.toml workspace version to ${version}`);
 }
 
-function bumpVersion(current: string, type: 'patch' | 'minor' | 'major'): string {
-  const [major, minor, patch] = current.split('.').map(Number);
+function bumpVersion(current: string, type: 'patch' | 'minor' | 'major' | 'alpha' | 'beta'): string {
+  // Handle prerelease versions (alpha/beta)
+  if (type === 'alpha' || type === 'beta') {
+    const prereleaseMatch = current.match(/^(\d+\.\d+\.\d+)-(alpha|beta)\.(\d+)$/);
+    if (prereleaseMatch && prereleaseMatch[2] === type) {
+      const [, base, , num] = prereleaseMatch;
+      return `${base}-${type}.${Number(num) + 1}`;
+    }
+    // Start new prerelease or switch from alpha to beta
+    const baseVersion = current.replace(/-.*$/, '');
+    return `${baseVersion}-${type}.0`;
+  }
+
+  // Remove any prerelease suffix for standard bumps
+  const baseVersion = current.replace(/-.*$/, '');
+  const [major, minor, patch] = baseVersion.split('.').map(Number);
   switch (type) {
     case 'major':
       return `${major + 1}.0.0`;
@@ -194,8 +214,8 @@ async function main(): Promise<void> {
   const currentVersion = currentPkg.version || '0.0.0';
   let newVersion: string;
 
-  if (['patch', 'minor', 'major'].includes(input)) {
-    newVersion = bumpVersion(currentVersion, input as 'patch' | 'minor' | 'major');
+  if (['patch', 'minor', 'major', 'alpha', 'beta'].includes(input)) {
+    newVersion = bumpVersion(currentVersion, input as 'patch' | 'minor' | 'major' | 'alpha' | 'beta');
   } else if (isValidVersion(input)) {
     newVersion = input;
   } else {

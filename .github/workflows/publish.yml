@@ -163,10 +163,48 @@ jobs:
         working-directory: npm/unplugin-ox-content
         run: npm publish --provenance --access public
 
+  publish-crates:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Publish crates (in dependency order)
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          # Publish in dependency order with delays for crates.io index update
+          cargo publish -p ox_content_allocator --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_ast --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_parser --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_renderer --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_og_image --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_search --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_ssg --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_docs --allow-dirty || true
+          sleep 30
+          cargo publish -p ox_content_vite --allow-dirty || true
+
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: publish-packages
+    needs: [publish-packages, publish-crates]
     permissions:
       contents: write
     steps:
