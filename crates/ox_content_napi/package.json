@@ -21,8 +21,7 @@
   },
   "scripts": {
     "build": "napi build --release",
-    "build:debug": "napi build",
-    "prepublishOnly": "napi prepublish"
+    "build:debug": "napi build"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.0"
