@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@ox-content/napi": "workspace:*",
-    "@ox-content/wasm": "workspace:*",
     "marked": "^15.0.0",
     "markdown-it": "^14.1.0",
     "micromark": "^4.0.1",

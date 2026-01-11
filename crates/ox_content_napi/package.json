@@ -32,7 +32,6 @@
     "directory": "crates/ox_content_napi"
   },
   "publishConfig": {
-    "provenance": true,
     "access": "public"
   },
   "keywords": [

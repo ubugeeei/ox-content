@@ -65,9 +65,6 @@ importers:
       '@ox-content/napi':
         specifier: workspace:*
         version: link:../../crates/ox_content_napi
-      '@ox-content/wasm':
-        specifier: workspace:*
-        version: link:../../crates/ox_content_wasm/pkg
       markdown-it:
         specifier: ^14.1.0
         version: 14.1.0
@@ -171,8 +168,6 @@ importers:
       '@napi-rs/cli':
         specifier: ^2.18.0
         version: 2.18.4
-
-  crates/ox_content_wasm/pkg: {}
 
   docs:
     devDependencies:
