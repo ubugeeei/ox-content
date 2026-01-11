@@ -107,11 +107,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Publish
+      - name: Publish @ox-content/napi
         working-directory: crates/ox_content_napi
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
   publish-packages:
     name: Publish npm packages
@@ -149,33 +147,23 @@ jobs:
 
       - name: Publish vite-plugin-ox-content
         working-directory: npm/vite-plugin-ox-content
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
       - name: Publish vite-plugin-ox-content-vue
         working-directory: npm/vite-plugin-ox-content-vue
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
       - name: Publish vite-plugin-ox-content-react
         working-directory: npm/vite-plugin-ox-content-react
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
       - name: Publish vite-plugin-ox-content-svelte
         working-directory: npm/vite-plugin-ox-content-svelte
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
       - name: Publish unplugin-ox-content
         working-directory: npm/unplugin-ox-content
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
   create-release:
     name: Create GitHub Release
