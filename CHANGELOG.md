@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0-alpha.0] - 2026-01-11
+
+### Features
+
+- search bar
+
+### Bug Fixes
+
+- ci
+- ci
+
 ## [0.3.0] - 2026-01-08
 
 ## [0.2.0] - 2026-01-08
