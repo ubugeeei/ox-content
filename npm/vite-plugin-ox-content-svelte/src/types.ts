@@ -52,4 +52,5 @@ export interface ComponentSlot {
   props: Record<string, unknown>;
   position: number;
   id: string;
+  content?: string;
 }
