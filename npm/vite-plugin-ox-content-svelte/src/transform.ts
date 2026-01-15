@@ -57,7 +57,7 @@ export async function transformMarkdownWithSvelte(
     }
 
     const props = parseProps(propsString);
-    const slotId = `__ox_slot_${slotIndex++}__`;
+    const slotId = `ox-slot-${slotIndex++}`;
     const slotContent =
       typeof rawSlotContent === 'string' ? rawSlotContent.trim() : undefined;
 

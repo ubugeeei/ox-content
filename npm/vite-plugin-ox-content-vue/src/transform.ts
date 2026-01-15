@@ -71,7 +71,7 @@ export async function transformMarkdownWithVue(
     const props = parseProps(propsString);
 
     // Create slot placeholder
-    const slotId = `__ox_slot_${slotIndex++}__`;
+    const slotId = `ox-slot-${slotIndex++}`;
     const slotContent =
       typeof rawSlotContent === 'string' ? rawSlotContent.trim() : undefined;
     slots.push({
