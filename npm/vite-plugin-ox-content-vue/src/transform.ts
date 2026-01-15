@@ -7,10 +7,18 @@ import { transformMarkdown as baseTransformMarkdown } from 'vite-plugin-ox-conte
 import type { ResolvedVueOptions, VueTransformResult, ComponentSlot } from './types';
 
 // Regex to match Vue-like component tags in Markdown
-const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>(?:[\s\S]*?)<\/\1>)/g;
+const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>([\s\S]*?)<\/\1>)/g;
 
 // Regex to parse component props
 const PROP_REGEX = /(?::|v-bind:)?([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}|\[([^\]]*)\]))?/g;
+
+const SLOT_MARKER_PREFIX = 'OXCONTENT-SLOT-';
+const SLOT_MARKER_SUFFIX = '-PLACEHOLDER';
+
+interface Range {
+  start: number;
+  end: number;
+}
 
 /**
  * Options for transformMarkdownWithVue.
@@ -37,37 +45,49 @@ export async function transformMarkdownWithVue(
   const { content: markdownContent, frontmatter } = extractFrontmatter(code);
 
   // Find and extract component usages
-  let processedContent = markdownContent;
+  const fenceRanges = collectFenceRanges(markdownContent);
+  let processedContent = '';
+  let lastIndex = 0;
   let match: RegExpExecArray | null;
 
+  COMPONENT_REGEX.lastIndex = 0;
   while ((match = COMPONENT_REGEX.exec(markdownContent)) !== null) {
-    const [fullMatch, componentName, propsString] = match;
+    const [fullMatch, componentName, propsString, rawSlotContent] = match;
+    const matchStart = match.index;
+    const matchEnd = matchStart + fullMatch.length;
 
     // Check if component is registered
-    if (components.has(componentName)) {
-      if (!usedComponents.includes(componentName)) {
-        usedComponents.push(componentName);
-      }
-
-      // Parse props
-      const props = parseProps(propsString);
-
-      // Create slot placeholder
-      const slotId = `__ox_slot_${slotIndex++}__`;
-      slots.push({
-        name: componentName,
-        props,
-        position: match.index,
-        id: slotId,
-      });
-
-      // Replace component with slot marker
-      processedContent = processedContent.replace(
-        fullMatch,
-        `<div data-ox-slot="${slotId}"></div>`
-      );
+    if (!components.has(componentName) || isInRanges(matchStart, matchEnd, fenceRanges)) {
+      processedContent += markdownContent.slice(lastIndex, matchEnd);
+      lastIndex = matchEnd;
+      continue;
     }
+
+    if (!usedComponents.includes(componentName)) {
+      usedComponents.push(componentName);
+    }
+
+    // Parse props
+    const props = parseProps(propsString);
+
+    // Create slot placeholder
+    const slotId = `__ox_slot_${slotIndex++}__`;
+    const slotContent =
+      typeof rawSlotContent === 'string' ? rawSlotContent.trim() : undefined;
+    slots.push({
+      name: componentName,
+      props,
+      position: matchStart,
+      id: slotId,
+      content: slotContent,
+    });
+
+    // Replace component with slot marker text
+    processedContent +=
+      markdownContent.slice(lastIndex, matchStart) + createSlotMarker(slotId);
+    lastIndex = matchEnd;
   }
+  processedContent += markdownContent.slice(lastIndex);
 
   // Transform Markdown to HTML using ox-content
   const transformed = await baseTransformMarkdown(processedContent, id, {
@@ -94,8 +114,9 @@ export async function transformMarkdownWithVue(
   });
 
   // Generate Vue SFC code
+  const htmlWithSlots = injectSlotMarkers(transformed.html, slots);
   const sfcCode = generateVueSFC(
-    transformed.html,
+    htmlWithSlots,
     usedComponents,
     slots,
     frontmatter,
@@ -109,6 +130,76 @@ export async function transformMarkdownWithVue(
     usedComponents,
     frontmatter,
   };
+}
+
+function createSlotMarker(slotId: string): string {
+  return `${SLOT_MARKER_PREFIX}${slotId}${SLOT_MARKER_SUFFIX}`;
+}
+
+function collectFenceRanges(content: string): Range[] {
+  const ranges: Range[] = [];
+  let inFence = false;
+  let fenceChar = '';
+  let fenceLength = 0;
+  let fenceStart = 0;
+  let pos = 0;
+
+  while (pos < content.length) {
+    const lineEnd = content.indexOf('\n', pos);
+    const next = lineEnd === -1 ? content.length : lineEnd + 1;
+    const line = content.slice(pos, lineEnd === -1 ? content.length : lineEnd);
+    const fenceMatch = line.match(/^\s{0,3}([`~]{3,})/);
+
+    if (fenceMatch) {
+      const marker = fenceMatch[1];
+      if (!inFence) {
+        inFence = true;
+        fenceChar = marker[0];
+        fenceLength = marker.length;
+        fenceStart = pos;
+      } else if (marker[0] === fenceChar && marker.length >= fenceLength) {
+        inFence = false;
+        ranges.push({ start: fenceStart, end: next });
+        fenceChar = '';
+        fenceLength = 0;
+      }
+    }
+
+    pos = next;
+  }
+
+  if (inFence) {
+    ranges.push({ start: fenceStart, end: content.length });
+  }
+
+  return ranges;
+}
+
+function isInRanges(start: number, end: number, ranges: Range[]): boolean {
+  for (const range of ranges) {
+    if (start < range.end && end > range.start) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function injectSlotMarkers(html: string, slots: ComponentSlot[]): string {
+  let output = html;
+
+  for (const slot of slots) {
+    const marker = createSlotMarker(slot.id);
+    output = output.replaceAll(
+      `<p>${marker}</p>`,
+      `<div data-ox-slot="${slot.id}"></div>`
+    );
+    output = output.replaceAll(
+      marker,
+      `<span data-ox-slot="${slot.id}"></span>`
+    );
+  }
+
+  return output;
 }
 
 /**
@@ -228,54 +319,74 @@ function generateVueSFC(
     .filter(Boolean)
     .join('\n');
 
-  // Generate slot rendering logic
-  const slotRenderCases = slots
-    .map(
-      (slot) => `
-      case '${slot.id}':
-        return h(${slot.name}, ${JSON.stringify(slot.props)});`
-    )
-    .join('');
+  const componentMap = usedComponents.map((name) => `  ${name},`).join('\n');
 
   return `
-import { h, ref, onMounted, defineComponent } from 'vue';
+import { h, ref, onMounted, onBeforeUnmount, defineComponent, render } from 'vue';
 ${componentImports}
 
 export const frontmatter = ${JSON.stringify(frontmatter)};
 
 const rawHtml = ${JSON.stringify(content)};
 const slots = ${JSON.stringify(slots)};
+const components = {
+${componentMap}
+};
 
-function renderSlot(slotId) {
-  switch (slotId) {${slotRenderCases}
-    default:
-      return null;
+function renderSlot(slot, slotContent) {
+  const component = components[slot.name];
+  if (!component) return null;
+  const children = slotContent
+    ? { default: () => h('div', { innerHTML: slotContent }) }
+    : undefined;
+  return h(component, slot.props, children);
+}
+
+function mountSlots(container) {
+  const mountedTargets = [];
+
+  for (const slot of slots) {
+    const target = container.querySelector('[data-ox-slot="' + slot.id + '"]');
+    if (!target) continue;
+    const slotContent = slot.content ?? target.innerHTML;
+    const vnode = renderSlot(slot, slotContent);
+    if (vnode) {
+      render(vnode, target);
+      mountedTargets.push(target);
+    }
   }
+
+  return () => {
+    for (const target of mountedTargets) {
+      render(null, target);
+    }
+  };
 }
 
 export default defineComponent({
   name: 'MarkdownContent',
   setup(_, { expose }) {
-    const mounted = ref(false);
+    const container = ref(null);
+    let cleanup;
 
     onMounted(() => {
-      mounted.value = true;
+      if (container.value) {
+        cleanup = mountSlots(container.value);
+      }
+    });
+
+    onBeforeUnmount(() => {
+      if (cleanup) cleanup();
     });
 
     expose({ frontmatter });
 
-    return () => {
-      if (!mounted.value) {
-        return h('div', {
-          class: 'ox-content',
-          innerHTML: rawHtml,
-        });
-      }
-
-      return h('div', { class: 'ox-content' },
-        slots.map((slot) => renderSlot(slot.id))
-      );
-    };
+    return () =>
+      h('div', {
+        class: 'ox-content',
+        ref: container,
+        innerHTML: rawHtml,
+      });
   },
 });
 `;
