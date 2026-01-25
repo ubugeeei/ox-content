@@ -44,5 +44,10 @@
     "oxc"
   ],
   "author": "ubugeeei",
-  "license": "MIT"
+  "license": "MIT",
+  "optionalDependencies": {
+    "@ox-content/napi-win32-x64-msvc": "0.3.0-alpha.4",
+    "@ox-content/napi-darwin-x64": "0.3.0-alpha.4",
+    "@ox-content/napi-linux-x64-gnu": "0.3.0-alpha.4"
+  }
 }
