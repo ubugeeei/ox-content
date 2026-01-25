@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0-alpha.3] - 2026-01-25
+
+### Features
+
+- render content in markdown (#7)
+
 ## [0.3.0-alpha.2] - 2026-01-11
 
 ### Features
