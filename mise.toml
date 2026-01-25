@@ -6,23 +6,54 @@ node = "24"
 RUST_BACKTRACE = "1"
 
 [tasks.build]
-description = "Build all crates"
+description = "Build everything (Rust + NAPI + npm packages)"
+depends = ["build:rust", "build:napi", "build:npm"]
+
+[tasks."build:rust"]
+description = "Build Rust crates"
 run = "cargo build --workspace"
 
-[tasks.build-release]
-description = "Build all crates in release mode"
+[tasks."build:rust-release"]
+description = "Build Rust crates in release mode"
 run = "cargo build --workspace --release"
 
+[tasks."build:napi"]
+description = "Build NAPI bindings"
+dir = "crates/ox_content_napi"
+run = "pnpm build"
+
+[tasks."build:npm"]
+description = "Build npm packages"
+depends = ["build:napi"]
+run = "pnpm -r --filter './npm/*' run build"
+
+[tasks."build:wasm"]
+description = "Build WASM bindings"
+dir = "crates/ox_content_wasm"
+run = "wasm-pack build --target web --out-dir pkg"
+
 [tasks.test]
-description = "Run all tests"
+description = "Run all tests (Rust + TypeScript)"
+depends = ["test:rust", "test:ts"]
+
+[tasks."test:rust"]
+description = "Run Rust tests"
 run = "cargo test --workspace"
 
-[tasks.test-verbose]
-description = "Run all tests with verbose output"
+[tasks."test:rust-verbose"]
+description = "Run Rust tests with verbose output"
 run = "cargo test --workspace -- --nocapture"
 
+[tasks."test:ts"]
+description = "Run TypeScript tests with vitest"
+run = "pnpm test"
+
 [tasks.check]
-description = "Check all crates"
+description = "Check all (Rust + TypeScript)"
+depends = ["check:rust", "check:ts"]
+
+[tasks."check:rust"]
+description = "Check Rust crates"
 run = "cargo check --workspace"
 
 [tasks.clippy]
@@ -30,32 +61,40 @@ description = "Run clippy on all crates"
 run = "cargo clippy --workspace --all-targets -- -D warnings"
 
 [tasks.fmt]
-description = "Format all code"
+description = "Format all code (Rust + TypeScript)"
+depends = ["fmt:rust", "fmt:ts"]
+
+[tasks."fmt:rust"]
+description = "Format Rust code"
 run = "cargo fmt --all"
 
-[tasks.fmt-check]
-description = "Check code formatting"
+[tasks."fmt:check"]
+description = "Check all formatting"
+depends = ["fmt:rust-check", "fmt:ts-check"]
+
+[tasks."fmt:rust-check"]
+description = "Check Rust formatting"
 run = "cargo fmt --all -- --check"
 
-[tasks.lint]
-description = "Run all lints (Rust + TypeScript)"
-depends = ["clippy", "fmt-check", "lint:ts"]
-
-[tasks."lint:ts"]
-description = "Run TypeScript lints with oxlint"
-run = "pnpm lint"
-
 [tasks."fmt:ts"]
-description = "Format TypeScript code with oxfmt"
+description = "Format TypeScript code"
 run = "pnpm fmt"
 
 [tasks."fmt:ts-check"]
-description = "Check TypeScript code formatting"
+description = "Check TypeScript formatting"
 run = "pnpm fmt:check"
 
-[tasks."test:ts"]
-description = "Run TypeScript tests with vitest"
-run = "pnpm test"
+[tasks.lint]
+description = "Run all lints (Rust + TypeScript)"
+depends = ["lint:rust", "lint:ts"]
+
+[tasks."lint:rust"]
+description = "Run Rust lints (clippy)"
+run = "cargo clippy --workspace --all-targets -- -D warnings"
+
+[tasks."lint:ts"]
+description = "Run TypeScript lints (oxlint)"
+run = "pnpm lint"
 
 [tasks."check:ts"]
 description = "Run TypeScript type check"
@@ -89,16 +128,6 @@ run = "cargo doc --workspace --no-deps --open"
 description = "Clean build artifacts"
 run = "cargo clean"
 
-[tasks.napi-build]
-description = "Build NAPI bindings"
-dir = "crates/ox_content_napi"
-run = "pnpm build"
-
-[tasks.wasm-build]
-description = "Build WASM bindings for browser"
-dir = "crates/ox_content_wasm"
-run = "wasm-pack build --target web --out-dir pkg"
-
 [tasks.napi-prepublish]
 description = "Prepare NAPI package for publishing"
 dir = "crates/ox_content_napi"
@@ -106,11 +135,11 @@ run = "napi prepublish"
 
 [tasks.ci]
 description = "Run CI checks"
-depends = ["fmt-check", "clippy", "test"]
+depends = ["fmt:check", "lint", "test"]
 
 [tasks.ready]
 description = "Run all checks before committing"
-depends = ["fmt", "clippy", "test"]
+depends = ["fmt", "lint", "test"]
 
 [tasks.coverage]
 description = "Generate test coverage report"
@@ -171,19 +200,15 @@ description = "Run source docs generator example"
 dir = "examples/gen-source-docs"
 run = "pnpm run dev"
 
-[tasks.npm-build]
-description = "Build all npm packages"
-run = "pnpm -r --filter './npm/*' run build"
-
 [tasks.dev]
 description = "Start documentation dev server"
-depends = ["napi-build", "npm-build"]
+depends = ["build:npm"]
 dir = "docs"
 run = "pnpm dev"
 
 [tasks.dev-build]
 description = "Build documentation site"
-depends = ["napi-build", "npm-build"]
+depends = ["build:npm"]
 dir = "docs"
 run = "pnpm build"
 
