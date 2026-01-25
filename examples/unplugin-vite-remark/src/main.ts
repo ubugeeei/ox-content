@@ -1,7 +1,7 @@
-import content from './content.md';
+import content from "./content.md"
 
-document.getElementById('app')!.innerHTML = `
+document.getElementById("app")!.innerHTML = `
   <h1>remark plugin example</h1>
   <pre>${JSON.stringify(content.frontmatter, null, 2)}</pre>
   <div>${content.html}</div>
-`;
+`

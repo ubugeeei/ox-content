@@ -1,5 +1,5 @@
 // Import Markdown document as React component
-import IndexDoc from '../docs/index.md';
+import IndexDoc from "../docs/index.md"
 
 export default function App() {
   return (
@@ -12,5 +12,5 @@ export default function App() {
         <IndexDoc />
       </main>
     </div>
-  );
+  )
 }

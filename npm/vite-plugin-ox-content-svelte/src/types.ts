@@ -1,4 +1,4 @@
-import type { OxContentOptions } from 'vite-plugin-ox-content';
+import type { OxContentOptions } from "vite-plugin-ox-content";
 
 export type ComponentsMap = Record<string, string>;
 

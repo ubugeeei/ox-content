@@ -6,17 +6,22 @@
   "scripts": {
     "build": "pnpm -r run build",
     "dev": "pnpm -r run dev",
-    "test": "pnpm -r run test",
-    "lint": "pnpm -r run lint",
-    "typecheck": "oxlint --type-check",
+    "test": "vitest",
+    "lint": "oxlint --type-aware",
+    "fmt": "oxfmt --write npm/*/src scripts",
+    "fmt:check": "oxfmt --check npm/*/src scripts",
+    "check": "pnpm -r run typecheck",
     "release": "node --experimental-strip-types scripts/release.ts"
   },
   "devDependencies": {
+    "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "vitest": "catalog:",
     "typescript": "catalog:"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=24",
     "pnpm": ">=9"
   }
 }

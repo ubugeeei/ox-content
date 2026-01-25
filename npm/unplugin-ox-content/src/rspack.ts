@@ -2,8 +2,8 @@
  * Rspack plugin export for unplugin-ox-content
  */
 
-import unplugin from './index';
-import type { OxContentOptions, ResolvedOptions, TocEntry, TransformResult } from './types';
+import unplugin from "./index";
+import type { OxContentOptions, ResolvedOptions, TocEntry, TransformResult } from "./types";
 
 export default unplugin.rspack;
 export { unplugin };

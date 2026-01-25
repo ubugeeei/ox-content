@@ -16,8 +16,8 @@
  * ```
  */
 export function capitalize(str: string): string {
-  if (!str) return str;
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  if (!str) return str
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 /**
@@ -37,10 +37,10 @@ export function capitalize(str: string): string {
 export function truncate(
   str: string,
   maxLength: number,
-  suffix: string = '...'
+  suffix: string = "...",
 ): string {
-  if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength) + suffix;
+  if (str.length <= maxLength) return str
+  return str.slice(0, maxLength) + suffix
 }
 
 /**
@@ -57,7 +57,7 @@ export function truncate(
  */
 export function toKebabCase(str: string): string {
   return str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/\s+/g, '-')
-    .toLowerCase();
+    .replace(/([a-z])([A-Z])/g, "$1-$2")
+    .replace(/\s+/g, "-")
+    .toLowerCase()
 }

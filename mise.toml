@@ -1,7 +1,6 @@
 [tools]
 rust = "1.92"
-node = "22"
-bun = "latest"
+node = "24"
 
 [env]
 RUST_BACKTRACE = "1"
@@ -39,8 +38,28 @@ description = "Check code formatting"
 run = "cargo fmt --all -- --check"
 
 [tasks.lint]
-description = "Run all lints (clippy + fmt-check)"
-depends = ["clippy", "fmt-check"]
+description = "Run all lints (Rust + TypeScript)"
+depends = ["clippy", "fmt-check", "lint:ts"]
+
+[tasks."lint:ts"]
+description = "Run TypeScript lints with oxlint"
+run = "pnpm lint"
+
+[tasks."fmt:ts"]
+description = "Format TypeScript code with oxfmt"
+run = "pnpm fmt"
+
+[tasks."fmt:ts-check"]
+description = "Check TypeScript code formatting"
+run = "pnpm fmt:check"
+
+[tasks."test:ts"]
+description = "Run TypeScript tests with vitest"
+run = "pnpm test"
+
+[tasks."check:ts"]
+description = "Run TypeScript type check"
+run = "pnpm check"
 
 [tasks.bench]
 description = "Run all benchmarks (Rust + JS)"

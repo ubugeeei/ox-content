@@ -2,7 +2,7 @@
  * Type definitions for unplugin-ox-content
  */
 
-import type MarkdownIt from 'markdown-it';
+import type MarkdownIt from "markdown-it";
 
 /**
  * Markdown-it plugin function type.
@@ -19,13 +19,15 @@ export type MarkdownItPlugin = MarkdownItPluginFn | [MarkdownItPluginFn, ...unkn
  * Remark plugin type.
  * Can be a single plugin or a tuple of [plugin, options].
  */
-export type RemarkPlugin = unknown | [unknown, unknown];
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type RemarkPlugin = [unknown, unknown] | unknown;
 
 /**
  * Rehype plugin type.
  * Can be a single plugin or a tuple of [plugin, options].
  */
-export type RehypePlugin = unknown | [unknown, unknown];
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type RehypePlugin = [unknown, unknown] | unknown;
 
 /**
  * Ox-content native plugin type.
@@ -84,7 +86,7 @@ export interface DocsConfig {
    * Group documentation by file or by kind.
    * @default 'file'
    */
-  groupBy?: 'file' | 'kind';
+  groupBy?: "file" | "kind";
 }
 
 /**
@@ -201,12 +203,12 @@ export interface OxContentOptions {
   /**
    * Files/patterns to include.
    */
-  include?: string | RegExp | (string | RegExp)[];
+  include?: string | RegExp | RegExp[];
 
   /**
    * Files/patterns to exclude.
    */
-  exclude?: string | RegExp | (string | RegExp)[];
+  exclude?: string | RegExp | RegExp[];
 
   /**
    * Plugin configuration for markdown processing.
@@ -233,7 +235,7 @@ export interface ResolvedDocsConfig {
   exclude: string[];
   includePrivate: boolean;
   toc: boolean;
-  groupBy: 'file' | 'kind';
+  groupBy: "file" | "kind";
 }
 
 /**
@@ -253,8 +255,8 @@ export interface ResolvedOptions {
   toc: boolean;
   tocMaxDepth: number;
   extensions: string[];
-  include: (string | RegExp)[];
-  exclude: (string | RegExp)[];
+  include: string | RegExp[];
+  exclude: string | RegExp[];
   plugin: Required<PluginConfig>;
   docs: ResolvedDocsConfig;
 }

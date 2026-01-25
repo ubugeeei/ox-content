@@ -2,8 +2,8 @@
  * Vite Environment API configuration for Vue integration.
  */
 
-import type { EnvironmentOptions } from 'vite';
-import type { ResolvedVueOptions } from './types';
+import type { EnvironmentOptions } from "vite";
+import type { ResolvedVueOptions } from "./types";
 
 /**
  * Creates a Vite environment for Vue markdown processing.
@@ -12,51 +12,49 @@ import type { ResolvedVueOptions } from './types';
  * @param options - Resolved Vue integration options
  */
 export function createVueMarkdownEnvironment(
-  mode: 'ssr' | 'client',
-  options: ResolvedVueOptions
+  mode: "ssr" | "client",
+  options: ResolvedVueOptions,
 ): EnvironmentOptions {
-  const isSSR = mode === 'ssr';
+  const isSSR = mode === "ssr";
 
   return {
     build: {
-      outDir: isSSR
-        ? `${options.outDir}/.ox-content/ssr`
-        : `${options.outDir}/.ox-content/client`,
+      outDir: isSSR ? `${options.outDir}/.ox-content/ssr` : `${options.outDir}/.ox-content/client`,
 
       ssr: isSSR,
 
       rollupOptions: {
         input: isSSR ? undefined : undefined,
         output: {
-          format: isSSR ? 'esm' : 'esm',
-          entryFileNames: isSSR ? '[name].js' : '[name].[hash].js',
-          chunkFileNames: isSSR ? 'chunks/[name].js' : 'chunks/[name].[hash].js',
+          format: isSSR ? "esm" : "esm",
+          entryFileNames: isSSR ? "[name].js" : "[name].[hash].js",
+          chunkFileNames: isSSR ? "chunks/[name].js" : "chunks/[name].[hash].js",
         },
       },
 
       // SSR-specific optimizations
       ...(isSSR && {
-        target: 'node18',
+        target: "node18",
         minify: false,
       }),
     },
 
     resolve: {
-      conditions: isSSR ? ['node', 'import'] : ['browser', 'import'],
+      conditions: isSSR ? ["node", "import"] : ["browser", "import"],
     },
 
     optimizeDeps: {
       // Pre-bundle Vue for faster cold starts
-      include: isSSR ? [] : ['vue'],
+      include: isSSR ? [] : ["vue"],
 
       // Exclude ox-content packages from optimization (they're local)
-      exclude: ['vite-plugin-ox-content', 'vite-plugin-ox-content-vue'],
+      exclude: ["vite-plugin-ox-content", "vite-plugin-ox-content-vue"],
     },
 
     // Development server options (client only)
     ...(!isSSR && {
       dev: {
-        warmup: ['./src/**/*.vue', './docs/**/*.md'],
+        warmup: ["./src/**/*.vue", "./docs/**/*.md"],
       },
     }),
   };
@@ -66,21 +64,21 @@ export function createVueMarkdownEnvironment(
  * Creates environment-specific virtual modules.
  */
 export function createVirtualModules(
-  mode: 'ssr' | 'client',
-  _options: ResolvedVueOptions
+  mode: "ssr" | "client",
+  _options: ResolvedVueOptions,
 ): Record<string, string> {
-  const isSSR = mode === 'ssr';
+  const isSSR = mode === "ssr";
 
   return {
     // Environment detection module
-    'virtual:ox-content/env': `
+    "virtual:ox-content/env": `
       export const isSSR = ${isSSR};
       export const isClient = ${!isSSR};
       export const mode = '${mode}';
     `,
 
     // Hydration utilities
-    'virtual:ox-content/hydration': isSSR
+    "virtual:ox-content/hydration": isSSR
       ? `
         // SSR: No-op hydration
         export function hydrate() {}

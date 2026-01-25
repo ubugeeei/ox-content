@@ -5,9 +5,9 @@
  * for HTML processing and transformation.
  */
 
-import { unified } from 'unified';
-import rehypeParse from 'rehype-parse';
-import rehypeStringify from 'rehype-stringify';
+import { unified } from "unified"
+import rehypeParse from "rehype-parse"
+import rehypeStringify from "rehype-stringify"
 // In production:
 // import { parseAndRender } from '@ox-content/napi';
 
@@ -18,11 +18,11 @@ import rehypeStringify from 'rehype-stringify';
  * ecosystem, allowing you to use rehype plugins for post-processing.
  */
 function oxContentToRehype() {
-  return function (tree, file) {
+  return function (tree, _file) {
     // The tree is already HTML (from Ox Content)
     // This plugin can transform it further
-    return tree;
-  };
+    return tree
+  }
 }
 
 /**
@@ -31,28 +31,28 @@ function oxContentToRehype() {
 function rehypeAddHeadingClasses() {
   return function (tree) {
     function visit(node) {
-      if (node.type === 'element') {
-        if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)) {
-          node.properties = node.properties || {};
+      if (node.type === "element") {
+        if (["h1", "h2", "h3", "h4", "h5", "h6"].includes(node.tagName)) {
+          node.properties = node.properties || {}
           node.properties.className = [
             ...(node.properties.className || []),
-            'ox-heading',
+            "ox-heading",
             `ox-${node.tagName}`,
-          ];
+          ]
         }
 
         if (node.children) {
-          node.children.forEach(visit);
+          node.children.forEach(visit)
         }
       }
     }
 
     if (tree.children) {
-      tree.children.forEach(visit);
+      tree.children.forEach(visit)
     }
 
-    return tree;
-  };
+    return tree
+  }
 }
 
 /**
@@ -61,25 +61,25 @@ function rehypeAddHeadingClasses() {
 function rehypeCodeBlocks() {
   return function (tree) {
     function visit(node) {
-      if (node.type === 'element' && node.tagName === 'pre') {
-        node.properties = node.properties || {};
+      if (node.type === "element" && node.tagName === "pre") {
+        node.properties = node.properties || {}
         node.properties.className = [
           ...(node.properties.className || []),
-          'ox-code-block',
-        ];
+          "ox-code-block",
+        ]
       }
 
       if (node.children) {
-        node.children.forEach(visit);
+        node.children.forEach(visit)
       }
     }
 
     if (tree.children) {
-      tree.children.forEach(visit);
+      tree.children.forEach(visit)
     }
 
-    return tree;
-  };
+    return tree
+  }
 }
 
 // Simulated Ox Content HTML output (in production, use parseAndRender)
@@ -98,7 +98,7 @@ const oxContentHtml = `
   .use(rehypeAddHeadingClasses)
   .use(rehypeStringify);
 </code></pre>
-`;
+`
 
 // Process with unified/rehype
 async function processWithRehype(html) {
@@ -107,18 +107,20 @@ async function processWithRehype(html) {
     .use(oxContentToRehype)
     .use(rehypeAddHeadingClasses)
     .use(rehypeCodeBlocks)
-    .use(rehypeStringify);
+    .use(rehypeStringify)
 
-  const result = await processor.process(html);
-  return String(result);
+  const result = await processor.process(html)
+  return String(result)
 }
 
 // Demo
-console.log('Original HTML from Ox Content:');
-console.log(oxContentHtml);
-console.log('\n--- After rehype processing ---\n');
+console.log("Original HTML from Ox Content:")
+console.log(oxContentHtml)
+console.log("\n--- After rehype processing ---\n")
 
-processWithRehype(oxContentHtml).then((result) => {
-  console.log('Processed HTML:');
-  console.log(result);
-});
+processWithRehype(oxContentHtml)
+  .then((result) => {
+    console.log("Processed HTML:")
+    console.log(result)
+  })
+  .catch(console.error)

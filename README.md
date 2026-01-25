@@ -131,6 +131,15 @@ export default defineConfig({
 
 ## Development
 
+### Requirements
+
+- Node.js 24+
+- pnpm 9+
+- Rust 1.92+
+- [mise](https://mise.jdx.dev/) (optional, for task running)
+
+### Commands
+
 ```bash
 # Install dependencies
 pnpm install
@@ -138,15 +147,30 @@ pnpm install
 # Build NAPI bindings
 mise run napi-build
 
-# Build npm packages
+# Build npm packages (uses tsdown)
 mise run npm-build
 
 # Run tests
-mise run test
+mise run test          # Rust tests
+mise run test:ts       # TypeScript tests (vitest)
+
+# Lint
+mise run lint          # Rust + TypeScript
+mise run lint:ts       # TypeScript only (oxlint --type-aware)
+
+# Typecheck
+pnpm check             # Uses @typescript/native-preview (tsgo)
 
 # Release a new version
 mise run release -- patch  # or minor, major, x.y.z
 ```
+
+### Tooling
+
+- **Build**: [tsdown](https://github.com/nicepkg/tsdown) (Rolldown-powered bundler)
+- **Test**: [vitest](https://vitest.dev/)
+- **Lint**: [oxlint](https://oxc.rs/docs/guide/usage/linter.html) with type-aware mode
+- **Typecheck**: [@typescript/native-preview](https://github.com/nicepkg/typescript-native-preview) (tsgo)
 
 ## License
 

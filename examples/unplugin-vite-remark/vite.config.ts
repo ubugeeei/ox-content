@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import oxContent from 'unplugin-ox-content/vite';
-import remarkGfm from 'remark-gfm';
+import { defineConfig } from "vite"
+import oxContent from "unplugin-ox-content/vite"
+import remarkGfm from "remark-gfm"
 
 export default defineConfig({
   plugins: [
@@ -11,4 +11,4 @@ export default defineConfig({
       },
     }),
   ],
-});
+})

@@ -1,4 +1,4 @@
-import type { OxContentOptions } from 'vite-plugin-ox-content';
+import type { OxContentOptions } from "vite-plugin-ox-content";
 
 export type ComponentsMap = Record<string, string>;
 
@@ -24,7 +24,7 @@ export interface ReactIntegrationOptions extends OxContentOptions {
    * ```
    */
   components?: ComponentsOption;
-  jsxRuntime?: 'automatic' | 'classic';
+  jsxRuntime?: "automatic" | "classic";
 }
 
 export interface ResolvedReactOptions {
@@ -36,7 +36,7 @@ export interface ResolvedReactOptions {
   toc: boolean;
   tocMaxDepth: number;
   components: ComponentsMap;
-  jsxRuntime: 'automatic' | 'classic';
+  jsxRuntime: "automatic" | "classic";
   root?: string;
 }
 

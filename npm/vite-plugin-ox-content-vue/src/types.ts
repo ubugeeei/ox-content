@@ -2,7 +2,7 @@
  * Type definitions for Vue integration plugin.
  */
 
-import type { OxContentOptions } from 'vite-plugin-ox-content';
+import type { OxContentOptions } from "vite-plugin-ox-content";
 
 /**
  * Component registration map.
@@ -50,18 +50,18 @@ export interface VueIntegrationOptions extends OxContentOptions {
    * }
    * ```
    */
-  components?: ComponentsOption;
 
   /**
    * Enable Vue Reactivity Transform.
    * @default false
    */
-  reactivityTransform?: boolean;
 
   /**
    * Enable custom blocks in Markdown (e.g., `:::tip`).
    * @default true
    */
+  components?: ComponentsOption;
+  reactivityTransform?: boolean;
   customBlocks?: boolean;
 }
 

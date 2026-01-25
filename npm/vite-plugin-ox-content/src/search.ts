@@ -4,19 +4,19 @@
  * Generates search index at build time and provides client-side search.
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import type { SearchOptions, ResolvedSearchOptions, SearchDocument } from './types';
+import * as fs from "fs/promises";
+import * as path from "path";
+import type { SearchOptions, ResolvedSearchOptions, SearchDocument } from "./types";
 
 // Import Rust bindings
-let oxContent: typeof import('@ox-content/napi') | null = null;
+let oxContent: typeof import("@ox-content/napi") | null = null;
 
 async function getOxContent() {
   if (!oxContent) {
     try {
-      oxContent = await import('@ox-content/napi');
+      oxContent = await import("@ox-content/napi");
     } catch {
-      console.warn('[ox-content] Native bindings not available, search disabled');
+      console.warn("[ox-content] Native bindings not available, search disabled");
       return null;
     }
   }
@@ -27,26 +27,26 @@ async function getOxContent() {
  * Resolves search options with defaults.
  */
 export function resolveSearchOptions(
-  options: SearchOptions | boolean | undefined
+  options: SearchOptions | boolean | undefined,
 ): ResolvedSearchOptions {
   if (options === false) {
     return {
       enabled: false,
       limit: 10,
       prefix: true,
-      placeholder: 'Search documentation...',
-      hotkey: '/',
+      placeholder: "Search documentation...",
+      hotkey: "/",
     };
   }
 
-  const opts = typeof options === 'object' ? options : {};
+  const opts = typeof options === "object" ? options : {};
 
   return {
     enabled: opts.enabled ?? true,
     limit: opts.limit ?? 10,
     prefix: opts.prefix ?? true,
-    placeholder: opts.placeholder ?? 'Search documentation...',
-    hotkey: opts.hotkey ?? '/',
+    placeholder: opts.placeholder ?? "Search documentation...",
+    hotkey: opts.hotkey ?? "/",
   };
 }
 
@@ -63,9 +63,9 @@ async function collectMarkdownFiles(dir: string): Promise<string[]> {
       for (const entry of entries) {
         const fullPath = path.join(currentDir, entry.name);
 
-        if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+        if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
           await walk(fullPath);
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        } else if (entry.isFile() && entry.name.endsWith(".md")) {
           files.push(fullPath);
         }
       }
@@ -81,14 +81,17 @@ async function collectMarkdownFiles(dir: string): Promise<string[]> {
 /**
  * Builds the search index from Markdown files.
  */
-export async function buildSearchIndex(
-  srcDir: string,
-  base: string
-): Promise<string> {
+export async function buildSearchIndex(srcDir: string, base: string): Promise<string> {
   const napi = await getOxContent();
 
   if (!napi) {
-    return JSON.stringify({ documents: [], index: {}, df: {}, avg_dl: 0, doc_count: 0 });
+    return JSON.stringify({
+      documents: [],
+      index: {},
+      df: {},
+      avg_dl: 0,
+      doc_count: 0,
+    });
   }
 
   const files = await collectMarkdownFiles(srcDir);
@@ -96,16 +99,16 @@ export async function buildSearchIndex(
 
   for (const file of files) {
     try {
-      const content = await fs.readFile(file, 'utf-8');
+      const content = await fs.readFile(file, "utf-8");
       const relativePath = path.relative(srcDir, file);
-      const url = base + relativePath.replace(/\.md$/, '').replace(/\\/g, '/');
-      const id = relativePath.replace(/\.md$/, '').replace(/\\/g, '/');
+      const url = base + relativePath.replace(/\.md$/, "").replace(/\\/g, "/");
+      const id = relativePath.replace(/\.md$/, "").replace(/\\/g, "/");
 
       // Use Rust bindings to extract search content (if available)
       const extractSearchContent = (napi as any).extractSearchContent;
       if (!extractSearchContent) {
-        console.warn('[ox-content] Search not available: extractSearchContent not implemented');
-        return '[]';
+        console.warn("[ox-content] Search not available: extractSearchContent not implemented");
+        return "[]";
       }
       const doc = extractSearchContent(content, id, url, { gfm: true });
 
@@ -125,7 +128,7 @@ export async function buildSearchIndex(
   // Build the index using Rust bindings (if available)
   const buildSearchIndex = (napi as any).buildSearchIndex;
   if (!buildSearchIndex) {
-    console.warn('[ox-content] Search not available: buildSearchIndex not implemented');
+    console.warn("[ox-content] Search not available: buildSearchIndex not implemented");
     return JSON.stringify(documents);
   }
   return buildSearchIndex(documents);
@@ -134,27 +137,21 @@ export async function buildSearchIndex(
 /**
  * Writes the search index to a file.
  */
-export async function writeSearchIndex(
-  indexJson: string,
-  outDir: string
-): Promise<void> {
-  const indexPath = path.join(outDir, 'search-index.json');
+export async function writeSearchIndex(indexJson: string, outDir: string): Promise<void> {
+  const indexPath = path.join(outDir, "search-index.json");
 
   // Ensure output directory exists
   await fs.mkdir(outDir, { recursive: true });
 
   // Write the index
-  await fs.writeFile(indexPath, indexJson, 'utf-8');
+  await fs.writeFile(indexPath, indexJson, "utf-8");
 }
 
 /**
  * Client-side search module code.
  * This is injected into the bundle as a virtual module.
  */
-export function generateSearchModule(
-  options: ResolvedSearchOptions,
-  indexPath: string
-): string {
+export function generateSearchModule(options: ResolvedSearchOptions, indexPath: string): string {
   return `
 // Search module generated by ox-content
 const searchOptions = ${JSON.stringify(options)};

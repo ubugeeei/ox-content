@@ -2,11 +2,11 @@
  * Syntax highlighting with Shiki via rehype.
  */
 
-import { unified } from 'unified';
-import rehypeParse from 'rehype-parse';
-import rehypeStringify from 'rehype-stringify';
-import type { Root, Element } from 'hast';
-import { createHighlighter, type Highlighter, type BundledTheme } from 'shiki';
+import { unified } from "unified";
+import rehypeParse from "rehype-parse";
+import rehypeStringify from "rehype-stringify";
+import type { Root, Element } from "hast";
+import { createHighlighter, type Highlighter, type BundledTheme } from "shiki";
 
 // Cached highlighter instance
 let highlighterPromise: Promise<Highlighter> | null = null;
@@ -19,30 +19,30 @@ async function getHighlighter(theme: string): Promise<Highlighter> {
     highlighterPromise = createHighlighter({
       themes: [theme as BundledTheme],
       langs: [
-        'javascript',
-        'typescript',
-        'jsx',
-        'tsx',
-        'vue',
-        'svelte',
-        'html',
-        'css',
-        'scss',
-        'json',
-        'yaml',
-        'markdown',
-        'bash',
-        'shell',
-        'rust',
-        'python',
-        'go',
-        'java',
-        'c',
-        'cpp',
-        'sql',
-        'graphql',
-        'diff',
-        'toml',
+        "javascript",
+        "typescript",
+        "jsx",
+        "tsx",
+        "vue",
+        "svelte",
+        "html",
+        "css",
+        "scss",
+        "json",
+        "yaml",
+        "markdown",
+        "bash",
+        "shell",
+        "rust",
+        "python",
+        "go",
+        "java",
+        "c",
+        "cpp",
+        "sql",
+        "graphql",
+        "diff",
+        "toml",
       ],
     });
   }
@@ -60,26 +60,26 @@ function rehypeShikiHighlight(options: { theme: string }) {
 
     // Find all pre > code elements
     const visit = async (node: Root | Element) => {
-      if ('children' in node) {
+      if ("children" in node) {
         for (let i = 0; i < node.children.length; i++) {
           const child = node.children[i];
 
-          if (child.type === 'element' && child.tagName === 'pre') {
+          if (child.type === "element" && child.tagName === "pre") {
             const codeElement = child.children.find(
-              (c): c is Element => c.type === 'element' && c.tagName === 'code'
+              (c) => c.type === "element" && c.tagName === "code",
             );
 
             if (codeElement) {
               // Extract language from class
               const className = codeElement.properties?.className;
-              let lang = 'text';
+              let lang = "text";
 
               if (Array.isArray(className)) {
                 const langClass = className.find(
-                  (c: string | number) => typeof c === 'string' && c.startsWith('language-')
+                  (c: string | number) => typeof c === "string" && c.startsWith("language-"),
                 );
-                if (langClass && typeof langClass === 'string') {
-                  lang = langClass.replace('language-', '');
+                if (langClass && typeof langClass === "string") {
+                  lang = langClass.replace("language-", "");
                 }
               }
 
@@ -94,9 +94,7 @@ function rehypeShikiHighlight(options: { theme: string }) {
                 });
 
                 // Parse the highlighted HTML and replace the pre element
-                const parsed = unified()
-                  .use(rehypeParse, { fragment: true })
-                  .parse(highlighted);
+                const parsed = unified().use(rehypeParse, { fragment: true }).parse(highlighted);
 
                 // Replace the pre element with the highlighted one
                 if (parsed.children[0]) {
@@ -106,7 +104,7 @@ function rehypeShikiHighlight(options: { theme: string }) {
                 // If highlighting fails, keep the original
               }
             }
-          } else if (child.type === 'element') {
+          } else if (child.type === "element") {
             await visit(child);
           }
         }
@@ -121,13 +119,13 @@ function rehypeShikiHighlight(options: { theme: string }) {
  * Extract text content from a hast node.
  */
 function getTextContent(node: Element | Root): string {
-  let text = '';
+  let text = "";
 
-  if ('children' in node) {
+  if ("children" in node) {
     for (const child of node.children) {
-      if (child.type === 'text') {
+      if (child.type === "text") {
         text += child.value;
-      } else if (child.type === 'element') {
+      } else if (child.type === "element") {
         text += getTextContent(child);
       }
     }
@@ -139,10 +137,7 @@ function getTextContent(node: Element | Root): string {
 /**
  * Apply syntax highlighting to HTML using Shiki.
  */
-export async function highlightCode(
-  html: string,
-  theme: string = 'github-dark'
-): Promise<string> {
+export async function highlightCode(html: string, theme: string = "github-dark"): Promise<string> {
   const result = await unified()
     .use(rehypeParse, { fragment: true })
     .use(rehypeShikiHighlight, { theme })

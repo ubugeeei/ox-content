@@ -405,7 +405,7 @@ export interface DocsOptions {
    * Output format.
    * @default 'markdown'
    */
-  format?: 'markdown' | 'json' | 'html';
+  format?: "markdown" | "json" | "html";
 
   /**
    * Include private members in documentation.
@@ -423,7 +423,7 @@ export interface DocsOptions {
    * Group documentation by file or category.
    * @default 'file'
    */
-  groupBy?: 'file' | 'category';
+  groupBy?: "file" | "category";
 
   /**
    * GitHub repository URL for source code links.
@@ -448,10 +448,10 @@ export interface ResolvedDocsOptions {
   out: string;
   include: string[];
   exclude: string[];
-  format: 'markdown' | 'json' | 'html';
+  format: "markdown" | "json" | "html";
   private: boolean;
   toc: boolean;
-  groupBy: 'file' | 'category';
+  groupBy: "file" | "category";
   githubUrl?: string;
   generateNav: boolean;
 }
@@ -461,7 +461,7 @@ export interface ResolvedDocsOptions {
  */
 export interface DocEntry {
   name: string;
-  kind: 'function' | 'class' | 'interface' | 'type' | 'variable' | 'module';
+  kind: "function" | "class" | "interface" | "type" | "variable" | "module";
   description: string;
   params?: ParamDoc[];
   returns?: ReturnDoc;

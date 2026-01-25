@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
-import { oxContent } from "vite-plugin-ox-content";
-import * as fs from "fs";
-import * as path from "path";
+import { defineConfig } from "vite"
+import { oxContent } from "vite-plugin-ox-content"
+import * as fs from "fs"
+import * as path from "path"
 
 export default defineConfig({
   plugins: [
@@ -17,20 +17,20 @@ export default defineConfig({
       name: "cleanup-js-assets",
       enforce: "post" as const,
       closeBundle() {
-        const distDir = path.resolve(__dirname, "dist");
-        const assetsDir = path.join(distDir, "assets");
+        const distDir = path.resolve(__dirname, "dist")
+        const assetsDir = path.join(distDir, "assets")
 
         // Remove assets directory (contains JS bundles)
         if (fs.existsSync(assetsDir)) {
-          fs.rmSync(assetsDir, { recursive: true });
+          fs.rmSync(assetsDir, { recursive: true })
         }
 
         // Remove any remaining JS/CSS files in dist root
         if (fs.existsSync(distDir)) {
-          const files = fs.readdirSync(distDir);
+          const files = fs.readdirSync(distDir)
           for (const file of files) {
             if (file.endsWith(".js") || file.endsWith(".css")) {
-              fs.unlinkSync(path.join(distDir, file));
+              fs.unlinkSync(path.join(distDir, file))
             }
           }
         }
@@ -49,4 +49,4 @@ export default defineConfig({
       },
     },
   },
-});
+})

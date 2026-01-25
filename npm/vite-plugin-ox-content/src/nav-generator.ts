@@ -56,8 +56,8 @@
  * ```
  */
 
-import path from 'path';
-import type { ExtractedDocs, NavItem } from './types';
+import path from "path";
+import type { ExtractedDocs, NavItem } from "./types";
 
 /**
  * Generates sidebar navigation metadata from extracted documentation.
@@ -113,7 +113,7 @@ import type { ExtractedDocs, NavItem } from './types';
  *
  * @see generateNavCode For converting these items to TypeScript code
  */
-export function generateNavMetadata(docs: ExtractedDocs[], basePath: string = '/api'): NavItem[] {
+export function generateNavMetadata(docs: ExtractedDocs[], basePath: string = "/api"): NavItem[] {
   // Sort docs by filename for consistent ordering
   const sortedDocs = [...docs].sort((a, b) => {
     const aName = getDocDisplayName(a.file);
@@ -153,14 +153,14 @@ function getDocDisplayName(filePath: string): string {
   const fileName = path.basename(filePath, path.extname(filePath));
 
   // Handle special cases
-  if (fileName === 'index' || fileName === 'index-module') {
-    return 'Overview';
+  if (fileName === "index" || fileName === "index-module") {
+    return "Overview";
   }
 
   // Convert kebab-case and snake_case to Title Case
   // Also handles camelCase transitions
   return fileName
-    .replace(/[-_]([a-z])/g, (_, char) => ' ' + char.toUpperCase())
+    .replace(/[-_]([a-z])/g, (_, char) => " " + char.toUpperCase())
     .replace(/^[a-z]/, (char) => char.toUpperCase());
 }
 
@@ -181,8 +181,8 @@ function getDocFileName(filePath: string): string {
 
   // Handle filename conflicts
   // The docs generator renames 'index' to 'index-module' to avoid conflicts
-  if (fileName === 'index') {
-    return 'index';
+  if (fileName === "index") {
+    return "index";
   }
 
   return fileName;
@@ -243,7 +243,7 @@ function getDocFileName(filePath: string): string {
  *
  * @see generateNavMetadata For generating NavItem arrays from extracted docs
  */
-export function generateNavCode(navItems: NavItem[], exportName: string = 'apiNav'): string {
+export function generateNavCode(navItems: NavItem[], exportName: string = "apiNav"): string {
   const json = JSON.stringify(navItems, null, 2);
   return `/**
  * Auto-generated API documentation navigation.

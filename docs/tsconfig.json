@@ -13,9 +13,5 @@
       "vite-plugin-ox-content-vue": ["../npm/vite-plugin-ox-content-vue/src/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"],
-  "references": [
-    { "path": "../npm/vite-plugin-ox-content" },
-    { "path": "../npm/vite-plugin-ox-content-vue" }
-  ]
+  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"]
 }

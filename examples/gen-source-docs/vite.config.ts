@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { oxContent } from 'vite-plugin-ox-content';
-import { oxContentVue } from 'vite-plugin-ox-content-vue';
+import { defineConfig } from "vite"
+import vue from "@vitejs/plugin-vue"
+import { oxContent } from "vite-plugin-ox-content"
+import { oxContentVue } from "vite-plugin-ox-content-vue"
 
 /**
  * Vite configuration for the Source Documentation Generator example.
@@ -16,24 +16,24 @@ export default defineConfig({
 
     // Base ox-content plugin with docs generation enabled (builtin)
     oxContent({
-      srcDir: 'docs',
+      srcDir: "docs",
       docs: {
         enabled: true,
-        src: ['./src'],
-        out: 'docs/api',
-        include: ['**/*.ts'],
-        exclude: ['**/*.test.*', 'node_modules'],
-        format: 'markdown',
+        src: ["./src"],
+        out: "docs/api",
+        include: ["**/*.ts"],
+        exclude: ["**/*.test.*", "node_modules"],
+        format: "markdown",
         toc: true,
-        groupBy: 'file',
+        groupBy: "file",
       },
     }),
 
     // Vue integration for embedding components in generated docs
     // Using glob pattern to auto-discover components
     oxContentVue({
-      srcDir: 'docs',
-      components: './src/components/*.vue',
+      srcDir: "docs",
+      components: "./src/components/*.vue",
     }),
   ],
-});
+})

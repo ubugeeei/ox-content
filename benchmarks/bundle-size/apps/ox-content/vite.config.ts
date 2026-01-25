@@ -1,5 +1,5 @@
-import { defineConfig } from "vite";
-import { oxContent } from "vite-plugin-ox-content";
+import { defineConfig } from "vite"
+import { oxContent } from "vite-plugin-ox-content"
 
 export default defineConfig({
   plugins: [
@@ -11,4 +11,4 @@ export default defineConfig({
     outDir: "dist",
     minify: true,
   },
-});
+})

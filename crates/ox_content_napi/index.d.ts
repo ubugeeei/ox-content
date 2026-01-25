@@ -78,23 +78,38 @@ export interface JsParserOptions {
  *
  * Returns the AST as a JSON string for zero-copy transfer to JavaScript.
  */
-export declare function parse(source: string, options?: JsParserOptions | undefined | null): ParseResult
+export function parse(
+  source: string,
+  options?: JsParserOptions | undefined | null,
+): ParseResult
 /** Parses Markdown and renders to HTML. */
-export declare function parseAndRender(source: string, options?: JsParserOptions | undefined | null): RenderResult
+export function parseAndRender(
+  source: string,
+  options?: JsParserOptions | undefined | null,
+): RenderResult
 /** Renders an AST (provided as JSON) to HTML. */
-export declare function render(astJson: string): RenderResult
+export function render(astJson: string): RenderResult
 /** Returns the version of ox_content_napi. */
-export declare function version(): string
+export function version(): string
 /**
  * Transforms Markdown source into HTML, frontmatter, and TOC.
  *
  * This is the main entry point for unplugin-ox-content.
  */
-export declare function transform(source: string, options?: JsTransformOptions | undefined | null): TransformResult
+export function transform(
+  source: string,
+  options?: JsTransformOptions | undefined | null,
+): TransformResult
 /** Parses Markdown and renders to HTML asynchronously (runs on worker thread). */
-export declare function parseAndRenderAsync(source: string, options?: JsParserOptions | undefined | null): Promise<unknown>
+export function parseAndRenderAsync(
+  source: string,
+  options?: JsParserOptions | undefined | null,
+): Promise<unknown>
 /** Transforms Markdown source asynchronously (runs on worker thread). */
-export declare function transformAsync(source: string, options?: JsTransformOptions | undefined | null): Promise<unknown>
+export function transformAsync(
+  source: string,
+  options?: JsTransformOptions | undefined | null,
+): Promise<unknown>
 /** OG image configuration for JavaScript. */
 export interface JsOgImageConfig {
   /** Image width in pixels. */
@@ -127,7 +142,10 @@ export interface JsOgImageData {
  * This function generates an SVG representation of an OG image
  * that can be used for social media previews.
  */
-export declare function generateOgImageSvg(data: JsOgImageData, config?: JsOgImageConfig | undefined | null): string
+export function generateOgImageSvg(
+  data: JsOgImageData,
+  config?: JsOgImageConfig | undefined | null,
+): string
 /** Search document for JavaScript. */
 export interface JsSearchDocument {
   /** Unique document identifier. */
@@ -174,14 +192,18 @@ export interface JsSearchOptions {
  *
  * Takes an array of documents and returns a serialized search index as JSON.
  */
-export declare function buildSearchIndex(documents: Array<JsSearchDocument>): string
+export function buildSearchIndex(documents: Array<JsSearchDocument>): string
 /**
  * Searches a serialized index.
  *
  * Takes a JSON-serialized index, query string, and options.
  * Returns an array of search results.
  */
-export declare function searchIndex(indexJson: string, query: string, options?: JsSearchOptions | undefined | null): Array<JsSearchResult>
+export function searchIndex(
+  indexJson: string,
+  query: string,
+  options?: JsSearchOptions | undefined | null,
+): Array<JsSearchResult>
 /** Navigation item for SSG. */
 export interface JsSsgNavItem {
   /** Display title. */
@@ -221,10 +243,19 @@ export interface JsSsgConfig {
   ogImage?: string
 }
 /** Generates SSG HTML page with navigation and search. */
-export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Array<JsSsgNavGroup>, config: JsSsgConfig): string
+export function generateSsgHtml(
+  pageData: JsSsgPageData,
+  navGroups: Array<JsSsgNavGroup>,
+  config: JsSsgConfig,
+): string
 /**
  * Extracts searchable content from Markdown source.
  *
  * Parses the Markdown and extracts title, body text, headings, and code.
  */
-export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument
+export function extractSearchContent(
+  source: string,
+  id: string,
+  url: string,
+  options?: JsParserOptions | undefined | null,
+): JsSearchDocument

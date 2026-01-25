@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import oxContent from 'unplugin-ox-content/vite';
-import rehypeSlug from 'rehype-slug';
+import { defineConfig } from "vite"
+import oxContent from "unplugin-ox-content/vite"
+import rehypeSlug from "rehype-slug"
 
 export default defineConfig({
   plugins: [
@@ -11,4 +11,4 @@ export default defineConfig({
       },
     }),
   ],
-});
+})

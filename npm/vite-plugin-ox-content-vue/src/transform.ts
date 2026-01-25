@@ -2,18 +2,19 @@
  * Markdown to Vue SFC transformation.
  */
 
-import * as path from 'path';
-import { transformMarkdown as baseTransformMarkdown } from 'vite-plugin-ox-content';
-import type { ResolvedVueOptions, VueTransformResult, ComponentSlot } from './types';
+import * as path from "path";
+import { transformMarkdown as baseTransformMarkdown } from "vite-plugin-ox-content";
+import type { ResolvedVueOptions, VueTransformResult, ComponentSlot } from "./types";
 
 // Regex to match Vue-like component tags in Markdown
 const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>([\s\S]*?)<\/\1>)/g;
 
 // Regex to parse component props
-const PROP_REGEX = /(?::|v-bind:)?([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}|\[([^\]]*)\]))?/g;
+const PROP_REGEX =
+  /(?::|v-bind:)?([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}|\[([^\]]*)\]))?/g;
 
-const SLOT_MARKER_PREFIX = 'OXCONTENT-SLOT-';
-const SLOT_MARKER_SUFFIX = '-PLACEHOLDER';
+const SLOT_MARKER_PREFIX = "OXCONTENT-SLOT-";
+const SLOT_MARKER_SUFFIX = "-PLACEHOLDER";
 
 interface Range {
   start: number;
@@ -23,7 +24,7 @@ interface Range {
 /**
  * Options for transformMarkdownWithVue.
  */
-interface TransformOptions extends Omit<ResolvedVueOptions, 'components'> {
+interface TransformOptions extends Omit<ResolvedVueOptions, "components"> {
   components: Map<string, string>;
   root?: string;
 }
@@ -34,7 +35,7 @@ interface TransformOptions extends Omit<ResolvedVueOptions, 'components'> {
 export async function transformMarkdownWithVue(
   code: string,
   id: string,
-  options: TransformOptions
+  options: TransformOptions,
 ): Promise<VueTransformResult> {
   const { components } = options;
   const usedComponents: string[] = [];
@@ -46,7 +47,7 @@ export async function transformMarkdownWithVue(
 
   // Find and extract component usages
   const fenceRanges = collectFenceRanges(markdownContent);
-  let processedContent = '';
+  let processedContent = "";
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -72,8 +73,7 @@ export async function transformMarkdownWithVue(
 
     // Create slot placeholder
     const slotId = `ox-slot-${slotIndex++}`;
-    const slotContent =
-      typeof rawSlotContent === 'string' ? rawSlotContent.trim() : undefined;
+    const slotContent = typeof rawSlotContent === "string" ? rawSlotContent.trim() : undefined;
     slots.push({
       name: componentName,
       props,
@@ -83,8 +83,7 @@ export async function transformMarkdownWithVue(
     });
 
     // Replace component with slot marker text
-    processedContent +=
-      markdownContent.slice(lastIndex, matchStart) + createSlotMarker(slotId);
+    processedContent += markdownContent.slice(lastIndex, matchStart) + createSlotMarker(slotId);
     lastIndex = matchEnd;
   }
   processedContent += markdownContent.slice(lastIndex);
@@ -94,7 +93,13 @@ export async function transformMarkdownWithVue(
     srcDir: options.srcDir,
     outDir: options.outDir,
     base: options.base,
-    ssg: { enabled: false, extension: '.html', clean: false, bare: false, generateOgImage: false },
+    ssg: {
+      enabled: false,
+      extension: ".html",
+      clean: false,
+      bare: false,
+      generateOgImage: false,
+    },
     gfm: options.gfm,
     frontmatter: false, // Already extracted
     toc: options.toc,
@@ -104,25 +109,24 @@ export async function transformMarkdownWithVue(
     taskLists: true,
     strikethrough: true,
     highlight: false,
-    highlightTheme: 'github-dark',
+    highlightTheme: "github-dark",
     mermaid: false,
     ogImage: false,
     ogImageOptions: {},
     transformers: [],
     docs: false,
-    search: { enabled: false, limit: 10, prefix: true, placeholder: 'Search...', hotkey: 'k' },
+    search: {
+      enabled: false,
+      limit: 10,
+      prefix: true,
+      placeholder: "Search...",
+      hotkey: "k",
+    },
   });
 
   // Generate Vue SFC code
   const htmlWithSlots = injectSlotMarkers(transformed.html, slots);
-  const sfcCode = generateVueSFC(
-    htmlWithSlots,
-    usedComponents,
-    slots,
-    frontmatter,
-    options,
-    id
-  );
+  const sfcCode = generateVueSFC(htmlWithSlots, usedComponents, slots, frontmatter, options, id);
 
   return {
     code: sfcCode,
@@ -139,13 +143,13 @@ function createSlotMarker(slotId: string): string {
 function collectFenceRanges(content: string): Range[] {
   const ranges: Range[] = [];
   let inFence = false;
-  let fenceChar = '';
+  let fenceChar = "";
   let fenceLength = 0;
   let fenceStart = 0;
   let pos = 0;
 
   while (pos < content.length) {
-    const lineEnd = content.indexOf('\n', pos);
+    const lineEnd = content.indexOf("\n", pos);
     const next = lineEnd === -1 ? content.length : lineEnd + 1;
     const line = content.slice(pos, lineEnd === -1 ? content.length : lineEnd);
     const fenceMatch = line.match(/^\s{0,3}([`~]{3,})/);
@@ -160,7 +164,7 @@ function collectFenceRanges(content: string): Range[] {
       } else if (marker[0] === fenceChar && marker.length >= fenceLength) {
         inFence = false;
         ranges.push({ start: fenceStart, end: next });
-        fenceChar = '';
+        fenceChar = "";
         fenceLength = 0;
       }
     }
@@ -189,14 +193,8 @@ function injectSlotMarkers(html: string, slots: ComponentSlot[]): string {
 
   for (const slot of slots) {
     const marker = createSlotMarker(slot.id);
-    output = output.replaceAll(
-      `<p>${marker}</p>`,
-      `<div data-ox-slot="${slot.id}"></div>`
-    );
-    output = output.replaceAll(
-      marker,
-      `<span data-ox-slot="${slot.id}"></span>`
-    );
+    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-slot="${slot.id}"></div>`);
+    output = output.replaceAll(marker, `<span data-ox-slot="${slot.id}"></span>`);
   }
 
   return output;
@@ -220,8 +218,8 @@ function extractFrontmatter(content: string): {
   const frontmatter: Record<string, unknown> = {};
 
   // Simple YAML-like parsing
-  for (const line of frontmatterStr.split('\n')) {
-    const colonIndex = line.indexOf(':');
+  for (const line of frontmatterStr.split("\n")) {
+    const colonIndex = line.indexOf(":");
     if (colonIndex > 0) {
       const key = line.slice(0, colonIndex).trim();
       let value: unknown = line.slice(colonIndex + 1).trim();
@@ -233,7 +231,7 @@ function extractFrontmatter(content: string): {
         // Keep as string if not valid JSON
         // Remove quotes if present
         if (
-          typeof value === 'string' &&
+          typeof value === "string" &&
           ((value.startsWith('"') && value.endsWith('"')) ||
             (value.startsWith("'") && value.endsWith("'")))
         ) {
@@ -300,7 +298,7 @@ function generateVueSFC(
   slots: ComponentSlot[],
   frontmatter: Record<string, unknown>,
   options: TransformOptions,
-  id: string
+  id: string,
 ): string {
   const mdDir = path.dirname(id);
   const root = options.root || process.cwd();
@@ -308,18 +306,18 @@ function generateVueSFC(
   const componentImports = usedComponents
     .map((name) => {
       const componentPath = options.components.get(name);
-      if (!componentPath) return '';
+      if (!componentPath) return "";
       // Convert relative-to-root path to relative-to-md-file path
-      const absolutePath = path.resolve(root, componentPath.replace(/^\.\//, ''));
-      const relativePath = path.relative(mdDir, absolutePath).replace(/\\/g, '/');
+      const absolutePath = path.resolve(root, componentPath.replace(/^\.\//, ""));
+      const relativePath = path.relative(mdDir, absolutePath).replace(/\\/g, "/");
       // Ensure the path starts with ./ or ../
-      const importPath = relativePath.startsWith('.') ? relativePath : './' + relativePath;
+      const importPath = relativePath.startsWith(".") ? relativePath : "./" + relativePath;
       return `import ${name} from '${importPath}';`;
     })
     .filter(Boolean)
-    .join('\n');
+    .join("\n");
 
-  const componentMap = usedComponents.map((name) => `  ${name},`).join('\n');
+  const componentMap = usedComponents.map((name) => `  ${name},`).join("\n");
 
   return `
 import { h, ref, onMounted, onBeforeUnmount, defineComponent, render } from 'vue';

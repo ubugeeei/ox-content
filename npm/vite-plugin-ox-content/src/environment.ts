@@ -5,8 +5,8 @@
  * enabling SSG-style rendering with separate client/server contexts.
  */
 
-import type { EnvironmentOptions } from 'vite';
-import type { ResolvedOptions } from './types';
+import type { EnvironmentOptions } from "vite";
+import type { ResolvedOptions } from "./types";
 
 /**
  * Creates the Markdown processing environment configuration.
@@ -29,12 +29,10 @@ import type { ResolvedOptions } from './types';
  * });
  * ```
  */
-export function createMarkdownEnvironment(
-  options: ResolvedOptions
-): EnvironmentOptions {
+export function createMarkdownEnvironment(options: ResolvedOptions): EnvironmentOptions {
   return {
     // Consumer type for this environment
-    consumer: 'server',
+    consumer: "server",
 
     // Build configuration
     build: {
@@ -61,10 +59,10 @@ export function createMarkdownEnvironment(
     // Resolve configuration
     resolve: {
       // Handle .md files
-      extensions: ['.md', '.markdown'],
+      extensions: [".md", ".markdown"],
 
       // Conditions for module resolution
-      conditions: ['markdown', 'node', 'import'],
+      conditions: ["markdown", "node", "import"],
 
       // Don't dedupe - each environment gets its own modules
       dedupe: [],
@@ -75,7 +73,7 @@ export function createMarkdownEnvironment(
       // Include ox-content dependencies
       include: [],
       // Exclude native modules
-      exclude: ['@ox-content/napi'],
+      exclude: ["@ox-content/napi"],
     },
   };
 }
@@ -113,7 +111,7 @@ export interface EnvironmentTransformContext {
  */
 export function createTransformOptions(
   ctx: EnvironmentTransformContext,
-  options: ResolvedOptions
+  options: ResolvedOptions,
 ): ResolvedOptions {
   return {
     ...options,
@@ -130,7 +128,7 @@ export function createTransformOptions(
  */
 export async function prerender(
   files: string[],
-  _options: ResolvedOptions
+  _options: ResolvedOptions,
 ): Promise<Map<string, string>> {
   const results = new Map<string, string>();
 
@@ -151,16 +149,16 @@ export async function prerender(
 export function createEnvironmentPlugins(_options: ResolvedOptions) {
   return [
     {
-      name: 'ox-content:markdown-env',
+      name: "ox-content:markdown-env",
 
       // Only apply to markdown environment
       applyToEnvironment(name: string) {
-        return name === 'markdown';
+        return name === "markdown";
       },
 
       // Transform within the environment
       transform(code: string, id: string) {
-        if (!id.endsWith('.md')) {
+        if (!id.endsWith(".md")) {
           return null;
         }
 

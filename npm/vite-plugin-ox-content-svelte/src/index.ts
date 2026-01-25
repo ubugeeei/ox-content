@@ -4,13 +4,18 @@
  * Uses Vite's Environment API to enable embedding Svelte components in Markdown.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import type { Plugin, PluginOption, ResolvedConfig } from 'vite';
-import { oxContent } from 'vite-plugin-ox-content';
-import { transformMarkdownWithSvelte } from './transform';
-import { createSvelteMarkdownEnvironment } from './environment';
-import type { SvelteIntegrationOptions, ResolvedSvelteOptions, ComponentsMap, ComponentsOption } from './types';
+import * as fs from "fs";
+import * as path from "path";
+import type { Plugin, PluginOption, ResolvedConfig } from "vite";
+import { oxContent } from "vite-plugin-ox-content";
+import { transformMarkdownWithSvelte } from "./transform";
+import { createSvelteMarkdownEnvironment } from "./environment";
+import type {
+  SvelteIntegrationOptions,
+  ResolvedSvelteOptions,
+  ComponentsMap,
+  ComponentsOption,
+} from "./types";
 
 export type {
   SvelteIntegrationOptions,
@@ -19,7 +24,7 @@ export type {
   ComponentsMap,
   SvelteTransformResult,
   ComponentSlot,
-} from './types';
+} from "./types";
 
 /**
  * Creates the Ox Content Svelte integration plugin.
@@ -49,29 +54,26 @@ export function oxContentSvelte(options: SvelteIntegrationOptions = {}): PluginO
   let componentMap = new Map<string, string>();
   let config: ResolvedConfig;
 
-  if (typeof options.components === 'object' && !Array.isArray(options.components)) {
+  if (typeof options.components === "object" && !Array.isArray(options.components)) {
     componentMap = new Map(Object.entries(options.components));
   }
 
   const svelteTransformPlugin: Plugin = {
-    name: 'ox-content:svelte-transform',
-    enforce: 'pre',
+    name: "ox-content:svelte-transform",
+    enforce: "pre",
 
     async configResolved(resolvedConfig) {
       config = resolvedConfig;
 
       const componentsOption = options.components;
       if (componentsOption) {
-        const resolvedComponents = await resolveComponentsGlob(
-          componentsOption,
-          config.root
-        );
+        const resolvedComponents = await resolveComponentsGlob(componentsOption, config.root);
         componentMap = new Map(Object.entries(resolvedComponents));
       }
     },
 
     async transform(code, id) {
-      if (!id.endsWith('.md')) {
+      if (!id.endsWith(".md")) {
         return null;
       }
 
@@ -89,62 +91,60 @@ export function oxContentSvelte(options: SvelteIntegrationOptions = {}): PluginO
   };
 
   const svelteEnvironmentPlugin: Plugin = {
-    name: 'ox-content:svelte-environment',
+    name: "ox-content:svelte-environment",
 
     config() {
       return {
         environments: {
-          oxcontent_ssr: createSvelteMarkdownEnvironment('ssr', resolved),
-          oxcontent_client: createSvelteMarkdownEnvironment('client', resolved),
+          oxcontent_ssr: createSvelteMarkdownEnvironment("ssr", resolved),
+          oxcontent_client: createSvelteMarkdownEnvironment("client", resolved),
         },
       };
     },
 
     resolveId(id) {
-      if (id === 'virtual:ox-content-svelte/runtime') {
-        return '\0virtual:ox-content-svelte/runtime';
+      if (id === "virtual:ox-content-svelte/runtime") {
+        return "\0virtual:ox-content-svelte/runtime";
       }
-      if (id === 'virtual:ox-content-svelte/components') {
-        return '\0virtual:ox-content-svelte/components';
+      if (id === "virtual:ox-content-svelte/components") {
+        return "\0virtual:ox-content-svelte/components";
       }
       return null;
     },
 
     load(id) {
-      if (id === '\0virtual:ox-content-svelte/runtime') {
+      if (id === "\0virtual:ox-content-svelte/runtime") {
         return generateRuntimeModule();
       }
-      if (id === '\0virtual:ox-content-svelte/components') {
+      if (id === "\0virtual:ox-content-svelte/components") {
         return generateComponentsModule(componentMap);
       }
       return null;
     },
 
     applyToEnvironment(environment) {
-      return ['oxcontent_ssr', 'oxcontent_client', 'client', 'ssr'].includes(
-        environment.name
-      );
+      return ["oxcontent_ssr", "oxcontent_client", "client", "ssr"].includes(environment.name);
     },
   };
 
   const svelteHmrPlugin: Plugin = {
-    name: 'ox-content:svelte-hmr',
-    apply: 'serve',
+    name: "ox-content:svelte-hmr",
+    apply: "serve",
 
     handleHotUpdate({ file, server, modules }) {
       const isComponent = Array.from(componentMap.values()).some((path) =>
-        file.endsWith(path.replace(/^\.\//, ''))
+        file.endsWith(path.replace(/^\.\//, "")),
       );
 
       if (isComponent) {
-        const mdModules = Array.from(
-          server.moduleGraph.idToModuleMap.values()
-        ).filter((mod) => mod.file?.endsWith('.md'));
+        const mdModules = Array.from(server.moduleGraph.idToModuleMap.values()).filter((mod) =>
+          mod.file?.endsWith(".md"),
+        );
 
         if (mdModules.length > 0) {
           server.ws.send({
-            type: 'custom',
-            event: 'ox-content:svelte-update',
+            type: "custom",
+            event: "ox-content:svelte-update",
             data: { file },
           });
           return [...modules, ...mdModules];
@@ -156,7 +156,7 @@ export function oxContentSvelte(options: SvelteIntegrationOptions = {}): PluginO
   };
 
   const basePlugins = oxContent(options);
-  const environmentPlugin = basePlugins.find((p) => p.name === 'ox-content:environment');
+  const environmentPlugin = basePlugins.find((p) => p.name === "ox-content:environment");
 
   return [
     svelteTransformPlugin,
@@ -166,11 +166,13 @@ export function oxContentSvelte(options: SvelteIntegrationOptions = {}): PluginO
   ];
 }
 
-function resolveSvelteOptions(options: SvelteIntegrationOptions): Omit<ResolvedSvelteOptions, 'components'> {
+function resolveSvelteOptions(
+  options: SvelteIntegrationOptions,
+): Omit<ResolvedSvelteOptions, "components"> {
   return {
-    srcDir: options.srcDir ?? 'docs',
-    outDir: options.outDir ?? 'dist',
-    base: options.base ?? '/',
+    srcDir: options.srcDir ?? "docs",
+    outDir: options.outDir ?? "dist",
+    base: options.base ?? "/",
     gfm: options.gfm ?? true,
     frontmatter: options.frontmatter ?? true,
     toc: options.toc ?? true,
@@ -196,10 +198,10 @@ function generateComponentsModule(componentMap: Map<string, string>): string {
   });
 
   return `
-${imports.join('\n')}
+${imports.join("\n")}
 
 export const components = {
-${exports.join('\n')}
+${exports.join("\n")}
 };
 
 export default components;
@@ -208,15 +210,13 @@ export default components;
 
 async function resolveComponentsGlob(
   componentsOption: ComponentsOption,
-  root: string
+  root: string,
 ): Promise<ComponentsMap> {
-  if (typeof componentsOption === 'object' && !Array.isArray(componentsOption)) {
+  if (typeof componentsOption === "object" && !Array.isArray(componentsOption)) {
     return componentsOption;
   }
 
-  const patterns = Array.isArray(componentsOption)
-    ? componentsOption
-    : [componentsOption];
+  const patterns = Array.isArray(componentsOption) ? componentsOption : [componentsOption];
 
   const result: ComponentsMap = {};
 
@@ -226,7 +226,7 @@ async function resolveComponentsGlob(
     for (const file of files) {
       const baseName = path.basename(file, path.extname(file));
       const componentName = toPascalCase(baseName);
-      const relativePath = './' + path.relative(root, file).replace(/\\/g, '/');
+      const relativePath = "./" + path.relative(root, file).replace(/\\/g, "/");
 
       result[componentName] = relativePath;
     }
@@ -237,7 +237,7 @@ async function resolveComponentsGlob(
 
 async function globFiles(pattern: string, root: string): Promise<string[]> {
   const files: string[] = [];
-  const isGlob = pattern.includes('*');
+  const isGlob = pattern.includes("*");
 
   if (!isGlob) {
     const fullPath = path.resolve(root, pattern);
@@ -247,15 +247,15 @@ async function globFiles(pattern: string, root: string): Promise<string[]> {
     return files;
   }
 
-  const parts = pattern.split('*');
+  const parts = pattern.split("*");
   const baseDir = path.resolve(root, parts[0]);
-  const ext = parts[1] || '';
+  const ext = parts[1] || "";
 
   if (!fs.existsSync(baseDir)) {
     return files;
   }
 
-  if (pattern.includes('**')) {
+  if (pattern.includes("**")) {
     await walkDir(baseDir, files, ext);
   } else {
     const entries = await fs.promises.readdir(baseDir, { withFileTypes: true });
@@ -284,9 +284,7 @@ async function walkDir(dir: string, files: string[], ext: string): Promise<void>
 }
 
 function toPascalCase(str: string): string {
-  return str
-    .replace(/[-_](\w)/g, (_, c) => c.toUpperCase())
-    .replace(/^\w/, (c) => c.toUpperCase());
+  return str.replace(/[-_](\w)/g, (_, c) => c.toUpperCase()).replace(/^\w/, (c) => c.toUpperCase());
 }
 
-export { oxContent } from 'vite-plugin-ox-content';
+export { oxContent } from "vite-plugin-ox-content";

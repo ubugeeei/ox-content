@@ -19,7 +19,7 @@
  * ```
  */
 export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
+  return Math.min(Math.max(value, min), max)
 }
 
 /**
@@ -37,7 +37,7 @@ export function clamp(value: number, min: number, max: number): number {
  * ```
  */
 export function lerp(start: number, end: number, t: number): number {
-  return start + (end - start) * t;
+  return start + (end - start) * t
 }
 
 /**
@@ -54,6 +54,6 @@ export function lerp(start: number, end: number, t: number): number {
  * ```
  */
 export function round(value: number, decimals: number): number {
-  const factor = Math.pow(10, decimals);
-  return Math.round(value * factor) / factor;
+  const factor = Math.pow(10, decimals)
+  return Math.round(value * factor) / factor
 }

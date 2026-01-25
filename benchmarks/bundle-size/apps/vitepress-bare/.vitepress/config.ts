@@ -1,4 +1,4 @@
-import { defineConfig } from "vitepress";
+import { defineConfig } from "vitepress"
 
 export default defineConfig({
   title: "Benchmark",
@@ -11,4 +11,4 @@ export default defineConfig({
       { text: "Examples", link: "/examples" },
     ],
   },
-});
+})

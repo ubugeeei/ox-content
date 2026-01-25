@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import { useState } from "react"
 
 interface CounterProps {
-  start?: number;
+  start?: number
 }
 
 export default function Counter({ start = 0 }: CounterProps) {
-  const [count, setCount] = useState(start);
+  const [count, setCount] = useState(start)
 
   return (
     <div className="counter">
-      <button onClick={() => setCount(c => c - 1)}>-</button>
+      <button onClick={() => setCount((c) => c - 1)}>-</button>
       <span className="count">{count}</span>
-      <button onClick={() => setCount(c => c + 1)}>+</button>
+      <button onClick={() => setCount((c) => c + 1)}>+</button>
       <style>{`
         .counter {
           display: inline-flex;
@@ -41,5 +41,5 @@ export default function Counter({ start = 0 }: CounterProps) {
         }
       `}</style>
     </div>
-  );
+  )
 }

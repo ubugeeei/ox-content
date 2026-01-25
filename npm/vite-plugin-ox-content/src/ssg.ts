@@ -2,17 +2,12 @@
  * SSG (Static Site Generation) module for ox-content
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { glob } from 'glob';
-import { transformMarkdown, generateOgImageSvg } from './transform';
-import type { OgImageData, OgImageConfig } from './transform';
-import type {
-  ResolvedOptions,
-  ResolvedSsgOptions,
-  SsgOptions,
-  TocEntry,
-} from './types';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { glob } from "glob";
+import { transformMarkdown, generateOgImageSvg } from "./transform";
+import type { OgImageData, OgImageConfig } from "./transform";
+import type { ResolvedOptions, ResolvedSsgOptions, SsgOptions, TocEntry } from "./types";
 
 /**
  * Navigation item for SSG.
@@ -787,7 +782,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
   if (ssg === false) {
     return {
       enabled: false,
-      extension: '.html',
+      extension: ".html",
       clean: false,
       bare: false,
       generateOgImage: false,
@@ -797,7 +792,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
   if (ssg === true || ssg === undefined) {
     return {
       enabled: true,
-      extension: '.html',
+      extension: ".html",
       clean: false,
       bare: false,
       generateOgImage: false,
@@ -806,7 +801,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
 
   return {
     enabled: ssg.enabled ?? true,
-    extension: ssg.extension ?? '.html',
+    extension: ssg.extension ?? ".html",
     clean: ssg.clean ?? false,
     bare: ssg.bare ?? false,
     siteName: ssg.siteName,
@@ -824,13 +819,19 @@ function renderTemplate(template: string, data: Record<string, unknown>): string
 
   // Handle conditionals: {{#key}}content{{/key}}
   result = result.replace(/\{\{#(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (_, key, content) => {
-    return data[key] ? content : '';
+    return data[key] ? content : "";
   });
 
   // Handle simple replacements: {{key}}
   result = result.replace(/\{\{(\w+)\}\}/g, (_, key) => {
     const value = data[key];
-    return value !== undefined && value !== null ? String(value) : '';
+    if (value === undefined || value === null) return "";
+    if (typeof value === "object") return JSON.stringify(value);
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value);
+    }
+    return "";
   });
 
   return result;
@@ -839,11 +840,8 @@ function renderTemplate(template: string, data: Record<string, unknown>): string
 /**
  * Extracts title from content or frontmatter.
  */
-function extractTitle(
-  content: string,
-  frontmatter: Record<string, unknown>
-): string {
-  if (frontmatter.title && typeof frontmatter.title === 'string') {
+function extractTitle(content: string, frontmatter: Record<string, unknown>): string {
+  if (frontmatter.title && typeof frontmatter.title === "string") {
     return frontmatter.title;
   }
 
@@ -852,22 +850,22 @@ function extractTitle(
     return h1Match[1].trim();
   }
 
-  return 'Untitled';
+  return "Untitled";
 }
 
 /**
  * Generates navigation HTML from nav groups.
  */
-function generateNavHtml(navGroups: NavGroup[], currentPath: string): string {
+function _generateNavHtml(navGroups: NavGroup[], currentPath: string): string {
   return navGroups
     .map((group) => {
       const items = group.items
         .map((item) => {
           const isActive = item.path === currentPath;
-          const activeClass = isActive ? ' active' : '';
+          const activeClass = isActive ? " active" : "";
           return `              <li class="nav-item"><a href="${item.href}" class="nav-link${activeClass}">${item.title}</a></li>`;
         })
-        .join('\n');
+        .join("\n");
 
       return `          <div class="nav-section">
             <div class="nav-title">${group.title}</div>
@@ -876,18 +874,18 @@ ${items}
             </ul>
           </div>`;
     })
-    .join('\n');
+    .join("\n");
 }
 
 /**
  * Generates TOC HTML from toc entries.
  */
-function generateTocHtml(toc: TocEntry[]): string {
+function _generateTocHtml(toc: TocEntry[]): string {
   const flattenToc = (entries: TocEntry[], depth = 1): string[] => {
     const items: string[] = [];
     for (const entry of entries) {
       items.push(
-        `        <li class="toc-item"><a href="#${entry.slug}" class="toc-link" style="--depth: ${depth}">${entry.text}</a></li>`
+        `        <li class="toc-item"><a href="#${entry.slug}" class="toc-link" style="--depth: ${depth}">${entry.text}</a></li>`,
       );
       if (entry.children && entry.children.length > 0) {
         items.push(...flattenToc(entry.children, depth + 1));
@@ -895,16 +893,13 @@ function generateTocHtml(toc: TocEntry[]): string {
     }
     return items;
   };
-  return flattenToc(toc).join('\n');
+  return flattenToc(toc).join("\n");
 }
 
 /**
  * Generates bare HTML page (no navigation, no styles).
  */
-export function generateBareHtmlPage(
-  content: string,
-  title: string
-): string {
+export function generateBareHtmlPage(content: string, title: string): string {
   return renderTemplate(BARE_HTML_TEMPLATE, {
     title,
     content,
@@ -919,9 +914,9 @@ export async function generateHtmlPage(
   navGroups: NavGroup[],
   siteName: string,
   base: string,
-  ogImage?: string
+  ogImage?: string,
 ): Promise<string> {
-  const mod = await import('@ox-content/napi');
+  const mod = await import("@ox-content/napi");
 
   // Convert TocEntry to the format expected by Rust
   const tocForRust = pageData.toc.map((entry) => ({
@@ -953,7 +948,7 @@ export async function generateHtmlPage(
       siteName,
       base,
       ogImage,
-    }
+    },
   );
 }
 
@@ -964,7 +959,7 @@ export function getOutputPath(
   inputPath: string,
   srcDir: string,
   outDir: string,
-  extension: string
+  extension: string,
 ): string {
   const relativePath = path.relative(srcDir, inputPath);
   const baseName = relativePath.replace(/\.(?:md|markdown)$/i, extension);
@@ -973,7 +968,7 @@ export function getOutputPath(
     return path.join(outDir, baseName);
   }
 
-  const dirName = baseName.replace(new RegExp(`\\${extension}$`), '');
+  const dirName = baseName.replace(new RegExp(`\\${extension}$`), "");
   return path.join(outDir, dirName, `index${extension}`);
 }
 
@@ -982,10 +977,10 @@ export function getOutputPath(
  */
 function getUrlPath(inputPath: string, srcDir: string): string {
   const relativePath = path.relative(srcDir, inputPath);
-  const baseName = relativePath.replace(/\.(?:md|markdown)$/i, '');
+  const baseName = relativePath.replace(/\.(?:md|markdown)$/i, "");
 
-  if (baseName === 'index' || baseName.endsWith('/index')) {
-    return baseName.replace(/\/?index$/, '') || '/';
+  if (baseName === "index" || baseName.endsWith("/index")) {
+    return baseName.replace(/\/?index$/, "") || "/";
   }
 
   return baseName;
@@ -996,7 +991,7 @@ function getUrlPath(inputPath: string, srcDir: string): string {
  */
 function getHref(inputPath: string, srcDir: string, base: string, extension: string): string {
   const urlPath = getUrlPath(inputPath, srcDir);
-  if (urlPath === '/' || urlPath === '') {
+  if (urlPath === "/" || urlPath === "") {
     return `${base}index${extension}`;
   }
   return `${base}${urlPath}/index${extension}`;
@@ -1007,14 +1002,14 @@ function getHref(inputPath: string, srcDir: string, base: string, extension: str
  */
 function getOgImagePath(inputPath: string, srcDir: string, outDir: string): string {
   const relativePath = path.relative(srcDir, inputPath);
-  const baseName = relativePath.replace(/\.(?:md|markdown)$/i, '');
+  const baseName = relativePath.replace(/\.(?:md|markdown)$/i, "");
 
-  if (baseName === 'index' || baseName.endsWith('/index')) {
-    const dirPath = baseName.replace(/\/?index$/, '') || '';
-    return path.join(outDir, dirPath, 'og-image.svg');
+  if (baseName === "index" || baseName.endsWith("/index")) {
+    const dirPath = baseName.replace(/\/?index$/, "") || "";
+    return path.join(outDir, dirPath, "og-image.svg");
   }
 
-  return path.join(outDir, baseName, 'og-image.svg');
+  return path.join(outDir, baseName, "og-image.svg");
 }
 
 /**
@@ -1024,7 +1019,7 @@ function getOgImagePath(inputPath: string, srcDir: string, outDir: string): stri
 function getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?: string): string {
   const urlPath = getUrlPath(inputPath, srcDir);
   let relativePath: string;
-  if (urlPath === '/' || urlPath === '') {
+  if (urlPath === "/" || urlPath === "") {
     relativePath = `${base}og-image.svg`;
   } else {
     relativePath = `${base}${urlPath}/og-image.svg`;
@@ -1032,7 +1027,7 @@ function getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?
 
   // Return absolute URL if siteUrl is provided
   if (siteUrl) {
-    const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+    const cleanSiteUrl = siteUrl.replace(/\/$/, "");
     return `${cleanSiteUrl}${relativePath}`;
   }
 
@@ -1045,12 +1040,12 @@ function getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?
 function getDisplayTitle(filePath: string): string {
   const fileName = path.basename(filePath, path.extname(filePath));
 
-  if (fileName === 'index') {
+  if (fileName === "index") {
     const dirName = path.basename(path.dirname(filePath));
-    if (dirName && dirName !== '.') {
+    if (dirName && dirName !== ".") {
       return formatTitle(dirName);
     }
-    return 'Home';
+    return "Home";
   }
 
   return formatTitle(fileName);
@@ -1061,7 +1056,7 @@ function getDisplayTitle(filePath: string): string {
  */
 function formatTitle(name: string): string {
   return name
-    .replace(/[-_]([a-z])/g, (_, char) => ' ' + char.toUpperCase())
+    .replace(/[-_]([a-z])/g, (_, char) => " " + char.toUpperCase())
     .replace(/^[a-z]/, (char) => char.toUpperCase());
 }
 
@@ -1069,10 +1064,10 @@ function formatTitle(name: string): string {
  * Collects all markdown files from the source directory.
  */
 export async function collectMarkdownFiles(srcDir: string): Promise<string[]> {
-  const pattern = path.join(srcDir, '**/*.{md,markdown}');
+  const pattern = path.join(srcDir, "**/*.{md,markdown}");
   const files = await glob(pattern, {
     nodir: true,
-    ignore: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+    ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
   });
   return files.sort();
 }
@@ -1092,19 +1087,19 @@ function buildNavItems(
   markdownFiles: string[],
   srcDir: string,
   base: string,
-  extension: string
+  extension: string,
 ): NavGroup[] {
   const groups = new Map<string, SsgNavItem[]>();
 
   // Define the order of groups (api at the bottom)
-  const groupOrder = ['', 'examples', 'packages', 'api'];
+  const groupOrder = ["", "examples", "packages", "api"];
 
   for (const file of markdownFiles) {
     const relativePath = path.relative(srcDir, file);
     const parts = relativePath.split(path.sep);
 
     // Determine group: first directory or '' for root files
-    let groupKey = '';
+    let groupKey = "";
     if (parts.length > 1) {
       groupKey = parts[0];
     }
@@ -1117,8 +1112,8 @@ function buildNavItems(
 
     // Use "Overview" for root index.md, otherwise use getDisplayTitle
     let title: string;
-    if (urlPath === '/' || urlPath === '') {
-      title = 'Overview';
+    if (urlPath === "/" || urlPath === "") {
+      title = "Overview";
     } else {
       title = getDisplayTitle(file);
     }
@@ -1134,8 +1129,8 @@ function buildNavItems(
   const sortItems = (items: SsgNavItem[]) => {
     return items.sort((a, b) => {
       // Root index (Overview) comes first
-      const aIsRoot = a.path === '/' || a.path === '';
-      const bIsRoot = b.path === '/' || b.path === '';
+      const aIsRoot = a.path === "/" || a.path === "";
+      const bIsRoot = b.path === "/" || b.path === "";
       if (aIsRoot && !bIsRoot) return -1;
       if (!aIsRoot && bIsRoot) return 1;
       // Otherwise, maintain alphabetical order by title
@@ -1150,7 +1145,7 @@ function buildNavItems(
     const items = groups.get(key);
     if (items && items.length > 0) {
       result.push({
-        title: key === '' ? 'Guide' : formatTitle(key),
+        title: key === "" ? "Guide" : formatTitle(key),
         items: sortItems(items),
       });
       groups.delete(key);
@@ -1175,7 +1170,7 @@ function buildNavItems(
  */
 export async function buildSsg(
   options: ResolvedOptions,
-  root: string
+  root: string,
 ): Promise<{ files: string[]; errors: string[] }> {
   const ssgOptions = options.ssg;
   if (!ssgOptions.enabled) {
@@ -1184,7 +1179,7 @@ export async function buildSsg(
 
   const srcDir = path.resolve(root, options.srcDir);
   const outDir = path.resolve(root, options.outDir);
-  const base = options.base.endsWith('/') ? options.base : options.base + '/';
+  const base = options.base.endsWith("/") ? options.base : options.base + "/";
   const generatedFiles: string[] = [];
   const errors: string[] = [];
 
@@ -1204,11 +1199,11 @@ export async function buildSsg(
   const navItems = buildNavItems(markdownFiles, srcDir, base, ssgOptions.extension);
 
   // Get site name from options or package.json
-  let siteName = ssgOptions.siteName ?? 'Documentation';
+  let siteName = ssgOptions.siteName ?? "Documentation";
   if (!ssgOptions.siteName) {
     try {
-      const pkgPath = path.join(root, 'package.json');
-      const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
+      const pkgPath = path.join(root, "package.json");
+      const pkg = JSON.parse(await fs.readFile(pkgPath, "utf-8"));
       if (pkg.name) {
         siteName = formatTitle(pkg.name);
       }
@@ -1220,7 +1215,7 @@ export async function buildSsg(
   // Process each file
   for (const inputPath of markdownFiles) {
     try {
-      const content = await fs.readFile(inputPath, 'utf-8');
+      const content = await fs.readFile(inputPath, "utf-8");
       // Pass SSG options to transform for .md -> .html link conversion in Rust
       const result = await transformMarkdown(content, inputPath, options, {
         convertMdLinks: true,
@@ -1256,7 +1251,7 @@ export async function buildSsg(
         if (svg) {
           const ogImageOutputPath = getOgImagePath(inputPath, srcDir, outDir);
           await fs.mkdir(path.dirname(ogImageOutputPath), { recursive: true });
-          await fs.writeFile(ogImageOutputPath, svg, 'utf-8');
+          await fs.writeFile(ogImageOutputPath, svg, "utf-8");
           generatedFiles.push(ogImageOutputPath);
 
           // Use per-page OG image URL (absolute if siteUrl is provided)
@@ -1282,15 +1277,10 @@ export async function buildSsg(
       }
 
       // Write output file
-      const outputPath = getOutputPath(
-        inputPath,
-        srcDir,
-        outDir,
-        ssgOptions.extension
-      );
+      const outputPath = getOutputPath(inputPath, srcDir, outDir, ssgOptions.extension);
 
       await fs.mkdir(path.dirname(outputPath), { recursive: true });
-      await fs.writeFile(outputPath, html, 'utf-8');
+      await fs.writeFile(outputPath, html, "utf-8");
 
       generatedFiles.push(outputPath);
     } catch (err) {

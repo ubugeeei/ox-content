@@ -31,9 +31,9 @@
  * ```
  */
 
-import type { ResolvedOptions, TransformResult, TocEntry } from './types';
-import { highlightCode } from './highlight';
-import { transformMermaid } from './mermaid';
+import type { ResolvedOptions, TransformResult, TocEntry } from "./types";
+import { highlightCode } from "./highlight";
+import { transformMermaid } from "./mermaid";
 
 /**
  * NAPI bindings for Rust-based Markdown processing.
@@ -50,7 +50,10 @@ interface NapiBindings {
    * @param options - Parser configuration (GFM flag)
    * @returns Rendered HTML and parsing errors
    */
-  parseAndRender: (source: string, options?: { gfm?: boolean }) => { html: string; errors: string[] };
+  parseAndRender: (
+    source: string,
+    options?: { gfm?: boolean },
+  ) => { html: string; errors: string[] };
 
   /**
    * Full-featured Markdown transformation pipeline.
@@ -60,7 +63,10 @@ interface NapiBindings {
    * @param options - Comprehensive transformation options
    * @returns Transformed result with HTML, metadata, and TOC
    */
-  transform: (source: string, options?: JsTransformOptions) => {
+  transform: (
+    source: string,
+    options?: JsTransformOptions,
+  ) => {
     html: string;
     frontmatter: string;
     toc: { depth: number; text: string; slug: string }[];
@@ -239,14 +245,14 @@ async function loadNapiBindings(): Promise<NapiBindings | null> {
 
   try {
     // Dynamic import to handle cases where NAPI isn't built
-    const mod = await import('@ox-content/napi');
+    const mod = await import("@ox-content/napi");
     napiBindings = mod;
     return mod;
   } catch (error) {
     // NAPI not available (not built, missing dependencies, etc.)
     // Log for debugging but don't throw - allow graceful degradation
     if (process.env.DEBUG) {
-      console.debug('[ox-content] NAPI bindings load failed:', error);
+      console.debug("[ox-content] NAPI bindings load failed:", error);
     }
     napiBindings = null;
     return null;
@@ -348,12 +354,14 @@ export async function transformMarkdown(
   source: string,
   filePath: string,
   options: ResolvedOptions,
-  ssgOptions?: SsgTransformOptions
+  ssgOptions?: SsgTransformOptions,
 ): Promise<TransformResult> {
   const napi = await loadNapiBindings();
 
   if (!napi) {
-    throw new Error('[ox-content] NAPI bindings not available. Please ensure @ox-content/napi is built.');
+    throw new Error(
+      "[ox-content] NAPI bindings not available. Please ensure @ox-content/napi is built.",
+    );
   }
 
   // Use Rust-based transformation
@@ -369,7 +377,7 @@ export async function transformMarkdown(
   });
 
   if (result.errors.length > 0) {
-    console.warn('[ox-content] Transform warnings:', result.errors);
+    console.warn("[ox-content] Transform warnings:", result.errors);
   }
 
   let html = result.html;
@@ -382,7 +390,7 @@ export async function transformMarkdown(
   }
 
   // Convert flat TOC from Rust to nested TOC
-  const flatToc: TocEntry[] = result.toc.map(item => ({
+  const flatToc: TocEntry[] = result.toc.map((item) => ({
     ...item,
     children: [],
   }));
@@ -442,7 +450,7 @@ function generateModuleCode(
   frontmatter: Record<string, unknown>,
   toc: TocEntry[],
   filePath: string,
-  _options: ResolvedOptions
+  _options: ResolvedOptions,
 ): string {
   const htmlJson = JSON.stringify(html);
   const frontmatterJson = JSON.stringify(frontmatter);
@@ -521,7 +529,7 @@ export function extractImports(content: string): string[] {
  */
 export async function generateOgImageSvg(
   data: OgImageData,
-  config?: OgImageConfig
+  config?: OgImageConfig,
 ): Promise<string | null> {
   const napi = await loadNapiBindings();
   if (!napi) {

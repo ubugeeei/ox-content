@@ -5,18 +5,18 @@
  * for static site generation.
  */
 
-import { defineConfig } from 'vite';
-import { oxContent } from 'vite-plugin-ox-content';
+import { defineConfig } from "vite"
+import { oxContent } from "vite-plugin-ox-content"
 
 export default defineConfig({
   plugins: [
     // Ox Content plugin with Environment API
     oxContent({
       // Source directory for Markdown files
-      srcDir: 'src/content',
+      srcDir: "src/content",
 
       // Output directory
-      outDir: 'dist',
+      outDir: "dist",
 
       // Enable all GFM features
       gfm: true,
@@ -27,7 +27,7 @@ export default defineConfig({
 
       // Enable syntax highlighting
       highlight: true,
-      highlightTheme: 'github-dark',
+      highlightTheme: "github-dark",
 
       // Generate table of contents
       toc: true,
@@ -36,9 +36,9 @@ export default defineConfig({
       // Enable OG image generation
       ogImage: true,
       ogImageOptions: {
-        background: '#1a1a2e',
-        textColor: '#ffffff',
-        accentColor: '#e94560',
+        background: "#1a1a2e",
+        textColor: "#ffffff",
+        accentColor: "#e94560",
       },
     }),
   ],
@@ -47,6 +47,6 @@ export default defineConfig({
   build: {
     // Enable SSG mode
     ssr: false,
-    outDir: 'dist',
+    outDir: "dist",
   },
-});
+})

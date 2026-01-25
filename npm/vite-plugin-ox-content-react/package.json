@@ -15,9 +15,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsgo --noEmit"
   },
   "peerDependencies": {
     "react": "catalog:",
@@ -34,7 +34,8 @@
     "@vitejs/plugin-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
   },

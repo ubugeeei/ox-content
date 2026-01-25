@@ -5,13 +5,18 @@
  * Provides SSR and client environments for proper hydration.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import type { Plugin, PluginOption, ResolvedConfig } from 'vite';
-import { oxContent } from 'vite-plugin-ox-content';
-import { transformMarkdownWithVue } from './transform';
-import { createVueMarkdownEnvironment } from './environment';
-import type { VueIntegrationOptions, ResolvedVueOptions, ComponentsMap, ComponentsOption } from './types';
+import * as fs from "fs";
+import * as path from "path";
+import type { Plugin, PluginOption, ResolvedConfig } from "vite";
+import { oxContent } from "vite-plugin-ox-content";
+import { transformMarkdownWithVue } from "./transform";
+import { createVueMarkdownEnvironment } from "./environment";
+import type {
+  VueIntegrationOptions,
+  ResolvedVueOptions,
+  ComponentsMap,
+  ComponentsOption,
+} from "./types";
 
 export type {
   VueIntegrationOptions,
@@ -22,7 +27,7 @@ export type {
   ComponentSlot,
   ParsedMarkdownContent,
   TocEntry,
-} from './types';
+} from "./types";
 
 /**
  * Creates the Ox Content Vue integration plugin with Environment API support.
@@ -53,14 +58,14 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
   let config: ResolvedConfig;
 
   // Pre-resolve components if it's a map (not glob)
-  if (typeof options.components === 'object' && !Array.isArray(options.components)) {
+  if (typeof options.components === "object" && !Array.isArray(options.components)) {
     componentMap = new Map(Object.entries(options.components));
   }
 
   // Main Vue transformation plugin
   const vueTransformPlugin: Plugin = {
-    name: 'ox-content:vue-transform',
-    enforce: 'pre',
+    name: "ox-content:vue-transform",
+    enforce: "pre",
 
     async configResolved(resolvedConfig) {
       config = resolvedConfig;
@@ -68,16 +73,13 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
       // Resolve glob patterns for components
       const componentsOption = options.components;
       if (componentsOption) {
-        const resolvedComponents = await resolveComponentsGlob(
-          componentsOption,
-          config.root
-        );
+        const resolvedComponents = await resolveComponentsGlob(componentsOption, config.root);
         componentMap = new Map(Object.entries(resolvedComponents));
       }
     },
 
     async transform(code, id) {
-      if (!id.endsWith('.md')) {
+      if (!id.endsWith(".md")) {
         return null;
       }
 
@@ -96,30 +98,30 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
 
   // Environment API plugin for Vue-specific SSR/client handling
   const vueEnvironmentPlugin: Plugin = {
-    name: 'ox-content:vue-environment',
+    name: "ox-content:vue-environment",
 
     config() {
       return {
         environments: {
           // SSR environment for Vue component rendering
-          oxcontent_ssr: createVueMarkdownEnvironment('ssr', resolved),
+          oxcontent_ssr: createVueMarkdownEnvironment("ssr", resolved),
           // Client environment for hydration
-          oxcontent_client: createVueMarkdownEnvironment('client', resolved),
+          oxcontent_client: createVueMarkdownEnvironment("client", resolved),
         },
       };
     },
 
     // Environment-specific module resolution
     resolveId: {
-      order: 'pre',
+      order: "pre",
       async handler(id, _importer, _options) {
         // Handle virtual modules for Vue markdown runtime
-        if (id === 'virtual:ox-content-vue/runtime') {
-          return '\0virtual:ox-content-vue/runtime';
+        if (id === "virtual:ox-content-vue/runtime") {
+          return "\0virtual:ox-content-vue/runtime";
         }
 
-        if (id === 'virtual:ox-content-vue/components') {
-          return '\0virtual:ox-content-vue/components';
+        if (id === "virtual:ox-content-vue/components") {
+          return "\0virtual:ox-content-vue/components";
         }
 
         return null;
@@ -127,13 +129,13 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
     },
 
     load: {
-      order: 'pre',
+      order: "pre",
       async handler(id) {
-        if (id === '\0virtual:ox-content-vue/runtime') {
+        if (id === "\0virtual:ox-content-vue/runtime") {
           return generateRuntimeModule(resolved);
         }
 
-        if (id === '\0virtual:ox-content-vue/components') {
+        if (id === "\0virtual:ox-content-vue/components") {
           return generateComponentsModule(componentMap);
         }
 
@@ -144,35 +146,35 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
     // Per-environment build hooks
     applyToEnvironment(environment) {
       return (
-        environment.name === 'oxcontent_ssr' ||
-        environment.name === 'oxcontent_client' ||
-        environment.name === 'client' ||
-        environment.name === 'ssr'
+        environment.name === "oxcontent_ssr" ||
+        environment.name === "oxcontent_client" ||
+        environment.name === "client" ||
+        environment.name === "ssr"
       );
     },
   };
 
   // HMR plugin for component updates
   const vueHmrPlugin: Plugin = {
-    name: 'ox-content:vue-hmr',
-    apply: 'serve',
+    name: "ox-content:vue-hmr",
+    apply: "serve",
 
     handleHotUpdate({ file, server, modules }) {
       // Check if updated file is a registered component
       const isComponent = Array.from(componentMap.values()).some((path) =>
-        file.endsWith(path.replace(/^\.\//, ''))
+        file.endsWith(path.replace(/^\.\//, "")),
       );
 
       if (isComponent) {
         // Invalidate all Markdown modules that might use this component
-        const mdModules = Array.from(
-          server.moduleGraph.idToModuleMap.values()
-        ).filter((mod) => mod.file?.endsWith('.md'));
+        const mdModules = Array.from(server.moduleGraph.idToModuleMap.values()).filter((mod) =>
+          mod.file?.endsWith(".md"),
+        );
 
         if (mdModules.length > 0) {
           server.ws.send({
-            type: 'custom',
-            event: 'ox-content:vue-update',
+            type: "custom",
+            event: "ox-content:vue-update",
             data: { file },
           });
           return [...modules, ...mdModules];
@@ -185,7 +187,7 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
 
   // Get base ox-content plugins (environment plugin only)
   const basePlugins = oxContent(options);
-  const environmentPlugin = basePlugins.find((p) => p.name === 'ox-content:environment');
+  const environmentPlugin = basePlugins.find((p) => p.name === "ox-content:environment");
 
   return [
     vueTransformPlugin,
@@ -200,9 +202,9 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
  */
 function resolveVueOptions(options: VueIntegrationOptions): ResolvedVueOptions {
   return {
-    srcDir: options.srcDir ?? 'docs',
-    outDir: options.outDir ?? 'dist',
-    base: options.base ?? '/',
+    srcDir: options.srcDir ?? "docs",
+    outDir: options.outDir ?? "dist",
+    base: options.base ?? "/",
     gfm: options.gfm ?? true,
     frontmatter: options.frontmatter ?? true,
     toc: options.toc ?? true,
@@ -275,10 +277,10 @@ function generateComponentsModule(componentMap: Map<string, string>): string {
   });
 
   return `
-${imports.join('\n')}
+${imports.join("\n")}
 
 export const components = {
-${exports.join('\n')}
+${exports.join("\n")}
 };
 
 export default components;
@@ -290,16 +292,14 @@ export default components;
  */
 async function resolveComponentsGlob(
   componentsOption: ComponentsOption,
-  root: string
+  root: string,
 ): Promise<ComponentsMap> {
   // If it's already a map, return as-is
-  if (typeof componentsOption === 'object' && !Array.isArray(componentsOption)) {
+  if (typeof componentsOption === "object" && !Array.isArray(componentsOption)) {
     return componentsOption;
   }
 
-  const patterns = Array.isArray(componentsOption)
-    ? componentsOption
-    : [componentsOption];
+  const patterns = Array.isArray(componentsOption) ? componentsOption : [componentsOption];
 
   const result: ComponentsMap = {};
 
@@ -310,7 +310,7 @@ async function resolveComponentsGlob(
       // Derive component name from file name (PascalCase)
       const baseName = path.basename(file, path.extname(file));
       const componentName = toPascalCase(baseName);
-      const relativePath = './' + path.relative(root, file).replace(/\\/g, '/');
+      const relativePath = "./" + path.relative(root, file).replace(/\\/g, "/");
 
       result[componentName] = relativePath;
     }
@@ -326,7 +326,7 @@ async function globFiles(pattern: string, root: string): Promise<string[]> {
   const files: string[] = [];
 
   // Parse glob pattern
-  const isGlob = pattern.includes('*');
+  const isGlob = pattern.includes("*");
 
   if (!isGlob) {
     // It's a direct path
@@ -338,16 +338,16 @@ async function globFiles(pattern: string, root: string): Promise<string[]> {
   }
 
   // Handle glob patterns like './src/components/*.vue'
-  const parts = pattern.split('*');
+  const parts = pattern.split("*");
   const baseDir = path.resolve(root, parts[0]);
-  const ext = parts[1] || '';
+  const ext = parts[1] || "";
 
   if (!fs.existsSync(baseDir)) {
     return files;
   }
 
   // Handle ** recursive pattern
-  if (pattern.includes('**')) {
+  if (pattern.includes("**")) {
     await walkDir(baseDir, files, ext);
   } else {
     // Single level glob
@@ -383,10 +383,8 @@ async function walkDir(dir: string, files: string[], ext: string): Promise<void>
  * Converts a string to PascalCase.
  */
 function toPascalCase(str: string): string {
-  return str
-    .replace(/[-_](\w)/g, (_, c) => c.toUpperCase())
-    .replace(/^\w/, (c) => c.toUpperCase());
+  return str.replace(/[-_](\w)/g, (_, c) => c.toUpperCase()).replace(/^\w/, (c) => c.toUpperCase());
 }
 
 // Re-export
-export { oxContent } from 'vite-plugin-ox-content';
+export { oxContent } from "vite-plugin-ox-content";

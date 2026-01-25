@@ -5,22 +5,22 @@
  * Uses client-side rendering with a wrapper element.
  */
 
-import { unified } from 'unified';
-import rehypeParse from 'rehype-parse';
-import rehypeStringify from 'rehype-stringify';
-import type { Root, Element } from 'hast';
+import { unified } from "unified";
+import rehypeParse from "rehype-parse";
+import rehypeStringify from "rehype-stringify";
+import type { Root, Element } from "hast";
 
 /**
  * Extract text content from a hast node.
  */
 function getTextContent(node: Element | Root): string {
-  let text = '';
+  let text = "";
 
-  if ('children' in node) {
+  if ("children" in node) {
     for (const child of node.children) {
-      if (child.type === 'text') {
+      if (child.type === "text") {
         text += child.value;
-      } else if (child.type === 'element') {
+      } else if (child.type === "element") {
         text += getTextContent(child);
       }
     }
@@ -38,13 +38,13 @@ function getTextContent(node: Element | Root): string {
 function rehypeMermaid() {
   return (tree: Root) => {
     const visit = (node: Root | Element) => {
-      if ('children' in node) {
+      if ("children" in node) {
         for (let i = 0; i < node.children.length; i++) {
           const child = node.children[i];
 
-          if (child.type === 'element' && child.tagName === 'pre') {
+          if (child.type === "element" && child.tagName === "pre") {
             const codeElement = child.children.find(
-              (c): c is Element => c.type === 'element' && c.tagName === 'code'
+              (c) => c.type === "element" && c.tagName === "code",
             );
 
             if (codeElement) {
@@ -54,7 +54,7 @@ function rehypeMermaid() {
 
               if (Array.isArray(className)) {
                 isMermaid = className.some(
-                  (c: string | number) => typeof c === 'string' && c.includes('mermaid')
+                  (c: string | number) => typeof c === "string" && c.includes("mermaid"),
                 );
               }
 
@@ -63,22 +63,22 @@ function rehypeMermaid() {
 
                 // Replace with mermaid wrapper
                 const wrapper: Element = {
-                  type: 'element',
-                  tagName: 'div',
+                  type: "element",
+                  tagName: "div",
                   properties: {
-                    className: ['ox-mermaid'],
-                    'data-mermaid': mermaidCode,
+                    className: ["ox-mermaid"],
+                    "data-mermaid": mermaidCode,
                   },
                   children: [
                     {
-                      type: 'element',
-                      tagName: 'pre',
+                      type: "element",
+                      tagName: "pre",
                       properties: {
-                        className: ['ox-mermaid-source'],
+                        className: ["ox-mermaid-source"],
                       },
                       children: [
                         {
-                          type: 'text',
+                          type: "text",
                           value: mermaidCode,
                         },
                       ],
@@ -89,7 +89,7 @@ function rehypeMermaid() {
                 node.children[i] = wrapper;
               }
             }
-          } else if (child.type === 'element') {
+          } else if (child.type === "element") {
             visit(child);
           }
         }

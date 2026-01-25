@@ -15,9 +15,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsgo --noEmit"
   },
   "peerDependencies": {
     "svelte": "catalog:",
@@ -30,7 +30,8 @@
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@types/node": "catalog:",
     "svelte": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
   },

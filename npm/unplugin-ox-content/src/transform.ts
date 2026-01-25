@@ -4,7 +4,7 @@
  * Uses Rust-based parser via NAPI bindings for optimal performance.
  */
 
-import type { ResolvedOptions, TransformResult, TocEntry } from './types';
+import type { ResolvedOptions, TransformResult, TocEntry } from "./types";
 
 /**
  * Transforms Markdown content into a JavaScript module.
@@ -16,18 +16,18 @@ import type { ResolvedOptions, TransformResult, TocEntry } from './types';
 export async function transformMarkdown(
   source: string,
   filePath: string,
-  options: ResolvedOptions
+  options: ResolvedOptions,
 ): Promise<TransformResult> {
   // Dynamically import NAPI bindings
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let napi: any;
   try {
     // @ts-ignore NAPI bindings are loaded dynamically from Rust
-    napi = await import('@ox-content/napi');
-  } catch (error) {
+    napi = await import("@ox-content/napi");
+  } catch {
     throw new Error(
-      '[ox-content] Failed to load @ox-content/napi. Please ensure the NAPI module is built. ' +
-      'Run: pnpm build:napi'
+      "[ox-content] Failed to load @ox-content/napi. Please ensure the NAPI module is built. " +
+        "Run: pnpm build:napi",
     );
   }
 
@@ -42,7 +42,7 @@ export async function transformMarkdown(
   });
 
   if (result.errors.length > 0) {
-    console.warn('[ox-content] Transform warnings:', result.errors);
+    console.warn("[ox-content] Transform warnings:", result.errors);
   }
 
   // Parse frontmatter from JSON
@@ -54,10 +54,12 @@ export async function transformMarkdown(
   }
 
   // Convert flat TOC from Rust to nested TOC
-  const flatToc: TocEntry[] = result.toc.map((item: { depth: number; text: string; slug: string }) => ({
-    ...item,
-    children: [],
-  }));
+  const flatToc: TocEntry[] = result.toc.map(
+    (item: { depth: number; text: string; slug: string }) => ({
+      ...item,
+      children: [],
+    }),
+  );
   const toc = options.toc ? buildTocTree(flatToc) : [];
 
   // Apply ox-content native plugins for post-processing
@@ -80,9 +82,7 @@ export async function transformMarkdown(
 /**
  * Builds nested TOC tree from flat list.
  */
-function buildTocTree(
-  entries: Array<{ depth: number; text: string; slug: string }>
-): TocEntry[] {
+function buildTocTree(entries: Array<{ depth: number; text: string; slug: string }>): TocEntry[] {
   const result: TocEntry[] = [];
   const stack: TocEntry[] = [];
 
@@ -117,7 +117,7 @@ function generateModuleCode(
   html: string,
   frontmatter: Record<string, unknown>,
   toc: TocEntry[],
-  filePath: string
+  filePath: string,
 ): string {
   const htmlJson = JSON.stringify(html);
   const frontmatterJson = JSON.stringify(frontmatter);
