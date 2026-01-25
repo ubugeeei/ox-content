@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f172a"/>
-      <stop offset="100%" style="stop-color:#1e293b"/>
+      <stop offset="0%" style="stop-color:#141414"/>
+      <stop offset="100%" style="stop-color:#1a1a1a"/>
     </linearGradient>
     <linearGradient id="oxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#ff6b35"/>
@@ -75,12 +75,12 @@
   </text>
 
   <!-- Tagline -->
-  <text x="420" y="360" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">
+  <text x="420" y="360" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#a3a3a3">
     High-performance documentation toolkit
   </text>
 
   <!-- Features -->
-  <g font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b">
+  <g font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#737373">
     <text x="420" y="430">Rust-powered Markdown parser</text>
     <text x="420" y="465">Framework-agnostic Vite plugins</text>
     <text x="420" y="500">Zero-copy AST with NAPI bindings</text>
