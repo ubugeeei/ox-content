@@ -25,6 +25,9 @@ pub struct HtmlRendererOptions {
     pub convert_md_links: bool,
     /// Base URL for absolute link conversion (e.g., "/" or "/docs/").
     pub base_url: String,
+    /// Source file path for relative link resolution.
+    /// Used to determine if the current file is an index file.
+    pub source_path: String,
 }
 
 impl HtmlRendererOptions {
@@ -39,6 +42,7 @@ impl HtmlRendererOptions {
             sanitize: false,
             convert_md_links: false,
             base_url: "/".to_string(),
+            source_path: String::new(),
         }
     }
 }
@@ -119,6 +123,10 @@ impl HtmlRenderer {
         // Remove the .md extension
         let path_without_ext = &path[..path.len() - 3];
 
+        // Check if the source file is an index file
+        // index.md stays at the directory level, so relative paths work differently
+        let source_is_index = self.is_source_index();
+
         // Convert path
         let converted = if path.starts_with('/') {
             // Absolute path: /getting-started.md -> {base}getting-started/index.html
@@ -130,39 +138,69 @@ impl HtmlRenderer {
                 format!("{base}{path_without_slash}/index.html")
             }
         } else if path.starts_with("./") {
-            // Same-directory relative path: ./types.md -> ../types/index.html
-            // Since each .md becomes a directory (name/index.html), we need to go up one level
+            // Same-directory relative path
             let name = &path_without_ext[2..]; // Remove "./"
             if name == "index" {
                 // ./index.md -> ./index.html (stay in same directory)
                 "./index.html".to_string()
+            } else if source_is_index {
+                // Source is index.md, so we're at directory level
+                // ./types.md -> ./types/index.html
+                format!("./{name}/index.html")
             } else {
+                // Source is not index.md (e.g., types.md -> types/index.html)
+                // So we need to go up one level
+                // ./types.md -> ../types/index.html
                 format!("../{name}/index.html")
             }
         } else if path.starts_with("../") {
-            // Parent-relative path: ../types.md -> ../../types/index.html
-            // Need extra ../ because we're inside a subdirectory
+            // Parent-relative path
             let rest = &path_without_ext[3..]; // Remove "../"
-            if rest == "index" || rest.ends_with("/index") {
-                let dir = rest.trim_end_matches("/index").trim_end_matches("index");
-                if dir.is_empty() {
-                    "../../index.html".to_string()
+            if source_is_index {
+                // Source is index.md at directory level
+                // ../types.md -> ../types/index.html
+                if rest == "index" || rest.ends_with("/index") {
+                    let dir = rest.trim_end_matches("/index").trim_end_matches("index");
+                    if dir.is_empty() {
+                        "../index.html".to_string()
+                    } else {
+                        format!("../{dir}/index.html")
+                    }
                 } else {
-                    format!("../../{dir}/index.html")
+                    format!("../{rest}/index.html")
                 }
             } else {
-                format!("../../{rest}/index.html")
+                // Source is not index.md, need extra ../
+                // ../types.md -> ../../types/index.html
+                if rest == "index" || rest.ends_with("/index") {
+                    let dir = rest.trim_end_matches("/index").trim_end_matches("index");
+                    if dir.is_empty() {
+                        "../../index.html".to_string()
+                    } else {
+                        format!("../../{dir}/index.html")
+                    }
+                } else {
+                    format!("../../{rest}/index.html")
+                }
             }
         } else {
-            // Plain relative path: types.md -> ../types/index.html
+            // Plain relative path: types.md
             if path_without_ext == "index" || path_without_ext.ends_with("/index") {
                 let dir = path_without_ext.trim_end_matches("/index").trim_end_matches("index");
                 if dir.is_empty() {
                     "./index.html".to_string()
+                } else if source_is_index {
+                    format!("./{dir}/index.html")
                 } else {
                     format!("../{dir}/index.html")
                 }
+            } else if source_is_index {
+                // Source is index.md
+                // types.md -> ./types/index.html
+                format!("./{path_without_ext}/index.html")
             } else {
+                // Source is not index.md
+                // types.md -> ../types/index.html
                 format!("../{path_without_ext}/index.html")
             }
         };
@@ -172,6 +210,15 @@ impl HtmlRenderer {
             Some(f) => format!("{converted}#{f}"),
             None => converted,
         }
+    }
+
+    /// Checks if the source file is an index file (index.md).
+    fn is_source_index(&self) -> bool {
+        if self.options.source_path.is_empty() {
+            return false;
+        }
+        let source = std::path::Path::new(&self.options.source_path);
+        source.file_stem().is_some_and(|stem| stem.eq_ignore_ascii_case("index"))
     }
 }
 
@@ -589,5 +636,97 @@ mod tests {
             HtmlRenderer::with_options(HtmlRendererOptions { xhtml: true, ..Default::default() });
         let html = renderer.render(&doc);
         assert!(html.contains("<img src=\"/logo.svg\" alt=\"Logo\" />"));
+    }
+
+    #[test]
+    fn test_convert_md_link_from_index_file() {
+        // When the source is an index file (api/index.md), relative links like ./docs.md
+        // should become ./docs/index.html (not ../docs/index.html)
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "[Docs](./docs.md)").parse().unwrap();
+        let mut renderer = HtmlRenderer::with_options(HtmlRendererOptions {
+            convert_md_links: true,
+            base_url: "/".to_string(),
+            source_path: "api/index.md".to_string(),
+            ..Default::default()
+        });
+        let html = renderer.render(&doc);
+        assert!(
+            html.contains("href=\"./docs/index.html\""),
+            "Expected ./docs/index.html but got: {html}"
+        );
+    }
+
+    #[test]
+    fn test_convert_md_link_from_non_index_file() {
+        // When the source is NOT an index file (api/types.md -> becomes types/index.html),
+        // relative links like ./docs.md should become ../docs/index.html
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "[Docs](./docs.md)").parse().unwrap();
+        let mut renderer = HtmlRenderer::with_options(HtmlRendererOptions {
+            convert_md_links: true,
+            base_url: "/".to_string(),
+            source_path: "api/types.md".to_string(),
+            ..Default::default()
+        });
+        let html = renderer.render(&doc);
+        assert!(
+            html.contains("href=\"../docs/index.html\""),
+            "Expected ../docs/index.html but got: {html}"
+        );
+    }
+
+    #[test]
+    fn test_convert_md_link_plain_relative_from_index() {
+        // Plain relative links (no ./) from index file
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "[Types](types.md)").parse().unwrap();
+        let mut renderer = HtmlRenderer::with_options(HtmlRendererOptions {
+            convert_md_links: true,
+            base_url: "/".to_string(),
+            source_path: "api/index.md".to_string(),
+            ..Default::default()
+        });
+        let html = renderer.render(&doc);
+        assert!(
+            html.contains("href=\"./types/index.html\""),
+            "Expected ./types/index.html but got: {html}"
+        );
+    }
+
+    #[test]
+    fn test_convert_md_link_parent_relative_from_index() {
+        // Parent-relative links from index file
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "[Guide](../guide.md)").parse().unwrap();
+        let mut renderer = HtmlRenderer::with_options(HtmlRendererOptions {
+            convert_md_links: true,
+            base_url: "/".to_string(),
+            source_path: "api/index.md".to_string(),
+            ..Default::default()
+        });
+        let html = renderer.render(&doc);
+        assert!(
+            html.contains("href=\"../guide/index.html\""),
+            "Expected ../guide/index.html but got: {html}"
+        );
+    }
+
+    #[test]
+    fn test_convert_md_link_parent_relative_from_non_index() {
+        // Parent-relative links from non-index file need extra ../
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "[Guide](../guide.md)").parse().unwrap();
+        let mut renderer = HtmlRenderer::with_options(HtmlRendererOptions {
+            convert_md_links: true,
+            base_url: "/".to_string(),
+            source_path: "api/types.md".to_string(),
+            ..Default::default()
+        });
+        let html = renderer.render(&doc);
+        assert!(
+            html.contains("href=\"../../guide/index.html\""),
+            "Expected ../../guide/index.html but got: {html}"
+        );
     }
 }

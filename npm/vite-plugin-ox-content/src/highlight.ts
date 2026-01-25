@@ -66,7 +66,7 @@ function rehypeShikiHighlight(options: { theme: string }) {
 
           if (child.type === "element" && child.tagName === "pre") {
             const codeElement = child.children.find(
-              (c) => c.type === "element" && c.tagName === "code",
+              (c): c is Element => c.type === "element" && c.tagName === "code",
             );
 
             if (codeElement) {

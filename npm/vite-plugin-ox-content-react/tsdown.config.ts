@@ -5,5 +5,6 @@ export default defineConfig({
   format: ["esm", "cjs"],
   dts: true,
   clean: true,
+  hash: false,
   external: ["vite", "react", "react-dom", "vite-plugin-ox-content"],
 })

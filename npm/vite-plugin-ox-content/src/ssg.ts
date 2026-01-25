@@ -1217,9 +1217,11 @@ export async function buildSsg(
     try {
       const content = await fs.readFile(inputPath, "utf-8");
       // Pass SSG options to transform for .md -> .html link conversion in Rust
+      // The sourcePath is used to determine if the file is an index file for correct relative link resolution
       const result = await transformMarkdown(content, inputPath, options, {
         convertMdLinks: true,
         baseUrl: base,
+        sourcePath: inputPath,
       });
 
       const title = extractTitle(result.html, result.frontmatter);

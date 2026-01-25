@@ -181,6 +181,12 @@ interface JsTransformOptions {
    * @default "/"
    */
   baseUrl?: string;
+
+  /**
+   * Source file path for relative link resolution.
+   * Used to determine if the current file is an index file.
+   */
+  sourcePath?: string;
 }
 
 /**
@@ -348,6 +354,8 @@ export interface SsgTransformOptions {
   convertMdLinks?: boolean;
   /** Base URL for absolute link conversion */
   baseUrl?: string;
+  /** Source file path for relative link resolution */
+  sourcePath?: string;
 }
 
 export async function transformMarkdown(
@@ -374,6 +382,7 @@ export async function transformMarkdown(
     tocMaxDepth: options.tocMaxDepth,
     convertMdLinks: ssgOptions?.convertMdLinks,
     baseUrl: ssgOptions?.baseUrl,
+    sourcePath: ssgOptions?.sourcePath ?? filePath,
   });
 
   if (result.errors.length > 0) {

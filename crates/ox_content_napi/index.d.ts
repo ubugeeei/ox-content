@@ -57,6 +57,8 @@ export interface JsTransformOptions {
   convertMdLinks?: boolean
   /** Base URL for absolute link conversion (e.g., "/" or "/docs/"). */
   baseUrl?: string
+  /** Source file path for relative link resolution. */
+  sourcePath?: string
 }
 /** Parser options for JavaScript. */
 export interface JsParserOptions {

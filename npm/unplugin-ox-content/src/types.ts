@@ -255,8 +255,8 @@ export interface ResolvedOptions {
   toc: boolean;
   tocMaxDepth: number;
   extensions: string[];
-  include: string | RegExp[];
-  exclude: string | RegExp[];
+  include: (string | RegExp)[];
+  exclude: (string | RegExp)[];
   plugin: Required<PluginConfig>;
   docs: ResolvedDocsConfig;
 }

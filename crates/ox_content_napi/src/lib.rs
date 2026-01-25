@@ -79,6 +79,8 @@ pub struct JsTransformOptions {
     pub convert_md_links: Option<bool>,
     /// Base URL for absolute link conversion (e.g., "/" or "/docs/").
     pub base_url: Option<String>,
+    /// Source file path for relative link resolution.
+    pub source_path: Option<String>,
 }
 
 /// Parser options for JavaScript.
@@ -381,6 +383,9 @@ fn transform_options_to_renderer_options(opts: &JsTransformOptions) -> HtmlRende
     }
     if let Some(ref v) = opts.base_url {
         options.base_url.clone_from(v);
+    }
+    if let Some(ref v) = opts.source_path {
+        options.source_path.clone_from(v);
     }
 
     options
