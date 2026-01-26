@@ -73,6 +73,18 @@ export interface ThemeFooter {
 }
 
 /**
+ * Social links configuration.
+ */
+export interface SocialLinks {
+  /** GitHub URL */
+  github?: string;
+  /** Twitter/X URL */
+  twitter?: string;
+  /** Discord URL */
+  discord?: string;
+}
+
+/**
  * Theme slots for injecting custom HTML.
  */
 export interface ThemeSlots {
@@ -104,18 +116,20 @@ export interface ThemeConfig {
   name?: string;
   /** Base theme to extend */
   extends?: ThemeConfig;
-  /** Light mode colors */
+  /** Light mode colors (maps to CSS variables) */
   colors?: ThemeColors;
-  /** Dark mode colors */
+  /** Dark mode colors (maps to CSS variables) */
   darkColors?: ThemeColors;
-  /** Font configuration */
+  /** Font configuration (maps to CSS variables) */
   fonts?: ThemeFonts;
-  /** Layout configuration */
+  /** Layout configuration (maps to CSS variables) */
   layout?: ThemeLayout;
   /** Header configuration */
   header?: ThemeHeader;
   /** Footer configuration */
   footer?: ThemeFooter;
+  /** Social links configuration */
+  socialLinks?: SocialLinks;
   /** Custom slots for HTML injection */
   slots?: ThemeSlots;
   /** Additional custom CSS */
@@ -135,6 +149,7 @@ export interface ResolvedThemeConfig {
   layout: ThemeLayout;
   header: ThemeHeader;
   footer: ThemeFooter;
+  socialLinks: SocialLinks;
   slots: ThemeSlots;
   css: string;
   js: string;
@@ -147,8 +162,8 @@ export interface ResolvedThemeConfig {
 export const defaultTheme: ThemeConfig = {
   name: "default",
   colors: {
-    primary: "#b7410e",
-    primaryHover: "#ce5937",
+    primary: "#e04d0a",
+    primaryHover: "#f5602a",
     background: "#ffffff",
     backgroundAlt: "#f8f9fa",
     text: "#1a1a1a",
@@ -158,8 +173,8 @@ export const defaultTheme: ThemeConfig = {
     codeText: "#e2e8f0",
   },
   darkColors: {
-    primary: "#c9714a",
-    primaryHover: "#d4845f",
+    primary: "#f5714a",
+    primaryHover: "#ff8a66",
     background: "#141414",
     backgroundAlt: "#141414",
     text: "#e5e5e5",
@@ -186,6 +201,7 @@ export const defaultTheme: ThemeConfig = {
     message: undefined,
     copyright: undefined,
   },
+  socialLinks: {},
   slots: {},
   css: "",
   js: "",
@@ -259,7 +275,7 @@ export function mergeThemes(...themes: ThemeConfig[]): ThemeConfig {
   let result: ThemeConfig = {};
 
   for (const theme of themes) {
-    result = deepMerge(result, theme);
+    result = deepMerge(result as Record<string, unknown>, theme as Record<string, unknown>) as ThemeConfig;
   }
 
   return result;
@@ -299,6 +315,7 @@ export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig {
     layout: merged.layout ?? defaultTheme.layout!,
     header: merged.header ?? defaultTheme.header!,
     footer: merged.footer ?? defaultTheme.footer!,
+    socialLinks: merged.socialLinks ?? defaultTheme.socialLinks!,
     slots: merged.slots ?? {},
     css: merged.css ?? "",
     js: merged.js ?? "",
@@ -363,6 +380,14 @@ export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig {
             copyright: theme.footer.copyright,
           }
         : undefined,
+    socialLinks:
+      theme.socialLinks.github || theme.socialLinks.twitter || theme.socialLinks.discord
+        ? {
+            github: theme.socialLinks.github,
+            twitter: theme.socialLinks.twitter,
+            discord: theme.socialLinks.discord,
+          }
+        : undefined,
     slots: Object.keys(theme.slots).length > 0 ? theme.slots : undefined,
     css: theme.css || undefined,
     js: theme.js || undefined,
@@ -419,6 +444,15 @@ export interface NapiThemeFooter {
 }
 
 /**
+ * NAPI-compatible social links type.
+ */
+export interface NapiSocialLinks {
+  github?: string;
+  twitter?: string;
+  discord?: string;
+}
+
+/**
  * NAPI-compatible theme slots type.
  */
 export interface NapiThemeSlots {
@@ -443,6 +477,7 @@ export interface NapiThemeConfig {
   layout?: NapiThemeLayout;
   header?: NapiThemeHeader;
   footer?: NapiThemeFooter;
+  socialLinks?: NapiSocialLinks;
   slots?: NapiThemeSlots;
   css?: string;
   js?: string;

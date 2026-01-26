@@ -25,6 +25,7 @@
 //!     content: "<h1>Getting Started</h1><p>Welcome!</p>".to_string(),
 //!     toc: vec![TocEntry { depth: 1, text: "Getting Started".to_string(), slug: "getting-started".to_string() }],
 //!     path: "getting-started".to_string(),
+//!     entry_page: None,
 //! };
 //!
 //! let nav_groups = vec![NavGroup {
@@ -49,6 +50,7 @@
 mod html;
 
 pub use html::{
-    generate_html, NavGroup, NavItem, PageData, SsgConfig, ThemeColors, ThemeConfig, ThemeFonts,
-    ThemeFooter, ThemeHeader, ThemeLayout, ThemeSlots, TocEntry,
+    generate_html, EntryPageConfig, FeatureConfig, HeroAction, HeroConfig, HeroImage, NavGroup,
+    NavItem, PageData, SocialLinks, SsgConfig, ThemeColors, ThemeConfig, ThemeFonts, ThemeFooter,
+    ThemeHeader, ThemeLayout, ThemeSlots, TocEntry,
 };

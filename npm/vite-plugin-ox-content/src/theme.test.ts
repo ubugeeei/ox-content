@@ -23,7 +23,7 @@ describe("theme", () => {
     it("should have all required properties", () => {
       expect(defaultTheme.name).toBe("default");
       expect(defaultTheme.colors).toBeDefined();
-      expect(defaultTheme.colors?.primary).toBe("#b7410e");
+      expect(defaultTheme.colors?.primary).toBe("#e04d0a");
       expect(defaultTheme.darkColors).toBeDefined();
       expect(defaultTheme.fonts).toBeDefined();
       expect(defaultTheme.layout).toBeDefined();
@@ -67,7 +67,7 @@ describe("theme", () => {
     it("should resolve undefined to default theme", () => {
       const resolved = resolveTheme(undefined);
       expect(resolved.name).toBe("default");
-      expect(resolved.colors.primary).toBe("#b7410e");
+      expect(resolved.colors.primary).toBe("#e04d0a");
     });
 
     it("should resolve extends chain", () => {

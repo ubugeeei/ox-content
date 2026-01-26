@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
 
     plugins: [
       oxContent({
-        srcDir: ".",
+        srcDir: "content",
         outDir: "dist/docs",
         base,
 

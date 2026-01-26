@@ -200,6 +200,59 @@ export interface JsSsgNavGroup {
   /** Navigation items. */
   items: Array<JsSsgNavItem>
 }
+/** Hero action for entry page. */
+export interface JsHeroAction {
+  /** Button theme: "brand" or "alt". */
+  theme?: string
+  /** Button text. */
+  text: string
+  /** Link URL. */
+  link: string
+}
+/** Hero image for entry page. */
+export interface JsHeroImage {
+  /** Image source URL. */
+  src: string
+  /** Alt text. */
+  alt?: string
+  /** Image width. */
+  width?: number
+  /** Image height. */
+  height?: number
+}
+/** Hero section configuration for entry page. */
+export interface JsHeroConfig {
+  /** Main title (large, gradient text). */
+  name?: string
+  /** Secondary text. */
+  text?: string
+  /** Tagline. */
+  tagline?: string
+  /** Hero image. */
+  image?: JsHeroImage
+  /** Action buttons. */
+  actions?: Array<JsHeroAction>
+}
+/** Feature card for entry page. */
+export interface JsFeatureConfig {
+  /** Icon - supports: "mdi:icon-name" (Iconify), image URL, or emoji. */
+  icon?: string
+  /** Feature title. */
+  title: string
+  /** Feature description. */
+  details?: string
+  /** Optional link. */
+  link?: string
+  /** Link text. */
+  linkText?: string
+}
+/** Entry page configuration. */
+export interface JsEntryPageConfig {
+  /** Hero section. */
+  hero?: JsHeroConfig
+  /** Feature cards. */
+  features?: Array<JsFeatureConfig>
+}
 /** Page data for SSG. */
 export interface JsSsgPageData {
   /** Page title. */
@@ -212,6 +265,8 @@ export interface JsSsgPageData {
   toc: Array<TocEntry>
   /** URL path. */
   path: string
+  /** Entry page configuration (if layout: entry). */
+  entryPage?: JsEntryPageConfig
 }
 /** Theme colors for JavaScript. */
 export interface JsThemeColors {
@@ -266,6 +321,15 @@ export interface JsThemeFooter {
   /** Copyright text (supports HTML). */
   copyright?: string
 }
+/** Social links for JavaScript. */
+export interface JsSocialLinks {
+  /** GitHub URL. */
+  github?: string
+  /** Twitter/X URL. */
+  twitter?: string
+  /** Discord URL. */
+  discord?: string
+}
 /** Theme slots for JavaScript. */
 export interface JsThemeSlots {
   /** Content to inject into <head>. */
@@ -301,6 +365,8 @@ export interface JsThemeConfig {
   header?: JsThemeHeader
   /** Footer configuration. */
   footer?: JsThemeFooter
+  /** Social links configuration. */
+  socialLinks?: JsSocialLinks
   /** Custom slots for HTML injection. */
   slots?: JsThemeSlots
   /** Additional custom CSS. */

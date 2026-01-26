@@ -186,19 +186,26 @@ npm install vite-plugin-ox-content @ox-content/napi
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { oxContent } from 'vite-plugin-ox-content';
+import { oxContent, defineTheme, defaultTheme } from 'vite-plugin-ox-content';
 
 export default defineConfig({
   plugins: [
     oxContent({
-      srcDir: 'docs',
-      outDir: 'dist/docs',
+      // Source directory (default: 'content')
+      srcDir: 'content',
+      outDir: 'dist',
       // Enable syntax highlighting
       highlight: true,
-      // SSG with automatic OG images
+      // SSG with themes and OG images
       ssg: {
         siteName: 'My Docs',
         ogImage: 'https://example.com/og-image.png',
+        theme: defineTheme({
+          extends: defaultTheme,
+          socialLinks: {
+            github: 'https://github.com/your/repo',
+          },
+        }),
       },
       // Built-in full-text search (enabled by default)
       search: {
@@ -295,7 +302,7 @@ ox-content/
 │   ├── vite-plugin-ox-content-svelte/# Svelte integration
 │   └── unplugin-ox-content/          # Universal plugin
 ├── examples/               # Usage examples
-├── docs/                   # Documentation (this site)
+├── content/                # Markdown content (default srcDir)
 └── .github/workflows/      # CI/CD
     ├── ci.yml              # Continuous integration
     └── publish.yml         # npm release automation

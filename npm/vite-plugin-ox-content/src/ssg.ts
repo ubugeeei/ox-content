@@ -7,9 +7,16 @@ import * as path from "path";
 import { glob } from "glob";
 import { transformMarkdown, generateOgImageSvg } from "./transform";
 import type { OgImageData, OgImageConfig } from "./transform";
-import type { ResolvedOptions, ResolvedSsgOptions, SsgOptions, TocEntry } from "./types";
+import type {
+  ResolvedOptions,
+  ResolvedSsgOptions,
+  SsgOptions,
+  TocEntry,
+  HeroConfig,
+  FeatureConfig,
+} from "./types";
 import { resolveTheme, themeToNapi } from "./theme";
-import type { ResolvedThemeConfig, NapiThemeConfig } from "./theme";
+import type { ResolvedThemeConfig } from "./theme";
 
 /**
  * Navigation item for SSG.
@@ -19,6 +26,14 @@ export interface SsgNavItem {
   path: string;
   href: string;
   children?: SsgNavItem[];
+}
+
+/**
+ * Entry page configuration for SSG (passed to Rust).
+ */
+export interface SsgEntryPageConfig {
+  hero?: HeroConfig;
+  features?: FeatureConfig[];
 }
 
 /**
@@ -32,6 +47,8 @@ export interface SsgPageData {
   frontmatter: Record<string, unknown>;
   path: string;
   href: string;
+  /** Entry page configuration (if layout: entry) */
+  entryPage?: SsgEntryPageConfig;
 }
 
 /**
@@ -943,6 +960,39 @@ export async function generateHtmlPage(
   // Convert theme to NAPI format if provided
   const themeForRust = theme ? themeToNapi(theme) : undefined;
 
+  // Convert entry page to NAPI format if provided
+  const entryPageForRust = pageData.entryPage
+    ? {
+        hero: pageData.entryPage.hero
+          ? {
+              name: pageData.entryPage.hero.name,
+              text: pageData.entryPage.hero.text,
+              tagline: pageData.entryPage.hero.tagline,
+              image: pageData.entryPage.hero.image
+                ? {
+                    src: pageData.entryPage.hero.image.src,
+                    alt: pageData.entryPage.hero.image.alt,
+                    width: pageData.entryPage.hero.image.width,
+                    height: pageData.entryPage.hero.image.height,
+                  }
+                : undefined,
+              actions: pageData.entryPage.hero.actions?.map((a) => ({
+                theme: a.theme,
+                text: a.text,
+                link: a.link,
+              })),
+            }
+          : undefined,
+        features: pageData.entryPage.features?.map((f) => ({
+          icon: f.icon,
+          title: f.title,
+          details: f.details,
+          link: f.link,
+          linkText: f.linkText,
+        })),
+      }
+    : undefined;
+
   return mod.generateSsgHtml(
     {
       title: pageData.title,
@@ -950,6 +1000,7 @@ export async function generateHtmlPage(
       content: pageData.content,
       toc: tocForRust,
       path: pageData.path,
+      entryPage: entryPageForRust,
     },
     navGroupsForRust,
     {
@@ -1270,6 +1321,15 @@ export async function buildSsg(
         }
       }
 
+      // Check if this is an entry page (layout: entry)
+      let entryPage: SsgEntryPageConfig | undefined;
+      if (result.frontmatter.layout === "entry") {
+        entryPage = {
+          hero: result.frontmatter.hero as HeroConfig | undefined,
+          features: result.frontmatter.features as FeatureConfig[] | undefined,
+        };
+      }
+
       // Generate HTML based on bare option
       let html: string;
       if (ssgOptions.bare) {
@@ -1283,6 +1343,7 @@ export async function buildSsg(
           frontmatter: result.frontmatter,
           path: getUrlPath(inputPath, srcDir),
           href: getHref(inputPath, srcDir, base, ssgOptions.extension),
+          entryPage,
         };
         html = await generateHtmlPage(pageData, navItems, siteName, base, pageOgImage, ssgOptions.theme);
       }

@@ -244,3 +244,17 @@ document.querySelectorAll('a[href^="#"]').forEach((a) =>
     }
   }),
 )
+// Mobile footer buttons
+const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),
+  mobileSearchBtn = document.querySelector("[data-mobile-search]"),
+  mobileThemeBtn = document.querySelector("[data-mobile-theme]")
+mobileMenuBtn?.addEventListener("click", () => {
+  if (sidebar && overlay) {
+    sidebar.classList.toggle("open")
+    overlay.classList.toggle("open")
+  }
+})
+mobileSearchBtn?.addEventListener("click", openSearch)
+mobileThemeBtn?.addEventListener("click", () =>
+  setTheme(getTheme() === "dark" ? "light" : "dark"),
+)

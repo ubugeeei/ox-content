@@ -31,6 +31,7 @@
  * ```
  */
 
+import YAML from "yaml";
 import type { ResolvedOptions, TransformResult, TocEntry } from "./types";
 import { highlightCode } from "./highlight";
 import { transformMermaid } from "./mermaid";
@@ -372,8 +373,11 @@ export async function transformMarkdown(
     );
   }
 
-  // Use Rust-based transformation
-  const result = napi.transform(source, {
+  // Parse frontmatter using YAML on TypeScript side for proper nested object support
+  const { content: markdownContent, frontmatter } = parseFrontmatter(source);
+
+  // Use Rust-based transformation (pass content without frontmatter)
+  const result = napi.transform(markdownContent, {
     gfm: options.gfm,
     footnotes: options.footnotes,
     taskLists: options.taskLists,
@@ -390,13 +394,6 @@ export async function transformMarkdown(
   }
 
   let html = result.html;
-  let frontmatter: Record<string, unknown>;
-
-  try {
-    frontmatter = JSON.parse(result.frontmatter);
-  } catch {
-    frontmatter = {};
-  }
 
   // Convert flat TOC from Rust to nested TOC
   const flatToc: TocEntry[] = result.toc.map((item) => ({
@@ -424,6 +421,39 @@ export async function transformMarkdown(
     frontmatter,
     toc,
   };
+}
+
+/**
+ * Parses YAML frontmatter from Markdown content.
+ * Uses proper YAML parser for full nested object support.
+ */
+function parseFrontmatter(source: string): {
+  content: string;
+  frontmatter: Record<string, unknown>;
+} {
+  // Check for frontmatter delimiter
+  if (!source.startsWith("---")) {
+    return { content: source, frontmatter: {} };
+  }
+
+  // Find the closing delimiter
+  const rest = source.slice(3);
+  const endIndex = rest.indexOf("\n---");
+
+  if (endIndex === -1) {
+    return { content: source, frontmatter: {} };
+  }
+
+  const frontmatterStr = rest.slice(0, endIndex).trim();
+  const content = rest.slice(endIndex + 4).trimStart();
+
+  try {
+    const frontmatter = YAML.parse(frontmatterStr) as Record<string, unknown>;
+    return { content, frontmatter: frontmatter || {} };
+  } catch (error) {
+    console.warn("[ox-content] Failed to parse frontmatter:", error);
+    return { content, frontmatter: {} };
+  }
 }
 
 /**

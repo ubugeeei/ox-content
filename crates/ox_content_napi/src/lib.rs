@@ -716,6 +716,74 @@ pub struct JsSsgNavGroup {
     pub items: Vec<JsSsgNavItem>,
 }
 
+/// Hero action for entry page.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsHeroAction {
+    /// Button theme: "brand" or "alt".
+    pub theme: Option<String>,
+    /// Button text.
+    pub text: String,
+    /// Link URL.
+    pub link: String,
+}
+
+/// Hero image for entry page.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsHeroImage {
+    /// Image source URL.
+    pub src: String,
+    /// Alt text.
+    pub alt: Option<String>,
+    /// Image width.
+    pub width: Option<u32>,
+    /// Image height.
+    pub height: Option<u32>,
+}
+
+/// Hero section configuration for entry page.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsHeroConfig {
+    /// Main title (large, gradient text).
+    pub name: Option<String>,
+    /// Secondary text.
+    pub text: Option<String>,
+    /// Tagline.
+    pub tagline: Option<String>,
+    /// Hero image.
+    pub image: Option<JsHeroImage>,
+    /// Action buttons.
+    pub actions: Option<Vec<JsHeroAction>>,
+}
+
+/// Feature card for entry page.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsFeatureConfig {
+    /// Icon - supports: "mdi:icon-name" (Iconify), image URL, or emoji.
+    pub icon: Option<String>,
+    /// Feature title.
+    pub title: String,
+    /// Feature description.
+    pub details: Option<String>,
+    /// Optional link.
+    pub link: Option<String>,
+    /// Link text.
+    pub link_text: Option<String>,
+}
+
+/// Entry page configuration.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsEntryPageConfig {
+    /// Hero section.
+    pub hero: Option<JsHeroConfig>,
+    /// Feature cards.
+    pub features: Option<Vec<JsFeatureConfig>>,
+}
+
 /// Page data for SSG.
 #[napi(object)]
 pub struct JsSsgPageData {
@@ -729,6 +797,8 @@ pub struct JsSsgPageData {
     pub toc: Vec<TocEntry>,
     /// URL path.
     pub path: String,
+    /// Entry page configuration (if layout: entry).
+    pub entry_page: Option<JsEntryPageConfig>,
 }
 
 // =============================================================================
@@ -803,6 +873,18 @@ pub struct JsThemeFooter {
     pub copyright: Option<String>,
 }
 
+/// Social links for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsSocialLinks {
+    /// GitHub URL.
+    pub github: Option<String>,
+    /// Twitter/X URL.
+    pub twitter: Option<String>,
+    /// Discord URL.
+    pub discord: Option<String>,
+}
+
 /// Theme slots for JavaScript.
 #[napi(object)]
 #[derive(Clone, Default)]
@@ -843,6 +925,8 @@ pub struct JsThemeConfig {
     pub header: Option<JsThemeHeader>,
     /// Footer configuration.
     pub footer: Option<JsThemeFooter>,
+    /// Social links configuration.
+    pub social_links: Option<JsSocialLinks>,
     /// Custom slots for HTML injection.
     pub slots: Option<JsThemeSlots>,
     /// Additional custom CSS.
@@ -896,9 +980,13 @@ fn convert_theme_config(theme: Option<JsThemeConfig>) -> Option<ox_content_ssg::
             logo_width: h.logo_width,
             logo_height: h.logo_height,
         }),
-        footer: t.footer.map(|f| ox_content_ssg::ThemeFooter {
-            message: f.message,
-            copyright: f.copyright,
+        footer: t
+            .footer
+            .map(|f| ox_content_ssg::ThemeFooter { message: f.message, copyright: f.copyright }),
+        social_links: t.social_links.map(|s| ox_content_ssg::SocialLinks {
+            github: s.github,
+            twitter: s.twitter,
+            discord: s.discord,
         }),
         slots: t.slots.map(|s| ox_content_ssg::ThemeSlots {
             head: s.head,
@@ -913,6 +1001,47 @@ fn convert_theme_config(theme: Option<JsThemeConfig>) -> Option<ox_content_ssg::
         }),
         css: t.css,
         js: t.js,
+    })
+}
+
+/// Converts JsEntryPageConfig to ox_content_ssg::EntryPageConfig.
+fn convert_entry_page_config(
+    entry: Option<JsEntryPageConfig>,
+) -> Option<ox_content_ssg::EntryPageConfig> {
+    entry.map(|e| ox_content_ssg::EntryPageConfig {
+        hero: e.hero.map(|h| ox_content_ssg::HeroConfig {
+            name: h.name,
+            text: h.text,
+            tagline: h.tagline,
+            image: h.image.map(|i| ox_content_ssg::HeroImage {
+                src: i.src,
+                alt: i.alt,
+                width: i.width,
+                height: i.height,
+            }),
+            actions: h.actions.map(|actions| {
+                actions
+                    .into_iter()
+                    .map(|a| ox_content_ssg::HeroAction {
+                        theme: a.theme,
+                        text: a.text,
+                        link: a.link,
+                    })
+                    .collect()
+            }),
+        }),
+        features: e.features.map(|features| {
+            features
+                .into_iter()
+                .map(|f| ox_content_ssg::FeatureConfig {
+                    icon: f.icon,
+                    title: f.title,
+                    details: f.details,
+                    link: f.link,
+                    link_text: f.link_text,
+                })
+                .collect()
+        }),
     })
 }
 
@@ -934,6 +1063,7 @@ pub fn generate_ssg_html(
             .map(|t| ox_content_ssg::TocEntry { depth: t.depth, text: t.text, slug: t.slug })
             .collect(),
         path: page_data.path,
+        entry_page: convert_entry_page_config(page_data.entry_page),
     };
 
     let ssg_nav_groups: Vec<ox_content_ssg::NavGroup> = nav_groups

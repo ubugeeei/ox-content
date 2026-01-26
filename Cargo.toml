@@ -34,6 +34,11 @@ print_stdout = "warn"
 print_stderr = "warn"
 
 # Allow
+format_push_string = "allow"
+match_same_arms = "allow"
+option_if_let_else = "allow"
+case_sensitive_file_extension_comparisons = "allow"
+single_option_map = "allow"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 must_use_candidate = "allow"

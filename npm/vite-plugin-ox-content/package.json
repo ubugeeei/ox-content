@@ -25,19 +25,20 @@
   "dependencies": {
     "@ox-content/napi": "workspace:*",
     "glob": "^11.0.0",
-    "unified": "^11.0.5",
+    "mermaid": "^11.4.0",
     "rehype-parse": "^9.0.1",
     "rehype-stringify": "^10.0.1",
     "shiki": "^1.24.0",
-    "mermaid": "^11.4.0"
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@types/hast": "^3.0.4",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "@typescript/native-preview": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "yaml": "^2.8.2"
   },
   "keywords": [
     "vite",
