@@ -180,8 +180,15 @@ function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
 
   for (const island of islands) {
     const marker = createIslandMarker(island.id);
-    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-island="${island.id}"></div>`);
-    output = output.replaceAll(marker, `<span data-ox-island="${island.id}"></span>`);
+    const propsAttr = Object.keys(island.props).length > 0
+      ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
+      : "";
+    const contentAttr = island.content
+      ? ` data-ox-content='${island.content.replace(/'/g, "&#39;")}'`
+      : "";
+    const attrs = `data-ox-island="${island.name}"${propsAttr}${contentAttr}`;
+    output = output.replaceAll(`<p>${marker}</p>`, `<div ${attrs}></div>`);
+    output = output.replaceAll(marker, `<span ${attrs}></span>`);
   }
 
   return output;
@@ -278,50 +285,59 @@ function generateReactModule(
 
   const componentMap = usedComponents.map((name) => `  ${name},`).join("\n");
 
+  // If no islands, generate simpler code without island runtime
+  if (islands.length === 0) {
+    return `
+import React, { createElement } from 'react';
+
+export const frontmatter = ${JSON.stringify(frontmatter)};
+
+const rawHtml = ${JSON.stringify(content)};
+
+export default function MarkdownContent() {
+  return createElement('div', {
+    className: 'ox-content',
+    dangerouslySetInnerHTML: { __html: rawHtml },
+  });
+}
+`;
+  }
+
   return `
 import React, { useEffect, useRef, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
+import { initIslands } from 'ox-content-islands';
 ${imports}
 
 export const frontmatter = ${JSON.stringify(frontmatter)};
 
 const rawHtml = ${JSON.stringify(content)};
-const islands = ${JSON.stringify(islands)};
 const components = {
 ${componentMap}
 };
 
-function renderIsland(island, islandContent) {
-  const Component = components[island.name];
-  if (!Component) return null;
-  if (islandContent) {
-    return createElement(
-      Component,
-      island.props,
-      createElement('div', { dangerouslySetInnerHTML: { __html: islandContent } })
-    );
-  }
-  return createElement(Component, island.props);
-}
-
-function mountIslands(container) {
+function createReactHydrate() {
   const mountedRoots = [];
 
-  for (const island of islands) {
-    const target = container.querySelector('[data-ox-island="' + island.id + '"]');
-    if (!target) continue;
-    const islandContent = island.content ?? target.innerHTML;
-    const vnode = renderIsland(island, islandContent);
-    if (!vnode) continue;
-    const root = createRoot(target);
+  return (element, props) => {
+    const componentName = element.dataset.oxIsland;
+    const Component = components[componentName];
+    if (!Component) return;
+
+    const islandContent = element.dataset.oxContent || element.innerHTML;
+    const vnode = islandContent
+      ? createElement(
+          Component,
+          props,
+          createElement('div', { dangerouslySetInnerHTML: { __html: islandContent } })
+        )
+      : createElement(Component, props);
+
+    const root = createRoot(element);
     root.render(vnode);
     mountedRoots.push(root);
-  }
 
-  return () => {
-    for (const root of mountedRoots) {
-      root.unmount();
-    }
+    return () => root.unmount();
   };
 }
 
@@ -330,7 +346,10 @@ export default function MarkdownContent() {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    return mountIslands(containerRef.current);
+    const controller = initIslands(createReactHydrate(), {
+      selector: '.ox-content [data-ox-island]',
+    });
+    return () => controller.destroy();
   }, []);
 
   return createElement('div', {

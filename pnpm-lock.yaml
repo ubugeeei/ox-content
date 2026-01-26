@@ -546,6 +546,9 @@ importers:
 
   npm/vite-plugin-ox-content-react:
     dependencies:
+      ox-content-islands:
+        specifier: workspace:*
+        version: link:../ox-content-islands
       vite-plugin-ox-content:
         specifier: workspace:*
         version: link:../vite-plugin-ox-content
@@ -583,6 +586,9 @@ importers:
 
   npm/vite-plugin-ox-content-svelte:
     dependencies:
+      ox-content-islands:
+        specifier: workspace:*
+        version: link:../ox-content-islands
       vite-plugin-ox-content:
         specifier: workspace:*
         version: link:../vite-plugin-ox-content
@@ -611,6 +617,9 @@ importers:
 
   npm/vite-plugin-ox-content-vue:
     dependencies:
+      ox-content-islands:
+        specifier: workspace:*
+        version: link:../ox-content-islands
       vite-plugin-ox-content:
         specifier: workspace:*
         version: link:../vite-plugin-ox-content

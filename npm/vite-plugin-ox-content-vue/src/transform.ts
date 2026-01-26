@@ -193,8 +193,15 @@ function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
 
   for (const island of islands) {
     const marker = createIslandMarker(island.id);
-    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-island="${island.id}"></div>`);
-    output = output.replaceAll(marker, `<span data-ox-island="${island.id}"></span>`);
+    const propsAttr = Object.keys(island.props).length > 0
+      ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
+      : "";
+    const contentAttr = island.content
+      ? ` data-ox-content='${island.content.replace(/'/g, "&#39;")}'`
+      : "";
+    const attrs = `data-ox-island="${island.name}"${propsAttr}${contentAttr}`;
+    output = output.replaceAll(`<p>${marker}</p>`, `<div ${attrs}></div>`);
+    output = output.replaceAll(marker, `<span ${attrs}></span>`);
   }
 
   return output;
@@ -319,45 +326,60 @@ function generateVueSFC(
 
   const componentMap = usedComponents.map((name) => `  ${name},`).join("\n");
 
+  // If no islands, generate simpler code without island runtime
+  if (islands.length === 0) {
+    return `
+import { h, ref, defineComponent } from 'vue';
+
+export const frontmatter = ${JSON.stringify(frontmatter)};
+
+const rawHtml = ${JSON.stringify(content)};
+
+export default defineComponent({
+  name: 'MarkdownContent',
+  setup(_, { expose }) {
+    expose({ frontmatter });
+
+    return () =>
+      h('div', {
+        class: 'ox-content',
+        innerHTML: rawHtml,
+      });
+  },
+});
+`;
+  }
+
   return `
 import { h, ref, onMounted, onBeforeUnmount, defineComponent, render } from 'vue';
+import { initIslands } from 'ox-content-islands';
 ${componentImports}
 
 export const frontmatter = ${JSON.stringify(frontmatter)};
 
 const rawHtml = ${JSON.stringify(content)};
-const islands = ${JSON.stringify(islands)};
 const components = {
 ${componentMap}
 };
 
-function renderIsland(island, islandContent) {
-  const component = components[island.name];
-  if (!component) return null;
-  const children = islandContent
-    ? { default: () => h('div', { innerHTML: islandContent }) }
-    : undefined;
-  return h(component, island.props, children);
-}
-
-function mountIslands(container) {
+function createVueHydrate(container) {
   const mountedTargets = [];
 
-  for (const island of islands) {
-    const target = container.querySelector('[data-ox-island="' + island.id + '"]');
-    if (!target) continue;
-    const islandContent = island.content ?? target.innerHTML;
-    const vnode = renderIsland(island, islandContent);
-    if (vnode) {
-      render(vnode, target);
-      mountedTargets.push(target);
-    }
-  }
+  return (element, props) => {
+    const componentName = element.dataset.oxIsland;
+    const Component = components[componentName];
+    if (!Component) return;
 
-  return () => {
-    for (const target of mountedTargets) {
-      render(null, target);
-    }
+    const islandContent = element.dataset.oxContent || element.innerHTML;
+    const children = islandContent
+      ? { default: () => h('div', { innerHTML: islandContent }) }
+      : undefined;
+
+    const vnode = h(Component, props, children);
+    render(vnode, element);
+    mountedTargets.push(element);
+
+    return () => render(null, element);
   };
 }
 
@@ -365,16 +387,18 @@ export default defineComponent({
   name: 'MarkdownContent',
   setup(_, { expose }) {
     const container = ref(null);
-    let cleanup;
+    let controller;
 
     onMounted(() => {
       if (container.value) {
-        cleanup = mountIslands(container.value);
+        controller = initIslands(createVueHydrate(container.value), {
+          selector: '.ox-content [data-ox-island]',
+        });
       }
     });
 
     onBeforeUnmount(() => {
-      if (cleanup) cleanup();
+      if (controller) controller.destroy();
     });
 
     expose({ frontmatter });

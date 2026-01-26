@@ -189,8 +189,15 @@ function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
 
   for (const island of islands) {
     const marker = createIslandMarker(island.id);
-    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-island="${island.id}"></div>`);
-    output = output.replaceAll(marker, `<span data-ox-island="${island.id}"></span>`);
+    const propsAttr = Object.keys(island.props).length > 0
+      ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
+      : "";
+    const contentAttr = island.content
+      ? ` data-ox-content='${island.content.replace(/'/g, "&#39;")}'`
+      : "";
+    const attrs = `data-ox-island="${island.name}"${propsAttr}${contentAttr}`;
+    output = output.replaceAll(`<p>${marker}</p>`, `<div ${attrs}></div>`);
+    output = output.replaceAll(marker, `<span ${attrs}></span>`);
   }
 
   return output;
@@ -285,57 +292,75 @@ function generateSvelteModule(
     .filter(Boolean)
     .join("\n");
 
+  // If no islands, generate simpler code without island runtime
+  if (islands.length === 0) {
+    return `
+<script>
+  const frontmatter = ${JSON.stringify(frontmatter)};
+  const rawHtml = ${JSON.stringify(content)};
+
+  export { frontmatter };
+</script>
+
+<div class="ox-content">
+  {@html rawHtml}
+</div>
+
+<style>
+  .ox-content {
+    line-height: 1.6;
+  }
+</style>
+`;
+  }
+
   const componentMap = usedComponents.map((name) => `  ${name},`).join("\n");
 
   return `
 <script>
   import { createRawSnippet, onMount, mount, unmount } from 'svelte';
+  import { initIslands } from 'ox-content-islands';
   ${imports}
 
   const frontmatter = ${JSON.stringify(frontmatter)};
   const rawHtml = ${JSON.stringify(content)};
-  const islands = ${JSON.stringify(islands)};
   const components = {
 ${componentMap}
   };
 
+  export { frontmatter };
+
   let container;
 
-  function renderIsland(island, islandContent) {
-    const component = components[island.name];
-    if (!component) return null;
-    const props = { ...island.props };
-    if (islandContent) {
-      props.children = createRawSnippet(() => ({
-        render: () => \`<div>\${islandContent}</div>\`,
-      }));
-    }
-    return { component, props };
-  }
-
-  function mountIslands(target) {
+  function createSvelteHydrate() {
     const mounted = [];
 
-    for (const island of islands) {
-      const el = target.querySelector('[data-ox-island="' + island.id + '"]');
-      if (!el) continue;
-      const islandContent = island.content ?? el.innerHTML;
-      const entry = renderIsland(island, islandContent);
-      if (!entry) continue;
-      const instance = mount(entry.component, { target: el, props: entry.props });
-      mounted.push(instance);
-    }
+    return (element, props) => {
+      const componentName = element.dataset.oxIsland;
+      const Component = components[componentName];
+      if (!Component) return;
 
-    return () => {
-      for (const instance of mounted) {
-        unmount(instance);
+      const islandContent = element.dataset.oxContent || element.innerHTML;
+      const componentProps = { ...props };
+      if (islandContent) {
+        componentProps.children = createRawSnippet(() => ({
+          render: () => \`<div>\${islandContent}</div>\`,
+        }));
       }
+
+      const instance = mount(Component, { target: element, props: componentProps });
+      mounted.push(instance);
+
+      return () => unmount(instance);
     };
   }
 
   onMount(() => {
     if (!container) return;
-    return mountIslands(container);
+    const controller = initIslands(createSvelteHydrate(), {
+      selector: '.ox-content [data-ox-island]',
+    });
+    return () => controller.destroy();
   });
 </script>
 
