@@ -4,15 +4,15 @@ import { compile } from "svelte/compiler";
 import type {
   ResolvedSvelteOptions,
   SvelteTransformResult,
-  ComponentSlot,
+  ComponentIsland,
   ComponentsMap,
 } from "./types";
 
 const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>([\s\S]*?)<\/\1>)/g;
 const PROP_REGEX = /([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}|\[([^\]]*)\]))?/g;
 
-const SLOT_MARKER_PREFIX = "OXCONTENT-SLOT-";
-const SLOT_MARKER_SUFFIX = "-PLACEHOLDER";
+const ISLAND_MARKER_PREFIX = "OXCONTENT-ISLAND-";
+const ISLAND_MARKER_SUFFIX = "-PLACEHOLDER";
 
 interface Range {
   start: number;
@@ -26,8 +26,8 @@ export async function transformMarkdownWithSvelte(
 ): Promise<SvelteTransformResult> {
   const components: ComponentsMap = options.components;
   const usedComponents: string[] = [];
-  const slots: ComponentSlot[] = [];
-  let slotIndex = 0;
+  const islands: ComponentIsland[] = [];
+  let islandIndex = 0;
 
   const { content: markdownContent, frontmatter } = extractFrontmatter(code);
   const fenceRanges = collectFenceRanges(markdownContent);
@@ -37,7 +37,7 @@ export async function transformMarkdownWithSvelte(
 
   COMPONENT_REGEX.lastIndex = 0;
   while ((match = COMPONENT_REGEX.exec(markdownContent)) !== null) {
-    const [fullMatch, componentName, propsString, rawSlotContent] = match;
+    const [fullMatch, componentName, propsString, rawIslandContent] = match;
     const matchStart = match.index;
     const matchEnd = matchStart + fullMatch.length;
 
@@ -55,18 +55,18 @@ export async function transformMarkdownWithSvelte(
     }
 
     const props = parseProps(propsString);
-    const slotId = `ox-slot-${slotIndex++}`;
-    const slotContent = typeof rawSlotContent === "string" ? rawSlotContent.trim() : undefined;
+    const islandId = `ox-island-${islandIndex++}`;
+    const islandContent = typeof rawIslandContent === "string" ? rawIslandContent.trim() : undefined;
 
-    slots.push({
+    islands.push({
       name: componentName,
       props,
       position: matchStart,
-      id: slotId,
-      content: slotContent,
+      id: islandId,
+      content: islandContent,
     });
 
-    processedContent += markdownContent.slice(lastIndex, matchStart) + createSlotMarker(slotId);
+    processedContent += markdownContent.slice(lastIndex, matchStart) + createIslandMarker(islandId);
     lastIndex = matchEnd;
   }
   processedContent += markdownContent.slice(lastIndex);
@@ -106,11 +106,11 @@ export async function transformMarkdownWithSvelte(
     },
   });
 
-  const htmlWithSlots = injectSlotMarkers(transformed.html, slots);
+  const htmlWithIslands = injectIslandMarkers(transformed.html, islands);
   const svelteCode = generateSvelteModule(
-    htmlWithSlots,
+    htmlWithIslands,
     usedComponents,
-    slots,
+    islands,
     frontmatter,
     options,
     id,
@@ -132,8 +132,8 @@ export async function transformMarkdownWithSvelte(
   };
 }
 
-function createSlotMarker(slotId: string): string {
-  return `${SLOT_MARKER_PREFIX}${slotId}${SLOT_MARKER_SUFFIX}`;
+function createIslandMarker(islandId: string): string {
+  return `${ISLAND_MARKER_PREFIX}${islandId}${ISLAND_MARKER_SUFFIX}`;
 }
 
 function collectFenceRanges(content: string): Range[] {
@@ -184,13 +184,13 @@ function isInRanges(start: number, end: number, ranges: Range[]): boolean {
   return false;
 }
 
-function injectSlotMarkers(html: string, slots: ComponentSlot[]): string {
+function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
   let output = html;
 
-  for (const slot of slots) {
-    const marker = createSlotMarker(slot.id);
-    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-slot="${slot.id}"></div>`);
-    output = output.replaceAll(marker, `<span data-ox-slot="${slot.id}"></span>`);
+  for (const island of islands) {
+    const marker = createIslandMarker(island.id);
+    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-island="${island.id}"></div>`);
+    output = output.replaceAll(marker, `<span data-ox-island="${island.id}"></span>`);
   }
 
   return output;
@@ -265,7 +265,7 @@ function parseProps(propsString: string): Record<string, unknown> {
 function generateSvelteModule(
   content: string,
   usedComponents: string[],
-  slots: ComponentSlot[],
+  islands: ComponentIsland[],
   frontmatter: Record<string, unknown>,
   options: ResolvedSvelteOptions & { root?: string },
   id: string,
@@ -294,33 +294,33 @@ function generateSvelteModule(
 
   const frontmatter = ${JSON.stringify(frontmatter)};
   const rawHtml = ${JSON.stringify(content)};
-  const slots = ${JSON.stringify(slots)};
+  const islands = ${JSON.stringify(islands)};
   const components = {
 ${componentMap}
   };
 
   let container;
 
-  function renderSlot(slot, slotContent) {
-    const component = components[slot.name];
+  function renderIsland(island, islandContent) {
+    const component = components[island.name];
     if (!component) return null;
-    const props = { ...slot.props };
-    if (slotContent) {
+    const props = { ...island.props };
+    if (islandContent) {
       props.children = createRawSnippet(() => ({
-        render: () => \`<div>\${slotContent}</div>\`,
+        render: () => \`<div>\${islandContent}</div>\`,
       }));
     }
     return { component, props };
   }
 
-  function mountSlots(target) {
+  function mountIslands(target) {
     const mounted = [];
 
-    for (const slot of slots) {
-      const el = target.querySelector('[data-ox-slot="' + slot.id + '"]');
+    for (const island of islands) {
+      const el = target.querySelector('[data-ox-island="' + island.id + '"]');
       if (!el) continue;
-      const slotContent = slot.content ?? el.innerHTML;
-      const entry = renderSlot(slot, slotContent);
+      const islandContent = island.content ?? el.innerHTML;
+      const entry = renderIsland(island, islandContent);
       if (!entry) continue;
       const instance = mount(entry.component, { target: el, props: entry.props });
       mounted.push(instance);
@@ -335,7 +335,7 @@ ${componentMap}
 
   onMount(() => {
     if (!container) return;
-    return mountSlots(container);
+    return mountIslands(container);
   });
 </script>
 

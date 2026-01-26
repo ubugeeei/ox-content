@@ -1,0 +1,195 @@
+/* ox-content Mermaid Plugin - SVG container styles */
+
+.ox-mermaid {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: var(--octc-color-bg-alt);
+  border: 1px solid var(--octc-color-border);
+  border-radius: 8px;
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* SVG diagram */
+.ox-mermaid svg {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+/* Theme adjustments for SVG */
+.ox-mermaid svg text {
+  fill: var(--octc-color-text) !important;
+}
+
+.ox-mermaid svg .node rect,
+.ox-mermaid svg .node circle,
+.ox-mermaid svg .node ellipse,
+.ox-mermaid svg .node polygon {
+  fill: var(--octc-color-bg) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg .edgePath .path {
+  stroke: var(--octc-color-text-muted) !important;
+}
+
+.ox-mermaid svg .edgeLabel {
+  background-color: var(--octc-color-bg) !important;
+}
+
+.ox-mermaid svg marker {
+  fill: var(--octc-color-text-muted) !important;
+}
+
+/* Preserve original mermaid colors for specific elements */
+.ox-mermaid svg .node.default > rect,
+.ox-mermaid svg .node.default > circle {
+  fill: var(--octc-color-primary) !important;
+  stroke: var(--octc-color-primary) !important;
+}
+
+.ox-mermaid svg .node.default > rect + .label text,
+.ox-mermaid svg .node.default text {
+  fill: #fff !important;
+}
+
+/* Flowchart specific */
+.ox-mermaid svg .flowchart-link {
+  stroke: var(--octc-color-text-muted) !important;
+}
+
+/* Sequence diagram */
+.ox-mermaid svg .actor {
+  fill: var(--octc-color-bg-alt) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg .actor-line {
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg .messageText {
+  fill: var(--octc-color-text) !important;
+}
+
+.ox-mermaid svg .sequenceNumber {
+  fill: #fff !important;
+}
+
+.ox-mermaid svg .note {
+  fill: var(--octc-color-bg-alt) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+/* Gantt chart */
+.ox-mermaid svg .section {
+  fill: var(--octc-color-bg-alt) !important;
+}
+
+.ox-mermaid svg .task {
+  fill: var(--octc-color-primary) !important;
+  stroke: var(--octc-color-primary) !important;
+}
+
+.ox-mermaid svg .taskText {
+  fill: #fff !important;
+}
+
+/* Pie chart */
+.ox-mermaid svg .slice {
+  stroke: var(--octc-color-bg) !important;
+}
+
+/* Class diagram */
+.ox-mermaid svg .classGroup rect {
+  fill: var(--octc-color-bg) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg .classGroup line {
+  stroke: var(--octc-color-border) !important;
+}
+
+/* State diagram */
+.ox-mermaid svg .stateGroup rect {
+  fill: var(--octc-color-bg) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+/* ER diagram */
+.ox-mermaid svg .er.entityBox {
+  fill: var(--octc-color-bg) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+/* Source code fallback (shown when JS disabled and no SSG SVG) */
+.ox-mermaid-source {
+  display: none;
+  text-align: left;
+  font-family: var(--octc-font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--octc-color-text);
+}
+
+/* Show source when SVG not available */
+.ox-mermaid:not(:has(svg)) .ox-mermaid-source {
+  display: block;
+}
+
+/* Rendered state */
+.ox-mermaid-rendered .ox-mermaid-source {
+  display: none;
+}
+
+/* Error state */
+.ox-mermaid-error {
+  color: #f87171;
+  padding: 1rem;
+  text-align: center;
+}
+
+.ox-mermaid-error .ox-mermaid-source {
+  display: block;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--octc-color-code-bg);
+  border-radius: 4px;
+  color: var(--octc-color-code-text);
+}
+
+/* Loading indicator (for client-side rendering) */
+.ox-mermaid.loading {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ox-mermaid.loading::after {
+  content: "";
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--octc-color-border);
+  border-top-color: var(--octc-color-primary);
+  border-radius: 50%;
+  animation: ox-mermaid-spin 0.8s linear infinite;
+}
+
+@keyframes ox-mermaid-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .ox-mermaid {
+    padding: 1rem;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}

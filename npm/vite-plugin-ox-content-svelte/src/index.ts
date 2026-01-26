@@ -23,7 +23,7 @@ export type {
   ComponentsOption,
   ComponentsMap,
   SvelteTransformResult,
-  ComponentSlot,
+  ComponentIsland,
 } from "./types";
 
 /**

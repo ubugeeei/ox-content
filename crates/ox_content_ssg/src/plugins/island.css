@@ -1,0 +1,113 @@
+/* ox-content Island Plugin - Hydration styles */
+
+/* Island container */
+[data-ox-island] {
+  display: contents;
+}
+
+/* Island with explicit block display */
+[data-ox-island].ox-island-block {
+  display: block;
+}
+
+/* Loading state indicator */
+[data-ox-island][data-ox-load]:not([data-ox-hydrated]) {
+  position: relative;
+}
+
+/* Optional: Show loading indicator for visible-loaded islands */
+[data-ox-island][data-ox-load="visible"]:not([data-ox-hydrated])::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--octc-color-border);
+  border-top-color: var(--octc-color-primary);
+  border-radius: 50%;
+  animation: ox-island-spin 0.8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show spinner only after a delay to avoid flash */
+[data-ox-island][data-ox-load="visible"]:not([data-ox-hydrated]).ox-island-loading::before {
+  opacity: 1;
+}
+
+@keyframes ox-island-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hydrated state */
+[data-ox-island][data-ox-hydrated] {
+  /* Island has been hydrated */
+}
+
+/* Fallback content (shown when JS is disabled) */
+.ox-island-fallback {
+  display: none;
+}
+
+@media (scripting: none) {
+  [data-ox-island] {
+    display: none !important;
+  }
+
+  .ox-island-fallback {
+    display: block;
+  }
+}
+
+/* Alternative: noscript-based fallback */
+noscript .ox-island-fallback {
+  display: block;
+}
+
+/* Error state */
+[data-ox-island].ox-island-error {
+  border: 1px solid #f87171;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+[data-ox-island].ox-island-error::after {
+  content: attr(data-ox-error);
+  display: block;
+  color: #f87171;
+  font-size: 0.875rem;
+}
+
+/* Skeleton placeholder for islands */
+.ox-island-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--octc-color-bg-alt) 25%,
+    var(--octc-color-border) 50%,
+    var(--octc-color-bg-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: ox-island-shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes ox-island-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Common skeleton sizes */
+.ox-island-skeleton-sm {
+  height: 2rem;
+}
+
+.ox-island-skeleton-md {
+  height: 4rem;
+}
+
+.ox-island-skeleton-lg {
+  height: 8rem;
+}

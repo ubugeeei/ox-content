@@ -23,7 +23,7 @@ export type {
   ComponentsOption,
   ComponentsMap,
   ReactTransformResult,
-  ComponentSlot,
+  ComponentIsland,
 } from "./types";
 
 /**
@@ -198,7 +198,7 @@ export function OxContentRenderer({ content, components = {} }) {
 
   if (!content) return null;
 
-  const { html, frontmatter, slots } = content;
+  const { html, frontmatter, islands } = content;
 
   if (!mounted) {
     return React.createElement('div', {
@@ -208,10 +208,10 @@ export function OxContentRenderer({ content, components = {} }) {
   }
 
   return React.createElement('div', { className: 'ox-content' },
-    slots.map((slot) => {
-      const Component = components[slot.name];
+    islands.map((island) => {
+      const Component = components[island.name];
       return Component
-        ? React.createElement(Component, { key: slot.id, ...slot.props })
+        ? React.createElement(Component, { key: island.id, ...island.props })
         : null;
     })
   );

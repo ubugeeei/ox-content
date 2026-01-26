@@ -885,11 +885,11 @@ pub struct JsSocialLinks {
     pub discord: Option<String>,
 }
 
-/// Theme slots for JavaScript.
+/// Embedded HTML content for specific positions.
 #[napi(object)]
 #[derive(Clone, Default)]
-pub struct JsThemeSlots {
-    /// Content to inject into <head>.
+pub struct JsThemeEmbed {
+    /// Content to embed into <head>.
     pub head: Option<String>,
     /// Content before header.
     pub header_before: Option<String>,
@@ -927,8 +927,8 @@ pub struct JsThemeConfig {
     pub footer: Option<JsThemeFooter>,
     /// Social links configuration.
     pub social_links: Option<JsSocialLinks>,
-    /// Custom slots for HTML injection.
-    pub slots: Option<JsThemeSlots>,
+    /// Embedded HTML content at specific positions.
+    pub embed: Option<JsThemeEmbed>,
     /// Additional custom CSS.
     pub css: Option<String>,
     /// Additional custom JavaScript.
@@ -988,16 +988,16 @@ fn convert_theme_config(theme: Option<JsThemeConfig>) -> Option<ox_content_ssg::
             twitter: s.twitter,
             discord: s.discord,
         }),
-        slots: t.slots.map(|s| ox_content_ssg::ThemeSlots {
-            head: s.head,
-            header_before: s.header_before,
-            header_after: s.header_after,
-            sidebar_before: s.sidebar_before,
-            sidebar_after: s.sidebar_after,
-            content_before: s.content_before,
-            content_after: s.content_after,
-            footer_before: s.footer_before,
-            footer: s.footer,
+        embed: t.embed.map(|e| ox_content_ssg::ThemeEmbed {
+            head: e.head,
+            header_before: e.header_before,
+            header_after: e.header_after,
+            sidebar_before: e.sidebar_before,
+            sidebar_after: e.sidebar_after,
+            content_before: e.content_before,
+            content_after: e.content_after,
+            footer_before: e.footer_before,
+            footer: e.footer,
         }),
         css: t.css,
         js: t.js,

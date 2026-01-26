@@ -98,9 +98,9 @@ export interface VueTransformResult {
 }
 
 /**
- * Slot information for component rendering.
+ * Island information for component rendering.
  */
-export interface ComponentSlot {
+export interface ComponentIsland {
   /**
    * Component name.
    */
@@ -114,27 +114,27 @@ export interface ComponentSlot {
    */
   position: number;
   /**
-   * Slot placeholder ID.
+   * Island placeholder ID.
    */
   id: string;
   /**
-   * Raw slot content extracted from Markdown.
+   * Raw island content extracted from Markdown.
    */
   content?: string;
 }
 
 /**
- * Parsed Markdown content with Vue component slots.
+ * Parsed Markdown content with Vue component islands.
  */
 export interface ParsedMarkdownContent {
   /**
-   * HTML content with slot placeholders.
+   * HTML content with island placeholders.
    */
   html: string;
   /**
-   * Component slots to render.
+   * Component islands to render.
    */
-  slots: ComponentSlot[];
+  islands: ComponentIsland[];
   /**
    * Frontmatter data.
    */

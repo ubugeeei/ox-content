@@ -422,6 +422,21 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1(webpack@5.104.1)
 
+  npm/ox-content-islands:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260124.1
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.12.9(@typescript/native-preview@7.0.0-dev.20260124.1)(typescript@5.9.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
   npm/unplugin-ox-content:
     dependencies:
       '@ox-content/napi':

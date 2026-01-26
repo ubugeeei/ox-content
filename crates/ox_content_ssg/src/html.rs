@@ -80,9 +80,9 @@ pub struct SocialLinks {
     pub discord: Option<String>,
 }
 
-/// Theme slots for injecting custom HTML.
+/// Embedded HTML content for specific positions in the page layout.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct ThemeSlots {
+pub struct ThemeEmbed {
     /// Content to inject into <head>.
     pub head: Option<String>,
     /// Content before header.
@@ -120,8 +120,8 @@ pub struct ThemeConfig {
     pub footer: Option<ThemeFooter>,
     /// Social links configuration.
     pub social_links: Option<SocialLinks>,
-    /// Custom slots for HTML injection.
-    pub slots: Option<ThemeSlots>,
+    /// Embedded HTML content at specific positions.
+    pub embed: Option<ThemeEmbed>,
     /// Additional custom CSS.
     pub css: Option<String>,
     /// Additional custom JavaScript.
@@ -265,6 +265,24 @@ const SSG_CSS: &str = include_str!("ssg.css");
 
 /// CSS styles for Entry pages (hero, features).
 const ENTRY_CSS: &str = include_str!("entry.css");
+
+/// CSS styles for Tabs plugin.
+const TABS_CSS: &str = include_str!("plugins/tabs.css");
+
+/// CSS styles for YouTube plugin.
+const YOUTUBE_CSS: &str = include_str!("plugins/youtube.css");
+
+/// CSS styles for GitHub plugin.
+const GITHUB_CSS: &str = include_str!("plugins/github.css");
+
+/// CSS styles for OGP plugin.
+const OGP_CSS: &str = include_str!("plugins/ogp.css");
+
+/// CSS styles for Mermaid plugin.
+const MERMAID_CSS: &str = include_str!("plugins/mermaid.css");
+
+/// CSS styles for Island plugin.
+const ISLAND_CSS: &str = include_str!("plugins/island.css");
 
 /// JavaScript for SSG pages.
 const SSG_JS: &str = include_str!("ssg.js");
@@ -611,7 +629,7 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
 
     // Theme configuration
     let theme = config.theme.as_ref();
-    let slots = theme.and_then(|t| t.slots.as_ref());
+    let embed = theme.and_then(|t| t.embed.as_ref());
 
     // Generate theme CSS overrides
     let theme_css = theme.map_or(String::new(), generate_theme_css);
@@ -626,22 +644,23 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
     let is_entry_page = page_data.entry_page.is_some();
     let entry_css = if is_entry_page { ENTRY_CSS } else { "" };
 
-    // Combine all CSS
-    let all_css = format!("{SSG_CSS}{entry_css}{footer_css}{theme_css}");
+    // Combine all CSS (including plugins)
+    let plugins_css = format!("{TABS_CSS}{YOUTUBE_CSS}{GITHUB_CSS}{OGP_CSS}{MERMAID_CSS}{ISLAND_CSS}");
+    let all_css = format!("{SSG_CSS}{entry_css}{plugins_css}{footer_css}{theme_css}");
 
-    // Slots
-    let head_slot = slots.and_then(|s| s.head.as_deref()).unwrap_or("");
-    let header_before_slot = slots.and_then(|s| s.header_before.as_deref()).unwrap_or("");
-    let header_after_slot = slots.and_then(|s| s.header_after.as_deref()).unwrap_or("");
-    let sidebar_before_slot = slots.and_then(|s| s.sidebar_before.as_deref()).unwrap_or("");
-    let sidebar_after_slot = slots.and_then(|s| s.sidebar_after.as_deref()).unwrap_or("");
-    let content_before_slot = slots.and_then(|s| s.content_before.as_deref()).unwrap_or("");
-    let content_after_slot = slots.and_then(|s| s.content_after.as_deref()).unwrap_or("");
-    let footer_before_slot = slots.and_then(|s| s.footer_before.as_deref()).unwrap_or("");
+    // Embedded HTML for specific positions
+    let embed_head = embed.and_then(|e| e.head.as_deref()).unwrap_or("");
+    let embed_header_before = embed.and_then(|e| e.header_before.as_deref()).unwrap_or("");
+    let embed_header_after = embed.and_then(|e| e.header_after.as_deref()).unwrap_or("");
+    let embed_sidebar_before = embed.and_then(|e| e.sidebar_before.as_deref()).unwrap_or("");
+    let embed_sidebar_after = embed.and_then(|e| e.sidebar_after.as_deref()).unwrap_or("");
+    let embed_content_before = embed.and_then(|e| e.content_before.as_deref()).unwrap_or("");
+    let embed_content_after = embed.and_then(|e| e.content_after.as_deref()).unwrap_or("");
+    let embed_footer_before = embed.and_then(|e| e.footer_before.as_deref()).unwrap_or("");
 
     // Footer HTML
-    let footer_html = if let Some(custom_footer) = slots.and_then(|s| s.footer.clone()) {
-        custom_footer
+    let footer_html = if let Some(embed_footer) = embed.and_then(|e| e.footer.clone()) {
+        embed_footer
     } else if let Some(t) = theme {
         generate_footer_html(t)
     } else {
@@ -714,11 +733,11 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{title} - {site_name}">
   <style>{css}</style>
-  {head_slot}
+  {embed_head}
   <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
 </head>
 <body{body_class}>
-{header_before_slot}
+{embed_header_before}
   <header class="header">
     <button class="menu-toggle" aria-label="Toggle menu">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
@@ -747,7 +766,7 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
       </button>
     </div>
   </header>
-{header_after_slot}
+{embed_header_after}
   <div class="search-modal-overlay">
     <div class="search-modal">
       <div class="search-header">
@@ -768,17 +787,17 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
   <div class="overlay"></div>
   <div class="layout">
     <aside class="sidebar">
-{sidebar_before_slot}
+{embed_sidebar_before}
       <nav>
 {navigation}
       </nav>
-{sidebar_after_slot}
+{embed_sidebar_after}
     </aside>
     <main class="main">
-{content_before_slot}
+{embed_content_before}
 {main_content}
-{content_after_slot}
-{footer_before_slot}
+{embed_content_after}
+{embed_footer_before}
 {footer_html}
     </main>
   </div>
@@ -814,20 +833,20 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         description_meta = description_meta,
         og_image_meta = og_image_meta,
         css = all_css,
-        head_slot = head_slot,
+        embed_head = embed_head,
         body_class = body_class,
-        header_before_slot = header_before_slot,
-        header_after_slot = header_after_slot,
+        embed_header_before = embed_header_before,
+        embed_header_after = embed_header_after,
         logo_src = logo_src,
         logo_width = logo_width,
         logo_height = logo_height,
-        sidebar_before_slot = sidebar_before_slot,
+        embed_sidebar_before = embed_sidebar_before,
         navigation = nav_html,
-        sidebar_after_slot = sidebar_after_slot,
-        content_before_slot = content_before_slot,
+        embed_sidebar_after = embed_sidebar_after,
+        embed_content_before = embed_content_before,
         main_content = main_content,
-        content_after_slot = content_after_slot,
-        footer_before_slot = footer_before_slot,
+        embed_content_after = embed_content_after,
+        embed_footer_before = embed_footer_before,
         footer_html = footer_html,
         social_links = social_links_html,
         mobile_social_links = mobile_social_links_html,
