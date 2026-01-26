@@ -1,13 +1,5 @@
 # math.ts
 
-## Table of Contents
-
-- [clamp](#clamp)
-- [lerp](#lerp)
-- [round](#round)
-
----
-
 ## clamp
 
 `function`

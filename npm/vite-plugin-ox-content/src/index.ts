@@ -33,6 +33,12 @@ export type {
   ResolvedSearchOptions,
   SearchDocument,
   SearchResult,
+  // Entry page types
+  HeroAction,
+  HeroImage,
+  HeroConfig,
+  FeatureConfig,
+  EntryPageConfig,
 } from "./types";
 
 /**
@@ -47,7 +53,7 @@ export type {
  * export default defineConfig({
  *   plugins: [
  *     oxContent({
- *       srcDir: 'docs',
+ *       srcDir: 'content',
  *       gfm: true,
  *     }),
  *   ],
@@ -317,7 +323,7 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
  */
 function resolveOptions(options: OxContentOptions): ResolvedOptions {
   return {
-    srcDir: options.srcDir ?? "docs",
+    srcDir: options.srcDir ?? "content",
     outDir: options.outDir ?? "dist",
     base: options.base ?? "/",
     ssg: resolveSsgOptions(options.ssg),
@@ -370,4 +376,70 @@ export { transformMarkdown } from "./transform";
 export { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from "./docs";
 export { buildSsg, resolveSsgOptions, DEFAULT_HTML_TEMPLATE } from "./ssg";
 export { resolveSearchOptions, buildSearchIndex, writeSearchIndex } from "./search";
+export {
+  defineTheme,
+  defaultTheme,
+  mergeThemes,
+  resolveTheme,
+} from "./theme";
+export type {
+  ThemeConfig,
+  ThemeColors,
+  ThemeLayout,
+  ThemeFonts,
+  ThemeHeader,
+  ThemeFooter,
+  SocialLinks,
+  ThemeSlots,
+  ResolvedThemeConfig,
+} from "./theme";
 export * from "./types";
+
+// JSX Runtime
+export {
+  jsx,
+  jsxs,
+  Fragment,
+  renderToString,
+  raw,
+  when,
+  each,
+} from "./jsx-runtime";
+export type { JSXNode, JSXChild, JSXProps, JSXElementType } from "./jsx-runtime";
+
+// Page Context
+export {
+  usePageProps,
+  useSiteConfig,
+  useRenderContext,
+  useNav,
+  useIsActive,
+  setRenderContext,
+  clearRenderContext,
+  generateFrontmatterTypes,
+  inferType,
+} from "./page-context";
+export type {
+  BasePageProps,
+  PageProps,
+  SiteConfig,
+  NavGroup,
+  NavItem,
+  RenderContext,
+  FrontmatterSchema,
+} from "./page-context";
+
+// Theme Renderer
+export {
+  renderPage,
+  renderAllPages,
+  generateTypes,
+  DefaultTheme,
+  createTheme,
+} from "./theme-renderer";
+export type {
+  ThemeComponent,
+  ThemeProps,
+  PageData,
+  ThemeRenderOptions,
+} from "./theme-renderer";

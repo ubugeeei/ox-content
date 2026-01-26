@@ -22,7 +22,7 @@ import type { ResolvedOptions } from "./types";
  * export default defineConfig({
  *   environments: {
  *     markdown: createMarkdownEnvironment({
- *       srcDir: 'docs',
+ *       srcDir: 'content',
  *       gfm: true,
  *     }),
  *   },

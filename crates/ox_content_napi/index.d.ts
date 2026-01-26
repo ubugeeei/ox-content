@@ -200,6 +200,59 @@ export interface JsSsgNavGroup {
   /** Navigation items. */
   items: Array<JsSsgNavItem>
 }
+/** Hero action for entry page. */
+export interface JsHeroAction {
+  /** Button theme: "brand" or "alt". */
+  theme?: string
+  /** Button text. */
+  text: string
+  /** Link URL. */
+  link: string
+}
+/** Hero image for entry page. */
+export interface JsHeroImage {
+  /** Image source URL. */
+  src: string
+  /** Alt text. */
+  alt?: string
+  /** Image width. */
+  width?: number
+  /** Image height. */
+  height?: number
+}
+/** Hero section configuration for entry page. */
+export interface JsHeroConfig {
+  /** Main title (large, gradient text). */
+  name?: string
+  /** Secondary text. */
+  text?: string
+  /** Tagline. */
+  tagline?: string
+  /** Hero image. */
+  image?: JsHeroImage
+  /** Action buttons. */
+  actions?: Array<JsHeroAction>
+}
+/** Feature card for entry page. */
+export interface JsFeatureConfig {
+  /** Icon - supports: "mdi:icon-name" (Iconify), image URL, or emoji. */
+  icon?: string
+  /** Feature title. */
+  title: string
+  /** Feature description. */
+  details?: string
+  /** Optional link. */
+  link?: string
+  /** Link text. */
+  linkText?: string
+}
+/** Entry page configuration. */
+export interface JsEntryPageConfig {
+  /** Hero section. */
+  hero?: JsHeroConfig
+  /** Feature cards. */
+  features?: Array<JsFeatureConfig>
+}
 /** Page data for SSG. */
 export interface JsSsgPageData {
   /** Page title. */
@@ -212,6 +265,114 @@ export interface JsSsgPageData {
   toc: Array<TocEntry>
   /** URL path. */
   path: string
+  /** Entry page configuration (if layout: entry). */
+  entryPage?: JsEntryPageConfig
+}
+/** Theme colors for JavaScript. */
+export interface JsThemeColors {
+  /** Primary accent color. */
+  primary?: string
+  /** Primary color on hover. */
+  primaryHover?: string
+  /** Background color. */
+  background?: string
+  /** Alternative background color. */
+  backgroundAlt?: string
+  /** Main text color. */
+  text?: string
+  /** Muted text color. */
+  textMuted?: string
+  /** Border color. */
+  border?: string
+  /** Code block background color. */
+  codeBackground?: string
+  /** Code block text color. */
+  codeText?: string
+}
+/** Theme fonts for JavaScript. */
+export interface JsThemeFonts {
+  /** Sans-serif font stack. */
+  sans?: string
+  /** Monospace font stack. */
+  mono?: string
+}
+/** Theme layout for JavaScript. */
+export interface JsThemeLayout {
+  /** Sidebar width (CSS value). */
+  sidebarWidth?: string
+  /** Header height (CSS value). */
+  headerHeight?: string
+  /** Maximum content width (CSS value). */
+  maxContentWidth?: string
+}
+/** Theme header for JavaScript. */
+export interface JsThemeHeader {
+  /** Logo image URL. */
+  logo?: string
+  /** Logo width in pixels. */
+  logoWidth?: number
+  /** Logo height in pixels. */
+  logoHeight?: number
+}
+/** Theme footer for JavaScript. */
+export interface JsThemeFooter {
+  /** Footer message (supports HTML). */
+  message?: string
+  /** Copyright text (supports HTML). */
+  copyright?: string
+}
+/** Social links for JavaScript. */
+export interface JsSocialLinks {
+  /** GitHub URL. */
+  github?: string
+  /** Twitter/X URL. */
+  twitter?: string
+  /** Discord URL. */
+  discord?: string
+}
+/** Theme slots for JavaScript. */
+export interface JsThemeSlots {
+  /** Content to inject into <head>. */
+  head?: string
+  /** Content before header. */
+  headerBefore?: string
+  /** Content after header. */
+  headerAfter?: string
+  /** Content before sidebar navigation. */
+  sidebarBefore?: string
+  /** Content after sidebar navigation. */
+  sidebarAfter?: string
+  /** Content before main content. */
+  contentBefore?: string
+  /** Content after main content. */
+  contentAfter?: string
+  /** Content before footer. */
+  footerBefore?: string
+  /** Custom footer content. */
+  footer?: string
+}
+/** Theme configuration for JavaScript. */
+export interface JsThemeConfig {
+  /** Light mode colors. */
+  colors?: JsThemeColors
+  /** Dark mode colors. */
+  darkColors?: JsThemeColors
+  /** Font configuration. */
+  fonts?: JsThemeFonts
+  /** Layout configuration. */
+  layout?: JsThemeLayout
+  /** Header configuration. */
+  header?: JsThemeHeader
+  /** Footer configuration. */
+  footer?: JsThemeFooter
+  /** Social links configuration. */
+  socialLinks?: JsSocialLinks
+  /** Custom slots for HTML injection. */
+  slots?: JsThemeSlots
+  /** Additional custom CSS. */
+  css?: string
+  /** Additional custom JavaScript. */
+  js?: string
 }
 /** SSG configuration. */
 export interface JsSsgConfig {
@@ -221,6 +382,8 @@ export interface JsSsgConfig {
   base: string
   /** OG image URL. */
   ogImage?: string
+  /** Theme configuration. */
+  theme?: JsThemeConfig
 }
 /** Generates SSG HTML page with navigation and search. */
 export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Array<JsSsgNavGroup>, config: JsSsgConfig): string

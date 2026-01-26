@@ -2,6 +2,82 @@
  * Type definitions for vite-plugin-ox-content
  */
 
+import type { ThemeConfig, ResolvedThemeConfig } from "./theme";
+
+// =============================================================================
+// Entry Page Types (VitePress-like)
+// =============================================================================
+
+/**
+ * Hero section action button.
+ */
+export interface HeroAction {
+  /** Button theme: 'brand' (primary) or 'alt' (secondary) */
+  theme?: "brand" | "alt";
+  /** Button text */
+  text: string;
+  /** Link URL */
+  link: string;
+}
+
+/**
+ * Hero section image configuration.
+ */
+export interface HeroImage {
+  /** Image source URL */
+  src: string;
+  /** Alt text */
+  alt?: string;
+  /** Image width */
+  width?: number;
+  /** Image height */
+  height?: number;
+}
+
+/**
+ * Hero section configuration for entry page.
+ */
+export interface HeroConfig {
+  /** Main title (large, gradient text) */
+  name?: string;
+  /** Secondary text (medium size) */
+  text?: string;
+  /** Tagline (smaller, muted) */
+  tagline?: string;
+  /** Hero image */
+  image?: HeroImage;
+  /** Action buttons */
+  actions?: HeroAction[];
+}
+
+/**
+ * Feature card for entry page.
+ */
+export interface FeatureConfig {
+  /** Icon - supports: "mdi:icon-name" (Iconify), image URL, or emoji */
+  icon?: string;
+  /** Feature title */
+  title: string;
+  /** Feature description */
+  details?: string;
+  /** Optional link */
+  link?: string;
+  /** Link text */
+  linkText?: string;
+}
+
+/**
+ * Entry page frontmatter configuration.
+ */
+export interface EntryPageConfig {
+  /** Layout type - set to 'entry' for entry page */
+  layout: "entry";
+  /** Hero section */
+  hero?: HeroConfig;
+  /** Feature cards */
+  features?: FeatureConfig[];
+}
+
 /**
  * SSG (Static Site Generation) options.
  */
@@ -55,6 +131,12 @@ export interface SsgOptions {
    * Example: 'https://example.com'
    */
   siteUrl?: string;
+
+  /**
+   * Theme configuration for customizing the SSG output.
+   * Use defineTheme() to create a theme configuration.
+   */
+  theme?: ThemeConfig;
 }
 
 /**
@@ -69,6 +151,7 @@ export interface ResolvedSsgOptions {
   ogImage?: string;
   generateOgImage: boolean;
   siteUrl?: string;
+  theme?: ResolvedThemeConfig;
 }
 
 /**
@@ -77,7 +160,7 @@ export interface ResolvedSsgOptions {
 export interface OxContentOptions {
   /**
    * Source directory for Markdown files.
-   * @default 'docs'
+   * @default 'content'
    */
   srcDir?: string;
 
