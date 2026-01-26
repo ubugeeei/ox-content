@@ -1,5 +1,5 @@
 import { defineConfig } from "vite"
-import { oxContent } from "vite-plugin-ox-content"
+import { oxContent, defineTheme, defaultTheme } from "vite-plugin-ox-content"
 
 /**
  * Ox Content Documentation Site
@@ -21,10 +21,17 @@ export default defineConfig(({ mode }) => {
         outDir: "dist/docs",
         base,
 
-        // SSG options
+        // SSG options with theme customization
         ssg: {
           siteName: "Ox Content",
           ogImage: "https://ubugeeei.github.io/ox-content/og-image.png",
+          theme: defineTheme({
+            extends: defaultTheme,
+            footer: {
+              message: 'Released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>.',
+              copyright: `Copyright © 2024-${new Date().getFullYear()} ubugeeei`,
+            },
+          }),
         },
 
         // Enable syntax highlighting with Shiki

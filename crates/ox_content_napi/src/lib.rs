@@ -731,6 +731,126 @@ pub struct JsSsgPageData {
     pub path: String,
 }
 
+// =============================================================================
+// Theme Configuration Types for NAPI
+// =============================================================================
+
+/// Theme colors for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeColors {
+    /// Primary accent color.
+    pub primary: Option<String>,
+    /// Primary color on hover.
+    pub primary_hover: Option<String>,
+    /// Background color.
+    pub background: Option<String>,
+    /// Alternative background color.
+    pub background_alt: Option<String>,
+    /// Main text color.
+    pub text: Option<String>,
+    /// Muted text color.
+    pub text_muted: Option<String>,
+    /// Border color.
+    pub border: Option<String>,
+    /// Code block background color.
+    pub code_background: Option<String>,
+    /// Code block text color.
+    pub code_text: Option<String>,
+}
+
+/// Theme fonts for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeFonts {
+    /// Sans-serif font stack.
+    pub sans: Option<String>,
+    /// Monospace font stack.
+    pub mono: Option<String>,
+}
+
+/// Theme layout for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeLayout {
+    /// Sidebar width (CSS value).
+    pub sidebar_width: Option<String>,
+    /// Header height (CSS value).
+    pub header_height: Option<String>,
+    /// Maximum content width (CSS value).
+    pub max_content_width: Option<String>,
+}
+
+/// Theme header for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeHeader {
+    /// Logo image URL.
+    pub logo: Option<String>,
+    /// Logo width in pixels.
+    pub logo_width: Option<u32>,
+    /// Logo height in pixels.
+    pub logo_height: Option<u32>,
+}
+
+/// Theme footer for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeFooter {
+    /// Footer message (supports HTML).
+    pub message: Option<String>,
+    /// Copyright text (supports HTML).
+    pub copyright: Option<String>,
+}
+
+/// Theme slots for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeSlots {
+    /// Content to inject into <head>.
+    pub head: Option<String>,
+    /// Content before header.
+    pub header_before: Option<String>,
+    /// Content after header.
+    pub header_after: Option<String>,
+    /// Content before sidebar navigation.
+    pub sidebar_before: Option<String>,
+    /// Content after sidebar navigation.
+    pub sidebar_after: Option<String>,
+    /// Content before main content.
+    pub content_before: Option<String>,
+    /// Content after main content.
+    pub content_after: Option<String>,
+    /// Content before footer.
+    pub footer_before: Option<String>,
+    /// Custom footer content.
+    pub footer: Option<String>,
+}
+
+/// Theme configuration for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeConfig {
+    /// Light mode colors.
+    pub colors: Option<JsThemeColors>,
+    /// Dark mode colors.
+    pub dark_colors: Option<JsThemeColors>,
+    /// Font configuration.
+    pub fonts: Option<JsThemeFonts>,
+    /// Layout configuration.
+    pub layout: Option<JsThemeLayout>,
+    /// Header configuration.
+    pub header: Option<JsThemeHeader>,
+    /// Footer configuration.
+    pub footer: Option<JsThemeFooter>,
+    /// Custom slots for HTML injection.
+    pub slots: Option<JsThemeSlots>,
+    /// Additional custom CSS.
+    pub css: Option<String>,
+    /// Additional custom JavaScript.
+    pub js: Option<String>,
+}
+
 /// SSG configuration.
 #[napi(object)]
 #[derive(Clone)]
@@ -741,6 +861,59 @@ pub struct JsSsgConfig {
     pub base: String,
     /// OG image URL.
     pub og_image: Option<String>,
+    /// Theme configuration.
+    pub theme: Option<JsThemeConfig>,
+}
+
+/// Converts JsThemeColors to ox_content_ssg::ThemeColors.
+fn convert_theme_colors(colors: Option<JsThemeColors>) -> Option<ox_content_ssg::ThemeColors> {
+    colors.map(|c| ox_content_ssg::ThemeColors {
+        primary: c.primary,
+        primary_hover: c.primary_hover,
+        background: c.background,
+        background_alt: c.background_alt,
+        text: c.text,
+        text_muted: c.text_muted,
+        border: c.border,
+        code_background: c.code_background,
+        code_text: c.code_text,
+    })
+}
+
+/// Converts JsThemeConfig to ox_content_ssg::ThemeConfig.
+fn convert_theme_config(theme: Option<JsThemeConfig>) -> Option<ox_content_ssg::ThemeConfig> {
+    theme.map(|t| ox_content_ssg::ThemeConfig {
+        colors: convert_theme_colors(t.colors),
+        dark_colors: convert_theme_colors(t.dark_colors),
+        fonts: t.fonts.map(|f| ox_content_ssg::ThemeFonts { sans: f.sans, mono: f.mono }),
+        layout: t.layout.map(|l| ox_content_ssg::ThemeLayout {
+            sidebar_width: l.sidebar_width,
+            header_height: l.header_height,
+            max_content_width: l.max_content_width,
+        }),
+        header: t.header.map(|h| ox_content_ssg::ThemeHeader {
+            logo: h.logo,
+            logo_width: h.logo_width,
+            logo_height: h.logo_height,
+        }),
+        footer: t.footer.map(|f| ox_content_ssg::ThemeFooter {
+            message: f.message,
+            copyright: f.copyright,
+        }),
+        slots: t.slots.map(|s| ox_content_ssg::ThemeSlots {
+            head: s.head,
+            header_before: s.header_before,
+            header_after: s.header_after,
+            sidebar_before: s.sidebar_before,
+            sidebar_after: s.sidebar_after,
+            content_before: s.content_before,
+            content_after: s.content_after,
+            footer_before: s.footer_before,
+            footer: s.footer,
+        }),
+        css: t.css,
+        js: t.js,
+    })
 }
 
 /// Generates SSG HTML page with navigation and search.
@@ -779,6 +952,7 @@ pub fn generate_ssg_html(
         site_name: config.site_name,
         base: config.base,
         og_image: config.og_image,
+        theme: convert_theme_config(config.theme),
     };
 
     ox_content_ssg::generate_html(&ssg_page_data, &ssg_nav_groups, &ssg_config)

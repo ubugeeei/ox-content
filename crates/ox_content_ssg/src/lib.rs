@@ -12,6 +12,7 @@
 //! - Client-side search integration
 //! - Dark/light theme support
 //! - Mobile-friendly responsive design
+//! - Customizable theme configuration
 //!
 //! # Example
 //!
@@ -39,6 +40,7 @@
 //!     site_name: "My Docs".to_string(),
 //!     base: "/docs/".to_string(),
 //!     og_image: None,
+//!     theme: None,
 //! };
 //!
 //! let html = generate_html(&page_data, &nav_groups, &config);
@@ -46,4 +48,7 @@
 
 mod html;
 
-pub use html::{generate_html, NavGroup, NavItem, PageData, SsgConfig, TocEntry};
+pub use html::{
+    generate_html, NavGroup, NavItem, PageData, SsgConfig, ThemeColors, ThemeConfig, ThemeFonts,
+    ThemeFooter, ThemeHeader, ThemeLayout, ThemeSlots, TocEntry,
+};

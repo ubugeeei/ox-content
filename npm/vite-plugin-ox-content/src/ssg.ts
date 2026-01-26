@@ -8,6 +8,8 @@ import { glob } from "glob";
 import { transformMarkdown, generateOgImageSvg } from "./transform";
 import type { OgImageData, OgImageConfig } from "./transform";
 import type { ResolvedOptions, ResolvedSsgOptions, SsgOptions, TocEntry } from "./types";
+import { resolveTheme, themeToNapi } from "./theme";
+import type { ResolvedThemeConfig, NapiThemeConfig } from "./theme";
 
 /**
  * Navigation item for SSG.
@@ -796,6 +798,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
       clean: false,
       bare: false,
       generateOgImage: false,
+      theme: resolveTheme(undefined),
     };
   }
 
@@ -808,6 +811,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
     ogImage: ssg.ogImage,
     generateOgImage: ssg.generateOgImage ?? false,
     siteUrl: ssg.siteUrl,
+    theme: resolveTheme(ssg.theme),
   };
 }
 
@@ -915,6 +919,7 @@ export async function generateHtmlPage(
   siteName: string,
   base: string,
   ogImage?: string,
+  theme?: ResolvedThemeConfig,
 ): Promise<string> {
   const mod = await import("@ox-content/napi");
 
@@ -935,6 +940,9 @@ export async function generateHtmlPage(
     })),
   }));
 
+  // Convert theme to NAPI format if provided
+  const themeForRust = theme ? themeToNapi(theme) : undefined;
+
   return mod.generateSsgHtml(
     {
       title: pageData.title,
@@ -948,6 +956,7 @@ export async function generateHtmlPage(
       siteName,
       base,
       ogImage,
+      theme: themeForRust,
     },
   );
 }
@@ -1275,7 +1284,7 @@ export async function buildSsg(
           path: getUrlPath(inputPath, srcDir),
           href: getHref(inputPath, srcDir, base, ssgOptions.extension),
         };
-        html = await generateHtmlPage(pageData, navItems, siteName, base, pageOgImage);
+        html = await generateHtmlPage(pageData, navItems, siteName, base, pageOgImage, ssgOptions.theme);
       }
 
       // Write output file

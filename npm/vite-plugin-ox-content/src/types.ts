@@ -2,6 +2,8 @@
  * Type definitions for vite-plugin-ox-content
  */
 
+import type { ThemeConfig, ResolvedThemeConfig } from "./theme";
+
 /**
  * SSG (Static Site Generation) options.
  */
@@ -55,6 +57,12 @@ export interface SsgOptions {
    * Example: 'https://example.com'
    */
   siteUrl?: string;
+
+  /**
+   * Theme configuration for customizing the SSG output.
+   * Use defineTheme() to create a theme configuration.
+   */
+  theme?: ThemeConfig;
 }
 
 /**
@@ -69,6 +77,7 @@ export interface ResolvedSsgOptions {
   ogImage?: string;
   generateOgImage: boolean;
   siteUrl?: string;
+  theme?: ResolvedThemeConfig;
 }
 
 /**

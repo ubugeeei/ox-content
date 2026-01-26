@@ -370,4 +370,20 @@ export { transformMarkdown } from "./transform";
 export { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from "./docs";
 export { buildSsg, resolveSsgOptions, DEFAULT_HTML_TEMPLATE } from "./ssg";
 export { resolveSearchOptions, buildSearchIndex, writeSearchIndex } from "./search";
+export {
+  defineTheme,
+  defaultTheme,
+  mergeThemes,
+  resolveTheme,
+} from "./theme";
+export type {
+  ThemeConfig,
+  ThemeColors,
+  ThemeLayout,
+  ThemeFonts,
+  ThemeHeader,
+  ThemeFooter,
+  ThemeSlots,
+  ResolvedThemeConfig,
+} from "./theme";
 export * from "./types";

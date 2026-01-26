@@ -1,13 +1,5 @@
 # utils.ts
 
-## Table of Contents
-
-- [capitalize](#capitalize)
-- [truncate](#truncate)
-- [toKebabCase](#tokebabcase)
-
----
-
 ## capitalize
 
 `function`
@@ -47,7 +39,7 @@ Truncates a string to a specified length.
 export function truncate(
   str: string,
   maxLength: number,
-  suffix: string = '...'
+  suffix: string = "...",
   ): string
 ```
 
