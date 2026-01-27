@@ -1,0 +1,10 @@
+{% if message.is_some() || copyright.is_some() %}
+<footer class="site-footer">
+{% if let Some(msg) = message %}
+  <p class="footer-message">{{ msg|safe }}</p>
+{% endif %}
+{% if let Some(copy) = copyright %}
+  <p class="footer-copyright">{{ copy|safe }}</p>
+{% endif %}
+</footer>
+{% endif %}

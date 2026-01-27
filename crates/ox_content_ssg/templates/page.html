@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} - {{ site_name }}</title>
+  {% if let Some(desc) = description %}
+  <meta name="description" content="{{ desc }}">
+  <meta property="og:description" content="{{ desc }}">
+  <meta name="twitter:description" content="{{ desc }}">
+  {% endif %}
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ title }} - {{ site_name }}">
+  {% if let Some(img) = og_image %}
+  <meta property="og:image" content="{{ img }}">
+  <meta name="twitter:image" content="{{ img }}">
+  {% endif %}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ title }} - {{ site_name }}">
+  <style>{{ css|safe }}</style>
+  {{ embed_head|safe }}
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+</head>
+<body{% if !body_class.is_empty() %} class="{{ body_class }}"{% endif %}>
+{{ embed_header_before|safe }}
+  <header class="header">
+    <button class="menu-toggle" aria-label="Toggle menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+    <a href="{{ base }}index.html" class="header-title">
+      <img src="{{ logo_src }}" alt="" width="{{ logo_width }}" height="{{ logo_height }}" style="margin-right: 8px; vertical-align: middle;" />
+      {{ site_name }}
+    </a>
+    <div class="header-actions">
+{{ social_links|safe }}      <button class="search-button" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <span>Search</span>
+        <kbd>&#8984;K</kbd>
+      </button>
+      <button class="theme-toggle" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+{{ embed_header_after|safe }}
+  <div class="search-modal-overlay">
+    <div class="search-modal">
+      <div class="search-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Search documentation..." />
+        <button class="search-close">Esc</button>
+      </div>
+      <div class="search-results"></div>
+      <div class="search-footer">
+        <span><kbd>&#8593;</kbd><kbd>&#8595;</kbd> to navigate</span>
+        <span><kbd>Enter</kbd> to select</span>
+        <span><kbd>Esc</kbd> to close</span>
+      </div>
+    </div>
+  </div>
+  <div class="overlay"></div>
+  <div class="layout">
+    <aside class="sidebar">
+{{ embed_sidebar_before|safe }}
+      <nav>
+{{ navigation|safe }}
+      </nav>
+{{ embed_sidebar_after|safe }}
+    </aside>
+    <main class="main">
+{{ embed_content_before|safe }}
+{{ main_content|safe }}
+{{ embed_content_after|safe }}
+{{ embed_footer_before|safe }}
+{{ footer_html|safe }}
+    </main>
+  </div>
+  <footer class="mobile-footer">
+    <button class="mobile-footer-btn" aria-label="Menu" data-mobile-menu>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+      <span class="mobile-footer-label">Menu</span>
+    </button>
+    <button class="mobile-footer-btn" aria-label="Search" data-mobile-search>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <span class="mobile-footer-label">Search</span>
+    </button>
+{{ mobile_social_links|safe }}    <button class="mobile-footer-btn" aria-label="Theme" data-mobile-theme>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <span class="mobile-footer-label">Theme</span>
+    </button>
+  </footer>
+  <script>{{ js|safe }}</script>
+</body>
+</html>

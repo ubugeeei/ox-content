@@ -1,0 +1,53 @@
+{% if let Some(hero) = hero %}
+<section class="hero">
+  <div class="hero-content">
+{% if let Some(name) = hero.name %}
+    <h1 class="hero-name">{{ name }}</h1>
+{% endif %}
+{% if let Some(text) = hero.text %}
+    <p class="hero-text">{{ text }}</p>
+{% endif %}
+{% if let Some(tagline) = hero.tagline %}
+    <p class="hero-tagline">{{ tagline }}</p>
+{% endif %}
+{% if let Some(image) = hero.image %}
+    <div class="hero-image">
+      <img src="{{ image.src }}" alt="{{ image.alt.as_deref().unwrap_or("") }}"{% if let Some(w) = image.width %} width="{{ w }}"{% endif %}{% if let Some(h) = image.height %} height="{{ h }}"{% endif %} />
+    </div>
+{% endif %}
+{% if let Some(actions) = hero.actions %}
+{% if !actions.is_empty() %}
+    <div class="hero-actions">
+{% for action in actions %}
+      <a href="{{ action.href }}" class="hero-action {{ action.theme_class }}">{{ action.text }}</a>
+{% endfor %}
+    </div>
+{% endif %}
+{% endif %}
+  </div>
+</section>
+{% endif %}
+{% if let Some(features) = features %}
+{% if !features.is_empty() %}
+<section class="features">
+  <div class="features-grid">
+{% for feature in features %}
+    <{{ feature.tag }} class="feature-card"{{ feature.href_attr|safe }}>
+{% if let Some(icon_html) = feature.icon_html %}
+      <div class="feature-icon">{{ icon_html|safe }}</div>
+{% endif %}
+      <div class="feature-body">
+        <h3 class="feature-title">{{ feature.title }}</h3>
+{% if let Some(details) = feature.details %}
+        <p class="feature-details">{{ details }}</p>
+{% endif %}
+      </div>
+{% if feature.has_link %}
+      <span class="feature-link"></span>
+{% endif %}
+    </{{ feature.tag }}>
+{% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endif %}
