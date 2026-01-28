@@ -6,7 +6,38 @@ This document provides a deep dive into the architecture and design decisions of
 
 Ox Content is designed as a modular, high-performance Markdown processing toolkit. The architecture follows the Oxc philosophy of prioritizing speed, memory efficiency, and correctness.
 
-![Architecture Overview](../architecture-overview.svg)
+```mermaid
+graph TB
+    subgraph UserApps["User Applications"]
+        App[Your App]
+        DocSite[Documentation Site]
+        Blog[Blog]
+    end
+
+    subgraph JSPackages["JavaScript Packages"]
+        VitePlugin[vite-plugin-ox-content]
+        ViteVue[vite-plugin-ox-content-vue]
+        ViteReact[...-react]
+    end
+
+    subgraph NAPI["Node.js Bindings"]
+        NAPIPackage["@ox-content/napi"]
+    end
+
+    subgraph RustCore["Rust Core"]
+        Renderer[ox_content_renderer]
+        Parser[ox_content_parser]
+        AST[ox_content_ast]
+        Allocator[ox_content_allocator]
+    end
+
+    UserApps --> JSPackages
+    JSPackages --> NAPI
+    NAPI --> RustCore
+    Renderer --> AST
+    Parser --> AST
+    AST --> Allocator
+```
 
 ## Crate Structure
 
@@ -36,7 +67,20 @@ Ox Content uses [bumpalo](https://docs.rs/bumpalo) for arena-based allocation. T
 
 #### How Arena Allocation Works
 
-![Arena Allocation](../architecture-arena.svg)
+```mermaid
+graph LR
+    subgraph Traditional["Traditional Allocation"]
+        A1[A] --> H1[Heap]
+        B1[B] --> H2[Heap]
+        C1[C] --> H3[Heap]
+    end
+
+    subgraph Arena["Arena Allocation"]
+        A2[A] --> CM
+        B2[B] --> CM
+        C2[C] --> CM[Contiguous Memory]
+    end
+```
 
 **Traditional**: 4 separate heap allocations, 4 separate deallocations
 
@@ -263,7 +307,17 @@ fn generate_toc(document: &Document<'_>) -> Vec<TocEntry> {
 
 ### Architecture
 
-![Parser Architecture](../architecture-parser.svg)
+```mermaid
+graph TB
+    Source["Source Text<br/>(Markdown)"]
+    Lexer["Lexer<br/>Tokenizes input (logos crate)"]
+    Parser["Parser<br/>Builds AST from tokens"]
+    AST["AST<br/>Arena-allocated nodes"]
+
+    Source --> Lexer
+    Lexer --> Parser
+    Parser --> AST
+```
 
 ### Parser Options
 
@@ -383,7 +437,17 @@ URL encoding is also handled for link/image URLs.
 
 ### Architecture
 
-![NAPI Architecture](../architecture-napi.svg)
+```mermaid
+graph TB
+    JS["JavaScript / TypeScript"]
+    NPM["@ox-content/napi<br/>TypeScript types + JS wrapper"]
+    NAPI["ox_content_napi<br/>Rust NAPI binding layer"]
+    Core["ox_content_*<br/>Core Rust crates"]
+
+    JS --> NPM
+    NPM --> NAPI
+    NAPI --> Core
+```
 
 ### Data Transfer
 

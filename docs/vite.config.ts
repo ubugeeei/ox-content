@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => {
         highlight: true,
         highlightTheme: "vitesse-dark",
 
-        // Mermaid diagrams disabled (using SVG instead)
-        mermaid: false,
+        // Mermaid diagrams (native mmdc via NAPI)
+        mermaid: true,
 
         // API documentation generation (like cargo doc)
         docs: {

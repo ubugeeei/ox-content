@@ -34,7 +34,7 @@
 import YAML from "yaml";
 import type { ResolvedOptions, TransformResult, TocEntry } from "./types";
 import { highlightCode } from "./highlight";
-import { transformMermaid } from "./mermaid";
+import { transformMermaidStatic } from "./plugins/mermaid";
 
 /**
  * NAPI bindings for Rust-based Markdown processing.
@@ -409,7 +409,7 @@ export async function transformMarkdown(
 
   // Transform mermaid diagrams if enabled
   if (options.mermaid) {
-    html = await transformMermaid(html);
+    html = await transformMermaidStatic(html);
   }
 
   // Generate JavaScript module code

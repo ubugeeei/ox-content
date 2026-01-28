@@ -330,9 +330,9 @@ export interface JsSocialLinks {
   /** Discord URL. */
   discord?: string
 }
-/** Theme slots for JavaScript. */
-export interface JsThemeSlots {
-  /** Content to inject into <head>. */
+/** Embedded HTML content for specific positions. */
+export interface JsThemeEmbed {
+  /** Content to embed into <head>. */
   head?: string
   /** Content before header. */
   headerBefore?: string
@@ -367,8 +367,8 @@ export interface JsThemeConfig {
   footer?: JsThemeFooter
   /** Social links configuration. */
   socialLinks?: JsSocialLinks
-  /** Custom slots for HTML injection. */
-  slots?: JsThemeSlots
+  /** Embedded HTML content at specific positions. */
+  embed?: JsThemeEmbed
   /** Additional custom CSS. */
   css?: string
   /** Additional custom JavaScript. */
@@ -393,3 +393,29 @@ export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Arra
  * Parses the Markdown and extracts title, body text, headings, and code.
  */
 export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument
+/** Mermaid render options for JavaScript. */
+export interface JsMermaidOptions {
+  /** Mermaid theme: default, dark, forest, neutral, base. */
+  theme?: string
+  /** Background color for the diagram. */
+  backgroundColor?: string
+}
+/** Mermaid render result. */
+export interface MermaidResult {
+  /** The rendered SVG string. */
+  svg: string
+  /** Error message if rendering failed. */
+  error?: string
+}
+/**
+ * Renders a mermaid diagram to SVG using mmdc (mermaid-cli).
+ *
+ * Requires @mermaid-js/mermaid-cli to be installed.
+ */
+export declare function renderMermaid(code: string, options?: JsMermaidOptions | undefined | null): MermaidResult
+/**
+ * Renders a mermaid diagram to SVG asynchronously (runs on worker thread).
+ *
+ * Requires @mermaid-js/mermaid-cli to be installed.
+ */
+export declare function renderMermaidAsync(code: string, options?: JsMermaidOptions | undefined | null): Promise<unknown>

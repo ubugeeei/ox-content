@@ -19,6 +19,28 @@ export interface MermaidOptions {
   themeVariables?: Record<string, string>;
 }
 
+// NAPI binding types
+interface NapiMermaidResult {
+  svg: string;
+  error: string | null;
+}
+
+interface NapiBinding {
+  renderMermaidAsync?: (
+    code: string,
+    options?: { theme?: string; backgroundColor?: string },
+  ) => Promise<NapiMermaidResult>;
+}
+
+// Try to load NAPI binding
+let napiBinding: NapiBinding | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  napiBinding = require("@ox-content/napi");
+} catch {
+  // NAPI not available, will use JS fallback
+}
+
 const defaultOptions: Required<MermaidOptions> = {
   theme: "default",
   backgroundColor: "transparent",
@@ -66,28 +88,72 @@ function getTextContent(node: Element | Root): string {
 }
 
 /**
+ * Render mermaid diagram to SVG using NAPI (native mmdc).
+ */
+async function renderMermaidToSvgNapi(
+  code: string,
+  options: Required<MermaidOptions>,
+): Promise<string> {
+  if (!napiBinding?.renderMermaidAsync) {
+    throw new Error("NAPI binding not available");
+  }
+
+  const result = await napiBinding.renderMermaidAsync(code.trim(), {
+    theme: options.theme,
+    backgroundColor: options.backgroundColor,
+  });
+
+  if (result.error) {
+    throw new Error(result.error);
+  }
+
+  return result.svg;
+}
+
+/**
+ * Render mermaid diagram to SVG using JS mermaid library (fallback).
+ */
+async function renderMermaidToSvgJs(
+  code: string,
+  options: Required<MermaidOptions>,
+): Promise<string> {
+  // Dynamic import to avoid issues in non-Node environments
+  const mermaid = await import("mermaid");
+
+  const id = `mermaid-${hashCode(code)}-${diagramCounter++}`;
+
+  // Initialize mermaid with options
+  mermaid.default.initialize({
+    startOnLoad: false,
+    theme: options.theme,
+    themeVariables: options.themeVariables,
+    securityLevel: "strict",
+  });
+
+  // Render the diagram
+  const { svg } = await mermaid.default.render(id, code.trim());
+
+  return svg;
+}
+
+/**
  * Render mermaid diagram to SVG.
- * Uses mermaid's Node.js compatible rendering.
+ * Uses NAPI (native mmdc) if available, otherwise falls back to JS mermaid library.
  */
 export async function renderMermaidToSvg(code: string, options: Required<MermaidOptions>): Promise<string> {
+  // Try NAPI first (native mmdc)
+  if (napiBinding?.renderMermaidAsync) {
+    try {
+      return await renderMermaidToSvgNapi(code, options);
+    } catch (napiError) {
+      console.warn("NAPI mermaid render failed, falling back to JS:", napiError);
+      // Fall through to JS fallback
+    }
+  }
+
+  // Fall back to JS mermaid library
   try {
-    // Dynamic import to avoid issues in non-Node environments
-    const mermaid = await import("mermaid");
-
-    const id = `mermaid-${hashCode(code)}-${diagramCounter++}`;
-
-    // Initialize mermaid with options
-    mermaid.default.initialize({
-      startOnLoad: false,
-      theme: options.theme,
-      themeVariables: options.themeVariables,
-      securityLevel: "strict",
-    });
-
-    // Render the diagram
-    const { svg } = await mermaid.default.render(id, code.trim());
-
-    return svg;
+    return await renderMermaidToSvgJs(code, options);
   } catch (error) {
     console.warn("Mermaid render error:", error);
     // Return fallback with source code
