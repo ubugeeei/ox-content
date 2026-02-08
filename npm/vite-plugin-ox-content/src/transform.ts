@@ -35,6 +35,7 @@ import YAML from "yaml";
 import type { ResolvedOptions, TransformResult, TocEntry } from "./types";
 import { highlightCode } from "./highlight";
 import { transformMermaidStatic } from "./plugins/mermaid";
+import { protectMermaidSvgs, restoreMermaidSvgs } from "./plugins/mermaid-protect";
 
 /**
  * NAPI bindings for Rust-based Markdown processing.
@@ -82,6 +83,7 @@ interface NapiBindings {
    * @returns SVG string
    */
   generateOgImageSvg: (data: OgImageData, config?: OgImageConfig) => string;
+
 }
 
 /**
@@ -402,15 +404,22 @@ export async function transformMarkdown(
   }));
   const toc = options.toc ? buildTocTree(flatToc) : [];
 
+  // Transform mermaid diagrams before highlighting to avoid entity re-encoding
+  if (options.mermaid) {
+    html = await transformMermaidStatic(html);
+  }
+
+  // Protect mermaid SVGs from rehype processing (which corrupts <br /> in foreignObjects)
+  const { html: protectedHtml, svgs } = protectMermaidSvgs(html);
+  html = protectedHtml;
+
   // Apply syntax highlighting if enabled
   if (options.highlight) {
     html = await highlightCode(html, options.highlightTheme);
   }
 
-  // Transform mermaid diagrams if enabled
-  if (options.mermaid) {
-    html = await transformMermaidStatic(html);
-  }
+  // Restore protected SVGs
+  html = restoreMermaidSvgs(html, svgs);
 
   // Generate JavaScript module code
   const code = generateModuleCode(html, frontmatter, toc, filePath, options);

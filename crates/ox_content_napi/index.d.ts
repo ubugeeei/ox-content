@@ -393,29 +393,18 @@ export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Arra
  * Parses the Markdown and extracts title, body text, headings, and code.
  */
 export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument
-/** Mermaid render options for JavaScript. */
-export interface JsMermaidOptions {
-  /** Mermaid theme: default, dark, forest, neutral, base. */
-  theme?: string
-  /** Background color for the diagram. */
-  backgroundColor?: string
-}
-/** Mermaid render result. */
-export interface MermaidResult {
-  /** The rendered SVG string. */
-  svg: string
-  /** Error message if rendering failed. */
-  error?: string
+/** Mermaid transform result. */
+export interface MermaidTransformResult {
+  /** The transformed HTML with mermaid code blocks replaced by rendered SVGs. */
+  html: string
+  /** Non-fatal errors encountered during rendering (per-diagram). */
+  errors: Array<string>
 }
 /**
- * Renders a mermaid diagram to SVG using mmdc (mermaid-cli).
+ * Transforms mermaid code blocks in HTML to rendered SVG diagrams.
  *
- * Requires @mermaid-js/mermaid-cli to be installed.
+ * Extracts `<pre><code class="language-mermaid">...</code></pre>` blocks,
+ * renders each in parallel using the mmdc CLI, and replaces them with
+ * `<div class="ox-mermaid">...</div>`.
  */
-export declare function renderMermaid(code: string, options?: JsMermaidOptions | undefined | null): MermaidResult
-/**
- * Renders a mermaid diagram to SVG asynchronously (runs on worker thread).
- *
- * Requires @mermaid-js/mermaid-cli to be installed.
- */
-export declare function renderMermaidAsync(code: string, options?: JsMermaidOptions | undefined | null): Promise<unknown>
+export declare function transformMermaid(html: string, mmdcPath: string): MermaidTransformResult

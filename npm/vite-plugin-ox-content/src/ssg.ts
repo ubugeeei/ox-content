@@ -9,6 +9,7 @@ import { transformMarkdown, generateOgImageSvg } from "./transform";
 import type { OgImageData, OgImageConfig } from "./transform";
 import { transformAllPlugins } from "./plugins";
 import type { TransformAllOptions } from "./plugins";
+import { protectMermaidSvgs, restoreMermaidSvgs } from "./plugins/mermaid-protect";
 import { transformIslands, hasIslands } from "./island";
 import type {
   ResolvedOptions,
@@ -1290,6 +1291,11 @@ export async function buildSsg(
       // Apply built-in plugin transformations (No-JS First)
       let transformedHtml = result.html;
 
+      // Protect mermaid SVGs from rehype processing in plugins
+      const { html: protectedHtml, svgs: mermaidSvgs } =
+        protectMermaidSvgs(transformedHtml);
+      transformedHtml = protectedHtml;
+
       // Transform Tabs, YouTube, GitHub, OGP, Mermaid plugins
       const pluginOptions: TransformAllOptions = {
         tabs: true,
@@ -1306,6 +1312,9 @@ export async function buildSsg(
         const islandResult = await transformIslands(transformedHtml);
         transformedHtml = islandResult.html;
       }
+
+      // Restore protected mermaid SVGs
+      transformedHtml = restoreMermaidSvgs(transformedHtml, mermaidSvgs);
 
       const title = extractTitle(transformedHtml, result.frontmatter);
       const description = result.frontmatter.description as string | undefined;

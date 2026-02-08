@@ -459,9 +459,6 @@ export {
   collectOgpUrls,
   prefetchOgpData,
   transformMermaidStatic,
-  renderMermaidToSvg,
-  collectMermaidDiagrams,
-  prerenderMermaidDiagrams,
   mermaidClientScript,
   transformAllPlugins,
 } from "./plugins";

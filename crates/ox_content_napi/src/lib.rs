@@ -7,8 +7,6 @@ use napi::bindgen_prelude::*;
 use napi::Task;
 use napi_derive::napi;
 use std::collections::HashMap;
-use std::io::Write;
-use std::process::{Command, Stdio};
 
 use ox_content_allocator::Allocator;
 use ox_content_ast::{Document, Heading, Node};
@@ -1130,174 +1128,182 @@ pub fn extract_search_content(
 }
 
 // =============================================================================
-// Mermaid Rendering API
+// Mermaid Rendering API (mmdc CLI)
 // =============================================================================
 
-/// Mermaid render options for JavaScript.
+/// Mermaid transform result.
 #[napi(object)]
-#[derive(Default, Clone)]
-pub struct JsMermaidOptions {
-    /// Mermaid theme: default, dark, forest, neutral, base.
-    pub theme: Option<String>,
-    /// Background color for the diagram.
-    pub background_color: Option<String>,
+pub struct MermaidTransformResult {
+    /// The transformed HTML with mermaid code blocks replaced by rendered SVGs.
+    pub html: String,
+    /// Non-fatal errors encountered during rendering (per-diagram).
+    pub errors: Vec<String>,
 }
 
-/// Mermaid render result.
-#[napi(object)]
-pub struct MermaidResult {
-    /// The rendered SVG string.
-    pub svg: String,
-    /// Error message if rendering failed.
-    pub error: Option<String>,
+/// Transforms mermaid code blocks in HTML to rendered SVG diagrams.
+///
+/// Extracts `<pre><code class="language-mermaid">...</code></pre>` blocks,
+/// renders each in parallel using the mmdc CLI, and replaces them with
+/// `<div class="ox-mermaid">...</div>`.
+#[napi]
+pub fn transform_mermaid(html: String, mmdc_path: String) -> MermaidTransformResult {
+    let blocks = extract_mermaid_blocks_from_html(&html);
+
+    if blocks.is_empty() {
+        return MermaidTransformResult { html, errors: vec![] };
+    }
+
+    // Render all diagrams in parallel using scoped threads
+    let render_results: Vec<std::result::Result<String, String>> =
+        std::thread::scope(|s| {
+            let handles: Vec<_> = blocks
+                .iter()
+                .map(|block| {
+                    let source = &block.source;
+                    let path = &mmdc_path;
+                    s.spawn(move || render_mermaid_with_mmdc(source, path))
+                })
+                .collect();
+
+            handles
+                .into_iter()
+                .map(|h| h.join().unwrap_or_else(|_| Err("Thread panicked".to_string())))
+                .collect()
+        });
+
+    // Replace blocks in reverse order to preserve positions
+    let mut result_html = html;
+    let mut errors = Vec::new();
+
+    for (i, block) in blocks.iter().enumerate().rev() {
+        match &render_results[i] {
+            Ok(svg) => {
+                let replacement = format!(r#"<div class="ox-mermaid">{svg}</div>"#);
+                result_html.replace_range(block.start..block.end, &replacement);
+            }
+            Err(e) => {
+                errors.push(e.clone());
+            }
+        }
+    }
+
+    MermaidTransformResult {
+        html: result_html,
+        errors,
+    }
 }
 
-/// Find the mmdc command.
-/// Tries: 1) mmdc in PATH, 2) npx mmdc
-fn find_mmdc_command() -> Option<(String, Vec<String>)> {
-    use std::path::Path;
-
-    // Try mmdc directly first (in PATH)
-    if Command::new("mmdc").arg("--version").output().is_ok() {
-        return Some(("mmdc".to_string(), vec![]));
-    }
-
-    // Try to find mmdc in node_modules/.bin relative to current directory
-    let local_mmdc = Path::new("node_modules/.bin/mmdc");
-    if local_mmdc.exists() {
-        return Some((local_mmdc.to_string_lossy().to_string(), vec![]));
-    }
-
-    // Try npx as a fallback
-    if Command::new("npx")
-        .args(["--yes", "mmdc", "--version"])
-        .output()
-        .is_ok()
-    {
-        return Some(("npx".to_string(), vec!["--yes".to_string(), "mmdc".to_string()]));
-    }
-
-    None
+struct MermaidBlock {
+    start: usize,
+    end: usize,
+    source: String,
 }
 
-/// Internal function to render mermaid diagram using mmdc CLI.
-fn render_mermaid_internal(code: &str, options: &JsMermaidOptions) -> MermaidResult {
-    let theme = options.theme.as_deref().unwrap_or("default");
-    let bg_color = options.background_color.as_deref().unwrap_or("transparent");
+fn extract_mermaid_blocks_from_html(html: &str) -> Vec<MermaidBlock> {
+    let open = r#"<pre><code class="language-mermaid">"#;
+    let close = "</code></pre>";
+    let mut blocks = Vec::new();
+    let mut cursor = 0;
 
-    // Find mmdc command
-    let Some((cmd, prefix_args)) = find_mmdc_command() else {
-        return MermaidResult {
-            svg: String::new(),
-            error: Some(
-                "mmdc command not found. Please install @mermaid-js/mermaid-cli: npm install -D @mermaid-js/mermaid-cli".to_string(),
-            ),
-        };
-    };
+    while let Some(rel) = html[cursor..].find(open) {
+        let abs_start = cursor + rel;
+        let content_start = abs_start + open.len();
 
-    // Build arguments
-    let mut args = prefix_args;
-    args.extend([
-        "-i".to_string(),
-        "-".to_string(),
-        "-o".to_string(),
-        "-".to_string(),
-        "-t".to_string(),
-        theme.to_string(),
-        "-b".to_string(),
-        bg_color.to_string(),
-    ]);
-
-    // Spawn mmdc process
-    let child = Command::new(&cmd)
-        .args(&args)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn();
-
-    let mut child = match child {
-        Ok(c) => c,
-        Err(e) => {
-            return MermaidResult {
-                svg: String::new(),
-                error: Some(format!("Failed to spawn mmdc process: {e}")),
-            };
-        }
-    };
-
-    // Write mermaid code to stdin
-    if let Some(mut stdin) = child.stdin.take() {
-        if let Err(e) = stdin.write_all(code.as_bytes()) {
-            return MermaidResult {
-                svg: String::new(),
-                error: Some(format!("Failed to write to mmdc stdin: {e}")),
-            };
-        }
-        // stdin is dropped here, closing it
-    }
-
-    // Wait for process to complete and collect output
-    let output = match child.wait_with_output() {
-        Ok(o) => o,
-        Err(e) => {
-            return MermaidResult {
-                svg: String::new(),
-                error: Some(format!("Failed to wait for mmdc process: {e}")),
-            };
-        }
-    };
-
-    if output.status.success() {
-        let svg = String::from_utf8_lossy(&output.stdout).to_string();
-        MermaidResult { svg, error: None }
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-        let error_msg = if stderr.is_empty() {
-            format!("mmdc exited with status: {}", output.status)
+        if let Some(rel_end) = html[content_start..].find(close) {
+            let abs_end = content_start + rel_end + close.len();
+            let raw = &html[content_start..content_start + rel_end];
+            blocks.push(MermaidBlock {
+                start: abs_start,
+                end: abs_end,
+                source: decode_html_entities_mermaid(raw),
+            });
+            cursor = abs_end;
         } else {
-            format!("mmdc error: {stderr}")
-        };
-        MermaidResult { svg: String::new(), error: Some(error_msg) }
-    }
-}
-
-/// Renders a mermaid diagram to SVG using mmdc (mermaid-cli).
-///
-/// Requires @mermaid-js/mermaid-cli to be installed.
-#[napi]
-pub fn render_mermaid(code: String, options: Option<JsMermaidOptions>) -> MermaidResult {
-    let opts = options.unwrap_or_default();
-    render_mermaid_internal(&code, &opts)
-}
-
-/// Async task for rendering mermaid diagrams.
-pub struct RenderMermaidTask {
-    code: String,
-    options: JsMermaidOptions,
-}
-
-impl Task for RenderMermaidTask {
-    type Output = MermaidResult;
-    type JsValue = MermaidResult;
-
-    fn compute(&mut self) -> Result<Self::Output> {
-        Ok(render_mermaid_internal(&self.code, &self.options))
+            break;
+        }
     }
 
-    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
-        Ok(output)
-    }
+    blocks
 }
 
-/// Renders a mermaid diagram to SVG asynchronously (runs on worker thread).
-///
-/// Requires @mermaid-js/mermaid-cli to be installed.
-#[napi]
-pub fn render_mermaid_async(
-    code: String,
-    options: Option<JsMermaidOptions>,
-) -> AsyncTask<RenderMermaidTask> {
-    let opts = options.unwrap_or_default();
-    AsyncTask::new(RenderMermaidTask { code, options: opts })
+fn decode_html_entities_mermaid(s: &str) -> String {
+    s.replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+        // Numeric character references (hex)
+        .replace("&#x3C;", "<")
+        .replace("&#x3c;", "<")
+        .replace("&#x3E;", ">")
+        .replace("&#x3e;", ">")
+        .replace("&#x22;", "\"")
+        .replace("&#x27;", "'")
+        // Numeric character references (decimal)
+        .replace("&#60;", "<")
+        .replace("&#62;", ">")
+        .replace("&#34;", "\"")
 }
+
+static MERMAID_FILE_COUNTER: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+fn render_mermaid_with_mmdc(source: &str, mmdc_path: &str) -> std::result::Result<String, String> {
+    use std::sync::atomic::Ordering;
+
+    let temp_dir = std::env::temp_dir();
+    let id = MERMAID_FILE_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let pid = std::process::id();
+
+    let input_path = temp_dir.join(format!("ox_mermaid_{pid}_{id}.mmd"));
+    let output_path = temp_dir.join(format!("ox_mermaid_{pid}_{id}.svg"));
+
+    // Write mermaid source to temp file
+    std::fs::write(&input_path, source)
+        .map_err(|e| format!("Failed to write temp file: {e}"))?;
+
+    // Call mmdc CLI
+    let output = std::process::Command::new(mmdc_path)
+        .arg("-i")
+        .arg(&input_path)
+        .arg("-o")
+        .arg(&output_path)
+        .arg("-t")
+        .arg("neutral")
+        .arg("-q")
+        .output()
+        .map_err(|e| format!("Failed to execute mmdc: {e}. Is @mermaid-js/mermaid-cli installed?"))?;
+
+    // Clean up input
+    let _ = std::fs::remove_file(&input_path);
+
+    if !output.status.success() {
+        let _ = std::fs::remove_file(&output_path);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("mmdc failed: {stderr}"));
+    }
+
+    // Read rendered SVG
+    let svg = std::fs::read_to_string(&output_path)
+        .map_err(|e| format!("Failed to read SVG output: {e}"))?;
+
+    let _ = std::fs::remove_file(&output_path);
+
+    // Post-process SVG
+    let svg = postprocess_mermaid_svg(&svg, id);
+
+    Ok(svg)
+}
+
+/// Post-process mermaid SVG output:
+/// - Replace `background-color: white` with `transparent` for dark mode compatibility
+/// - Replace all `my-svg` references with unique IDs to avoid collisions between diagrams
+///   (covers the SVG id, CSS selectors, and marker id prefixes like `my-svg_flowchart-v2-pointEnd`)
+fn postprocess_mermaid_svg(svg: &str, id: u64) -> String {
+    let unique_id = format!("ox-mermaid-{id}");
+
+    svg.replace("background-color: white;", "background-color: transparent;")
+        .replace("background-color:white;", "background-color:transparent;")
+        .replace("my-svg", &unique_id)
+}
+

@@ -37,11 +37,7 @@ export {
 
 export {
   transformMermaidStatic,
-  renderMermaidToSvg,
-  collectMermaidDiagrams,
-  prerenderMermaidDiagrams,
   mermaidClientScript,
-  resetDiagramCounter,
   type MermaidOptions,
 } from "./mermaid";
 
