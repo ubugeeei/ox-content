@@ -568,12 +568,7 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
             } else {
                 format!("{}{}", base, img.src)
             };
-            HeroImage {
-                src,
-                alt: img.alt.clone(),
-                width: img.width,
-                height: img.height,
-            }
+            HeroImage { src, alt: img.alt.clone(), width: img.width, height: img.height }
         });
 
         HeroView {
@@ -622,10 +617,7 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
             .collect()
     });
 
-    let template = EntryTemplate {
-        hero: hero_view.as_ref(),
-        features: features_view.as_deref(),
-    };
+    let template = EntryTemplate { hero: hero_view.as_ref(), features: features_view.as_deref() };
     template.render().unwrap_or_default()
 }
 
@@ -675,7 +667,8 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
     let entry_css = if is_entry_page { ENTRY_CSS } else { "" };
 
     // Combine all CSS (including plugins)
-    let plugins_css = format!("{TABS_CSS}{YOUTUBE_CSS}{GITHUB_CSS}{OGP_CSS}{MERMAID_CSS}{ISLAND_CSS}");
+    let plugins_css =
+        format!("{TABS_CSS}{YOUTUBE_CSS}{GITHUB_CSS}{OGP_CSS}{MERMAID_CSS}{ISLAND_CSS}");
     let all_css = format!("{SSG_CSS}{entry_css}{plugins_css}{footer_css}{theme_css}");
 
     // Embedded HTML for specific positions
@@ -775,10 +768,7 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         js: &all_js,
     };
 
-    template.render().unwrap_or_else(|e| {
-        eprintln!("Template render error: {e}");
-        String::new()
-    })
+    template.render().unwrap_or_default()
 }
 
 /// Renders an icon based on its format.

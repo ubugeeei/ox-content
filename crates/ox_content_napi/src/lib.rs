@@ -1153,23 +1153,25 @@ pub fn transform_mermaid(html: String, mmdc_path: String) -> MermaidTransformRes
         return MermaidTransformResult { html, errors: vec![] };
     }
 
-    // Render all diagrams in parallel using scoped threads
-    let render_results: Vec<std::result::Result<String, String>> =
-        std::thread::scope(|s| {
-            let handles: Vec<_> = blocks
-                .iter()
-                .map(|block| {
-                    let source = &block.source;
-                    let path = &mmdc_path;
-                    s.spawn(move || render_mermaid_with_mmdc(source, path))
-                })
-                .collect();
+    // Render all diagrams in parallel using scoped threads.
+    // The intermediate collect() is intentional: we must spawn ALL threads before
+    // joining any, otherwise they would run sequentially instead of in parallel.
+    #[allow(clippy::needless_collect)]
+    let render_results: Vec<std::result::Result<String, String>> = std::thread::scope(|s| {
+        let handles: Vec<_> = blocks
+            .iter()
+            .map(|block| {
+                let source = &block.source;
+                let path = &mmdc_path;
+                s.spawn(move || render_mermaid_with_mmdc(source, path))
+            })
+            .collect();
 
-            handles
-                .into_iter()
-                .map(|h| h.join().unwrap_or_else(|_| Err("Thread panicked".to_string())))
-                .collect()
-        });
+        handles
+            .into_iter()
+            .map(|h| h.join().unwrap_or_else(|_| Err("Thread panicked".to_string())))
+            .collect()
+    });
 
     // Replace blocks in reverse order to preserve positions
     let mut result_html = html;
@@ -1187,10 +1189,7 @@ pub fn transform_mermaid(html: String, mmdc_path: String) -> MermaidTransformRes
         }
     }
 
-    MermaidTransformResult {
-        html: result_html,
-        errors,
-    }
+    MermaidTransformResult { html: result_html, errors }
 }
 
 struct MermaidBlock {
@@ -1245,8 +1244,7 @@ fn decode_html_entities_mermaid(s: &str) -> String {
         .replace("&#34;", "\"")
 }
 
-static MERMAID_FILE_COUNTER: std::sync::atomic::AtomicU64 =
-    std::sync::atomic::AtomicU64::new(0);
+static MERMAID_FILE_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 fn render_mermaid_with_mmdc(source: &str, mmdc_path: &str) -> std::result::Result<String, String> {
     use std::sync::atomic::Ordering;
@@ -1259,8 +1257,7 @@ fn render_mermaid_with_mmdc(source: &str, mmdc_path: &str) -> std::result::Resul
     let output_path = temp_dir.join(format!("ox_mermaid_{pid}_{id}.svg"));
 
     // Write mermaid source to temp file
-    std::fs::write(&input_path, source)
-        .map_err(|e| format!("Failed to write temp file: {e}"))?;
+    std::fs::write(&input_path, source).map_err(|e| format!("Failed to write temp file: {e}"))?;
 
     // Call mmdc CLI
     let output = std::process::Command::new(mmdc_path)
@@ -1272,7 +1269,9 @@ fn render_mermaid_with_mmdc(source: &str, mmdc_path: &str) -> std::result::Resul
         .arg("neutral")
         .arg("-q")
         .output()
-        .map_err(|e| format!("Failed to execute mmdc: {e}. Is @mermaid-js/mermaid-cli installed?"))?;
+        .map_err(|e| {
+            format!("Failed to execute mmdc: {e}. Is @mermaid-js/mermaid-cli installed?")
+        })?;
 
     // Clean up input
     let _ = std::fs::remove_file(&input_path);
@@ -1306,4 +1305,3 @@ fn postprocess_mermaid_svg(svg: &str, id: u64) -> String {
         .replace("background-color:white;", "background-color:transparent;")
         .replace("my-svg", &unique_id)
 }
-
