@@ -1,0 +1,151 @@
+/* ox-content Mermaid Plugin Styles */
+
+.ox-mermaid {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: var(--octc-color-bg);
+  border: 1px solid var(--octc-color-border);
+  border-radius: 8px;
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* SVG diagram */
+.ox-mermaid svg {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+/* --- Neutral theme integration --- */
+
+/* Node shapes */
+.ox-mermaid svg .node rect,
+.ox-mermaid svg .node circle,
+.ox-mermaid svg .node ellipse,
+.ox-mermaid svg .node polygon,
+.ox-mermaid svg .node .label-container {
+  fill: var(--octc-color-bg-alt) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+/* SVG root text color */
+.ox-mermaid svg .label,
+.ox-mermaid svg text,
+.ox-mermaid svg span,
+.ox-mermaid svg .label text,
+.ox-mermaid svg .label span {
+  fill: var(--octc-color-text) !important;
+  color: var(--octc-color-text) !important;
+}
+
+/* Subgraph */
+.ox-mermaid svg .cluster rect {
+  fill: var(--octc-color-bg-alt) !important;
+  stroke: var(--octc-color-border) !important;
+  rx: 6;
+  ry: 6;
+}
+
+.ox-mermaid svg .cluster span,
+.ox-mermaid svg .cluster text {
+  fill: var(--octc-color-text-muted) !important;
+  color: var(--octc-color-text-muted) !important;
+  font-weight: 600;
+}
+
+/* Edge lines */
+.ox-mermaid svg .edgePath .path,
+.ox-mermaid svg .flowchart-link {
+  stroke: var(--octc-color-text-muted) !important;
+  stroke-width: 1.5px;
+}
+
+/* Arrowheads */
+.ox-mermaid svg marker path {
+  fill: var(--octc-color-text-muted) !important;
+}
+
+/* Edge labels */
+.ox-mermaid svg .edgeLabel {
+  background-color: var(--octc-color-bg) !important;
+  color: var(--octc-color-text) !important;
+}
+
+.ox-mermaid svg .edgeLabel rect {
+  fill: var(--octc-color-bg) !important;
+  opacity: 0.9;
+}
+
+/* Node text */
+.ox-mermaid svg .node .label,
+.ox-mermaid svg .node text,
+.ox-mermaid svg .node span {
+  color: var(--octc-color-text) !important;
+  fill: var(--octc-color-text) !important;
+}
+
+/* --- Sequence diagram --- */
+
+.ox-mermaid svg .actor {
+  fill: var(--octc-color-bg-alt) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg .actor-line {
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg line.messageLine0,
+.ox-mermaid svg line.messageLine1 {
+  stroke: var(--octc-color-text-muted) !important;
+}
+
+.ox-mermaid svg .messageText {
+  fill: var(--octc-color-text) !important;
+}
+
+.ox-mermaid svg .note {
+  fill: var(--octc-color-bg-alt) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg .noteText {
+  fill: var(--octc-color-text) !important;
+}
+
+/* --- Gantt chart --- */
+
+.ox-mermaid svg .section {
+  fill: var(--octc-color-bg-alt) !important;
+}
+
+.ox-mermaid svg .task {
+  stroke: var(--octc-color-border) !important;
+}
+
+/* --- Class / State / ER diagrams --- */
+
+.ox-mermaid svg .classGroup rect,
+.ox-mermaid svg .stateGroup rect,
+.ox-mermaid svg .er.entityBox {
+  fill: var(--octc-color-bg) !important;
+  stroke: var(--octc-color-border) !important;
+}
+
+.ox-mermaid svg .classGroup line,
+.ox-mermaid svg .divider {
+  stroke: var(--octc-color-border) !important;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .ox-mermaid {
+    padding: 1rem;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}

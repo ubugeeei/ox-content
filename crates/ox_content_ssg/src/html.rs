@@ -1,5 +1,6 @@
 //! HTML page generation for SSG.
 
+use askama::Template;
 use serde::{Deserialize, Serialize};
 
 // =============================================================================
@@ -80,9 +81,9 @@ pub struct SocialLinks {
     pub discord: Option<String>,
 }
 
-/// Theme slots for injecting custom HTML.
+/// Embedded HTML content for specific positions in the page layout.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct ThemeSlots {
+pub struct ThemeEmbed {
     /// Content to inject into <head>.
     pub head: Option<String>,
     /// Content before header.
@@ -120,8 +121,8 @@ pub struct ThemeConfig {
     pub footer: Option<ThemeFooter>,
     /// Social links configuration.
     pub social_links: Option<SocialLinks>,
-    /// Custom slots for HTML injection.
-    pub slots: Option<ThemeSlots>,
+    /// Embedded HTML content at specific positions.
+    pub embed: Option<ThemeEmbed>,
     /// Additional custom CSS.
     pub css: Option<String>,
     /// Additional custom JavaScript.
@@ -260,11 +261,131 @@ pub struct SsgConfig {
     pub theme: Option<ThemeConfig>,
 }
 
+// =============================================================================
+// Askama Template Structures
+// =============================================================================
+
+/// Navigation template.
+#[derive(Template)]
+#[template(path = "nav.html")]
+struct NavTemplate<'a> {
+    nav_groups: &'a [NavGroup],
+    current_path: &'a str,
+}
+
+/// Social links template (desktop header).
+#[derive(Template)]
+#[template(path = "social_links.html")]
+struct SocialLinksTemplate<'a> {
+    github: Option<&'a str>,
+    twitter: Option<&'a str>,
+    discord: Option<&'a str>,
+}
+
+/// Mobile social links template (mobile footer).
+#[derive(Template)]
+#[template(path = "mobile_social_links.html")]
+struct MobileSocialLinksTemplate<'a> {
+    github: Option<&'a str>,
+    twitter: Option<&'a str>,
+    discord: Option<&'a str>,
+}
+
+/// Footer template.
+#[derive(Template)]
+#[template(path = "footer.html")]
+struct FooterTemplate<'a> {
+    message: Option<&'a str>,
+    copyright: Option<&'a str>,
+}
+
+/// Hero action for entry template.
+pub struct HeroActionView {
+    pub href: String,
+    pub theme_class: String,
+    pub text: String,
+}
+
+/// Feature card for entry template.
+pub struct FeatureView {
+    pub tag: &'static str,
+    pub href_attr: String,
+    pub icon_html: Option<String>,
+    pub title: String,
+    pub details: Option<String>,
+    pub has_link: bool,
+}
+
+/// Hero view for entry template.
+pub struct HeroView {
+    pub name: Option<String>,
+    pub text: Option<String>,
+    pub tagline: Option<String>,
+    pub image: Option<HeroImage>,
+    pub actions: Option<Vec<HeroActionView>>,
+}
+
+/// Entry page template (hero + features).
+#[derive(Template)]
+#[template(path = "entry.html")]
+struct EntryTemplate<'a> {
+    hero: Option<&'a HeroView>,
+    features: Option<&'a [FeatureView]>,
+}
+
+/// Main page template.
+#[derive(Template)]
+#[template(path = "page.html")]
+struct PageTemplate<'a> {
+    title: &'a str,
+    site_name: &'a str,
+    description: Option<&'a str>,
+    og_image: Option<&'a str>,
+    css: &'a str,
+    embed_head: &'a str,
+    body_class: &'a str,
+    embed_header_before: &'a str,
+    embed_header_after: &'a str,
+    base: &'a str,
+    logo_src: &'a str,
+    logo_width: u32,
+    logo_height: u32,
+    social_links: &'a str,
+    embed_sidebar_before: &'a str,
+    navigation: &'a str,
+    embed_sidebar_after: &'a str,
+    embed_content_before: &'a str,
+    main_content: &'a str,
+    embed_content_after: &'a str,
+    embed_footer_before: &'a str,
+    footer_html: &'a str,
+    mobile_social_links: &'a str,
+    js: &'a str,
+}
+
 /// CSS styles for SSG pages.
 const SSG_CSS: &str = include_str!("ssg.css");
 
 /// CSS styles for Entry pages (hero, features).
 const ENTRY_CSS: &str = include_str!("entry.css");
+
+/// CSS styles for Tabs plugin.
+const TABS_CSS: &str = include_str!("plugins/tabs.css");
+
+/// CSS styles for YouTube plugin.
+const YOUTUBE_CSS: &str = include_str!("plugins/youtube.css");
+
+/// CSS styles for GitHub plugin.
+const GITHUB_CSS: &str = include_str!("plugins/github.css");
+
+/// CSS styles for OGP plugin.
+const OGP_CSS: &str = include_str!("plugins/ogp.css");
+
+/// CSS styles for Mermaid plugin.
+const MERMAID_CSS: &str = include_str!("plugins/mermaid.css");
+
+/// CSS styles for Island plugin.
+const ISLAND_CSS: &str = include_str!("plugins/island.css");
 
 /// JavaScript for SSG pages.
 const SSG_JS: &str = include_str!("ssg.js");
@@ -400,71 +521,21 @@ fn generate_footer_html(theme: &ThemeConfig) -> String {
         _ => return String::new(),
     };
 
-    let mut html = String::from("<footer class=\"site-footer\">\n");
-
-    if let Some(ref message) = footer.message {
-        html.push_str(&format!("  <p class=\"footer-message\">{message}</p>\n"));
-    }
-
-    if let Some(ref copyright) = footer.copyright {
-        html.push_str(&format!("  <p class=\"footer-copyright\">{copyright}</p>\n"));
-    }
-
-    html.push_str("</footer>");
-    html
+    let template = FooterTemplate {
+        message: footer.message.as_deref(),
+        copyright: footer.copyright.as_deref(),
+    };
+    template.render().unwrap_or_default()
 }
 
 /// Generates the Entry page HTML (hero section and features).
 fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
-    let mut html = String::new();
-
-    // Hero section
-    if let Some(ref hero) = entry.hero {
-        html.push_str("<section class=\"hero\">\n");
-        html.push_str("  <div class=\"hero-content\">\n");
-
-        // Badge (optional)
-        // html.push_str("    <span class=\"hero-badge\">Documentation</span>\n");
-
-        // Name (large gradient title)
-        if let Some(ref name) = hero.name {
-            html.push_str(&format!("    <h1 class=\"hero-name\">{}</h1>\n", html_escape(name)));
-        }
-
-        // Text (secondary heading)
-        if let Some(ref text) = hero.text {
-            html.push_str(&format!("    <p class=\"hero-text\">{}</p>\n", html_escape(text)));
-        }
-
-        // Tagline
-        if let Some(ref tagline) = hero.tagline {
-            html.push_str(&format!("    <p class=\"hero-tagline\">{}</p>\n", html_escape(tagline)));
-        }
-
-        // Hero image
-        if let Some(ref image) = hero.image {
-            let src = if image.src.starts_with("http://")
-                || image.src.starts_with("https://")
-                || image.src.starts_with('/')
-            {
-                image.src.clone()
-            } else {
-                format!("{}{}", base, image.src)
-            };
-            let alt = image.alt.as_deref().unwrap_or("");
-            let width_attr = image.width.map(|w| format!(" width=\"{w}\"")).unwrap_or_default();
-            let height_attr = image.height.map(|h| format!(" height=\"{h}\"")).unwrap_or_default();
-            html.push_str(&format!(
-                "    <div class=\"hero-image\">\n      <img src=\"{}\" alt=\"{}\"{}{} />\n    </div>\n",
-                src, html_escape(alt), width_attr, height_attr
-            ));
-        }
-
-        // Action buttons
-        if let Some(ref actions) = hero.actions {
-            if !actions.is_empty() {
-                html.push_str("    <div class=\"hero-actions\">\n");
-                for action in actions {
+    // Convert hero config to view
+    let hero_view = entry.hero.as_ref().map(|hero| {
+        let actions = hero.actions.as_ref().map(|actions| {
+            actions
+                .iter()
+                .map(|action| {
                     let theme_class = match action.theme.as_deref() {
                         Some("brand") | None => "hero-action-brand",
                         Some("alt") => "hero-action-alt",
@@ -478,28 +549,42 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
                     } else {
                         format!("{}{}", base, action.link)
                     };
-                    html.push_str(&format!(
-                        "      <a href=\"{}\" class=\"hero-action {}\">{}</a>\n",
+                    HeroActionView {
                         href,
-                        theme_class,
-                        html_escape(&action.text)
-                    ));
-                }
-                html.push_str("    </div>\n");
-            }
+                        theme_class: theme_class.to_string(),
+                        text: action.text.clone(),
+                    }
+                })
+                .collect()
+        });
+
+        // Process hero image src
+        let image = hero.image.as_ref().map(|img| {
+            let src = if img.src.starts_with("http://")
+                || img.src.starts_with("https://")
+                || img.src.starts_with('/')
+            {
+                img.src.clone()
+            } else {
+                format!("{}{}", base, img.src)
+            };
+            HeroImage { src, alt: img.alt.clone(), width: img.width, height: img.height }
+        });
+
+        HeroView {
+            name: hero.name.clone(),
+            text: hero.text.clone(),
+            tagline: hero.tagline.clone(),
+            image,
+            actions,
         }
+    });
 
-        html.push_str("  </div>\n");
-        html.push_str("</section>\n");
-    }
-
-    // Features section
-    if let Some(ref features) = entry.features {
-        if !features.is_empty() {
-            html.push_str("<section class=\"features\">\n");
-            html.push_str("  <div class=\"features-grid\">\n");
-
-            for feature in features {
+    // Convert features config to view
+    let features_view: Option<Vec<FeatureView>> = entry.features.as_ref().map(|features| {
+        features
+            .iter()
+            .map(|feature| {
                 let has_link = feature.link.is_some();
                 let tag = if has_link { "a" } else { "div" };
                 let href_attr = feature
@@ -518,49 +603,22 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
                     })
                     .unwrap_or_default();
 
-                html.push_str(&format!("    <{tag} class=\"feature-card\"{href_attr}>\n"));
+                let icon_html = feature.icon.as_ref().map(|icon| render_icon(icon, base));
 
-                // Icon
-                if let Some(ref icon) = feature.icon {
-                    let icon_html = render_icon(icon, base);
-                    html.push_str(&format!(
-                        "      <div class=\"feature-icon\">{icon_html}</div>\n"
-                    ));
+                FeatureView {
+                    tag,
+                    href_attr,
+                    icon_html,
+                    title: feature.title.clone(),
+                    details: feature.details.clone(),
+                    has_link,
                 }
+            })
+            .collect()
+    });
 
-                // Body (title + details)
-                html.push_str("      <div class=\"feature-body\">\n");
-
-                // Title
-                html.push_str(&format!(
-                    "        <h3 class=\"feature-title\">{}</h3>\n",
-                    html_escape(&feature.title)
-                ));
-
-                // Details
-                if let Some(ref details) = feature.details {
-                    html.push_str(&format!(
-                        "        <p class=\"feature-details\">{}</p>\n",
-                        html_escape(details)
-                    ));
-                }
-
-                html.push_str("      </div>\n");
-
-                // Link arrow
-                if has_link {
-                    html.push_str("      <span class=\"feature-link\"></span>\n");
-                }
-
-                html.push_str(&format!("    </{tag}>\n"));
-            }
-
-            html.push_str("  </div>\n");
-            html.push_str("</section>\n");
-        }
-    }
-
-    html
+    let template = EntryTemplate { hero: hero_view.as_ref(), features: features_view.as_deref() };
+    template.render().unwrap_or_default()
 }
 
 /// Footer CSS styles (added when footer is used).
@@ -591,27 +649,9 @@ const FOOTER_CSS: &str = r"
 pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &SsgConfig) -> String {
     let nav_html = generate_nav_html(nav_groups, &page_data.path);
 
-    let description_meta = page_data.description.as_ref().map_or(String::new(), |d| {
-        format!(
-            r#"<meta name="description" content="{}">
-  <meta property="og:description" content="{}">
-  <meta name="twitter:description" content="{}">"#,
-            html_escape(d),
-            html_escape(d),
-            html_escape(d)
-        )
-    });
-
-    let og_image_meta = config.og_image.as_ref().map_or(String::new(), |img| {
-        format!(
-            r#"<meta property="og:image" content="{img}">
-  <meta name="twitter:image" content="{img}">"#
-        )
-    });
-
     // Theme configuration
     let theme = config.theme.as_ref();
-    let slots = theme.and_then(|t| t.slots.as_ref());
+    let embed = theme.and_then(|t| t.embed.as_ref());
 
     // Generate theme CSS overrides
     let theme_css = theme.map_or(String::new(), generate_theme_css);
@@ -626,22 +666,24 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
     let is_entry_page = page_data.entry_page.is_some();
     let entry_css = if is_entry_page { ENTRY_CSS } else { "" };
 
-    // Combine all CSS
-    let all_css = format!("{SSG_CSS}{entry_css}{footer_css}{theme_css}");
+    // Combine all CSS (including plugins)
+    let plugins_css =
+        format!("{TABS_CSS}{YOUTUBE_CSS}{GITHUB_CSS}{OGP_CSS}{MERMAID_CSS}{ISLAND_CSS}");
+    let all_css = format!("{SSG_CSS}{entry_css}{plugins_css}{footer_css}{theme_css}");
 
-    // Slots
-    let head_slot = slots.and_then(|s| s.head.as_deref()).unwrap_or("");
-    let header_before_slot = slots.and_then(|s| s.header_before.as_deref()).unwrap_or("");
-    let header_after_slot = slots.and_then(|s| s.header_after.as_deref()).unwrap_or("");
-    let sidebar_before_slot = slots.and_then(|s| s.sidebar_before.as_deref()).unwrap_or("");
-    let sidebar_after_slot = slots.and_then(|s| s.sidebar_after.as_deref()).unwrap_or("");
-    let content_before_slot = slots.and_then(|s| s.content_before.as_deref()).unwrap_or("");
-    let content_after_slot = slots.and_then(|s| s.content_after.as_deref()).unwrap_or("");
-    let footer_before_slot = slots.and_then(|s| s.footer_before.as_deref()).unwrap_or("");
+    // Embedded HTML for specific positions
+    let embed_head = embed.and_then(|e| e.head.as_deref()).unwrap_or("");
+    let embed_header_before = embed.and_then(|e| e.header_before.as_deref()).unwrap_or("");
+    let embed_header_after = embed.and_then(|e| e.header_after.as_deref()).unwrap_or("");
+    let embed_sidebar_before = embed.and_then(|e| e.sidebar_before.as_deref()).unwrap_or("");
+    let embed_sidebar_after = embed.and_then(|e| e.sidebar_after.as_deref()).unwrap_or("");
+    let embed_content_before = embed.and_then(|e| e.content_before.as_deref()).unwrap_or("");
+    let embed_content_after = embed.and_then(|e| e.content_after.as_deref()).unwrap_or("");
+    let embed_footer_before = embed.and_then(|e| e.footer_before.as_deref()).unwrap_or("");
 
     // Footer HTML
-    let footer_html = if let Some(custom_footer) = slots.and_then(|s| s.footer.clone()) {
-        custom_footer
+    let footer_html = if let Some(embed_footer) = embed.and_then(|e| e.footer.clone()) {
+        embed_footer
     } else if let Some(t) = theme {
         generate_footer_html(t)
     } else {
@@ -697,146 +739,36 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         ("", format!("<article class=\"content\">\n{}\n      </article>", page_data.content))
     };
 
-    let body_class =
-        if page_class.is_empty() { String::new() } else { format!(" class=\"{page_class}\"") };
+    let body_class = if page_class.is_empty() { String::new() } else { page_class.to_string() };
 
-    format!(
-        r#"<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title} - {site_name}</title>
-  {description_meta}
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="{title} - {site_name}">
-  {og_image_meta}
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{title} - {site_name}">
-  <style>{css}</style>
-  {head_slot}
-  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
-</head>
-<body{body_class}>
-{header_before_slot}
-  <header class="header">
-    <button class="menu-toggle" aria-label="Toggle menu">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
-        <path d="M3 12h18M3 6h18M3 18h18"/>
-      </svg>
-    </button>
-    <a href="{base}index.html" class="header-title">
-      <img src="{logo_src}" alt="" width="{logo_width}" height="{logo_height}" style="margin-right: 8px; vertical-align: middle;" />
-      {site_name}
-    </a>
-    <div class="header-actions">
-{social_links}      <button class="search-button" aria-label="Search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-        </svg>
-        <span>Search</span>
-        <kbd>⌘K</kbd>
-      </button>
-      <button class="theme-toggle" aria-label="Toggle theme">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-        </svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </button>
-    </div>
-  </header>
-{header_after_slot}
-  <div class="search-modal-overlay">
-    <div class="search-modal">
-      <div class="search-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-        </svg>
-        <input type="text" class="search-input" placeholder="Search documentation..." />
-        <button class="search-close">Esc</button>
-      </div>
-      <div class="search-results"></div>
-      <div class="search-footer">
-        <span><kbd>↑</kbd><kbd>↓</kbd> to navigate</span>
-        <span><kbd>Enter</kbd> to select</span>
-        <span><kbd>Esc</kbd> to close</span>
-      </div>
-    </div>
-  </div>
-  <div class="overlay"></div>
-  <div class="layout">
-    <aside class="sidebar">
-{sidebar_before_slot}
-      <nav>
-{navigation}
-      </nav>
-{sidebar_after_slot}
-    </aside>
-    <main class="main">
-{content_before_slot}
-{main_content}
-{content_after_slot}
-{footer_before_slot}
-{footer_html}
-    </main>
-  </div>
-  <footer class="mobile-footer">
-    <button class="mobile-footer-btn" aria-label="Menu" data-mobile-menu>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M3 12h18M3 6h18M3 18h18"/>
-      </svg>
-      <span class="mobile-footer-label">Menu</span>
-    </button>
-    <button class="mobile-footer-btn" aria-label="Search" data-mobile-search>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-      </svg>
-      <span class="mobile-footer-label">Search</span>
-    </button>
-{mobile_social_links}    <button class="mobile-footer-btn" aria-label="Theme" data-mobile-theme>
-      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-      </svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-      <span class="mobile-footer-label">Theme</span>
-    </button>
-  </footer>
-  <script>{js}</script>
-</body>
-</html>"#,
-        title = html_escape(&page_data.title),
-        site_name = html_escape(&config.site_name),
-        base = &config.base,
-        description_meta = description_meta,
-        og_image_meta = og_image_meta,
-        css = all_css,
-        head_slot = head_slot,
-        body_class = body_class,
-        header_before_slot = header_before_slot,
-        header_after_slot = header_after_slot,
-        logo_src = logo_src,
-        logo_width = logo_width,
-        logo_height = logo_height,
-        sidebar_before_slot = sidebar_before_slot,
-        navigation = nav_html,
-        sidebar_after_slot = sidebar_after_slot,
-        content_before_slot = content_before_slot,
-        main_content = main_content,
-        content_after_slot = content_after_slot,
-        footer_before_slot = footer_before_slot,
-        footer_html = footer_html,
-        social_links = social_links_html,
-        mobile_social_links = mobile_social_links_html,
-        js = all_js,
-    )
-}
+    let template = PageTemplate {
+        title: &page_data.title,
+        site_name: &config.site_name,
+        description: page_data.description.as_deref(),
+        og_image: config.og_image.as_deref(),
+        css: &all_css,
+        embed_head,
+        body_class: &body_class,
+        embed_header_before,
+        embed_header_after,
+        base: &config.base,
+        logo_src: &logo_src,
+        logo_width,
+        logo_height,
+        social_links: &social_links_html,
+        embed_sidebar_before,
+        navigation: &nav_html,
+        embed_sidebar_after,
+        embed_content_before,
+        main_content: &main_content,
+        embed_content_after,
+        embed_footer_before,
+        footer_html: &footer_html,
+        mobile_social_links: &mobile_social_links_html,
+        js: &all_js,
+    };
 
-fn html_escape(s: &str) -> String {
-    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
+    template.render().unwrap_or_default()
 }
 
 /// Renders an icon based on its format.
@@ -879,128 +811,31 @@ fn render_icon(icon: &str, base: &str) -> String {
 }
 
 fn generate_social_links_html(links: &SocialLinks) -> String {
-    let mut html = String::new();
-
-    if let Some(github) = &links.github {
-        html.push_str(&format!(
-            r#"      <a href="{github}" class="social-link" aria-label="GitHub" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-        </svg>
-      </a>
-"#
-        ));
-    }
-
-    if let Some(twitter) = &links.twitter {
-        html.push_str(&format!(
-            r#"      <a href="{twitter}" class="social-link" aria-label="Twitter" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-      </a>
-"#
-        ));
-    }
-
-    if let Some(discord) = &links.discord {
-        html.push_str(&format!(
-            r#"      <a href="{discord}" class="social-link" aria-label="Discord" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/>
-        </svg>
-      </a>
-"#
-        ));
-    }
-
-    html
+    let template = SocialLinksTemplate {
+        github: links.github.as_deref(),
+        twitter: links.twitter.as_deref(),
+        discord: links.discord.as_deref(),
+    };
+    template.render().unwrap_or_default()
 }
 
 fn generate_mobile_social_links_html(links: &SocialLinks) -> String {
-    let mut html = String::new();
-
-    if let Some(github) = &links.github {
-        html.push_str(&format!(
-            r#"    <a href="{github}" class="mobile-footer-btn" aria-label="GitHub" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-      </svg>
-      <span class="mobile-footer-label">GitHub</span>
-    </a>
-"#
-        ));
-    }
-
-    if let Some(twitter) = &links.twitter {
-        html.push_str(&format!(
-            r#"    <a href="{twitter}" class="mobile-footer-btn" aria-label="Twitter" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-      </svg>
-      <span class="mobile-footer-label">Twitter</span>
-    </a>
-"#
-        ));
-    }
-
-    if let Some(discord) = &links.discord {
-        html.push_str(&format!(
-            r#"    <a href="{discord}" class="mobile-footer-btn" aria-label="Discord" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-        <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/>
-      </svg>
-      <span class="mobile-footer-label">Discord</span>
-    </a>
-"#
-        ));
-    }
-
-    html
+    let template = MobileSocialLinksTemplate {
+        github: links.github.as_deref(),
+        twitter: links.twitter.as_deref(),
+        discord: links.discord.as_deref(),
+    };
+    template.render().unwrap_or_default()
 }
 
 fn generate_nav_html(nav_groups: &[NavGroup], current_path: &str) -> String {
-    nav_groups
-        .iter()
-        .map(|group| {
-            let items = group
-                .items
-                .iter()
-                .map(|item| {
-                    let active = if item.path == current_path { " active" } else { "" };
-                    format!(
-                        r#"              <li class="nav-item"><a href="{}" class="nav-link{}">{}</a></li>"#,
-                        item.href, active, html_escape(&item.title)
-                    )
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
-
-            format!(
-                r#"          <div class="nav-section">
-            <div class="nav-title">{}</div>
-            <ul class="nav-list">
-{}
-            </ul>
-          </div>"#,
-                html_escape(&group.title),
-                items
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+    let template = NavTemplate { nav_groups, current_path };
+    template.render().unwrap_or_default()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_html_escape() {
-        assert_eq!(html_escape("<script>"), "&lt;script&gt;");
-        assert_eq!(html_escape("a & b"), "a &amp; b");
-        assert_eq!(html_escape("\"quoted\""), "&quot;quoted&quot;");
-    }
 
     #[test]
     fn test_generate_html() {

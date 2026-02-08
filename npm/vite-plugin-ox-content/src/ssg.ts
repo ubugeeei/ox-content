@@ -7,6 +7,10 @@ import * as path from "path";
 import { glob } from "glob";
 import { transformMarkdown, generateOgImageSvg } from "./transform";
 import type { OgImageData, OgImageConfig } from "./transform";
+import { transformAllPlugins } from "./plugins";
+import type { TransformAllOptions } from "./plugins";
+import { protectMermaidSvgs, restoreMermaidSvgs } from "./plugins/mermaid-protect";
+import { transformIslands, hasIslands } from "./island";
 import type {
   ResolvedOptions,
   ResolvedSsgOptions,
@@ -1284,7 +1288,35 @@ export async function buildSsg(
         sourcePath: inputPath,
       });
 
-      const title = extractTitle(result.html, result.frontmatter);
+      // Apply built-in plugin transformations (No-JS First)
+      let transformedHtml = result.html;
+
+      // Protect mermaid SVGs from rehype processing in plugins
+      const { html: protectedHtml, svgs: mermaidSvgs } =
+        protectMermaidSvgs(transformedHtml);
+      transformedHtml = protectedHtml;
+
+      // Transform Tabs, YouTube, GitHub, OGP, Mermaid plugins
+      const pluginOptions: TransformAllOptions = {
+        tabs: true,
+        youtube: true,
+        github: true,
+        ogp: true,
+        mermaid: true,
+        githubToken: process.env.GITHUB_TOKEN,
+      };
+      transformedHtml = await transformAllPlugins(transformedHtml, pluginOptions);
+
+      // Transform Island components
+      if (hasIslands(transformedHtml)) {
+        const islandResult = await transformIslands(transformedHtml);
+        transformedHtml = islandResult.html;
+      }
+
+      // Restore protected mermaid SVGs
+      transformedHtml = restoreMermaidSvgs(transformedHtml, mermaidSvgs);
+
+      const title = extractTitle(transformedHtml, result.frontmatter);
       const description = result.frontmatter.description as string | undefined;
 
       // Determine OG image URL for this page
@@ -1333,12 +1365,12 @@ export async function buildSsg(
       // Generate HTML based on bare option
       let html: string;
       if (ssgOptions.bare) {
-        html = generateBareHtmlPage(result.html, title);
+        html = generateBareHtmlPage(transformedHtml, title);
       } else {
         const pageData: SsgPageData = {
           title,
           description,
-          content: result.html,
+          content: transformedHtml,
           toc: result.toc,
           frontmatter: result.frontmatter,
           path: getUrlPath(inputPath, srcDir),

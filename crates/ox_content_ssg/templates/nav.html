@@ -1,0 +1,10 @@
+{% for group in nav_groups %}
+          <div class="nav-section">
+            <div class="nav-title">{{ group.title }}</div>
+            <ul class="nav-list">
+{% for item in group.items %}
+              <li class="nav-item"><a href="{{ item.href }}" class="nav-link{% if item.path == current_path %} active{% endif %}">{{ item.title }}</a></li>
+{% endfor %}
+            </ul>
+          </div>
+{% endfor %}

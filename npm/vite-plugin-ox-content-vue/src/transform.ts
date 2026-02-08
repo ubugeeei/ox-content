@@ -4,7 +4,7 @@
 
 import * as path from "path";
 import { transformMarkdown as baseTransformMarkdown } from "vite-plugin-ox-content";
-import type { ResolvedVueOptions, VueTransformResult, ComponentSlot } from "./types";
+import type { ResolvedVueOptions, VueTransformResult, ComponentIsland } from "./types";
 
 // Regex to match Vue-like component tags in Markdown
 const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>([\s\S]*?)<\/\1>)/g;
@@ -13,8 +13,8 @@ const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>([\s\S]*?)<\/
 const PROP_REGEX =
   /(?::|v-bind:)?([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}|\[([^\]]*)\]))?/g;
 
-const SLOT_MARKER_PREFIX = "OXCONTENT-SLOT-";
-const SLOT_MARKER_SUFFIX = "-PLACEHOLDER";
+const ISLAND_MARKER_PREFIX = "OXCONTENT-ISLAND-";
+const ISLAND_MARKER_SUFFIX = "-PLACEHOLDER";
 
 interface Range {
   start: number;
@@ -39,8 +39,8 @@ export async function transformMarkdownWithVue(
 ): Promise<VueTransformResult> {
   const { components } = options;
   const usedComponents: string[] = [];
-  const slots: ComponentSlot[] = [];
-  let slotIndex = 0;
+  const islands: ComponentIsland[] = [];
+  let islandIndex = 0;
 
   // Extract frontmatter
   const { content: markdownContent, frontmatter } = extractFrontmatter(code);
@@ -53,7 +53,7 @@ export async function transformMarkdownWithVue(
 
   COMPONENT_REGEX.lastIndex = 0;
   while ((match = COMPONENT_REGEX.exec(markdownContent)) !== null) {
-    const [fullMatch, componentName, propsString, rawSlotContent] = match;
+    const [fullMatch, componentName, propsString, rawIslandContent] = match;
     const matchStart = match.index;
     const matchEnd = matchStart + fullMatch.length;
 
@@ -71,19 +71,19 @@ export async function transformMarkdownWithVue(
     // Parse props
     const props = parseProps(propsString);
 
-    // Create slot placeholder
-    const slotId = `ox-slot-${slotIndex++}`;
-    const slotContent = typeof rawSlotContent === "string" ? rawSlotContent.trim() : undefined;
-    slots.push({
+    // Create island placeholder
+    const islandId = `ox-island-${islandIndex++}`;
+    const islandContent = typeof rawIslandContent === "string" ? rawIslandContent.trim() : undefined;
+    islands.push({
       name: componentName,
       props,
       position: matchStart,
-      id: slotId,
-      content: slotContent,
+      id: islandId,
+      content: islandContent,
     });
 
-    // Replace component with slot marker text
-    processedContent += markdownContent.slice(lastIndex, matchStart) + createSlotMarker(slotId);
+    // Replace component with island marker text
+    processedContent += markdownContent.slice(lastIndex, matchStart) + createIslandMarker(islandId);
     lastIndex = matchEnd;
   }
   processedContent += markdownContent.slice(lastIndex);
@@ -125,8 +125,8 @@ export async function transformMarkdownWithVue(
   });
 
   // Generate Vue SFC code
-  const htmlWithSlots = injectSlotMarkers(transformed.html, slots);
-  const sfcCode = generateVueSFC(htmlWithSlots, usedComponents, slots, frontmatter, options, id);
+  const htmlWithIslands = injectIslandMarkers(transformed.html, islands);
+  const sfcCode = generateVueSFC(htmlWithIslands, usedComponents, islands, frontmatter, options, id);
 
   return {
     code: sfcCode,
@@ -136,8 +136,8 @@ export async function transformMarkdownWithVue(
   };
 }
 
-function createSlotMarker(slotId: string): string {
-  return `${SLOT_MARKER_PREFIX}${slotId}${SLOT_MARKER_SUFFIX}`;
+function createIslandMarker(islandId: string): string {
+  return `${ISLAND_MARKER_PREFIX}${islandId}${ISLAND_MARKER_SUFFIX}`;
 }
 
 function collectFenceRanges(content: string): Range[] {
@@ -188,13 +188,20 @@ function isInRanges(start: number, end: number, ranges: Range[]): boolean {
   return false;
 }
 
-function injectSlotMarkers(html: string, slots: ComponentSlot[]): string {
+function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
   let output = html;
 
-  for (const slot of slots) {
-    const marker = createSlotMarker(slot.id);
-    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-slot="${slot.id}"></div>`);
-    output = output.replaceAll(marker, `<span data-ox-slot="${slot.id}"></span>`);
+  for (const island of islands) {
+    const marker = createIslandMarker(island.id);
+    const propsAttr = Object.keys(island.props).length > 0
+      ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
+      : "";
+    const contentAttr = island.content
+      ? ` data-ox-content='${island.content.replace(/'/g, "&#39;")}'`
+      : "";
+    const attrs = `data-ox-island="${island.name}"${propsAttr}${contentAttr}`;
+    output = output.replaceAll(`<p>${marker}</p>`, `<div ${attrs}></div>`);
+    output = output.replaceAll(marker, `<span ${attrs}></span>`);
   }
 
   return output;
@@ -295,7 +302,7 @@ function parseProps(propsString: string): Record<string, unknown> {
 function generateVueSFC(
   content: string,
   usedComponents: string[],
-  slots: ComponentSlot[],
+  islands: ComponentIsland[],
   frontmatter: Record<string, unknown>,
   options: TransformOptions,
   id: string,
@@ -319,45 +326,60 @@ function generateVueSFC(
 
   const componentMap = usedComponents.map((name) => `  ${name},`).join("\n");
 
+  // If no islands, generate simpler code without island runtime
+  if (islands.length === 0) {
+    return `
+import { h, ref, defineComponent } from 'vue';
+
+export const frontmatter = ${JSON.stringify(frontmatter)};
+
+const rawHtml = ${JSON.stringify(content)};
+
+export default defineComponent({
+  name: 'MarkdownContent',
+  setup(_, { expose }) {
+    expose({ frontmatter });
+
+    return () =>
+      h('div', {
+        class: 'ox-content',
+        innerHTML: rawHtml,
+      });
+  },
+});
+`;
+  }
+
   return `
 import { h, ref, onMounted, onBeforeUnmount, defineComponent, render } from 'vue';
+import { initIslands } from 'ox-content-islands';
 ${componentImports}
 
 export const frontmatter = ${JSON.stringify(frontmatter)};
 
 const rawHtml = ${JSON.stringify(content)};
-const slots = ${JSON.stringify(slots)};
 const components = {
 ${componentMap}
 };
 
-function renderSlot(slot, slotContent) {
-  const component = components[slot.name];
-  if (!component) return null;
-  const children = slotContent
-    ? { default: () => h('div', { innerHTML: slotContent }) }
-    : undefined;
-  return h(component, slot.props, children);
-}
-
-function mountSlots(container) {
+function createVueHydrate(container) {
   const mountedTargets = [];
 
-  for (const slot of slots) {
-    const target = container.querySelector('[data-ox-slot="' + slot.id + '"]');
-    if (!target) continue;
-    const slotContent = slot.content ?? target.innerHTML;
-    const vnode = renderSlot(slot, slotContent);
-    if (vnode) {
-      render(vnode, target);
-      mountedTargets.push(target);
-    }
-  }
+  return (element, props) => {
+    const componentName = element.dataset.oxIsland;
+    const Component = components[componentName];
+    if (!Component) return;
 
-  return () => {
-    for (const target of mountedTargets) {
-      render(null, target);
-    }
+    const islandContent = element.dataset.oxContent || element.innerHTML;
+    const children = islandContent
+      ? { default: () => h('div', { innerHTML: islandContent }) }
+      : undefined;
+
+    const vnode = h(Component, props, children);
+    render(vnode, element);
+    mountedTargets.push(element);
+
+    return () => render(null, element);
   };
 }
 
@@ -365,16 +387,18 @@ export default defineComponent({
   name: 'MarkdownContent',
   setup(_, { expose }) {
     const container = ref(null);
-    let cleanup;
+    let controller;
 
     onMounted(() => {
       if (container.value) {
-        cleanup = mountSlots(container.value);
+        controller = initIslands(createVueHydrate(container.value), {
+          selector: '.ox-content [data-ox-island]',
+        });
       }
     });
 
     onBeforeUnmount(() => {
-      if (cleanup) cleanup();
+      if (controller) controller.destroy();
     });
 
     expose({ frontmatter });

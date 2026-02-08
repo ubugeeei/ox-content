@@ -59,3 +59,4 @@ module.exports.buildSearchIndex = binding.buildSearchIndex
 module.exports.searchIndex = binding.searchIndex
 module.exports.extractSearchContent = binding.extractSearchContent
 module.exports.generateSsgHtml = binding.generateSsgHtml
+module.exports.transformMermaid = binding.transformMermaid

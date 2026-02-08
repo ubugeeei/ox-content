@@ -25,6 +25,7 @@
     "vite": "catalog:"
   },
   "dependencies": {
+    "ox-content-islands": "workspace:*",
     "vite-plugin-ox-content": "workspace:*"
   },
   "devDependencies": {

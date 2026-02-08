@@ -330,9 +330,9 @@ export interface JsSocialLinks {
   /** Discord URL. */
   discord?: string
 }
-/** Theme slots for JavaScript. */
-export interface JsThemeSlots {
-  /** Content to inject into <head>. */
+/** Embedded HTML content for specific positions. */
+export interface JsThemeEmbed {
+  /** Content to embed into <head>. */
   head?: string
   /** Content before header. */
   headerBefore?: string
@@ -367,8 +367,8 @@ export interface JsThemeConfig {
   footer?: JsThemeFooter
   /** Social links configuration. */
   socialLinks?: JsSocialLinks
-  /** Custom slots for HTML injection. */
-  slots?: JsThemeSlots
+  /** Embedded HTML content at specific positions. */
+  embed?: JsThemeEmbed
   /** Additional custom CSS. */
   css?: string
   /** Additional custom JavaScript. */
@@ -393,3 +393,18 @@ export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Arra
  * Parses the Markdown and extracts title, body text, headings, and code.
  */
 export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument
+/** Mermaid transform result. */
+export interface MermaidTransformResult {
+  /** The transformed HTML with mermaid code blocks replaced by rendered SVGs. */
+  html: string
+  /** Non-fatal errors encountered during rendering (per-diagram). */
+  errors: Array<string>
+}
+/**
+ * Transforms mermaid code blocks in HTML to rendered SVG diagrams.
+ *
+ * Extracts `<pre><code class="language-mermaid">...</code></pre>` blocks,
+ * renders each in parallel using the mmdc CLI, and replaces them with
+ * `<div class="ox-mermaid">...</div>`.
+ */
+export declare function transformMermaid(html: string, mmdcPath: string): MermaidTransformResult

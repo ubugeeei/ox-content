@@ -3,15 +3,15 @@ import { transformMarkdown as baseTransformMarkdown } from "vite-plugin-ox-conte
 import type {
   ResolvedReactOptions,
   ReactTransformResult,
-  ComponentSlot,
+  ComponentIsland,
   ComponentsMap,
 } from "./types";
 
 const COMPONENT_REGEX = /<([A-Z][a-zA-Z0-9]*)\s*([^>]*?)\s*(?:\/>|>([\s\S]*?)<\/\1>)/g;
 const PROP_REGEX = /([a-zA-Z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|{([^}]*)}|\[([^\]]*)\]))?/g;
 
-const SLOT_MARKER_PREFIX = "OXCONTENT-SLOT-";
-const SLOT_MARKER_SUFFIX = "-PLACEHOLDER";
+const ISLAND_MARKER_PREFIX = "OXCONTENT-ISLAND-";
+const ISLAND_MARKER_SUFFIX = "-PLACEHOLDER";
 
 interface Range {
   start: number;
@@ -25,8 +25,8 @@ export async function transformMarkdownWithReact(
 ): Promise<ReactTransformResult> {
   const components: ComponentsMap = options.components;
   const usedComponents: string[] = [];
-  const slots: ComponentSlot[] = [];
-  let slotIndex = 0;
+  const islands: ComponentIsland[] = [];
+  let islandIndex = 0;
 
   const { content: markdownContent, frontmatter } = extractFrontmatter(code);
   const fenceRanges = collectFenceRanges(markdownContent);
@@ -36,7 +36,7 @@ export async function transformMarkdownWithReact(
 
   COMPONENT_REGEX.lastIndex = 0;
   while ((match = COMPONENT_REGEX.exec(markdownContent)) !== null) {
-    const [fullMatch, componentName, propsString, rawSlotContent] = match;
+    const [fullMatch, componentName, propsString, rawIslandContent] = match;
     const matchStart = match.index;
     const matchEnd = matchStart + fullMatch.length;
 
@@ -54,18 +54,18 @@ export async function transformMarkdownWithReact(
     }
 
     const props = parseProps(propsString);
-    const slotId = `ox-slot-${slotIndex++}`;
-    const slotContent = typeof rawSlotContent === "string" ? rawSlotContent.trim() : undefined;
+    const islandId = `ox-island-${islandIndex++}`;
+    const islandContent = typeof rawIslandContent === "string" ? rawIslandContent.trim() : undefined;
 
-    slots.push({
+    islands.push({
       name: componentName,
       props,
       position: matchStart,
-      id: slotId,
-      content: slotContent,
+      id: islandId,
+      content: islandContent,
     });
 
-    processedContent += markdownContent.slice(lastIndex, matchStart) + createSlotMarker(slotId);
+    processedContent += markdownContent.slice(lastIndex, matchStart) + createIslandMarker(islandId);
     lastIndex = matchEnd;
   }
   processedContent += markdownContent.slice(lastIndex);
@@ -105,11 +105,11 @@ export async function transformMarkdownWithReact(
     },
   });
 
-  const htmlWithSlots = injectSlotMarkers(transformed.html, slots);
+  const htmlWithIslands = injectIslandMarkers(transformed.html, islands);
   const jsxCode = generateReactModule(
-    htmlWithSlots,
+    htmlWithIslands,
     usedComponents,
-    slots,
+    islands,
     frontmatter,
     options,
     id,
@@ -123,8 +123,8 @@ export async function transformMarkdownWithReact(
   };
 }
 
-function createSlotMarker(slotId: string): string {
-  return `${SLOT_MARKER_PREFIX}${slotId}${SLOT_MARKER_SUFFIX}`;
+function createIslandMarker(islandId: string): string {
+  return `${ISLAND_MARKER_PREFIX}${islandId}${ISLAND_MARKER_SUFFIX}`;
 }
 
 function collectFenceRanges(content: string): Range[] {
@@ -175,13 +175,20 @@ function isInRanges(start: number, end: number, ranges: Range[]): boolean {
   return false;
 }
 
-function injectSlotMarkers(html: string, slots: ComponentSlot[]): string {
+function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
   let output = html;
 
-  for (const slot of slots) {
-    const marker = createSlotMarker(slot.id);
-    output = output.replaceAll(`<p>${marker}</p>`, `<div data-ox-slot="${slot.id}"></div>`);
-    output = output.replaceAll(marker, `<span data-ox-slot="${slot.id}"></span>`);
+  for (const island of islands) {
+    const marker = createIslandMarker(island.id);
+    const propsAttr = Object.keys(island.props).length > 0
+      ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
+      : "";
+    const contentAttr = island.content
+      ? ` data-ox-content='${island.content.replace(/'/g, "&#39;")}'`
+      : "";
+    const attrs = `data-ox-island="${island.name}"${propsAttr}${contentAttr}`;
+    output = output.replaceAll(`<p>${marker}</p>`, `<div ${attrs}></div>`);
+    output = output.replaceAll(marker, `<span ${attrs}></span>`);
   }
 
   return output;
@@ -256,7 +263,7 @@ function parseProps(propsString: string): Record<string, unknown> {
 function generateReactModule(
   content: string,
   usedComponents: string[],
-  slots: ComponentSlot[],
+  islands: ComponentIsland[],
   frontmatter: Record<string, unknown>,
   options: ResolvedReactOptions & { root?: string },
   id: string,
@@ -278,50 +285,59 @@ function generateReactModule(
 
   const componentMap = usedComponents.map((name) => `  ${name},`).join("\n");
 
+  // If no islands, generate simpler code without island runtime
+  if (islands.length === 0) {
+    return `
+import React, { createElement } from 'react';
+
+export const frontmatter = ${JSON.stringify(frontmatter)};
+
+const rawHtml = ${JSON.stringify(content)};
+
+export default function MarkdownContent() {
+  return createElement('div', {
+    className: 'ox-content',
+    dangerouslySetInnerHTML: { __html: rawHtml },
+  });
+}
+`;
+  }
+
   return `
 import React, { useEffect, useRef, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
+import { initIslands } from 'ox-content-islands';
 ${imports}
 
 export const frontmatter = ${JSON.stringify(frontmatter)};
 
 const rawHtml = ${JSON.stringify(content)};
-const slots = ${JSON.stringify(slots)};
 const components = {
 ${componentMap}
 };
 
-function renderSlot(slot, slotContent) {
-  const Component = components[slot.name];
-  if (!Component) return null;
-  if (slotContent) {
-    return createElement(
-      Component,
-      slot.props,
-      createElement('div', { dangerouslySetInnerHTML: { __html: slotContent } })
-    );
-  }
-  return createElement(Component, slot.props);
-}
-
-function mountSlots(container) {
+function createReactHydrate() {
   const mountedRoots = [];
 
-  for (const slot of slots) {
-    const target = container.querySelector('[data-ox-slot="' + slot.id + '"]');
-    if (!target) continue;
-    const slotContent = slot.content ?? target.innerHTML;
-    const vnode = renderSlot(slot, slotContent);
-    if (!vnode) continue;
-    const root = createRoot(target);
+  return (element, props) => {
+    const componentName = element.dataset.oxIsland;
+    const Component = components[componentName];
+    if (!Component) return;
+
+    const islandContent = element.dataset.oxContent || element.innerHTML;
+    const vnode = islandContent
+      ? createElement(
+          Component,
+          props,
+          createElement('div', { dangerouslySetInnerHTML: { __html: islandContent } })
+        )
+      : createElement(Component, props);
+
+    const root = createRoot(element);
     root.render(vnode);
     mountedRoots.push(root);
-  }
 
-  return () => {
-    for (const root of mountedRoots) {
-      root.unmount();
-    }
+    return () => root.unmount();
   };
 }
 
@@ -330,7 +346,10 @@ export default function MarkdownContent() {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    return mountSlots(containerRef.current);
+    const controller = initIslands(createReactHydrate(), {
+      selector: '.ox-content [data-ox-island]',
+    });
+    return () => controller.destroy();
   }, []);
 
   return createElement('div', {

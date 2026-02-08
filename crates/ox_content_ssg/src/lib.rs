@@ -51,6 +51,6 @@ mod html;
 
 pub use html::{
     generate_html, EntryPageConfig, FeatureConfig, HeroAction, HeroConfig, HeroImage, NavGroup,
-    NavItem, PageData, SocialLinks, SsgConfig, ThemeColors, ThemeConfig, ThemeFonts, ThemeFooter,
-    ThemeHeader, ThemeLayout, ThemeSlots, TocEntry,
+    NavItem, PageData, SocialLinks, SsgConfig, ThemeColors, ThemeConfig, ThemeEmbed, ThemeFonts,
+    ThemeFooter, ThemeHeader, ThemeLayout, TocEntry,
 };

@@ -85,10 +85,10 @@ export interface SocialLinks {
 }
 
 /**
- * Theme slots for injecting custom HTML.
+ * Embedded HTML content for specific positions in the page layout.
  */
-export interface ThemeSlots {
-  /** Content to inject into <head> */
+export interface ThemeEmbed {
+  /** Content to embed into <head> */
   head?: string;
   /** Content before header */
   headerBefore?: string;
@@ -130,8 +130,8 @@ export interface ThemeConfig {
   footer?: ThemeFooter;
   /** Social links configuration */
   socialLinks?: SocialLinks;
-  /** Custom slots for HTML injection */
-  slots?: ThemeSlots;
+  /** Embedded HTML content at specific positions */
+  embed?: ThemeEmbed;
   /** Additional custom CSS */
   css?: string;
   /** Additional custom JavaScript */
@@ -150,7 +150,7 @@ export interface ResolvedThemeConfig {
   header: ThemeHeader;
   footer: ThemeFooter;
   socialLinks: SocialLinks;
-  slots: ThemeSlots;
+  embed: ThemeEmbed;
   css: string;
   js: string;
 }
@@ -202,7 +202,7 @@ export const defaultTheme: ThemeConfig = {
     copyright: undefined,
   },
   socialLinks: {},
-  slots: {},
+  embed: {},
   css: "",
   js: "",
 };
@@ -316,7 +316,7 @@ export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig {
     header: merged.header ?? defaultTheme.header!,
     footer: merged.footer ?? defaultTheme.footer!,
     socialLinks: merged.socialLinks ?? defaultTheme.socialLinks!,
-    slots: merged.slots ?? {},
+    embed: merged.embed ?? {},
     css: merged.css ?? "",
     js: merged.js ?? "",
   };
@@ -388,7 +388,7 @@ export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig {
             discord: theme.socialLinks.discord,
           }
         : undefined,
-    slots: Object.keys(theme.slots).length > 0 ? theme.slots : undefined,
+    embed: Object.keys(theme.embed).length > 0 ? theme.embed : undefined,
     css: theme.css || undefined,
     js: theme.js || undefined,
   };
@@ -453,9 +453,9 @@ export interface NapiSocialLinks {
 }
 
 /**
- * NAPI-compatible theme slots type.
+ * NAPI-compatible theme embed type.
  */
-export interface NapiThemeSlots {
+export interface NapiThemeEmbed {
   head?: string;
   headerBefore?: string;
   headerAfter?: string;
@@ -478,7 +478,7 @@ export interface NapiThemeConfig {
   header?: NapiThemeHeader;
   footer?: NapiThemeFooter;
   socialLinks?: NapiSocialLinks;
-  slots?: NapiThemeSlots;
+  embed?: NapiThemeEmbed;
   css?: string;
   js?: string;
 }

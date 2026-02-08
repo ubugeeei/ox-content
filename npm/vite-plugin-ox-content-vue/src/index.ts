@@ -24,7 +24,7 @@ export type {
   ComponentsOption,
   ComponentsMap,
   VueTransformResult,
-  ComponentSlot,
+  ComponentIsland,
   ParsedMarkdownContent,
   TocEntry,
 } from "./types";
@@ -239,19 +239,19 @@ export const OxContentRenderer = defineComponent({
     return () => {
       if (!props.content) return null;
 
-      const { html, frontmatter, toc, slots } = props.content;
+      const { html, frontmatter, toc, islands } = props.content;
 
-      // Render static HTML with component slots
+      // Render static HTML with component islands
       return h('div', {
         class: 'ox-content',
         innerHTML: mounted.value ? undefined : html,
-      }, mounted.value ? renderWithSlots(html, slots, props.components) : undefined);
+      }, mounted.value ? renderWithIslands(html, islands, props.components) : undefined);
     };
   },
 });
 
-function renderWithSlots(html, slots, components) {
-  // Parse and render slots with Vue components
+function renderWithIslands(html, islands, components) {
+  // Parse and render islands with Vue components
   // This is a simplified version - full implementation would use proper parsing
   return h('div', { innerHTML: html });
 }

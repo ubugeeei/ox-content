@@ -390,7 +390,7 @@ export type {
   ThemeHeader,
   ThemeFooter,
   SocialLinks,
-  ThemeSlots,
+  ThemeEmbed,
   ResolvedThemeConfig,
 } from "./theme";
 export * from "./types";
@@ -443,3 +443,44 @@ export type {
   PageData,
   ThemeRenderOptions,
 } from "./theme-renderer";
+
+// Built-in Plugins (No-JS First)
+export {
+  transformTabs,
+  generateTabsCSS,
+  transformYouTube,
+  extractVideoId,
+  transformGitHub,
+  fetchRepoData,
+  collectGitHubRepos,
+  prefetchGitHubRepos,
+  transformOgp,
+  fetchOgpData,
+  collectOgpUrls,
+  prefetchOgpData,
+  transformMermaidStatic,
+  mermaidClientScript,
+  transformAllPlugins,
+} from "./plugins";
+export type {
+  YouTubeOptions,
+  GitHubRepoData,
+  GitHubOptions,
+  OgpData,
+  OgpOptions,
+  MermaidOptions,
+  TransformAllOptions,
+} from "./plugins";
+
+// Island Architecture
+export {
+  transformIslands,
+  hasIslands,
+  extractIslandInfo,
+  generateHydrationScript,
+} from "./island";
+export type {
+  LoadStrategy,
+  IslandInfo,
+  ParseIslandsResult,
+} from "./island";

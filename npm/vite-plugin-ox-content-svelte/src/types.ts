@@ -47,7 +47,7 @@ export interface SvelteTransformResult {
   frontmatter: Record<string, unknown>;
 }
 
-export interface ComponentSlot {
+export interface ComponentIsland {
   name: string;
   props: Record<string, unknown>;
   position: number;

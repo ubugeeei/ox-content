@@ -1,0 +1,156 @@
+/* ox-content Tabs Plugin - Pure CSS, No JS */
+
+.ox-tabs {
+  margin: 1.5rem 0;
+  border: 1px solid var(--octc-color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ox-tabs-header {
+  display: flex;
+  background: var(--octc-color-bg-alt);
+  border-bottom: 1px solid var(--octc-color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.ox-tabs-header::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hidden radio inputs for tab selection */
+.ox-tabs input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Tab labels */
+.ox-tabs label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--octc-color-text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.ox-tabs label:hover {
+  color: var(--octc-color-text);
+}
+
+/* Checked tab label */
+.ox-tabs input[type="radio"]:checked + label {
+  color: var(--octc-color-primary);
+  border-bottom-color: var(--octc-color-primary);
+}
+
+/* Focus styles for accessibility */
+.ox-tabs input[type="radio"]:focus-visible + label {
+  outline: 2px solid var(--octc-color-primary);
+  outline-offset: -2px;
+}
+
+/* Tab content panels */
+.ox-tab-panel {
+  display: none;
+  padding: 1rem 1.25rem;
+}
+
+/* Reset margins for first/last children in panels */
+.ox-tab-panel > :first-child {
+  margin-top: 0;
+}
+
+.ox-tab-panel > :last-child {
+  margin-bottom: 0;
+}
+
+/* Panel visibility via :has() - modern browsers */
+@supports selector(:has(*)) {
+  .ox-tabs:has(#ox-tab-0:checked) .ox-tab-panel[data-tab="0"] { display: block; }
+  .ox-tabs:has(#ox-tab-1:checked) .ox-tab-panel[data-tab="1"] { display: block; }
+  .ox-tabs:has(#ox-tab-2:checked) .ox-tab-panel[data-tab="2"] { display: block; }
+  .ox-tabs:has(#ox-tab-3:checked) .ox-tab-panel[data-tab="3"] { display: block; }
+  .ox-tabs:has(#ox-tab-4:checked) .ox-tab-panel[data-tab="4"] { display: block; }
+  .ox-tabs:has(#ox-tab-5:checked) .ox-tab-panel[data-tab="5"] { display: block; }
+  .ox-tabs:has(#ox-tab-6:checked) .ox-tab-panel[data-tab="6"] { display: block; }
+  .ox-tabs:has(#ox-tab-7:checked) .ox-tab-panel[data-tab="7"] { display: block; }
+}
+
+/* Unique ID per tab group - generated dynamically */
+/* Pattern: .ox-tabs[data-group="X"]:has(#ox-tab-X-Y:checked) .ox-tab-panel[data-tab="Y"] */
+
+/* Code blocks inside tabs */
+.ox-tab-panel pre {
+  margin: 0.5rem 0;
+}
+
+.ox-tab-panel pre:first-child {
+  margin-top: 0;
+}
+
+.ox-tab-panel pre:last-child {
+  margin-bottom: 0;
+}
+
+/* Fallback for older browsers using <details> */
+.ox-tabs-fallback {
+  margin: 1.5rem 0;
+}
+
+.ox-tabs-fallback details {
+  border: 1px solid var(--octc-color-border);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.ox-tabs-fallback details:last-child {
+  margin-bottom: 0;
+}
+
+.ox-tabs-fallback summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  background: var(--octc-color-bg-alt);
+  border-radius: 8px;
+  list-style: none;
+}
+
+.ox-tabs-fallback summary::-webkit-details-marker {
+  display: none;
+}
+
+.ox-tabs-fallback summary::before {
+  content: "▸ ";
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+.ox-tabs-fallback details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.ox-tabs-fallback details[open] summary {
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--octc-color-border);
+}
+
+.ox-tabs-fallback .ox-tabs-fallback-content {
+  padding: 1rem;
+}
