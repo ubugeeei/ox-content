@@ -351,6 +351,7 @@ struct PageTemplate<'a> {
     logo_width: u32,
     logo_height: u32,
     social_links: &'a str,
+    is_entry_page: bool,
     embed_sidebar_before: &'a str,
     navigation: &'a str,
     embed_sidebar_after: &'a str,
@@ -528,6 +529,49 @@ fn generate_footer_html(theme: &ThemeConfig) -> String {
     template.render().unwrap_or_default()
 }
 
+/// Converts a `.md` link to an HTML path for entry page frontmatter links.
+/// Entry pages are always `index.md`, so relative links like `getting-started.md`
+/// become `{base}getting-started/index.html`.
+fn convert_entry_link(link: &str, base: &str) -> String {
+    // Don't touch external URLs or anchor-only links
+    if link.starts_with("http://") || link.starts_with("https://") || link.starts_with('#') {
+        return link.to_string();
+    }
+
+    // Split into path and fragment
+    let (path, fragment) = match link.split_once('#') {
+        Some((p, f)) => (p, Some(f)),
+        None => (link, None),
+    };
+
+    let is_md =
+        std::path::Path::new(path).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
+
+    if !is_md {
+        return link.to_string();
+    }
+
+    // Remove .md extension
+    let stem = &path[..path.len() - 3];
+
+    // Entry page is always index.md, so plain relative: getting-started.md -> {base}getting-started/index.html
+    let converted = if stem == "index" || stem.ends_with("/index") {
+        let dir = stem.trim_end_matches("/index").trim_end_matches("index");
+        if dir.is_empty() {
+            format!("{base}index.html")
+        } else {
+            format!("{base}{dir}/index.html")
+        }
+    } else {
+        format!("{base}{stem}/index.html")
+    };
+
+    match fragment {
+        Some(f) => format!("{converted}#{f}"),
+        None => converted,
+    }
+}
+
 /// Generates the Entry page HTML (hero section and features).
 fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
     // Convert hero config to view
@@ -541,14 +585,7 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
                         Some("alt") => "hero-action-alt",
                         _ => "hero-action-brand",
                     };
-                    let href = if action.link.starts_with("http://")
-                        || action.link.starts_with("https://")
-                        || action.link.starts_with('/')
-                    {
-                        action.link.clone()
-                    } else {
-                        format!("{}{}", base, action.link)
-                    };
+                    let href = convert_entry_link(&action.link, base);
                     HeroActionView {
                         href,
                         theme_class: theme_class.to_string(),
@@ -591,14 +628,7 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
                     .link
                     .as_ref()
                     .map(|link| {
-                        let href = if link.starts_with("http://")
-                            || link.starts_with("https://")
-                            || link.starts_with('/')
-                        {
-                            link.clone()
-                        } else {
-                            format!("{base}{link}")
-                        };
+                        let href = convert_entry_link(link, base);
                         format!(" href=\"{href}\"")
                     })
                     .unwrap_or_default();
@@ -756,6 +786,7 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         logo_width,
         logo_height,
         social_links: &social_links_html,
+        is_entry_page,
         embed_sidebar_before,
         navigation: &nav_html,
         embed_sidebar_after,

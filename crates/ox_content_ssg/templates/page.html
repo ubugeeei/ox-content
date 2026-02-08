@@ -71,6 +71,7 @@
   </div>
   <div class="overlay"></div>
   <div class="layout">
+{% if !is_entry_page %}
     <aside class="sidebar">
 {{ embed_sidebar_before|safe }}
       <nav>
@@ -78,6 +79,7 @@
       </nav>
 {{ embed_sidebar_after|safe }}
     </aside>
+{% endif %}
     <main class="main">
 {{ embed_content_before|safe }}
 {{ main_content|safe }}

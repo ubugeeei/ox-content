@@ -5,14 +5,9 @@
   --glow-color: var(--octc-color-primary);
 }
 
-/* Hide sidebar active state on entry page */
-.entry-page .nav-link.active {
-  background: transparent;
-  color: var(--octc-color-text);
-}
-
-.entry-page .nav-link.active:hover {
-  background: var(--octc-color-border);
+/* Entry page has no sidebar, so main content uses full width */
+.entry-page .main {
+  margin-left: 0;
 }
 
 /* Hero Section - Full viewport height */
