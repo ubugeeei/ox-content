@@ -2,9 +2,11 @@
  * Mermaid Plugin - Native Rust renderer via NAPI
  *
  * Renders mermaid code blocks to SVG using the native Rust renderer
- * via NAPI. Extracts mermaid code blocks from HTML, renders each to SVG,
- * and replaces them with rendered output.
+ * via NAPI. Delegates to the NAPI `transformMermaid` function which
+ * extracts mermaid code blocks from HTML and renders them using mmdc.
  */
+
+import { createRequire } from "node:module";
 
 export interface MermaidOptions {
   /** Mermaid theme. Default: "neutral" */
@@ -13,11 +15,7 @@ export interface MermaidOptions {
 
 /** Cached NAPI bindings */
 let napiBindings: {
-  renderMermaid: (
-    code: string,
-    options: Record<string, unknown>,
-  ) => { svg: string; error?: string };
-  transformMermaid?: (
+  transformMermaid: (
     html: string,
     mmdcPath: string,
   ) => { html: string; errors: string[] };
@@ -31,7 +29,13 @@ async function loadNapi() {
   try {
     const mod = await import("@ox-content/napi");
     // CJS-to-ESM interop: native functions are on mod.default
-    const binding = (mod.default ?? mod) as typeof napiBindings;
+    const binding = (mod.default ?? mod) as unknown as NonNullable<
+      typeof napiBindings
+    >;
+    if (typeof binding.transformMermaid !== "function") {
+      napiBindings = null;
+      return null;
+    }
     napiBindings = binding;
     return binding;
   } catch {
@@ -40,69 +44,23 @@ async function loadNapi() {
   }
 }
 
-/** Decode HTML entities in mermaid source extracted from code blocks */
-function decodeHtmlEntities(s: string): string {
-  return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x3C;/gi, "<")
-    .replace(/&#x3E;/gi, ">")
-    .replace(/&#x22;/gi, '"')
-    .replace(/&#x27;/gi, "'")
-    .replace(/&#60;/g, "<")
-    .replace(/&#62;/g, ">")
-    .replace(/&#34;/g, '"');
-}
+let cachedMmdcPath: string | null | undefined;
 
-/** Post-process mermaid SVG: transparent bg and unique IDs */
-function postprocessSvg(svg: string, id: number): string {
-  const uniqueId = `ox-mermaid-${id}`;
-  return svg
-    .replace(/background-color:\s*white;/g, "background-color: transparent;")
-    .replace(/my-svg/g, uniqueId);
-}
-
-interface MermaidBlock {
-  start: number;
-  end: number;
-  source: string;
-}
-
-/** Extract mermaid code blocks from HTML */
-function extractMermaidBlocks(html: string): MermaidBlock[] {
-  const open = '<pre><code class="language-mermaid">';
-  const close = "</code></pre>";
-  const blocks: MermaidBlock[] = [];
-  let cursor = 0;
-
-  while (true) {
-    const relStart = html.indexOf(open, cursor);
-    if (relStart === -1) break;
-
-    const contentStart = relStart + open.length;
-    const relEnd = html.indexOf(close, contentStart);
-    if (relEnd === -1) break;
-
-    const raw = html.slice(contentStart, relEnd);
-    blocks.push({
-      start: relStart,
-      end: relEnd + close.length,
-      source: decodeHtmlEntities(raw),
-    });
-    cursor = relEnd + close.length;
+function resolveMmdcPath(): string | null {
+  if (cachedMmdcPath !== undefined) return cachedMmdcPath;
+  try {
+    const require = createRequire(import.meta.url);
+    cachedMmdcPath = require.resolve("@mermaid-js/mermaid-cli/src/cli.js");
+    return cachedMmdcPath;
+  } catch {
+    cachedMmdcPath = null;
+    return null;
   }
-
-  return blocks;
 }
-
-let diagramCounter = 0;
 
 /**
  * Transforms mermaid code blocks in HTML to rendered SVG diagrams.
- * Uses the native Rust NAPI renderMermaid function.
+ * Uses the native Rust NAPI transformMermaid function.
  */
 export async function transformMermaidStatic(
   html: string,
@@ -113,31 +71,22 @@ export async function transformMermaidStatic(
     return html;
   }
 
-  // Extract mermaid blocks from HTML
-  const blocks = extractMermaidBlocks(html);
-  if (blocks.length === 0) {
+  const mmdcPath = resolveMmdcPath();
+  if (!mmdcPath) {
+    console.warn("[ox-content] mmdc not found, skipping mermaid rendering");
     return html;
   }
 
-  // Render each block and replace in reverse order to preserve positions
-  let result = html;
-  for (let i = blocks.length - 1; i >= 0; i--) {
-    const block = blocks[i];
-    try {
-      const rendered = napi.renderMermaid(block.source, {});
-      if (rendered.error) {
-        console.warn("[ox-content] Mermaid render error:", rendered.error);
-        continue;
-      }
-      const svg = postprocessSvg(rendered.svg, diagramCounter++);
-      const replacement = `<div class="ox-mermaid">${svg}</div>`;
-      result = result.slice(0, block.start) + replacement + result.slice(block.end);
-    } catch (err) {
-      console.warn("[ox-content] Mermaid render error:", err);
+  try {
+    const result = napi.transformMermaid(html, mmdcPath);
+    for (const error of result.errors) {
+      console.warn("[ox-content] Mermaid render error:", error);
     }
+    return result.html;
+  } catch (err) {
+    console.warn("[ox-content] Mermaid transform error:", err);
+    return html;
   }
-
-  return result;
 }
 
 /**
