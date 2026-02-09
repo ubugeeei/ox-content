@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0-alpha.5] - 2026-02-09
+
+### Features
+
+- native plugin (#23)
+- theme api (#22)
+
+### Bug Fixes
+
+- publishing
+- pass --no-sandbox to puppeteer for mermaid rendering in CI
+- install chrome-headless-shell for mermaid-cli in CI
+- type
+- docs path
+
 ## [0.3.0-alpha.4] - 2026-01-25
 
 ## [0.3.0-alpha.3] - 2026-01-25
