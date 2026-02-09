@@ -43,5 +43,12 @@
     "oxc"
   ],
   "author": "ubugeeei",
-  "license": "MIT"
+  "license": "MIT",
+  "optionalDependencies": {
+    "@ox-content/binding-darwin-x64": "0.3.0-alpha.5",
+    "@ox-content/binding-darwin-arm64": "0.3.0-alpha.5",
+    "@ox-content/binding-linux-x64-gnu": "0.3.0-alpha.5",
+    "@ox-content/binding-linux-arm64-gnu": "0.3.0-alpha.5",
+    "@ox-content/binding-win32-x64-msvc": "0.3.0-alpha.5"
+  }
 }

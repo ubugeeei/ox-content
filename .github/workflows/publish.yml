@@ -61,7 +61,7 @@ jobs:
 
       - name: Build NAPI
         working-directory: crates/ox_content_napi
-        run: pnpm build --target ${{ matrix.target }} ${{ matrix.target == 'aarch64-unknown-linux-gnu' && '--zig' || '' }}
+        run: pnpm build --target ${{ matrix.target }} ${{ matrix.target == 'aarch64-unknown-linux-gnu' && '--cross-compile' || '' }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
