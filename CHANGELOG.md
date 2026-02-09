@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0-alpha.7] - 2026-02-09
+
+### Bug Fixes
+
+- upgrade napi/napi-derive to v3 for index.d.ts generation
+- remove optionalDependencies from source (added dynamically by napi pre-publish in CI)
+
 ## [0.3.0-alpha.6] - 2026-02-09
 
 ### Bug Fixes
