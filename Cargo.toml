@@ -78,9 +78,9 @@ ox_content_ssg = { version = "0.3.0-alpha.6", path = "crates/ox_content_ssg" }
 bumpalo = "3.16"
 
 # NAPI bindings
-napi = "2"
-napi-derive = "2"
-napi-build = "2.1.3"
+napi = "3"
+napi-derive = "3"
+napi-build = "2.3.1"
 
 # Parsing utilities
 logos = "0.14"
