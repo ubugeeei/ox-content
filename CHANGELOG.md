@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0-alpha.6] - 2026-02-09
+
+### Bug Fixes
+
+- use --cross-compile instead of --zig for napi-rs v3
+
 ## [0.3.0-alpha.5] - 2026-02-09
 
 ### Features
