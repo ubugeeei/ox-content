@@ -61,7 +61,8 @@ jobs:
         run: pnpm install
 
       - name: Install Chromium for mermaid-cli
-        run: npx puppeteer browsers install chrome
+        working-directory: npm/vite-plugin-ox-content
+        run: pnpm exec puppeteer browsers install chrome
 
       - name: Build NAPI bindings
         working-directory: crates/ox_content_napi

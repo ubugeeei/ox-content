@@ -889,7 +889,7 @@ pub struct JsSocialLinks {
 #[napi(object)]
 #[derive(Clone, Default)]
 pub struct JsThemeEmbed {
-    /// Content to embed into <head>.
+    /// Content to embed into `<head>`.
     pub head: Option<String>,
     /// Content before header.
     pub header_before: Option<String>,

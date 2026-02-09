@@ -84,7 +84,7 @@ pub struct SocialLinks {
 /// Embedded HTML content for specific positions in the page layout.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ThemeEmbed {
-    /// Content to inject into <head>.
+    /// Content to inject into `<head>`.
     pub head: Option<String>,
     /// Content before header.
     pub header_before: Option<String>,
