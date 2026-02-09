@@ -8,7 +8,7 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 export interface MermaidOptions {
   /** Mermaid theme. Default: "neutral" */
@@ -51,22 +51,24 @@ let cachedMmdcPath: string | null | undefined;
 function resolveMmdcPath(): string | null {
   if (cachedMmdcPath !== undefined) return cachedMmdcPath;
 
-  // 1. Check node_modules/.bin/mmdc relative to cwd (works in pnpm monorepos)
+  // 1. Resolve via import.meta.resolve (works in pnpm strict mode)
+  //    @mermaid-js/mermaid-cli exports ./src/index.js; cli.js is in the same dir
+  try {
+    const entry = import.meta.resolve("@mermaid-js/mermaid-cli");
+    const cliPath = fileURLToPath(new URL("./cli.js", entry));
+    if (existsSync(cliPath)) {
+      cachedMmdcPath = cliPath;
+      return cachedMmdcPath;
+    }
+  } catch {
+    // not resolvable
+  }
+
+  // 2. Fallback: node_modules/.bin/mmdc relative to cwd
   const binPath = join(process.cwd(), "node_modules", ".bin", "mmdc");
   if (existsSync(binPath)) {
     cachedMmdcPath = binPath;
     return cachedMmdcPath;
-  }
-
-  // 2. Check if mmdc is on PATH (pnpm adds node_modules/.bin to PATH)
-  try {
-    const resolved = execSync("which mmdc", { encoding: "utf-8" }).trim();
-    if (resolved) {
-      cachedMmdcPath = resolved;
-      return cachedMmdcPath;
-    }
-  } catch {
-    // not on PATH
   }
 
   cachedMmdcPath = null;
