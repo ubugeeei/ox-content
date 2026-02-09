@@ -6,7 +6,9 @@
  * extracts mermaid code blocks from HTML and renders them using mmdc.
  */
 
-import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { execSync } from "node:child_process";
 
 export interface MermaidOptions {
   /** Mermaid theme. Default: "neutral" */
@@ -48,14 +50,27 @@ let cachedMmdcPath: string | null | undefined;
 
 function resolveMmdcPath(): string | null {
   if (cachedMmdcPath !== undefined) return cachedMmdcPath;
-  try {
-    const require = createRequire(import.meta.url);
-    cachedMmdcPath = require.resolve("@mermaid-js/mermaid-cli/src/cli.js");
+
+  // 1. Check node_modules/.bin/mmdc relative to cwd (works in pnpm monorepos)
+  const binPath = join(process.cwd(), "node_modules", ".bin", "mmdc");
+  if (existsSync(binPath)) {
+    cachedMmdcPath = binPath;
     return cachedMmdcPath;
-  } catch {
-    cachedMmdcPath = null;
-    return null;
   }
+
+  // 2. Check if mmdc is on PATH (pnpm adds node_modules/.bin to PATH)
+  try {
+    const resolved = execSync("which mmdc", { encoding: "utf-8" }).trim();
+    if (resolved) {
+      cachedMmdcPath = resolved;
+      return cachedMmdcPath;
+    }
+  } catch {
+    // not on PATH
+  }
+
+  cachedMmdcPath = null;
+  return null;
 }
 
 /**
