@@ -89,6 +89,9 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -102,12 +105,25 @@ jobs:
           done
           ls -la *.node || echo "No .node files found"
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Create npm sub-package directories
+        working-directory: crates/ox_content_napi
+        run: npx napi create-npm-dirs --npm-dir ../../binding-packages
+
+      - name: Move artifacts to sub-packages
+        working-directory: crates/ox_content_napi
+        run: npx napi artifacts --npm-dir ../../binding-packages
+
+      - name: Publish sub-packages and update optionalDependencies
+        working-directory: crates/ox_content_napi
+        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @ox-content/napi
         working-directory: crates/ox_content_napi
-        run: npm publish --provenance --access public
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-packages:
     name: Publish npm packages
@@ -143,25 +159,41 @@ jobs:
       - name: Build packages
         run: pnpm -r --filter './npm/*' run build
 
+      - name: Publish ox-content-islands
+        working-directory: npm/ox-content-islands
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish @ox-content/vite-plugin
         working-directory: npm/vite-plugin-ox-content
-        run: npm publish --provenance --access public
-
-      - name: Publish @ox-content/vite-plugin-vue
-        working-directory: npm/vite-plugin-ox-content-vue
-        run: npm publish --provenance --access public
-
-      - name: Publish @ox-content/vite-plugin-react
-        working-directory: npm/vite-plugin-ox-content-react
-        run: npm publish --provenance --access public
-
-      - name: Publish @ox-content/vite-plugin-svelte
-        working-directory: npm/vite-plugin-ox-content-svelte
-        run: npm publish --provenance --access public
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @ox-content/unplugin
         working-directory: npm/unplugin-ox-content
-        run: npm publish --provenance --access public
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @ox-content/vite-plugin-vue
+        working-directory: npm/vite-plugin-ox-content-vue
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @ox-content/vite-plugin-react
+        working-directory: npm/vite-plugin-ox-content-react
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @ox-content/vite-plugin-svelte
+        working-directory: npm/vite-plugin-ox-content-svelte
+        run: pnpm publish --no-git-checks --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-crates:
     name: Publish to crates.io

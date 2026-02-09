@@ -2,13 +2,13 @@ const { existsSync } = require("fs")
 const path = require("path")
 
 function loadBinding() {
-  // Try loading the local development binary first (index.node)
+  // 1. Try loading the local development binary first (index.node)
   const localBinary = path.join(__dirname, "index.node")
   if (existsSync(localBinary)) {
     return require(localBinary)
   }
 
-  // Try platform-specific binary
+  // 2. Try platform-specific binary in same directory (CI build artifact)
   const platform = process.platform
   const arch = process.arch
 
@@ -35,6 +35,22 @@ function loadBinding() {
     if (existsSync(binaryPath)) {
       return require(binaryPath)
     }
+  }
+
+  // 3. Try npm sub-packages (@ox-content/binding-darwin-arm64 etc.)
+  const subPackages = {
+    "darwin-arm64": "@ox-content/binding-darwin-arm64",
+    "darwin-x64": "@ox-content/binding-darwin-x64",
+    "linux-x64-gnu": "@ox-content/binding-linux-x64-gnu",
+    "linux-arm64-gnu": "@ox-content/binding-linux-arm64-gnu",
+    "win32-x64-msvc": "@ox-content/binding-win32-x64-msvc",
+  }
+
+  const subPackage = subPackages[key]
+  if (subPackage) {
+    try {
+      return require(subPackage)
+    } catch {}
   }
 
   throw new Error(

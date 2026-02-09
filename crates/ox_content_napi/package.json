@@ -6,11 +6,11 @@
   "types": "index.d.ts",
   "files": [
     "index.js",
-    "index.d.ts",
-    "*.node"
+    "index.d.ts"
   ],
   "napi": {
     "binaryName": "ox-content",
+    "packageName": "@ox-content/binding",
     "targets": [
       "x86_64-apple-darwin",
       "aarch64-apple-darwin",
@@ -21,11 +21,10 @@
   },
   "scripts": {
     "build": "napi build --release",
-    "build:debug": "napi build",
-    "prepublishOnly": "napi prepublish"
+    "build:debug": "napi build"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.18.0"
+    "@napi-rs/cli": "^3.0.0"
   },
   "repository": {
     "type": "git",

@@ -23,6 +23,7 @@ pnpm-debug.log*
 
 # NAPI bindings (build artifacts)
 crates/ox_content_napi/*.node
+binding-packages/
 
 # WASM bindings (build artifacts)
 crates/ox_content_wasm/pkg/

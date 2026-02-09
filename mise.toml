@@ -222,8 +222,11 @@ description = "Install all dependencies with pnpm"
 run = "pnpm install"
 
 [tasks.release]
-description = "Release a new version (usage: mise run release alpha|beta|patch|minor|major|x.y.z)"
-run = "node --experimental-strip-types scripts/release.ts {{arg(name='version')}}"
+description = "Release a new version"
+usage = '''
+arg "<version>" help="Version bump type (alpha|beta|patch|minor|major) or explicit version (x.y.z)"
+'''
+run = "node --experimental-strip-types scripts/release.ts ${usage_version}"
 
 [tasks.examples-install]
 description = "Install all example dependencies"

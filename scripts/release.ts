@@ -23,6 +23,7 @@ const ROOT = path.resolve(__dirname, "..");
 // Packages to publish (relative to root)
 const NPM_PACKAGES = [
   "crates/ox_content_napi",
+  "npm/ox-content-islands",
   "npm/unplugin-ox-content",
   "npm/vite-plugin-ox-content",
   "npm/vite-plugin-ox-content-react",
