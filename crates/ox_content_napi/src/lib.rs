@@ -1255,9 +1255,17 @@ fn render_mermaid_with_mmdc(source: &str, mmdc_path: &str) -> std::result::Resul
 
     let input_path = temp_dir.join(format!("ox_mermaid_{pid}_{id}.mmd"));
     let output_path = temp_dir.join(format!("ox_mermaid_{pid}_{id}.svg"));
+    let puppeteer_config_path = temp_dir.join(format!("ox_mermaid_{pid}_{id}_puppeteer.json"));
 
     // Write mermaid source to temp file
     std::fs::write(&input_path, source).map_err(|e| format!("Failed to write temp file: {e}"))?;
+
+    // Write puppeteer config with --no-sandbox for CI environments
+    std::fs::write(
+        &puppeteer_config_path,
+        r#"{"args":["--no-sandbox","--disable-setuid-sandbox"]}"#,
+    )
+    .map_err(|e| format!("Failed to write puppeteer config: {e}"))?;
 
     // Call mmdc CLI
     let output = std::process::Command::new(mmdc_path)
@@ -1268,13 +1276,16 @@ fn render_mermaid_with_mmdc(source: &str, mmdc_path: &str) -> std::result::Resul
         .arg("-t")
         .arg("neutral")
         .arg("-q")
+        .arg("-p")
+        .arg(&puppeteer_config_path)
         .output()
         .map_err(|e| {
             format!("Failed to execute mmdc: {e}. Is @mermaid-js/mermaid-cli installed?")
         })?;
 
-    // Clean up input
+    // Clean up input and puppeteer config
     let _ = std::fs::remove_file(&input_path);
+    let _ = std::fs::remove_file(&puppeteer_config_path);
 
     if !output.status.success() {
         let _ = std::fs::remove_file(&output_path);
