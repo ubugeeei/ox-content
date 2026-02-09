@@ -190,6 +190,8 @@ importers:
         specifier: ^2.18.0
         version: 2.18.4
 
+  crates/ox_content_wasm/pkg: {}
+
   docs:
     devDependencies:
       vite:
@@ -509,6 +511,9 @@ importers:
       glob:
         specifier: ^11.0.0
         version: 11.1.0
+      puppeteer:
+        specifier: ^23.0.0
+        version: 23.11.1(typescript@5.9.3)
       rehype-parse:
         specifier: ^9.0.1
         version: 9.0.1
