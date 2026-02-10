@@ -2,7 +2,13 @@ const { existsSync } = require("fs")
 const path = require("path")
 
 function loadBinding() {
-  // 1. Try loading the local development binary first (index.node)
+  // 1. Try loading the local binary (napi build output)
+  const napiOutput = path.join(__dirname, "ox-content.node")
+  if (existsSync(napiOutput)) {
+    return require(napiOutput)
+  }
+
+  // 1b. Legacy: index.node (napi-rs v2)
   const localBinary = path.join(__dirname, "index.node")
   if (existsSync(localBinary)) {
     return require(localBinary)
