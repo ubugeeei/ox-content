@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0-alpha.8] - 2026-02-10
+
+### Bug Fixes
+
+- load ox-content.node binary name for napi-rs v3
+
 ## [0.3.0-alpha.7] - 2026-02-09
 
 ### Bug Fixes
