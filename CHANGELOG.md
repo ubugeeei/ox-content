@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0-alpha.9] - 2026-02-10
+
+### Bug Fixes
+
+- publishing
+
 ## [0.3.0-alpha.8] - 2026-02-10
 
 ### Bug Fixes
