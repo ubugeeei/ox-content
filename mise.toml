@@ -231,3 +231,7 @@ run = "node --experimental-strip-types scripts/release.ts ${usage_version}"
 [tasks.examples-install]
 description = "Install all example dependencies"
 depends = ["install"]
+
+[tasks.ogimage]
+description = "Run ox_content_og_image CLI"
+run = "cargo run -p ox_content_og_image --features cli --"

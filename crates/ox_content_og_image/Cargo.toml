@@ -18,3 +18,13 @@ workspace = true
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+bpaf = { version = "0.9.20", features = ["derive"], optional = true }
+
+[features]
+default = []
+cli = ["dep:bpaf"]
+
+[[bin]]
+name = "ox_content_og_image"
+path = "src/bin/main.rs"
+required-features = ["cli"]
