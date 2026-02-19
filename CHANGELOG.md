@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0-alpha.10] - 2026-02-19
+
+### Features
+
+- native plugin (#23)
+- theme api (#22)
+
+### Bug Fixes
+
+- publishing
+- load ox-content.node binary name for napi-rs v3
+- upgrade napi/napi-derive to v3 for index.d.ts generation
+- remove optionalDependencies from source (added dynamically by napi pre-publish in CI)
+- use --cross-compile instead of --zig for napi-rs v3
+- publishing
+- pass --no-sandbox to puppeteer for mermaid rendering in CI
+- install chrome-headless-shell for mermaid-cli in CI
+- type
+- docs path
+
 ## [0.3.0-alpha.9] - 2026-02-10
 
 ### Bug Fixes
