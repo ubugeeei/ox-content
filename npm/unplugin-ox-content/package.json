@@ -1,6 +1,6 @@
 {
   "name": "unplugin-ox-content",
-  "version": "0.3.0-alpha.10",
+  "version": "0.3.0-alpha.11",
   "description": "Universal plugin for Ox Content - Markdown processing for webpack, rollup, esbuild, vite, and more",
   "type": "module",
   "main": "./dist/index.js",
