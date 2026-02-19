@@ -3,7 +3,7 @@
  */
 
 import * as path from "path";
-import { transformMarkdown as baseTransformMarkdown } from "vite-plugin-ox-content";
+import { transformMarkdown as baseTransformMarkdown } from "@ox-content/vite-plugin";
 import type { ResolvedVueOptions, VueTransformResult, ComponentIsland } from "./types";
 
 // Regex to match Vue-like component tags in Markdown
@@ -352,7 +352,7 @@ export default defineComponent({
 
   return `
 import { h, ref, onMounted, onBeforeUnmount, defineComponent, render } from 'vue';
-import { initIslands } from 'ox-content-islands';
+import { initIslands } from '@ox-content/islands';
 ${componentImports}
 
 export const frontmatter = ${JSON.stringify(frontmatter)};

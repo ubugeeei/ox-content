@@ -156,7 +156,7 @@ Creates a theme with layout switching support.
 ### Examples
 
 ```ts
-import { createTheme } from 'vite-plugin-ox-content';
+import { createTheme } from '@ox-content/vite-plugin';
 import { DefaultLayout } from './layouts/Default';
 import { EntryLayout } from './layouts/Entry';
 export default createTheme({

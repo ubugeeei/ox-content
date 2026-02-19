@@ -5,7 +5,7 @@ description: Embedding Svelte components in Markdown
 
 # Svelte Integration Example
 
-Embed Svelte 5 components directly in Markdown using `vite-plugin-ox-content-svelte`.
+Embed Svelte 5 components directly in Markdown using `@ox-content/vite-plugin-svelte`.
 
 ## Interactive Counter
 
@@ -27,7 +27,7 @@ Components work seamlessly!
 
 ```ts
 // vite.config.ts
-import { oxContentSvelte } from 'vite-plugin-ox-content-svelte';
+import { oxContentSvelte } from '@ox-content/vite-plugin-svelte';
 
 export default defineConfig({
   plugins: [

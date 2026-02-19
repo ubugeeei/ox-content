@@ -48,7 +48,7 @@ export type {
  * ```ts
  * // vite.config.ts
  * import { defineConfig } from 'vite';
- * import { oxContent } from 'vite-plugin-ox-content';
+ * import { oxContent } from '@ox-content/vite-plugin';
  *
  * export default defineConfig({
  *   plugins: [

@@ -1,11 +1,11 @@
-# vite-plugin-ox-content
+# @ox-content/vite-plugin
 
 Base Vite plugin for Ox Content with Environment API support.
 
 ## Installation
 
 ```bash
-pnpm add vite-plugin-ox-content
+pnpm add @ox-content/vite-plugin
 ```
 
 ## Basic Usage
@@ -13,7 +13,7 @@ pnpm add vite-plugin-ox-content
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { oxContent } from 'vite-plugin-ox-content';
+import { oxContent } from '@ox-content/vite-plugin';
 
 export default defineConfig({
   plugins: [

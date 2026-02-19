@@ -1,4 +1,4 @@
-import oxContent from "unplugin-ox-content/rollup"
+import oxContent from "@ox-content/unplugin/rollup"
 import typescript from "@rollup/plugin-typescript"
 
 export default {

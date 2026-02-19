@@ -1,5 +1,5 @@
 /**
- * Rspack plugin export for unplugin-ox-content
+ * Rspack plugin export for @ox-content/unplugin
  */
 
 import unplugin from "./index";

@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   hash: false,
-  external: ["vite", "react", "react-dom", "vite-plugin-ox-content"],
+  external: ["vite", "react", "react-dom", "@ox-content/vite-plugin"],
 })

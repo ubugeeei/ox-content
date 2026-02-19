@@ -1,11 +1,11 @@
 ---
-title: Hello from unplugin-ox-content
+title: Hello from @ox-content/unplugin
 author: ox-content
 ---
 
-# Welcome to unplugin-ox-content
+# Welcome to @ox-content/unplugin
 
-This is a **Markdown** file processed by `unplugin-ox-content`.
+This is a **Markdown** file processed by `@ox-content/unplugin`.
 
 ## Features
 

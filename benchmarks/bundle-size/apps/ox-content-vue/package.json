@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "vue": "catalog:",
-    "vite-plugin-ox-content": "workspace:*",
-    "vite-plugin-ox-content-vue": "workspace:*"
+    "@ox-content/vite-plugin": "workspace:*",
+    "@ox-content/vite-plugin-vue": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",

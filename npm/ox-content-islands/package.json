@@ -1,5 +1,5 @@
 {
-  "name": "ox-content-islands",
+  "name": "@ox-content/islands",
   "version": "0.3.0-alpha.11",
   "description": "Framework-agnostic Island Architecture for ox-content",
   "type": "module",
@@ -44,7 +44,6 @@
     "directory": "npm/ox-content-islands"
   },
   "publishConfig": {
-    "provenance": true,
     "access": "public"
   }
 }

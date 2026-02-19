@@ -11,7 +11,7 @@
   "dependencies": {},
   "devDependencies": {
     "vite": "catalog:",
-    "vite-plugin-ox-content": "workspace:*",
+    "@ox-content/vite-plugin": "workspace:*",
     "typescript": "catalog:"
   }
 }

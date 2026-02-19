@@ -8,7 +8,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import type { Plugin, PluginOption, ResolvedConfig } from "vite";
-import { oxContent } from "vite-plugin-ox-content";
+import { oxContent } from "@ox-content/vite-plugin";
 import { transformMarkdownWithVue } from "./transform";
 import { createVueMarkdownEnvironment } from "./environment";
 import type {
@@ -387,4 +387,4 @@ function toPascalCase(str: string): string {
 }
 
 // Re-export
-export { oxContent } from "vite-plugin-ox-content";
+export { oxContent } from "@ox-content/vite-plugin";

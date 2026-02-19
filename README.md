@@ -69,13 +69,13 @@ const { html } = parseAndRender('# Hello World', { gfm: true });
 ### Vite Plugin
 
 ```bash
-npm install vite-plugin-ox-content @ox-content/napi
+npm install @ox-content/vite-plugin @ox-content/napi
 ```
 
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { oxContent } from 'vite-plugin-ox-content';
+import { oxContent } from '@ox-content/vite-plugin';
 
 export default defineConfig({
   plugins: [
@@ -95,20 +95,20 @@ export default defineConfig({
 
 ```bash
 # Vue
-npm install vite-plugin-ox-content-vue @ox-content/napi
+npm install @ox-content/vite-plugin-vue @ox-content/napi
 
 # React
-npm install vite-plugin-ox-content-react @ox-content/napi
+npm install @ox-content/vite-plugin-react @ox-content/napi
 
 # Svelte
-npm install vite-plugin-ox-content-svelte @ox-content/napi
+npm install @ox-content/vite-plugin-svelte @ox-content/napi
 ```
 
 ```typescript
 // vite.config.ts (Vue example)
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from 'vite-plugin-ox-content-vue';
+import { oxContentVue } from '@ox-content/vite-plugin-vue';
 
 export default defineConfig({
   plugins: [vue(), oxContentVue()],
@@ -123,11 +123,11 @@ export default defineConfig({
 | ------- | ----------- |
 | [`@ox-content/napi`](./crates/ox_content_napi) | Node.js bindings |
 | [`@ox-content/wasm`](./crates/ox_content_wasm) | WebAssembly bindings |
-| [`vite-plugin-ox-content`](./npm/vite-plugin-ox-content) | Vite plugin with SSG support |
-| [`vite-plugin-ox-content-vue`](./npm/vite-plugin-ox-content-vue) | Vue integration |
-| [`vite-plugin-ox-content-react`](./npm/vite-plugin-ox-content-react) | React integration |
-| [`vite-plugin-ox-content-svelte`](./npm/vite-plugin-ox-content-svelte) | Svelte integration |
-| [`unplugin-ox-content`](./npm/unplugin-ox-content) | Universal plugin (Vite/Webpack/Rollup/esbuild) |
+| [`@ox-content/vite-plugin`](./npm/vite-plugin-ox-content) | Vite plugin with SSG support |
+| [`@ox-content/vite-plugin-vue`](./npm/vite-plugin-ox-content-vue) | Vue integration |
+| [`@ox-content/vite-plugin-react`](./npm/vite-plugin-ox-content-react) | React integration |
+| [`@ox-content/vite-plugin-svelte`](./npm/vite-plugin-ox-content-svelte) | Svelte integration |
+| [`@ox-content/unplugin`](./npm/unplugin-ox-content) | Universal plugin (Vite/Webpack/Rollup/esbuild) |
 
 ## Development
 

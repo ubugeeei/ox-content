@@ -1,5 +1,5 @@
 import * as esbuild from "esbuild"
-import oxContent from "unplugin-ox-content/esbuild"
+import oxContent from "@ox-content/unplugin/esbuild"
 
 await esbuild.build({
   entryPoints: ["src/index.ts"],

@@ -23,7 +23,7 @@ export function createSvelteMarkdownEnvironment(
     },
     optimizeDeps: {
       include: isSSR ? [] : ["svelte"],
-      exclude: ["vite-plugin-ox-content", "vite-plugin-ox-content-svelte"],
+      exclude: ["@ox-content/vite-plugin", "@ox-content/vite-plugin-svelte"],
     },
   };
 }

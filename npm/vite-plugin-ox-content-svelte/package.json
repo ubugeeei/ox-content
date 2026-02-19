@@ -1,5 +1,5 @@
 {
-  "name": "vite-plugin-ox-content-svelte",
+  "name": "@ox-content/vite-plugin-svelte",
   "version": "0.3.0-alpha.11",
   "description": "Svelte integration for Ox Content - Embed Svelte components in Markdown",
   "type": "module",
@@ -24,8 +24,8 @@
     "vite": "catalog:"
   },
   "dependencies": {
-    "ox-content-islands": "workspace:*",
-    "vite-plugin-ox-content": "workspace:*"
+    "@ox-content/islands": "workspace:*",
+    "@ox-content/vite-plugin": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "catalog:",

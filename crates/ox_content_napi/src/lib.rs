@@ -189,7 +189,7 @@ pub fn version() -> String {
 
 /// Transforms Markdown source into HTML, frontmatter, and TOC.
 ///
-/// This is the main entry point for unplugin-ox-content.
+/// This is the main entry point for @ox-content/unplugin.
 #[napi]
 pub fn transform(source: String, options: Option<JsTransformOptions>) -> TransformResult {
     let opts = options.unwrap_or_default();

@@ -1,5 +1,5 @@
 import { defineConfig } from "vite"
-import { oxContent, defineTheme, defaultTheme } from "vite-plugin-ox-content"
+import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin"
 
 /**
  * Ox Content Documentation Site

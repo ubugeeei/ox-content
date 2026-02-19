@@ -66,7 +66,7 @@ examples/
 ### Vite Environment API
 
 ```typescript
-import { oxContent } from 'vite-plugin-ox-content';
+import { oxContent } from '@ox-content/vite-plugin';
 
 export default defineConfig({
   plugins: [

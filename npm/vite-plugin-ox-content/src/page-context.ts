@@ -7,7 +7,7 @@
  * @example
  * ```tsx
  * // theme/Layout.tsx
- * import { usePageProps, PageProps } from 'vite-plugin-ox-content';
+ * import { usePageProps, PageProps } from '@ox-content/vite-plugin';
  *
  * export function Layout({ children }: { children: JSX.Element }) {
  *   const page = usePageProps<MyPageProps>();
@@ -322,7 +322,7 @@ export function generateFrontmatterTypes(
 
   lines.push("}");
   lines.push("");
-  lines.push(`export type PageProps = import('vite-plugin-ox-content').PageProps<${interfaceName}>;`);
+  lines.push(`export type PageProps = import('@ox-content/vite-plugin').PageProps<${interfaceName}>;`);
   lines.push("");
 
   return lines.join("\n");

@@ -1,5 +1,5 @@
 import { defineConfig } from "vite"
-import oxContent, { type OxContentPlugin } from "unplugin-ox-content/vite"
+import oxContent, { type OxContentPlugin } from "@ox-content/unplugin/vite"
 
 // Example: Custom ox-content plugin that wraps content in a div
 const wrapInArticle: OxContentPlugin = (html) => {

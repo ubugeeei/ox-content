@@ -132,7 +132,7 @@ importers:
 
   benchmarks/bundle-size/apps/ox-content:
     dependencies:
-      vite-plugin-ox-content:
+      '@ox-content/vite-plugin':
         specifier: workspace:*
         version: link:../../../../npm/vite-plugin-ox-content
     devDependencies:
@@ -142,7 +142,7 @@ importers:
 
   benchmarks/bundle-size/apps/ox-content-bare:
     dependencies:
-      vite-plugin-ox-content:
+      '@ox-content/vite-plugin':
         specifier: workspace:*
         version: link:../../../../npm/vite-plugin-ox-content
     devDependencies:
@@ -152,10 +152,10 @@ importers:
 
   benchmarks/bundle-size/apps/ox-content-vue:
     dependencies:
-      vite-plugin-ox-content:
+      '@ox-content/vite-plugin':
         specifier: workspace:*
         version: link:../../../../npm/vite-plugin-ox-content
-      vite-plugin-ox-content-vue:
+      '@ox-content/vite-plugin-vue':
         specifier: workspace:*
         version: link:../../../../npm/vite-plugin-ox-content-vue
       vue:
@@ -187,17 +187,19 @@ importers:
   crates/ox_content_napi:
     devDependencies:
       '@napi-rs/cli':
-        specifier: ^3.0.0
+        specifier: ^3.5.1
         version: 3.5.1(@emnapi/runtime@1.8.1)(@types/node@22.19.3)
+
+  crates/ox_content_wasm/pkg: {}
 
   docs:
     devDependencies:
+      '@ox-content/vite-plugin':
+        specifier: workspace:*
+        version: link:../npm/vite-plugin-ox-content
       vite:
         specifier: 'catalog:'
         version: 8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-ox-content:
-        specifier: workspace:*
-        version: link:../npm/vite-plugin-ox-content
 
   examples/gen-source-docs:
     dependencies:
@@ -205,18 +207,18 @@ importers:
         specifier: 'catalog:'
         version: 3.5.26(typescript@5.9.3)
     devDependencies:
+      '@ox-content/vite-plugin':
+        specifier: workspace:*
+        version: link:../../npm/vite-plugin-ox-content
+      '@ox-content/vite-plugin-vue':
+        specifier: workspace:*
+        version: link:../../npm/vite-plugin-ox-content-vue
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
         version: 5.2.4(vite@8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.26(typescript@5.9.3))
       vite:
         specifier: 'catalog:'
         version: 8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-ox-content:
-        specifier: workspace:*
-        version: link:../../npm/vite-plugin-ox-content
-      vite-plugin-ox-content-vue:
-        specifier: workspace:*
-        version: link:../../npm/vite-plugin-ox-content-vue
 
   examples/integ-react:
     dependencies:
@@ -227,6 +229,9 @@ importers:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
     devDependencies:
+      '@ox-content/vite-plugin-react':
+        specifier: workspace:*
+        version: link:../../npm/vite-plugin-ox-content-react
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.7
@@ -239,9 +244,6 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-ox-content-react:
-        specifier: workspace:*
-        version: link:../../npm/vite-plugin-ox-content-react
 
   examples/integ-svelte:
     dependencies:
@@ -249,15 +251,15 @@ importers:
         specifier: 'catalog:'
         version: 5.46.1
     devDependencies:
+      '@ox-content/vite-plugin-svelte':
+        specifier: workspace:*
+        version: link:../../npm/vite-plugin-ox-content-svelte
       '@sveltejs/vite-plugin-svelte':
         specifier: 'catalog:'
         version: 5.1.1(svelte@5.46.1)(vite@8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
       vite:
         specifier: 'catalog:'
         version: 8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-ox-content-svelte:
-        specifier: workspace:*
-        version: link:../../npm/vite-plugin-ox-content-svelte
 
   examples/integ-vue:
     dependencies:
@@ -265,15 +267,15 @@ importers:
         specifier: 'catalog:'
         version: 3.5.26(typescript@5.9.3)
     devDependencies:
+      '@ox-content/vite-plugin-vue':
+        specifier: workspace:*
+        version: link:../../npm/vite-plugin-ox-content-vue
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
         version: 5.2.4(vite@8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.26(typescript@5.9.3))
       vite:
         specifier: 'catalog:'
         version: 8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-ox-content-vue:
-        specifier: workspace:*
-        version: link:../../npm/vite-plugin-ox-content-vue
 
   examples/playground:
     devDependencies:
@@ -309,19 +311,19 @@ importers:
 
   examples/ssg-vite:
     devDependencies:
+      '@ox-content/vite-plugin':
+        specifier: workspace:*
+        version: link:../../npm/vite-plugin-ox-content
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
       vite:
         specifier: 'catalog:'
         version: 8.0.0-beta.10(@types/node@22.19.3)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
-      vite-plugin-ox-content:
-        specifier: workspace:*
-        version: link:../../npm/vite-plugin-ox-content
 
   examples/unplugin-esbuild:
     dependencies:
-      unplugin-ox-content:
+      '@ox-content/unplugin':
         specifier: workspace:*
         version: link:../../npm/unplugin-ox-content
     devDependencies:
@@ -334,7 +336,7 @@ importers:
 
   examples/unplugin-rollup:
     dependencies:
-      unplugin-ox-content:
+      '@ox-content/unplugin':
         specifier: workspace:*
         version: link:../../npm/unplugin-ox-content
     devDependencies:
@@ -353,12 +355,12 @@ importers:
 
   examples/unplugin-vite-markdown-it:
     dependencies:
+      '@ox-content/unplugin':
+        specifier: workspace:*
+        version: link:../../npm/unplugin-ox-content
       markdown-it-emoji:
         specifier: ^3.0.0
         version: 3.0.0
-      unplugin-ox-content:
-        specifier: workspace:*
-        version: link:../../npm/unplugin-ox-content
     devDependencies:
       vite:
         specifier: 'catalog:'
@@ -366,7 +368,7 @@ importers:
 
   examples/unplugin-vite-ox-content:
     dependencies:
-      unplugin-ox-content:
+      '@ox-content/unplugin':
         specifier: workspace:*
         version: link:../../npm/unplugin-ox-content
     devDependencies:
@@ -376,12 +378,12 @@ importers:
 
   examples/unplugin-vite-rehype:
     dependencies:
+      '@ox-content/unplugin':
+        specifier: workspace:*
+        version: link:../../npm/unplugin-ox-content
       rehype-slug:
         specifier: ^6.0.0
         version: 6.0.0
-      unplugin-ox-content:
-        specifier: workspace:*
-        version: link:../../npm/unplugin-ox-content
     devDependencies:
       vite:
         specifier: 'catalog:'
@@ -389,12 +391,12 @@ importers:
 
   examples/unplugin-vite-remark:
     dependencies:
+      '@ox-content/unplugin':
+        specifier: workspace:*
+        version: link:../../npm/unplugin-ox-content
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
-      unplugin-ox-content:
-        specifier: workspace:*
-        version: link:../../npm/unplugin-ox-content
     devDependencies:
       vite:
         specifier: 'catalog:'
@@ -402,12 +404,12 @@ importers:
 
   examples/unplugin-webpack:
     dependencies:
+      '@ox-content/unplugin':
+        specifier: workspace:*
+        version: link:../../npm/unplugin-ox-content
       markdown-it-emoji:
         specifier: ^3.0.0
         version: 3.0.0
-      unplugin-ox-content:
-        specifier: workspace:*
-        version: link:../../npm/unplugin-ox-content
     devDependencies:
       ts-loader:
         specifier: ^9.5.1
@@ -549,10 +551,10 @@ importers:
 
   npm/vite-plugin-ox-content-react:
     dependencies:
-      ox-content-islands:
+      '@ox-content/islands':
         specifier: workspace:*
         version: link:../ox-content-islands
-      vite-plugin-ox-content:
+      '@ox-content/vite-plugin':
         specifier: workspace:*
         version: link:../vite-plugin-ox-content
     devDependencies:
@@ -589,10 +591,10 @@ importers:
 
   npm/vite-plugin-ox-content-svelte:
     dependencies:
-      ox-content-islands:
+      '@ox-content/islands':
         specifier: workspace:*
         version: link:../ox-content-islands
-      vite-plugin-ox-content:
+      '@ox-content/vite-plugin':
         specifier: workspace:*
         version: link:../vite-plugin-ox-content
     devDependencies:
@@ -620,10 +622,10 @@ importers:
 
   npm/vite-plugin-ox-content-vue:
     dependencies:
-      ox-content-islands:
+      '@ox-content/islands':
         specifier: workspace:*
         version: link:../ox-content-islands
-      vite-plugin-ox-content:
+      '@ox-content/vite-plugin':
         specifier: workspace:*
         version: link:../vite-plugin-ox-content
     devDependencies:

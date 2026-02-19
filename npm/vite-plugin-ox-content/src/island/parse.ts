@@ -243,7 +243,7 @@ export function generateHydrationScript(components: string[]): string {
     .join("\n");
 
   return `
-import { initIslands } from 'ox-content-islands';
+import { initIslands } from '@ox-content/islands';
 ${imports}
 
 const components = {

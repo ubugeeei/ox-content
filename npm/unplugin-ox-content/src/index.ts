@@ -1,5 +1,5 @@
 /**
- * unplugin-ox-content
+ * @ox-content/unplugin
  *
  * Universal plugin for Ox Content - Markdown processing for
  * webpack, rollup, esbuild, vite, and more.
@@ -125,7 +125,7 @@ const unpluginFactory: UnpluginFactory<OxContentOptions | undefined> = (rawOptio
   );
 
   return {
-    name: "unplugin-ox-content",
+    name: "@ox-content/unplugin",
 
     resolveId(id) {
       // Handle virtual modules

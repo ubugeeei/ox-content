@@ -1,11 +1,11 @@
-# vite-plugin-ox-content-vue
+# @ox-content/vite-plugin-vue
 
 Vue integration for Ox Content - embed Vue components in Markdown.
 
 ## Installation
 
 ```bash
-pnpm add vite-plugin-ox-content-vue vue @vitejs/plugin-vue
+pnpm add @ox-content/vite-plugin-vue vue @vitejs/plugin-vue
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ pnpm add vite-plugin-ox-content-vue vue @vitejs/plugin-vue
 // vite.config.ts
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from 'vite-plugin-ox-content-vue';
+import { oxContentVue } from '@ox-content/vite-plugin-vue';
 
 export default defineConfig({
   plugins: [

@@ -10,7 +10,7 @@
  * {
  *   "compilerOptions": {
  *     "jsx": "react-jsx",
- *     "jsxImportSource": "vite-plugin-ox-content"
+ *     "jsxImportSource": "@ox-content/vite-plugin"
  *   }
  * }
  *

@@ -1,5 +1,5 @@
 /**
- * Vite plugin export for unplugin-ox-content
+ * Vite plugin export for @ox-content/unplugin
  */
 
 import unplugin from "./index";

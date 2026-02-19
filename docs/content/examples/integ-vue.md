@@ -16,7 +16,7 @@ pnpm dev
 // vite.config.ts
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from 'vite-plugin-ox-content-vue';
+import { oxContentVue } from '@ox-content/vite-plugin-vue';
 
 export default defineConfig({
   plugins: [

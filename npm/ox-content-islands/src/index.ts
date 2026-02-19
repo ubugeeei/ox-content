@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { initIslands } from 'ox-content-islands';
+ * import { initIslands } from '@ox-content/islands';
  *
  * // With Vue
  * import { createApp, h } from 'vue';

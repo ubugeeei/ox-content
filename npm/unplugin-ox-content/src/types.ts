@@ -1,5 +1,5 @@
 /**
- * Type definitions for unplugin-ox-content
+ * Type definitions for @ox-content/unplugin
  */
 
 import type MarkdownIt from "markdown-it";

@@ -24,7 +24,7 @@
     "build:debug": "napi build"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.0.0"
+    "@napi-rs/cli": "^3.5.1"
   },
   "repository": {
     "type": "git",

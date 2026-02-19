@@ -8,7 +8,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "unplugin-ox-content": "workspace:*"
+    "@ox-content/unplugin": "workspace:*"
   },
   "devDependencies": {
     "vite": "catalog:"

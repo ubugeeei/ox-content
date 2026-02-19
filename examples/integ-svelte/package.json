@@ -14,6 +14,6 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-ox-content-svelte": "workspace:*"
+    "@ox-content/vite-plugin-svelte": "workspace:*"
   }
 }

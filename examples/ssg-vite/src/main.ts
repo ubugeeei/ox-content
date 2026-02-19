@@ -5,7 +5,7 @@
  */
 
 // Import Markdown content directly
-// The vite-plugin-ox-content transforms this into a module
+// The @ox-content/vite-plugin transforms this into a module
 import content from "./content/index.md"
 
 // Render the content

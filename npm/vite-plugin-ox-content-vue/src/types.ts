@@ -2,7 +2,7 @@
  * Type definitions for Vue integration plugin.
  */
 
-import type { OxContentOptions } from "vite-plugin-ox-content";
+import type { OxContentOptions } from "@ox-content/vite-plugin";
 
 /**
  * Component registration map.

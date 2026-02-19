@@ -48,7 +48,7 @@ export function createVueMarkdownEnvironment(
       include: isSSR ? [] : ["vue"],
 
       // Exclude ox-content packages from optimization (they're local)
-      exclude: ["vite-plugin-ox-content", "vite-plugin-ox-content-vue"],
+      exclude: ["@ox-content/vite-plugin", "@ox-content/vite-plugin-vue"],
     },
 
     // Development server options (client only)

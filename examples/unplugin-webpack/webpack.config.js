@@ -1,6 +1,6 @@
 import path from "path"
 import { fileURLToPath } from "url"
-import oxContent from "unplugin-ox-content/webpack"
+import oxContent from "@ox-content/unplugin/webpack"
 import { full as emoji } from "markdown-it-emoji"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

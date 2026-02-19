@@ -5,7 +5,7 @@ description: Embedding React components in Markdown
 
 # React Integration Example
 
-Embed React components directly in Markdown using `vite-plugin-ox-content-react`.
+Embed React components directly in Markdown using `@ox-content/vite-plugin-react`.
 
 ## Interactive Counter
 
@@ -27,7 +27,7 @@ Components work seamlessly in Markdown!
 
 ```tsx
 // vite.config.ts
-import { oxContentReact } from 'vite-plugin-ox-content-react';
+import { oxContentReact } from '@ox-content/vite-plugin-react';
 
 export default defineConfig({
   plugins: [

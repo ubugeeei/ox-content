@@ -251,7 +251,7 @@ function escapeHtml(str: string): string {
  *
  * @example
  * ```tsx
- * import { createTheme } from 'vite-plugin-ox-content';
+ * import { createTheme } from '@ox-content/vite-plugin';
  * import { DefaultLayout } from './layouts/Default';
  * import { EntryLayout } from './layouts/Entry';
  *

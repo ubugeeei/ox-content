@@ -6,10 +6,10 @@ Ox Content provides several examples demonstrating different use cases.
 
 ### [Vue Integration](./integ-vue.md)
 
-Embed Vue 3 components in Markdown using `vite-plugin-ox-content-vue`.
+Embed Vue 3 components in Markdown using `@ox-content/vite-plugin-vue`.
 
 ```ts
-import { oxContentVue } from 'vite-plugin-ox-content-vue';
+import { oxContentVue } from '@ox-content/vite-plugin-vue';
 
 export default defineConfig({
   plugins: [
@@ -23,10 +23,10 @@ export default defineConfig({
 
 ### [React Integration](./integ-react.md)
 
-Embed React components in Markdown using `vite-plugin-ox-content-react`.
+Embed React components in Markdown using `@ox-content/vite-plugin-react`.
 
 ```ts
-import { oxContentReact } from 'vite-plugin-ox-content-react';
+import { oxContentReact } from '@ox-content/vite-plugin-react';
 
 export default defineConfig({
   plugins: [
@@ -40,10 +40,10 @@ export default defineConfig({
 
 ### [Svelte Integration](./integ-svelte.md)
 
-Embed Svelte 5 components in Markdown using `vite-plugin-ox-content-svelte`.
+Embed Svelte 5 components in Markdown using `@ox-content/vite-plugin-svelte`.
 
 ```ts
-import { oxContentSvelte } from 'vite-plugin-ox-content-svelte';
+import { oxContentSvelte } from '@ox-content/vite-plugin-svelte';
 
 export default defineConfig({
   plugins: [

@@ -14,7 +14,7 @@ ox-content provides a flexible Theme API that allows you to customize the appear
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { oxContent, defineTheme, defaultTheme } from 'vite-plugin-ox-content';
+import { oxContent, defineTheme, defaultTheme } from '@ox-content/vite-plugin';
 
 export default defineConfig({
   plugins: [
@@ -52,7 +52,7 @@ import {
   useNav,
   raw,
   each,
-} from 'vite-plugin-ox-content';
+} from '@ox-content/vite-plugin';
 
 export function Layout({ children }) {
   const page = usePageProps();
@@ -91,7 +91,7 @@ Configure your `tsconfig.json` for JSX:
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "vite-plugin-ox-content"
+    "jsxImportSource": "@ox-content/vite-plugin"
   }
 }
 ```
@@ -254,7 +254,7 @@ export interface PageFrontmatter {
   // ... other fields from your frontmatter
 }
 
-export type PageProps = import('vite-plugin-ox-content').PageProps<PageFrontmatter>;
+export type PageProps = import('@ox-content/vite-plugin').PageProps<PageFrontmatter>;
 ```
 
 Use the generated types:
@@ -274,7 +274,7 @@ Support multiple layouts based on frontmatter:
 
 ```tsx
 // theme/index.tsx
-import { createTheme } from 'vite-plugin-ox-content';
+import { createTheme } from '@ox-content/vite-plugin';
 import { DefaultLayout } from './layouts/Default';
 import { EntryLayout } from './layouts/Entry';
 import { BlogLayout } from './layouts/Blog';
@@ -415,5 +415,5 @@ import type {
   NavItem,
   ThemeComponent,
   ThemeProps,
-} from 'vite-plugin-ox-content';
+} from '@ox-content/vite-plugin';
 ```

@@ -7,7 +7,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import type { Plugin, PluginOption, ResolvedConfig } from "vite";
-import { oxContent } from "vite-plugin-ox-content";
+import { oxContent } from "@ox-content/vite-plugin";
 import { transformMarkdownWithSvelte } from "./transform";
 import { createSvelteMarkdownEnvironment } from "./environment";
 import type {
@@ -287,4 +287,4 @@ function toPascalCase(str: string): string {
   return str.replace(/[-_](\w)/g, (_, c) => c.toUpperCase()).replace(/^\w/, (c) => c.toUpperCase());
 }
 
-export { oxContent } from "vite-plugin-ox-content";
+export { oxContent } from "@ox-content/vite-plugin";

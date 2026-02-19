@@ -1,5 +1,5 @@
 import * as path from "path";
-import { transformMarkdown as baseTransformMarkdown } from "vite-plugin-ox-content";
+import { transformMarkdown as baseTransformMarkdown } from "@ox-content/vite-plugin";
 import type {
   ResolvedReactOptions,
   ReactTransformResult,
@@ -306,7 +306,7 @@ export default function MarkdownContent() {
   return `
 import React, { useEffect, useRef, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { initIslands } from 'ox-content-islands';
+import { initIslands } from '@ox-content/islands';
 ${imports}
 
 export const frontmatter = ${JSON.stringify(frontmatter)};

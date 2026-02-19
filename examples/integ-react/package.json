@@ -17,6 +17,6 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-ox-content-react": "workspace:*"
+    "@ox-content/vite-plugin-react": "workspace:*"
   }
 }

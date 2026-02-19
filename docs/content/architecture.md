@@ -15,8 +15,8 @@ graph TB
     end
 
     subgraph JSPackages["JavaScript Packages"]
-        VitePlugin[vite-plugin-ox-content]
-        ViteVue[vite-plugin-ox-content-vue]
+        VitePlugin[@ox-content/vite-plugin]
+        ViteVue[@ox-content/vite-plugin-vue]
         ViteReact[...-react]
     end
 

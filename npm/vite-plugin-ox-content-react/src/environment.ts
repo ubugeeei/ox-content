@@ -24,7 +24,7 @@ export function createReactMarkdownEnvironment(
     },
     optimizeDeps: {
       include: isSSR ? [] : ["react", "react-dom"],
-      exclude: ["vite-plugin-ox-content", "vite-plugin-ox-content-react"],
+      exclude: ["@ox-content/vite-plugin", "@ox-content/vite-plugin-react"],
     },
   };
 }

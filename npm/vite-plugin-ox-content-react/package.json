@@ -1,5 +1,5 @@
 {
-  "name": "vite-plugin-ox-content-react",
+  "name": "@ox-content/vite-plugin-react",
   "version": "0.3.0-alpha.11",
   "description": "React integration for Ox Content - Embed React components in Markdown",
   "type": "module",
@@ -25,8 +25,8 @@
     "vite": "catalog:"
   },
   "dependencies": {
-    "ox-content-islands": "workspace:*",
-    "vite-plugin-ox-content": "workspace:*"
+    "@ox-content/islands": "workspace:*",
+    "@ox-content/vite-plugin": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -9,7 +9,7 @@ Create a new Vite project and install dependencies:
 ```bash
 npm create vite@latest my-docs -- --template vanilla-ts
 cd my-docs
-npm install vite-plugin-ox-content
+npm install @ox-content/vite-plugin
 ```
 
 ## Configuration
@@ -18,7 +18,7 @@ Create or update `vite.config.ts`:
 
 ```typescript
 import { defineConfig } from 'vite';
-import { oxContent } from 'vite-plugin-ox-content';
+import { oxContent } from '@ox-content/vite-plugin';
 
 export default defineConfig({
   plugins: [

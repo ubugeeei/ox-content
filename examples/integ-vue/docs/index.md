@@ -5,7 +5,7 @@ description: Embedding Vue components in Markdown
 
 # Vue Integration Example
 
-This example demonstrates how to embed Vue components directly in Markdown using `vite-plugin-ox-content-vue`.
+This example demonstrates how to embed Vue components directly in Markdown using `@ox-content/vite-plugin-vue`.
 
 ## Interactive Counter
 
@@ -31,7 +31,7 @@ Operation completed successfully!
 
 ## Code Demo
 
-<CodeDemo language="typescript" code="import { oxContentVue } from 'vite-plugin-ox-content-vue';
+<CodeDemo language="typescript" code="import { oxContentVue } from '@ox-content/vite-plugin-vue';
 
 export default defineConfig({
   plugins: [
@@ -46,7 +46,7 @@ export default defineConfig({
 
 ## How It Works
 
-The `vite-plugin-ox-content-vue` plugin:
+The `@ox-content/vite-plugin-vue` plugin:
 
 1. Parses Markdown files for Vue component syntax
 2. Extracts component usages and generates Vue SFC

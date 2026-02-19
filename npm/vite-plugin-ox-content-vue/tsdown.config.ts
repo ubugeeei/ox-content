@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   hash: false,
-  external: ["vite", "vue", "vite-plugin-ox-content"],
+  external: ["vite", "vue", "@ox-content/vite-plugin"],
 })

@@ -180,13 +180,13 @@ console.log(result.html);
 ### With Vite
 
 ```bash
-npm install vite-plugin-ox-content @ox-content/napi
+npm install @ox-content/vite-plugin @ox-content/napi
 ```
 
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { oxContent, defineTheme, defaultTheme } from 'vite-plugin-ox-content';
+import { oxContent, defineTheme, defaultTheme } from '@ox-content/vite-plugin';
 
 export default defineConfig({
   plugins: [
@@ -221,20 +221,20 @@ export default defineConfig({
 
 ```bash
 # Vue
-npm install vite-plugin-ox-content-vue @ox-content/napi
+npm install @ox-content/vite-plugin-vue @ox-content/napi
 
 # React
-npm install vite-plugin-ox-content-react @ox-content/napi
+npm install @ox-content/vite-plugin-react @ox-content/napi
 
 # Svelte
-npm install vite-plugin-ox-content-svelte @ox-content/napi
+npm install @ox-content/vite-plugin-svelte @ox-content/napi
 ```
 
 ```typescript
 // vite.config.ts (Vue example)
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from 'vite-plugin-ox-content-vue';
+import { oxContentVue } from '@ox-content/vite-plugin-vue';
 
 export default defineConfig({
   plugins: [vue(), oxContentVue()],
@@ -296,11 +296,11 @@ ox-content/
 │   ├── ox_content_wasm/        # WebAssembly bindings
 │   └── ox_content_og_image/    # OG image generation
 ├── npm/                    # npm packages
-│   ├── vite-plugin-ox-content/       # Vite plugin with SSG
-│   ├── vite-plugin-ox-content-vue/   # Vue integration
-│   ├── vite-plugin-ox-content-react/ # React integration
-│   ├── vite-plugin-ox-content-svelte/# Svelte integration
-│   └── unplugin-ox-content/          # Universal plugin
+│   ├── vite-plugin-ox-content/       # @ox-content/vite-plugin
+│   ├── vite-plugin-ox-content-vue/   # @ox-content/vite-plugin-vue
+│   ├── vite-plugin-ox-content-react/ # @ox-content/vite-plugin-react
+│   ├── vite-plugin-ox-content-svelte/# @ox-content/vite-plugin-svelte
+│   └── unplugin-ox-content/          # @ox-content/unplugin
 ├── examples/               # Usage examples
 ├── content/                # Markdown content (default srcDir)
 └── .github/workflows/      # CI/CD
@@ -453,7 +453,7 @@ Ox Content can generate API documentation from your TypeScript/JavaScript source
 
 ```typescript
 // vite.config.ts
-import oxContent from 'unplugin-ox-content/vite';
+import oxContent from '@ox-content/unplugin/vite';
 
 export default defineConfig({
   plugins: [

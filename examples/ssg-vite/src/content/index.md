@@ -41,7 +41,7 @@ content.toc.forEach(entry => {
 ## Task Lists
 
 - [x] Setup Vite project
-- [x] Install vite-plugin-ox-content
+- [x] Install @ox-content/vite-plugin
 - [x] Create Markdown content
 - [ ] Deploy to production
 

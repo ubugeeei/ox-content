@@ -416,7 +416,7 @@ export interface TocEntry {
 /**
  * Transforms Markdown source into HTML, frontmatter, and TOC.
  *
- * This is the main entry point for unplugin-ox-content.
+ * This is the main entry point for @ox-content/unplugin.
  */
 export declare function transform(source: string, options?: JsTransformOptions | undefined | null): TransformResult
 

@@ -1,5 +1,5 @@
 /**
- * Rollup plugin export for unplugin-ox-content
+ * Rollup plugin export for @ox-content/unplugin
  */
 
 import unplugin from "./index";

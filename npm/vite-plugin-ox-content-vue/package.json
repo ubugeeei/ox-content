@@ -1,5 +1,5 @@
 {
-  "name": "vite-plugin-ox-content-vue",
+  "name": "@ox-content/vite-plugin-vue",
   "version": "0.3.0-alpha.11",
   "description": "Vue integration for Ox Content - Embed Vue components in Markdown",
   "type": "module",
@@ -24,8 +24,8 @@
     "vue": "catalog:"
   },
   "dependencies": {
-    "ox-content-islands": "workspace:*",
-    "vite-plugin-ox-content": "workspace:*"
+    "@ox-content/islands": "workspace:*",
+    "@ox-content/vite-plugin": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

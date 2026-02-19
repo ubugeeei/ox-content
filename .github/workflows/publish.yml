@@ -198,27 +198,27 @@ jobs:
             echo "tag=" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish ox-content-islands
+      - name: Publish @ox-content/islands
         working-directory: npm/ox-content-islands
         run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
-      - name: Publish vite-plugin-ox-content
+      - name: Publish @ox-content/vite-plugin
         working-directory: npm/vite-plugin-ox-content
         run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
-      - name: Publish unplugin-ox-content
+      - name: Publish @ox-content/unplugin
         working-directory: npm/unplugin-ox-content
         run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
-      - name: Publish vite-plugin-ox-content-vue
+      - name: Publish @ox-content/vite-plugin-vue
         working-directory: npm/vite-plugin-ox-content-vue
         run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
-      - name: Publish vite-plugin-ox-content-react
+      - name: Publish @ox-content/vite-plugin-react
         working-directory: npm/vite-plugin-ox-content-react
         run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
-      - name: Publish vite-plugin-ox-content-svelte
+      - name: Publish @ox-content/vite-plugin-svelte
         working-directory: npm/vite-plugin-ox-content-svelte
         run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 

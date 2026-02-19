@@ -119,7 +119,7 @@ function scheduleIdle(callback: () => void, timeout: number): () => void {
  *
  * @example Vue
  * ```ts
- * import { initIslands } from 'ox-content-islands';
+ * import { initIslands } from '@ox-content/islands';
  * import { createApp, h } from 'vue';
  * import Counter from './Counter.vue';
  *
@@ -139,7 +139,7 @@ function scheduleIdle(callback: () => void, timeout: number): () => void {
  *
  * @example React
  * ```ts
- * import { initIslands } from 'ox-content-islands';
+ * import { initIslands } from '@ox-content/islands';
  * import { createRoot } from 'react-dom/client';
  * import Counter from './Counter';
  *
@@ -159,7 +159,7 @@ function scheduleIdle(callback: () => void, timeout: number): () => void {
  *
  * @example Vanilla JS
  * ```ts
- * import { initIslands } from 'ox-content-islands';
+ * import { initIslands } from '@ox-content/islands';
  *
  * initIslands((el, props) => {
  *   const name = el.dataset.oxIsland!;

@@ -1,5 +1,5 @@
 import * as path from "path";
-import { transformMarkdown as baseTransformMarkdown } from "vite-plugin-ox-content";
+import { transformMarkdown as baseTransformMarkdown } from "@ox-content/vite-plugin";
 import { compile } from "svelte/compiler";
 import type {
   ResolvedSvelteOptions,
@@ -319,7 +319,7 @@ function generateSvelteModule(
   return `
 <script>
   import { createRawSnippet, onMount, mount, unmount } from 'svelte';
-  import { initIslands } from 'ox-content-islands';
+  import { initIslands } from '@ox-content/islands';
   ${imports}
 
   const frontmatter = ${JSON.stringify(frontmatter)};

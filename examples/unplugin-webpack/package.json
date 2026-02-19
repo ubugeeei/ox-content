@@ -8,7 +8,7 @@
     "dev": "webpack --watch"
   },
   "dependencies": {
-    "unplugin-ox-content": "workspace:*",
+    "@ox-content/unplugin": "workspace:*",
     "markdown-it-emoji": "^3.0.0"
   },
   "devDependencies": {

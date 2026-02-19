@@ -1,5 +1,5 @@
 /**
- * Type definitions for vite-plugin-ox-content
+ * Type definitions for @ox-content/vite-plugin
  */
 
 import type { ThemeConfig, ResolvedThemeConfig } from "./theme";
