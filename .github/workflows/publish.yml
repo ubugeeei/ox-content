@@ -74,7 +74,7 @@ jobs:
     name: Publish @ox-content/napi
     runs-on: ubuntu-latest
     needs: build-napi
-    environment: npm-publish
+    environment: npm
     permissions:
       contents: read
       id-token: write
@@ -153,6 +153,7 @@ jobs:
     name: Publish npm packages
     runs-on: ubuntu-latest
     needs: publish-napi
+    environment: npm
     permissions:
       contents: read
       id-token: write
