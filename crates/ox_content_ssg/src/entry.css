@@ -315,6 +315,10 @@
     bottom: 1.5rem;
   }
 
+  .hero-image {
+    max-width: 180px;
+  }
+
   .hero-actions {
     flex-direction: column;
     align-items: center;
