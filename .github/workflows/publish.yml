@@ -134,9 +134,20 @@ jobs:
         working-directory: crates/ox_content_napi
         run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release
 
+      - name: Determine npm tag
+        id: npm-tag
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          if [[ "$VERSION" == *"-"* ]]; then
+            PRE_ID=$(echo "$VERSION" | sed 's/.*-\([a-zA-Z]*\).*/\1/')
+            echo "tag=--tag $PRE_ID" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish @ox-content/napi
         working-directory: crates/ox_content_napi
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
   publish-packages:
     name: Publish npm packages
@@ -175,29 +186,40 @@ jobs:
       - name: Build packages
         run: pnpm -r --filter './npm/*' run build
 
+      - name: Determine npm tag
+        id: npm-tag
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          if [[ "$VERSION" == *"-"* ]]; then
+            PRE_ID=$(echo "$VERSION" | sed 's/.*-\([a-zA-Z]*\).*/\1/')
+            echo "tag=--tag $PRE_ID" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish ox-content-islands
         working-directory: npm/ox-content-islands
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish vite-plugin-ox-content
         working-directory: npm/vite-plugin-ox-content
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish unplugin-ox-content
         working-directory: npm/unplugin-ox-content
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish vite-plugin-ox-content-vue
         working-directory: npm/vite-plugin-ox-content-vue
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish vite-plugin-ox-content-react
         working-directory: npm/vite-plugin-ox-content-react
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish vite-plugin-ox-content-svelte
         working-directory: npm/vite-plugin-ox-content-svelte
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
   publish-crates:
     name: Publish to crates.io
