@@ -93,7 +93,13 @@ export async function transformMarkdownWithReact(
     highlightTheme: "github-dark",
     mermaid: false,
     ogImage: false,
-    ogImageOptions: {},
+    ogImageOptions: {
+      vuePlugin: "vitejs",
+      width: 1200,
+      height: 630,
+      cache: true,
+      concurrency: 1,
+    },
     transformers: [],
     docs: false,
     search: {

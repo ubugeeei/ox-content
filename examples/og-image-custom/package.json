@@ -1,0 +1,24 @@
+{
+  "name": "ox-content-og-image-custom-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "catalog:",
+    "@ox-content/vite-plugin": "workspace:*",
+    "typescript": "catalog:",
+    "vue": "catalog:",
+    "@vue/compiler-sfc": "^3.5.0",
+    "svelte": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
+  }
+}

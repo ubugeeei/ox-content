@@ -17,6 +17,7 @@ import {
   writeSearchIndex,
   generateSearchModule,
 } from "./search";
+import { resolveOgImageOptions } from "./og-image";
 import type { OxContentOptions, ResolvedOptions } from "./types";
 
 export type { OxContentOptions } from "./types";
@@ -339,7 +340,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     toc: options.toc ?? true,
     tocMaxDepth: options.tocMaxDepth ?? 3,
     ogImage: options.ogImage ?? false,
-    ogImageOptions: options.ogImageOptions ?? {},
+    ogImageOptions: resolveOgImageOptions(options.ogImageOptions),
     transformers: options.transformers ?? [],
     docs: resolveDocsOptions(options.docs),
     search: resolveSearchOptions(options.search),
@@ -484,3 +485,18 @@ export type {
   IslandInfo,
   ParseIslandsResult,
 } from "./island";
+
+// OG Image
+export {
+  resolveOgImageOptions,
+  generateOgImages,
+} from "./og-image";
+export type {
+  OgImageOptions as OgImagePluginOptions,
+  ResolvedOgImageOptions,
+  OgImageTemplateProps,
+  OgImageTemplateFn,
+  OgImagePageEntry,
+  OgImageResult,
+  OgBrowserSession,
+} from "./og-image";
