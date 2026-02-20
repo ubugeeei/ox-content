@@ -485,7 +485,7 @@ export async function generateOgImages(
     if (allCached) return allCached;
   }
 
-  // Launch browser with automatic cleanup via `using`
+  // Launch browser
   await using session = await openBrowser();
   if (!session) {
     return pages.map((p) => ({
