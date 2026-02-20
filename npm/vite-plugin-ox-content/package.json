@@ -48,6 +48,8 @@
   "devDependencies": {
     "@types/hast": "^3.0.4",
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@typescript/native-preview": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
