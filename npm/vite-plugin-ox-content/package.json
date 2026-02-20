@@ -1,6 +1,6 @@
 {
   "name": "@ox-content/vite-plugin",
-  "version": "0.3.0-alpha.13",
+  "version": "0.3.0-alpha.14",
   "description": "Vite plugin for Ox Content - High-performance Markdown processing with Environment API",
   "type": "module",
   "main": "./dist/index.js",
@@ -28,11 +28,21 @@
     "react-dom": "^19.0.0"
   },
   "peerDependenciesMeta": {
-    "vue": { "optional": true },
-    "@vue/compiler-sfc": { "optional": true },
-    "svelte": { "optional": true },
-    "react": { "optional": true },
-    "react-dom": { "optional": true }
+    "vue": {
+      "optional": true
+    },
+    "@vue/compiler-sfc": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",
