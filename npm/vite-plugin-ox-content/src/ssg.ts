@@ -5,8 +5,9 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { glob } from "glob";
-import { transformMarkdown, generateOgImageSvg } from "./transform";
-import type { OgImageData, OgImageConfig } from "./transform";
+import { transformMarkdown } from "./transform";
+import { generateOgImages } from "./og-image";
+import type { OgImagePageEntry } from "./og-image";
 import { transformAllPlugins } from "./plugins";
 import type { TransformAllOptions } from "./plugins";
 import { protectMermaidSvgs, restoreMermaidSvgs } from "./plugins/mermaid-protect";
@@ -1070,10 +1071,10 @@ function getOgImagePath(inputPath: string, srcDir: string, outDir: string): stri
 
   if (baseName === "index" || baseName.endsWith("/index")) {
     const dirPath = baseName.replace(/\/?index$/, "") || "";
-    return path.join(outDir, dirPath, "og-image.svg");
+    return path.join(outDir, dirPath, "og-image.png");
   }
 
-  return path.join(outDir, baseName, "og-image.svg");
+  return path.join(outDir, baseName, "og-image.png");
 }
 
 /**
@@ -1084,9 +1085,9 @@ function getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?
   const urlPath = getUrlPath(inputPath, srcDir);
   let relativePath: string;
   if (urlPath === "/" || urlPath === "") {
-    relativePath = `${base}og-image.svg`;
+    relativePath = `${base}og-image.png`;
   } else {
-    relativePath = `${base}${urlPath}/og-image.svg`;
+    relativePath = `${base}${urlPath}/og-image.png`;
   }
 
   // Return absolute URL if siteUrl is provided
@@ -1276,7 +1277,27 @@ export async function buildSsg(
     }
   }
 
-  // Process each file
+  // Collect OG image entries for batch rendering
+  const ogImageEntries: OgImagePageEntry[] = [];
+  // Map from inputPath to OG image URL (filled after batch render)
+  const ogImageUrlMap = new Map<string, string>();
+
+  // Determine if OG images should be generated
+  const shouldGenerateOgImages =
+    (options.ogImage || ssgOptions.generateOgImage) && !ssgOptions.bare;
+
+  // Collect page metadata for OG image generation
+  interface PageProcessResult {
+    inputPath: string;
+    transformedHtml: string;
+    title: string;
+    description?: string;
+    frontmatter: Record<string, unknown>;
+    toc: TocEntry[];
+  }
+  const pageResults: PageProcessResult[] = [];
+
+  // Process each file: transform markdown and collect metadata
   for (const inputPath of markdownFiles) {
     try {
       const content = await fs.readFile(inputPath, "utf-8");
@@ -1319,46 +1340,88 @@ export async function buildSsg(
       const title = extractTitle(transformedHtml, result.frontmatter);
       const description = result.frontmatter.description as string | undefined;
 
+      pageResults.push({
+        inputPath,
+        transformedHtml,
+        title,
+        description,
+        frontmatter: result.frontmatter,
+        toc: result.toc,
+      });
+
+      // Collect OG image entry if generation is enabled
+      if (shouldGenerateOgImages) {
+        const ogImageOutputPath = getOgImagePath(inputPath, srcDir, outDir);
+        const { layout: _layout, ...frontmatterRest } = result.frontmatter;
+        ogImageEntries.push({
+          props: {
+            ...frontmatterRest,
+            title,
+            description,
+            siteName,
+          },
+          outputPath: ogImageOutputPath,
+        });
+        // Pre-compute URL so HTML can reference it
+        ogImageUrlMap.set(
+          inputPath,
+          getOgImageUrl(inputPath, srcDir, base, ssgOptions.siteUrl),
+        );
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      errors.push(`Failed to process ${inputPath}: ${errorMessage}`);
+    }
+  }
+
+  // Batch generate OG images (Chromium-based)
+  if (shouldGenerateOgImages && ogImageEntries.length > 0) {
+    try {
+      const ogResults = await generateOgImages(
+        ogImageEntries,
+        options.ogImageOptions,
+        root,
+      );
+      let ogSuccessCount = 0;
+      for (const result of ogResults) {
+        if (result.error) {
+          errors.push(`OG image failed for ${result.outputPath}: ${result.error}`);
+        } else {
+          generatedFiles.push(result.outputPath);
+          ogSuccessCount++;
+        }
+      }
+      if (ogSuccessCount > 0) {
+        const cachedCount = ogResults.filter((r) => r.cached && !r.error).length;
+        console.log(
+          `[ox-content:og-image] Generated ${ogSuccessCount} OG images` +
+            (cachedCount > 0 ? ` (${cachedCount} from cache)` : ""),
+        );
+      }
+    } catch (err) {
+      // Non-fatal: OG image failures never block the SSG build
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.warn(`[ox-content:og-image] Batch generation failed: ${errorMessage}`);
+    }
+  }
+
+  // Generate HTML pages
+  for (const pageResult of pageResults) {
+    try {
+      const { inputPath, transformedHtml, title, description, frontmatter, toc } = pageResult;
+
       // Determine OG image URL for this page
       let pageOgImage = ssgOptions.ogImage; // fallback to static URL
-
-      // Generate per-page OG image if enabled (uses Rust)
-      if (ssgOptions.generateOgImage && !ssgOptions.bare) {
-        const ogImageData: OgImageData = {
-          title,
-          description,
-          siteName,
-          author: result.frontmatter.author as string | undefined,
-        };
-
-        // Use OG image options from the main options if available
-        const ogImageConfig: OgImageConfig | undefined = options.ogImageOptions
-          ? {
-              width: options.ogImageOptions.width,
-              height: options.ogImageOptions.height,
-              backgroundColor: options.ogImageOptions.background,
-              textColor: options.ogImageOptions.textColor,
-            }
-          : undefined;
-
-        const svg = await generateOgImageSvg(ogImageData, ogImageConfig);
-        if (svg) {
-          const ogImageOutputPath = getOgImagePath(inputPath, srcDir, outDir);
-          await fs.mkdir(path.dirname(ogImageOutputPath), { recursive: true });
-          await fs.writeFile(ogImageOutputPath, svg, "utf-8");
-          generatedFiles.push(ogImageOutputPath);
-
-          // Use per-page OG image URL (absolute if siteUrl is provided)
-          pageOgImage = getOgImageUrl(inputPath, srcDir, base, ssgOptions.siteUrl);
-        }
+      if (shouldGenerateOgImages && ogImageUrlMap.has(inputPath)) {
+        pageOgImage = ogImageUrlMap.get(inputPath);
       }
 
       // Check if this is an entry page (layout: entry)
       let entryPage: SsgEntryPageConfig | undefined;
-      if (result.frontmatter.layout === "entry") {
+      if (frontmatter.layout === "entry") {
         entryPage = {
-          hero: result.frontmatter.hero as HeroConfig | undefined,
-          features: result.frontmatter.features as FeatureConfig[] | undefined,
+          hero: frontmatter.hero as HeroConfig | undefined,
+          features: frontmatter.features as FeatureConfig[] | undefined,
         };
       }
 
@@ -1371,8 +1434,8 @@ export async function buildSsg(
           title,
           description,
           content: transformedHtml,
-          toc: result.toc,
-          frontmatter: result.frontmatter,
+          toc,
+          frontmatter,
           path: getUrlPath(inputPath, srcDir),
           href: getHref(inputPath, srcDir, base, ssgOptions.extension),
           entryPage,
@@ -1389,7 +1452,7 @@ export async function buildSsg(
       generatedFiles.push(outputPath);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      errors.push(`Failed to process ${inputPath}: ${errorMessage}`);
+      errors.push(`Failed to generate HTML for ${pageResult.inputPath}: ${errorMessage}`);
     }
   }
 

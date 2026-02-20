@@ -21,9 +21,14 @@ export default defineConfig(({ mode }) => {
         outDir: "dist/docs",
         base,
 
+        // Enable per-page OG image generation (Chromium-based)
+        ogImage: true,
+
         // SSG options with theme customization
         ssg: {
           siteName: "Ox Content",
+          siteUrl: "https://ubugeeei.github.io",
+          generateOgImage: true,
           ogImage: "https://ubugeeei.github.io/ox-content/og-image.png",
           theme: defineTheme({
             extends: defaultTheme,

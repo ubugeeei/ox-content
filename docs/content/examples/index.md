@@ -81,6 +81,21 @@ oxContent({
 })
 ```
 
+## OG Image Examples
+
+### [Custom OG Image Templates](./og-image-custom.md)
+
+Generate per-page Open Graph images with a custom template. Pass arbitrary frontmatter data as props.
+
+```ts
+oxContent({
+  ogImage: true,
+  ogImageOptions: {
+    template: './og-template.ts',
+  },
+})
+```
+
 ## Other Examples
 
 ### [Playground](./playground.md)
