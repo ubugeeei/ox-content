@@ -168,7 +168,16 @@ async function collectPages(options: ResolvedOptions, root: string): Promise<Pag
       options.ssg.ogImage,
     );
 
-    const page = { path: path.relative(srcDir, file), urlPath, title, description, author, tags, ogImageUrl, warnings: [] as PageOgData["warnings"] };
+    const page = {
+      path: path.relative(srcDir, file),
+      urlPath,
+      title,
+      description,
+      author,
+      tags,
+      ogImageUrl,
+      warnings: [] as PageOgData["warnings"],
+    };
     page.warnings = validatePage(page, options);
     pages.push(page);
   }
