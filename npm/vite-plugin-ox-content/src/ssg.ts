@@ -72,7 +72,8 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
   {{#description}}<meta property="og:description" content="{{description}}">{{/description}}
   {{#ogImage}}<meta property="og:image" content="{{ogImage}}">{{/ogImage}}
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
+  {{#ogImage}}<meta name="twitter:card" content="summary_large_image">{{/ogImage}}
+  {{^ogImage}}<meta name="twitter:card" content="summary">{{/ogImage}}
   <meta name="twitter:title" content="{{title}}{{#siteName}} - {{siteName}}{{/siteName}}">
   {{#description}}<meta name="twitter:description" content="{{description}}">{{/description}}
   {{#ogImage}}<meta name="twitter:image" content="{{ogImage}}">{{/ogImage}}
@@ -846,6 +847,11 @@ function renderTemplate(template: string, data: Record<string, unknown>): string
   // Handle conditionals: {{#key}}content{{/key}}
   result = result.replace(/\{\{#(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (_, key, content) => {
     return data[key] ? content : "";
+  });
+
+  // Handle inverted conditionals: {{^key}}content{{/key}}
+  result = result.replace(/\{\{\^(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (_, key, content) => {
+    return data[key] ? "" : content;
   });
 
   // Handle simple replacements: {{key}}
