@@ -130,10 +130,6 @@ jobs:
         working-directory: crates/ox_content_napi
         run: npx napi artifacts --npm-dir ../../binding-packages
 
-      - name: Publish sub-packages and update optionalDependencies
-        working-directory: crates/ox_content_napi
-        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release
-
       - name: Determine npm tag
         id: npm-tag
         run: |
@@ -144,6 +140,10 @@ jobs:
           else
             echo "tag=" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Publish sub-packages and update optionalDependencies
+        working-directory: crates/ox_content_napi
+        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/napi
         working-directory: crates/ox_content_napi
