@@ -16,6 +16,9 @@ hero:
     - theme: alt
       text: View on GitHub
       link: https://github.com/ubugeeei/ox-content
+    - theme: alt
+      text: Sponsor
+      link: https://github.com/sponsors/ubugeeei
 features:
   - icon: "mdi:lightning-bolt"
     title: Blazing Fast

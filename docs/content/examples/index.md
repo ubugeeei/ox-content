@@ -83,6 +83,10 @@ oxContent({
 
 ## OG Image Examples
 
+### [OG Viewer](./og-viewer.md)
+
+Dev tool for previewing Open Graph metadata of all pages. Accessible at `/__og-viewer` during development.
+
 ### [Custom OG Image Templates](./og-image-custom.md)
 
 Generate per-page Open Graph images with a custom template. Pass arbitrary frontmatter data as props.
