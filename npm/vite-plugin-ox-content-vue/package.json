@@ -1,6 +1,6 @@
 {
   "name": "@ox-content/vite-plugin-vue",
-  "version": "0.3.0-alpha.20",
+  "version": "0.3.0-alpha.21",
   "description": "Vue integration for Ox Content - Embed Vue components in Markdown",
   "type": "module",
   "main": "./dist/index.js",
