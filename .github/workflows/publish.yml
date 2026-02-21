@@ -101,7 +101,11 @@ jobs:
         with:
           path: crates/ox_content_napi/artifacts
 
-      - name: Move artifacts with platform-specific names
+      - name: Create npm sub-package directories
+        working-directory: crates/ox_content_napi
+        run: npx napi create-npm-dirs --npm-dir ../../binding-packages
+
+      - name: Move artifacts to sub-packages
         working-directory: crates/ox_content_napi
         run: |
           declare -A target_map=(
@@ -116,19 +120,14 @@ jobs:
             platform="${target_map[$target]}"
             if [ -n "$platform" ]; then
               for f in "$dir"/*.node; do
-                mv "$f" "ox-content.${platform}.node"
+                cp "$f" "../../binding-packages/${platform}/ox-content.${platform}.node"
               done
             fi
           done
-          ls -la *.node || echo "No .node files found"
-
-      - name: Create npm sub-package directories
-        working-directory: crates/ox_content_napi
-        run: npx napi create-npm-dirs --npm-dir ../../binding-packages
-
-      - name: Move artifacts to sub-packages
-        working-directory: crates/ox_content_napi
-        run: npx napi artifacts --npm-dir ../../binding-packages
+          echo "=== Verify binding packages ==="
+          for pkg in ../../binding-packages/*/; do
+            ls -la "$pkg"*.node 2>/dev/null || echo "WARNING: No .node file in $pkg"
+          done
 
       - name: Determine npm tag
         id: npm-tag
