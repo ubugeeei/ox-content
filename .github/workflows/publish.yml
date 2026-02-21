@@ -143,7 +143,7 @@ jobs:
 
       - name: Publish sub-packages and update optionalDependencies
         working-directory: crates/ox_content_napi
-        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release ${{ steps.npm-tag.outputs.tag }}
+        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release
 
       - name: Publish @ox-content/napi
         working-directory: crates/ox_content_napi
