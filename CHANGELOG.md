@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] - 2026-02-21
+
+### Bug Fixes
+
+- twitter open graph meta (#29)
+
 ## [0.5.0] - 2026-02-21
 
 ### Bug Fixes
