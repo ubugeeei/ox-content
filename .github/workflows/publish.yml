@@ -140,9 +140,18 @@ jobs:
             echo "tag=" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish sub-packages and update optionalDependencies
+      - name: Update optionalDependencies
         working-directory: crates/ox_content_napi
-        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release
+        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release --skip-optional-publish
+
+      - name: Publish binding sub-packages
+        run: |
+          for pkg in binding-packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              echo "Publishing $(basename $pkg)..."
+              (cd "$pkg" && npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }})
+            fi
+          done
 
       - name: Publish @ox-content/napi
         working-directory: crates/ox_content_napi
