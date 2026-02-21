@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0] - 2026-02-21
+
+### Bug Fixes
+
+- open graph meta (#28)
+
 ## [0.4.0] - 2026-02-21
 
 ### Bug Fixes
