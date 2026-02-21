@@ -200,27 +200,27 @@ jobs:
 
       - name: Publish @ox-content/islands
         working-directory: npm/ox-content-islands
-        run: npm publish $(pnpm pack) --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin
         working-directory: npm/vite-plugin-ox-content
-        run: npm publish $(pnpm pack) --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/unplugin
         working-directory: npm/unplugin-ox-content
-        run: npm publish $(pnpm pack) --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin-vue
         working-directory: npm/vite-plugin-ox-content-vue
-        run: npm publish $(pnpm pack) --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin-react
         working-directory: npm/vite-plugin-ox-content-react
-        run: npm publish $(pnpm pack) --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin-svelte
         working-directory: npm/vite-plugin-ox-content-svelte
-        run: npm publish $(pnpm pack) --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
   publish-crates:
     name: Publish to crates.io
