@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.3.0-alpha.18"
+version = "0.3.0-alpha.19"
 authors = ["ubugeeei"]
 categories = ["development-tools"]
 edition = "2021"
@@ -63,16 +63,16 @@ use_self = "allow"
 
 [workspace.dependencies]
 # Internal crates (version is used for crates.io publish, path for local dev)
-ox_content_allocator = { version = "0.3.0-alpha.18", path = "crates/ox_content_allocator" }
-ox_content_ast = { version = "0.3.0-alpha.18", path = "crates/ox_content_ast" }
-ox_content_parser = { version = "0.3.0-alpha.18", path = "crates/ox_content_parser" }
-ox_content_renderer = { version = "0.3.0-alpha.18", path = "crates/ox_content_renderer" }
-ox_content_napi = { version = "0.3.0-alpha.18", path = "crates/ox_content_napi" }
-ox_content_vite = { version = "0.3.0-alpha.18", path = "crates/ox_content_vite" }
-ox_content_og_image = { version = "0.3.0-alpha.18", path = "crates/ox_content_og_image" }
-ox_content_docs = { version = "0.3.0-alpha.18", path = "crates/ox_content_docs" }
-ox_content_search = { version = "0.3.0-alpha.18", path = "crates/ox_content_search" }
-ox_content_ssg = { version = "0.3.0-alpha.18", path = "crates/ox_content_ssg" }
+ox_content_allocator = { version = "0.3.0-alpha.19", path = "crates/ox_content_allocator" }
+ox_content_ast = { version = "0.3.0-alpha.19", path = "crates/ox_content_ast" }
+ox_content_parser = { version = "0.3.0-alpha.19", path = "crates/ox_content_parser" }
+ox_content_renderer = { version = "0.3.0-alpha.19", path = "crates/ox_content_renderer" }
+ox_content_napi = { version = "0.3.0-alpha.19", path = "crates/ox_content_napi" }
+ox_content_vite = { version = "0.3.0-alpha.19", path = "crates/ox_content_vite" }
+ox_content_og_image = { version = "0.3.0-alpha.19", path = "crates/ox_content_og_image" }
+ox_content_docs = { version = "0.3.0-alpha.19", path = "crates/ox_content_docs" }
+ox_content_search = { version = "0.3.0-alpha.19", path = "crates/ox_content_search" }
+ox_content_ssg = { version = "0.3.0-alpha.19", path = "crates/ox_content_ssg" }
 
 # Memory allocation
 bumpalo = "3.16"
