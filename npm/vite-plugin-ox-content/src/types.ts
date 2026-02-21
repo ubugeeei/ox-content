@@ -278,6 +278,13 @@ export interface OxContentOptions {
    * @default { enabled: true }
    */
   search?: SearchOptions | boolean;
+
+  /**
+   * Enable OG Viewer dev tool.
+   * Accessible at /__og-viewer during development.
+   * @default true
+   */
+  ogViewer?: boolean;
 }
 
 /**
@@ -304,6 +311,7 @@ export interface ResolvedOptions {
   transformers: MarkdownTransformer[];
   docs: ResolvedDocsOptions | false;
   search: ResolvedSearchOptions;
+  ogViewer: boolean;
 }
 
 /**

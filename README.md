@@ -23,34 +23,9 @@
 - **mdast Compatible** - Full compatibility with the unified ecosystem
 - **GFM Support** - Tables, task lists, strikethrough, autolinks, footnotes
 - **Multi-Runtime** - Node.js (NAPI), WebAssembly, Native Rust
-- **Framework Agnostic** - Works with Vite, Webpack, Rollup, esbuild via unplugin
-- **Plugin Compatible** - Works with markdown-it, remark, rehype ecosystems
+- **Framework Agnostic** - Works with Vue, React, Svelte, and more
+- **Built-in SSG** - Static site generation with theming, search, and OG images
 - **API Docs Generation** - Generate docs from JSDoc/TypeScript (like `cargo doc`)
-
-## Benchmarks
-
-### Parse/Render Speed
-
-| Library              | Small (0.5KB)        | Large (48.7KB)     | Throughput       | Ratio    |
-|----------------------|----------------------|--------------------|------------------|----------|
-| **@ox-content/napi** | **157,367 ops/s**    | **2,380 ops/s**    | **113.24 MB/s**  | **1.00x**|
-| marked               | 14,297 ops/s         | 294 ops/s          | 13.99 MB/s       | 8.09x    |
-| markdown-it          | 10,285 ops/s         | 402 ops/s          | 19.15 MB/s       | 5.91x    |
-| remark               | 1,839 ops/s          | 17 ops/s           | 0.82 MB/s        | 138.76x  |
-
-*Higher ops/sec is better. Lower ratio is better.*
-
-### Build Output Size
-
-| Framework          | Gzipped      | Ratio       |
-|--------------------|--------------|-------------|
-| **ox-content**     | **2.7 KB**   | **1.00x**   |
-| Astro              | 3.5 KB       | 1.30x       |
-| ox-content + Vue   | 25.5 KB      | 9.34x       |
-| Astro + Vue        | 33.2 KB      | 12.18x      |
-| VitePress          | 721.8 KB     | 264.92x     |
-
-*Same 4 Markdown pages. Lower is better.*
 
 ## Quick Start
 
@@ -104,73 +79,22 @@ npm install @ox-content/vite-plugin-react @ox-content/napi
 npm install @ox-content/vite-plugin-svelte @ox-content/napi
 ```
 
-```typescript
-// vite.config.ts (Vue example)
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from '@ox-content/vite-plugin-vue';
-
-export default defineConfig({
-  plugins: [vue(), oxContentVue()],
-});
-```
-
 **[Read the full documentation →](https://ubugeeei.github.io/ox-content/)**
-
-## Packages
-
-| Package | Description |
-| ------- | ----------- |
-| [`@ox-content/napi`](./crates/ox_content_napi) | Node.js bindings |
-| [`@ox-content/wasm`](./crates/ox_content_wasm) | WebAssembly bindings |
-| [`@ox-content/vite-plugin`](./npm/vite-plugin-ox-content) | Vite plugin with SSG support |
-| [`@ox-content/vite-plugin-vue`](./npm/vite-plugin-ox-content-vue) | Vue integration |
-| [`@ox-content/vite-plugin-react`](./npm/vite-plugin-ox-content-react) | React integration |
-| [`@ox-content/vite-plugin-svelte`](./npm/vite-plugin-ox-content-svelte) | Svelte integration |
-| [`@ox-content/unplugin`](./npm/unplugin-ox-content) | Universal plugin (Vite/Webpack/Rollup/esbuild) |
 
 ## Development
 
-### Requirements
-
-- Node.js 24+
-- pnpm 9+
-- Rust 1.92+
-- [mise](https://mise.jdx.dev/) (optional, for task running)
-
-### Commands
-
 ```bash
-# Install dependencies
-pnpm install
-
-# Build NAPI bindings
-mise run napi-build
-
-# Build npm packages (uses tsdown)
-mise run npm-build
-
-# Run tests
-mise run test          # Rust tests
-mise run test:ts       # TypeScript tests (vitest)
-
-# Lint
-mise run lint          # Rust + TypeScript
-mise run lint:ts       # TypeScript only (oxlint --type-aware)
-
-# Typecheck
-pnpm check             # Uses @typescript/native-preview (tsgo)
-
-# Release a new version
-mise run release -- patch  # or minor, major, x.y.z
+pnpm install            # Install dependencies
+mise run napi-build     # Build NAPI bindings
+mise run npm-build      # Build npm packages
+mise run test           # Run tests
 ```
 
-### Tooling
+See the [documentation](https://ubugeeei.github.io/ox-content/) for more details.
 
-- **Build**: [tsdown](https://github.com/nicepkg/tsdown) (Rolldown-powered bundler)
-- **Test**: [vitest](https://vitest.dev/)
-- **Lint**: [oxlint](https://oxc.rs/docs/guide/usage/linter.html) with type-aware mode
-- **Typecheck**: [@typescript/native-preview](https://github.com/nicepkg/typescript-native-preview) (tsgo)
+## Sponsor
+
+If you find Ox Content useful, please consider [sponsoring](https://github.com/sponsors/ubugeeei) the project.
 
 ## License
 

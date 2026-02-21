@@ -18,6 +18,7 @@ import {
   generateSearchModule,
 } from "./search";
 import { resolveOgImageOptions } from "./og-image";
+import { createOgViewerPlugin } from "./og-viewer";
 import type { OxContentOptions, ResolvedOptions } from "./types";
 
 export type { OxContentOptions } from "./types";
@@ -316,7 +317,13 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
     },
   };
 
-  return [mainPlugin, environmentPlugin, docsPlugin, ssgPlugin, searchPlugin];
+  const plugins: Plugin[] = [mainPlugin, environmentPlugin, docsPlugin, ssgPlugin, searchPlugin];
+
+  if (resolvedOptions.ogViewer) {
+    plugins.push(createOgViewerPlugin(resolvedOptions));
+  }
+
+  return plugins;
 }
 
 /**
@@ -344,6 +351,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     transformers: options.transformers ?? [],
     docs: resolveDocsOptions(options.docs),
     search: resolveSearchOptions(options.search),
+    ogViewer: options.ogViewer ?? true,
   };
 }
 
