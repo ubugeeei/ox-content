@@ -17,10 +17,7 @@ export interface MermaidOptions {
 
 /** Cached NAPI bindings */
 let napiBindings: {
-  transformMermaid: (
-    html: string,
-    mmdcPath: string,
-  ) => { html: string; errors: string[] };
+  transformMermaid: (html: string, mmdcPath: string) => { html: string; errors: string[] };
 } | null = null;
 
 let napiLoadAttempted = false;
@@ -31,9 +28,7 @@ async function loadNapi() {
   try {
     const mod = await import("@ox-content/napi");
     // CJS-to-ESM interop: native functions are on mod.default
-    const binding = (mod.default ?? mod) as unknown as NonNullable<
-      typeof napiBindings
-    >;
+    const binding = (mod.default ?? mod) as unknown as NonNullable<typeof napiBindings>;
     if (typeof binding.transformMermaid !== "function") {
       napiBindings = null;
       return null;

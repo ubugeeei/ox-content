@@ -206,26 +206,11 @@ export namespace JSX {
     contextMenu?: string;
     dir?: "ltr" | "rtl" | "auto";
     draggable?: boolean | "true" | "false";
-    enterKeyHint?:
-      | "enter"
-      | "done"
-      | "go"
-      | "next"
-      | "previous"
-      | "search"
-      | "send";
+    enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
     hidden?: boolean;
     id?: string;
     inert?: boolean;
-    inputMode?:
-      | "none"
-      | "text"
-      | "tel"
-      | "url"
-      | "email"
-      | "numeric"
-      | "decimal"
-      | "search";
+    inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
     is?: string;
     itemId?: string;
     itemProp?: string;
@@ -257,15 +242,7 @@ export namespace JSX {
     "aria-colindex"?: number;
     "aria-colspan"?: number;
     "aria-controls"?: string;
-    "aria-current"?:
-      | boolean
-      | "true"
-      | "false"
-      | "page"
-      | "step"
-      | "location"
-      | "date"
-      | "time";
+    "aria-current"?: boolean | "true" | "false" | "page" | "step" | "location" | "date" | "time";
     "aria-describedby"?: string;
     "aria-details"?: string;
     "aria-disabled"?: boolean | "true" | "false";
@@ -274,15 +251,7 @@ export namespace JSX {
     "aria-expanded"?: boolean | "true" | "false";
     "aria-flowto"?: string;
     "aria-grabbed"?: boolean | "true" | "false";
-    "aria-haspopup"?:
-      | boolean
-      | "true"
-      | "false"
-      | "menu"
-      | "listbox"
-      | "tree"
-      | "grid"
-      | "dialog";
+    "aria-haspopup"?: boolean | "true" | "false" | "menu" | "listbox" | "tree" | "grid" | "dialog";
     "aria-hidden"?: boolean | "true" | "false";
     "aria-invalid"?: boolean | "true" | "false" | "grammar" | "spelling";
     "aria-keyshortcuts"?: string;
@@ -743,8 +712,7 @@ export namespace JSX {
   /**
    * Props for a specific intrinsic element.
    */
-  export type IntrinsicElementProps<T extends IntrinsicElementType> =
-    IntrinsicElements[T];
+  export type IntrinsicElementProps<T extends IntrinsicElementType> = IntrinsicElements[T];
 }
 
 type JsxRuntimeIntrinsicElements = import("./jsx.d.ts").JSX.IntrinsicElements;

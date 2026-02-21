@@ -26,10 +26,7 @@ export function computeCacheKey(
  * Checks if a cached PNG exists for the given key.
  * Returns the cached file path if found, null otherwise.
  */
-export async function getCached(
-  cacheDir: string,
-  key: string,
-): Promise<Buffer | null> {
+export async function getCached(cacheDir: string, key: string): Promise<Buffer | null> {
   const filePath = path.join(cacheDir, `${key}.png`);
   try {
     return await fs.readFile(filePath);
@@ -41,11 +38,7 @@ export async function getCached(
 /**
  * Writes a PNG buffer to the cache.
  */
-export async function writeCache(
-  cacheDir: string,
-  key: string,
-  png: Buffer,
-): Promise<void> {
+export async function writeCache(cacheDir: string, key: string, png: Buffer): Promise<void> {
   await fs.mkdir(cacheDir, { recursive: true });
   const filePath = path.join(cacheDir, `${key}.png`);
   await fs.writeFile(filePath, png);

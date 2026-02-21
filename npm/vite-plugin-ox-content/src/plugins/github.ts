@@ -68,7 +68,10 @@ function formatNumber(num: number): string {
 /**
  * Fetch repository data from GitHub API.
  */
-export async function fetchRepoData(repo: string, options: Required<GitHubOptions>): Promise<GitHubRepoData | null> {
+export async function fetchRepoData(
+  repo: string,
+  options: Required<GitHubOptions>,
+): Promise<GitHubRepoData | null> {
   // Check cache
   if (options.cache) {
     const cached = repoCache.get(repo);
@@ -358,7 +361,9 @@ function rehypeGitHub(repoDataMap: Map<string, GitHubRepoData | null>) {
 
               if (repo) {
                 const repoData = repoDataMap.get(repo);
-                const cardElement = repoData ? createGitHubCard(repoData) : createFallbackCard(repo);
+                const cardElement = repoData
+                  ? createGitHubCard(repoData)
+                  : createFallbackCard(repo);
                 node.children[i] = cardElement;
               }
             } else {

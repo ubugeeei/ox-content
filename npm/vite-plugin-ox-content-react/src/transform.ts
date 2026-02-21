@@ -55,7 +55,8 @@ export async function transformMarkdownWithReact(
 
     const props = parseProps(propsString);
     const islandId = `ox-island-${islandIndex++}`;
-    const islandContent = typeof rawIslandContent === "string" ? rawIslandContent.trim() : undefined;
+    const islandContent =
+      typeof rawIslandContent === "string" ? rawIslandContent.trim() : undefined;
 
     islands.push({
       name: componentName,
@@ -186,9 +187,10 @@ function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
 
   for (const island of islands) {
     const marker = createIslandMarker(island.id);
-    const propsAttr = Object.keys(island.props).length > 0
-      ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
-      : "";
+    const propsAttr =
+      Object.keys(island.props).length > 0
+        ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
+        : "";
     const contentAttr = island.content
       ? ` data-ox-content='${island.content.replace(/'/g, "&#39;")}'`
       : "";

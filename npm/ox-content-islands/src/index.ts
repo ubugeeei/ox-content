@@ -31,8 +31,4 @@ export type {
   IslandController,
 } from "./types";
 
-export {
-  initIslands,
-  createDeferredInit,
-  isIslandsSupported,
-} from "./runtime";
+export { initIslands, createDeferredInit, isIslandsSupported } from "./runtime";

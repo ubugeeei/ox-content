@@ -275,7 +275,10 @@ export function mergeThemes(...themes: ThemeConfig[]): ThemeConfig {
   let result: ThemeConfig = {};
 
   for (const theme of themes) {
-    result = deepMerge(result as Record<string, unknown>, theme as Record<string, unknown>) as ThemeConfig;
+    result = deepMerge(
+      result as Record<string, unknown>,
+      theme as Record<string, unknown>,
+    ) as ThemeConfig;
   }
 
   return result;

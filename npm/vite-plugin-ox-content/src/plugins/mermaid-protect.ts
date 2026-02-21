@@ -66,10 +66,7 @@ export function protectMermaidSvgs(html: string): MermaidSvgProtection {
 /**
  * Restore protected mermaid SVG blocks from placeholders.
  */
-export function restoreMermaidSvgs(
-  html: string,
-  svgs: Map<string, string>,
-): string {
+export function restoreMermaidSvgs(html: string, svgs: Map<string, string>): string {
   let result = html;
   for (const [placeholder, content] of svgs) {
     result = result.replace(placeholder, content);

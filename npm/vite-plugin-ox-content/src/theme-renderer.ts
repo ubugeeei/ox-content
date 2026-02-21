@@ -79,10 +79,7 @@ export interface ThemeRenderOptions {
  * @param options - Theme render options
  * @returns Rendered HTML string
  */
-export function renderPage(
-  page: PageData,
-  options: ThemeRenderOptions
-): string {
+export function renderPage(page: PageData, options: ThemeRenderOptions): string {
   const { theme, siteName, base, nav, pages } = options;
 
   // Build page props
@@ -150,7 +147,7 @@ export function renderPage(
  */
 export async function renderAllPages(
   pages: PageData[],
-  options: ThemeRenderOptions
+  options: ThemeRenderOptions,
 ): Promise<Map<string, string>> {
   const results = new Map<string, string>();
 
@@ -174,10 +171,7 @@ export async function renderAllPages(
  * @param pages - All pages
  * @param outDir - Output directory for types
  */
-export async function generateTypes(
-  pages: PageData[],
-  outDir: string
-): Promise<void> {
+export async function generateTypes(pages: PageData[], outDir: string): Promise<void> {
   // Collect all frontmatter samples
   const samples = pages.map((p) => p.frontmatter);
 
@@ -281,7 +275,7 @@ export function createTheme(config: {
     if (!Layout) {
       throw new Error(
         `[ox-content] Layout "${layoutName}" not found. ` +
-          `Available layouts: ${Object.keys(layouts).join(", ")}`
+          `Available layouts: ${Object.keys(layouts).join(", ")}`,
       );
     }
 

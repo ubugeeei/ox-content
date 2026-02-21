@@ -30,9 +30,7 @@ export type { OgBrowserSession } from "./browser";
 /**
  * Resolves user-provided OG image options with defaults.
  */
-export function resolveOgImageOptions(
-  options: OgImageOptions | undefined,
-): ResolvedOgImageOptions {
+export function resolveOgImageOptions(options: OgImageOptions | undefined): ResolvedOgImageOptions {
   return {
     template: options?.template,
     vuePlugin: options?.vuePlugin ?? "vitejs",
@@ -86,9 +84,7 @@ async function resolveTemplate(
   try {
     await fs.access(templatePath);
   } catch {
-    throw new Error(
-      `[ox-content:og-image] Template file not found: ${templatePath}`,
-    );
+    throw new Error(`[ox-content:og-image] Template file not found: ${templatePath}`);
   }
 
   const ext = path.extname(templatePath).toLowerCase();
@@ -162,9 +158,7 @@ async function resolveVueTemplate(
   const outfile = path.join(cacheDir, "_template_vue.mjs");
 
   const plugins =
-    options.vuePlugin === "vizejs"
-      ? await getVizejsPlugin()
-      : [createVueCompilerPlugin()];
+    options.vuePlugin === "vizejs" ? await getVizejsPlugin() : [createVueCompilerPlugin()];
 
   const bundle = await rolldown({
     input: templatePath,
@@ -247,10 +241,7 @@ function createVueCompilerPlugin(): import("rolldown").Plugin {
       }
 
       // Determine if the compiled output contains TypeScript
-      const isTs = !!(
-        descriptor.scriptSetup?.lang === "ts" ||
-        descriptor.script?.lang === "ts"
-      );
+      const isTs = !!(descriptor.scriptSetup?.lang === "ts" || descriptor.script?.lang === "ts");
 
       return { code: scriptCode, moduleType: isTs ? "ts" : "js" };
     },
@@ -293,12 +284,7 @@ async function resolveSvelteTemplate(
   const bundle = await rolldown({
     input: templatePath,
     platform: "node",
-    external: [
-      "svelte",
-      "svelte/server",
-      "svelte/internal",
-      "svelte/internal/server",
-    ],
+    external: ["svelte", "svelte/server", "svelte/internal", "svelte/internal/server"],
     plugins: [createSvelteCompilerPlugin()],
   });
   await bundle.write({
@@ -318,10 +304,7 @@ async function resolveSvelteTemplate(
 
   // Import Svelte SSR utility
   const { render } = (await import("svelte/server")) as {
-    render: (
-      component: unknown,
-      options: { props: Record<string, unknown> },
-    ) => { body: string };
+    render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string };
   };
 
   return async (props) => {
@@ -380,7 +363,13 @@ async function resolveReactTemplate(
   const bundle = await rolldown({
     input: templatePath,
     platform: "node",
-    external: ["react", "react/jsx-runtime", "react/jsx-dev-runtime", "react-dom", "react-dom/server"],
+    external: [
+      "react",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "react-dom",
+      "react-dom/server",
+    ],
     transform: {
       jsx: "react-jsx",
     },
@@ -425,8 +414,9 @@ async function resolveReactTemplate(
       chunks.push(value);
     }
     const decoder = new TextDecoder();
-    return chunks.map((chunk) => decoder.decode(chunk, { stream: true })).join("") +
-      decoder.decode();
+    return (
+      chunks.map((chunk) => decoder.decode(chunk, { stream: true })).join("") + decoder.decode()
+    );
   };
 }
 
@@ -476,12 +466,7 @@ export async function generateOgImages(
 
   // Try to serve all from cache first if caching is enabled
   if (options.cache) {
-    const allCached = await tryServeAllFromCache(
-      pages,
-      templateSource,
-      options,
-      cacheDir,
-    );
+    const allCached = await tryServeAllFromCache(pages, templateSource, options, cacheDir);
     if (allCached) return allCached;
   }
 
@@ -504,14 +489,7 @@ export async function generateOgImages(
     const batch = pages.slice(i, i + concurrency);
     const batchResults = await Promise.all(
       batch.map((entry) =>
-        renderSinglePage(
-          entry,
-          templateFn,
-          templateSource,
-          options,
-          cacheDir,
-          session,
-        ),
+        renderSinglePage(entry, templateFn, templateSource, options, cacheDir, session),
       ),
     );
     results.push(...batchResults);

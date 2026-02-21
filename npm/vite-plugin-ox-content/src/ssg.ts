@@ -1279,6 +1279,8 @@ export async function buildSsg(
 
   // Collect OG image entries for batch rendering
   const ogImageEntries: OgImagePageEntry[] = [];
+  // Parallel array tracking the inputPath for each ogImageEntry (same index)
+  const ogImageInputPaths: string[] = [];
   // Map from inputPath to OG image URL (filled after batch render)
   const ogImageUrlMap = new Map<string, string>();
 
@@ -1313,8 +1315,7 @@ export async function buildSsg(
       let transformedHtml = result.html;
 
       // Protect mermaid SVGs from rehype processing in plugins
-      const { html: protectedHtml, svgs: mermaidSvgs } =
-        protectMermaidSvgs(transformedHtml);
+      const { html: protectedHtml, svgs: mermaidSvgs } = protectMermaidSvgs(transformedHtml);
       transformedHtml = protectedHtml;
 
       // Transform Tabs, YouTube, GitHub, OGP, Mermaid plugins
@@ -1362,11 +1363,9 @@ export async function buildSsg(
           },
           outputPath: ogImageOutputPath,
         });
+        ogImageInputPaths.push(inputPath);
         // Pre-compute URL so HTML can reference it
-        ogImageUrlMap.set(
-          inputPath,
-          getOgImageUrl(inputPath, srcDir, base, ssgOptions.siteUrl),
-        );
+        ogImageUrlMap.set(inputPath, getOgImageUrl(inputPath, srcDir, base, ssgOptions.siteUrl));
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -1377,15 +1376,14 @@ export async function buildSsg(
   // Batch generate OG images (Chromium-based)
   if (shouldGenerateOgImages && ogImageEntries.length > 0) {
     try {
-      const ogResults = await generateOgImages(
-        ogImageEntries,
-        options.ogImageOptions,
-        root,
-      );
+      const ogResults = await generateOgImages(ogImageEntries, options.ogImageOptions, root);
       let ogSuccessCount = 0;
-      for (const result of ogResults) {
+      for (let i = 0; i < ogResults.length; i++) {
+        const result = ogResults[i];
         if (result.error) {
           errors.push(`OG image failed for ${result.outputPath}: ${result.error}`);
+          // Remove failed entries so og:image / twitter:image meta tags are not emitted
+          ogImageUrlMap.delete(ogImageInputPaths[i]);
         } else {
           generatedFiles.push(result.outputPath);
           ogSuccessCount++;
@@ -1402,6 +1400,8 @@ export async function buildSsg(
       // Non-fatal: OG image failures never block the SSG build
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.warn(`[ox-content:og-image] Batch generation failed: ${errorMessage}`);
+      // Clear all entries so og:image / twitter:image meta tags are not emitted
+      ogImageUrlMap.clear();
     }
   }
 
@@ -1440,7 +1440,14 @@ export async function buildSsg(
           href: getHref(inputPath, srcDir, base, ssgOptions.extension),
           entryPage,
         };
-        html = await generateHtmlPage(pageData, navItems, siteName, base, pageOgImage, ssgOptions.theme);
+        html = await generateHtmlPage(
+          pageData,
+          navItems,
+          siteName,
+          base,
+          pageOgImage,
+          ssgOptions.theme,
+        );
       }
 
       // Write output file

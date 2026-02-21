@@ -23,9 +23,7 @@ export interface OgImageTemplateProps {
 /**
  * Template function that receives page metadata and returns an HTML string.
  */
-export type OgImageTemplateFn = (
-  props: OgImageTemplateProps,
-) => string | Promise<string>;
+export type OgImageTemplateFn = (props: OgImageTemplateProps) => string | Promise<string>;
 
 /**
  * OG image generation options (user-facing).

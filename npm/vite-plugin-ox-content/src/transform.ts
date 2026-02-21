@@ -83,7 +83,6 @@ interface NapiBindings {
    * @returns SVG string
    */
   generateOgImageSvg: (data: OgImageData, config?: OgImageConfig) => string;
-
 }
 
 /**

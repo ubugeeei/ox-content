@@ -377,12 +377,7 @@ export { transformMarkdown } from "./transform";
 export { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from "./docs";
 export { buildSsg, resolveSsgOptions, DEFAULT_HTML_TEMPLATE } from "./ssg";
 export { resolveSearchOptions, buildSearchIndex, writeSearchIndex } from "./search";
-export {
-  defineTheme,
-  defaultTheme,
-  mergeThemes,
-  resolveTheme,
-} from "./theme";
+export { defineTheme, defaultTheme, mergeThemes, resolveTheme } from "./theme";
 export type {
   ThemeConfig,
   ThemeColors,
@@ -397,15 +392,7 @@ export type {
 export * from "./types";
 
 // JSX Runtime
-export {
-  jsx,
-  jsxs,
-  Fragment,
-  renderToString,
-  raw,
-  when,
-  each,
-} from "./jsx-runtime";
+export { jsx, jsxs, Fragment, renderToString, raw, when, each } from "./jsx-runtime";
 export type { JSXNode, JSXChild, JSXProps, JSXElementType } from "./jsx-runtime";
 
 // Page Context
@@ -438,12 +425,7 @@ export {
   DefaultTheme,
   createTheme,
 } from "./theme-renderer";
-export type {
-  ThemeComponent,
-  ThemeProps,
-  PageData,
-  ThemeRenderOptions,
-} from "./theme-renderer";
+export type { ThemeComponent, ThemeProps, PageData, ThemeRenderOptions } from "./theme-renderer";
 
 // Built-in Plugins (No-JS First)
 export {
@@ -474,23 +456,11 @@ export type {
 } from "./plugins";
 
 // Island Architecture
-export {
-  transformIslands,
-  hasIslands,
-  extractIslandInfo,
-  generateHydrationScript,
-} from "./island";
-export type {
-  LoadStrategy,
-  IslandInfo,
-  ParseIslandsResult,
-} from "./island";
+export { transformIslands, hasIslands, extractIslandInfo, generateHydrationScript } from "./island";
+export type { LoadStrategy, IslandInfo, ParseIslandsResult } from "./island";
 
 // OG Image
-export {
-  resolveOgImageOptions,
-  generateOgImages,
-} from "./og-image";
+export { resolveOgImageOptions, generateOgImages } from "./og-image";
 export type {
   OgImageOptions as OgImagePluginOptions,
   ResolvedOgImageOptions,
