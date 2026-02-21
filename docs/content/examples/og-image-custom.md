@@ -33,7 +33,7 @@ export default defineConfig({
 
       ogImage: true,
       ogImageOptions: {
-        template: './og.ts', // path relative to project root
+        template: './og.tsx', // path relative to project root
       },
 
       ssg: {
@@ -46,28 +46,62 @@ export default defineConfig({
 
 ### 2. Create a Template
 
-The template file must **default-export a function** that receives props and returns an HTML string.
+The template file must **default-export a function** that receives props and returns JSX (or an HTML string for `.ts` templates).
 
-```ts
-// og.ts
-export default function (props: {
+```tsx
+// og.tsx
+export default function OgTemplate(props: {
   title: string;
   description?: string;
   siteName?: string;
   category?: string;
   coverColor?: string;
-  [key: string]: unknown;
-}): string {
+}) {
   const { title, description, siteName, category, coverColor = '#6366f1' } = props;
 
-  return `
-    <div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:60px 80px;background:#fff;font-family:system-ui,sans-serif;">
-      ${category ? `<span style="color:${coverColor};font-size:16px;font-weight:600;text-transform:uppercase;">${category}</span>` : ''}
-      <h1 style="font-size:52px;font-weight:800;color:#0f172a;margin:16px 0;">${title}</h1>
-      ${description ? `<p style="font-size:22px;color:#475569;">${description}</p>` : ''}
-      ${siteName ? `<span style="margin-top:auto;font-size:16px;color:#94a3b8;">${siteName}</span>` : ''}
-    </div>
-  `;
+  return (
+    <>
+      <style>{`
+        .og {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 60px 80px;
+          background: #fff;
+          font-family: system-ui, sans-serif;
+        }
+        .category {
+          color: ${coverColor};
+          font-size: 16px;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+        .title {
+          font-size: 52px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 16px 0;
+        }
+        .description {
+          font-size: 22px;
+          color: #475569;
+        }
+        .site-name {
+          margin-top: auto;
+          font-size: 16px;
+          color: #94a3b8;
+        }
+      `}</style>
+      <div className="og">
+        {category && <span className="category">{category}</span>}
+        <h1 className="title">{title}</h1>
+        {description && <p className="description">{description}</p>}
+        {siteName && <span className="site-name">{siteName}</span>}
+      </div>
+    </>
+  );
 }
 ```
 
@@ -123,13 +157,51 @@ const color = props.coverColor ?? '#6366f1'
 </template>
 
 <style scoped>
-.og { width: 100%; height: 100%; display: flex; flex-direction: column; padding: 60px 80px; background: #fff; font-family: system-ui, sans-serif; }
-.accent-bar { height: 8px; }
-.body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
-.category { display: inline-block; color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; align-self: flex-start; }
-.title { font-size: 52px; font-weight: 800; color: #0f172a; margin: 0; }
-.description { font-size: 22px; color: #475569; margin: 0; }
-.site-name { margin-top: auto; font-size: 16px; color: #94a3b8; }
+.og {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 60px 80px;
+  background: #fff;
+  font-family: system-ui, sans-serif;
+}
+.accent-bar {
+  height: 8px;
+}
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+.category {
+  display: inline-block;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+.title {
+  font-size: 52px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+.description {
+  font-size: 22px;
+  color: #475569;
+  margin: 0;
+}
+.site-name {
+  margin-top: auto;
+  font-size: 16px;
+  color: #94a3b8;
+}
 </style>
 ```
 
@@ -177,13 +249,51 @@ Write your OG image template as a Svelte component with runes:
 </div>
 
 <style>
-  .og { width: 100%; height: 100%; display: flex; flex-direction: column; padding: 60px 80px; background: #fff; font-family: system-ui, sans-serif; }
-  .accent-bar { height: 8px; }
-  .body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
-  .category { display: inline-block; color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; align-self: flex-start; }
-  .title { font-size: 52px; font-weight: 800; color: #0f172a; margin: 0; }
-  .description { font-size: 22px; color: #475569; margin: 0; }
-  .site-name { margin-top: auto; font-size: 16px; color: #94a3b8; }
+  .og {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 60px 80px;
+    background: #fff;
+    font-family: system-ui, sans-serif;
+  }
+  .accent-bar {
+    height: 8px;
+  }
+  .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
+  .category {
+    display: inline-block;
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    align-self: flex-start;
+  }
+  .title {
+    font-size: 52px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+  }
+  .description {
+    font-size: 22px;
+    color: #475569;
+    margin: 0;
+  }
+  .site-name {
+    margin-top: auto;
+    font-size: 16px;
+    color: #94a3b8;
+  }
 </style>
 ```
 
@@ -214,13 +324,51 @@ export default function OgTemplate(props: {
   return (
     <>
       <style>{`
-        .og { width: 100%; height: 100%; display: flex; flex-direction: column; padding: 60px 80px; background: #fff; font-family: system-ui, sans-serif; }
-        .accent-bar { height: 8px; }
-        .body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
-        .category { display: inline-block; color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; align-self: flex-start; }
-        .title { font-size: 52px; font-weight: 800; color: #0f172a; margin: 0; }
-        .description { font-size: 22px; color: #475569; margin: 0; }
-        .site-name { margin-top: auto; font-size: 16px; color: #94a3b8; }
+        .og {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          padding: 60px 80px;
+          background: #fff;
+          font-family: system-ui, sans-serif;
+        }
+        .accent-bar {
+          height: 8px;
+        }
+        .body {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 16px;
+        }
+        .category {
+          display: inline-block;
+          color: #fff;
+          padding: 6px 16px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          align-self: flex-start;
+        }
+        .title {
+          font-size: 52px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0;
+        }
+        .description {
+          font-size: 22px;
+          color: #475569;
+          margin: 0;
+        }
+        .site-name {
+          margin-top: auto;
+          font-size: 16px;
+          color: #94a3b8;
+        }
       `}</style>
       <div className="og">
         <div className="accent-bar" style={{ background: `linear-gradient(90deg, ${coverColor}, ${coverColor}cc)` }} />
@@ -253,7 +401,7 @@ All options are set in `ogImageOptions`:
 ogImageOptions: {
   // Path to custom template (relative to project root)
   // Supports: .ts, .vue, .svelte, .tsx, .jsx
-  template: './og.ts',
+  template: './og.tsx',
 
   // Vue plugin selection (only for .vue templates)
   // 'vitejs' (default) uses @vue/compiler-sfc
