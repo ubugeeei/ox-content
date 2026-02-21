@@ -238,9 +238,7 @@ export async function extractIslandInfo(html: string): Promise<IslandInfo[]> {
 export function generateHydrationScript(components: string[]): string {
   if (components.length === 0) return "";
 
-  const imports = components
-    .map((name, i) => `import ${name} from './${name}';`)
-    .join("\n");
+  const imports = components.map((name, i) => `import ${name} from './${name}';`).join("\n");
 
   return `
 import { initIslands } from '@ox-content/islands';

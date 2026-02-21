@@ -135,11 +135,13 @@ export function clearRenderContext(): void {
  * }
  * ```
  */
-export function usePageProps<T extends Record<string, unknown> = Record<string, unknown>>(): PageProps<T> {
+export function usePageProps<
+  T extends Record<string, unknown> = Record<string, unknown>,
+>(): PageProps<T> {
   if (!currentContext) {
     throw new Error(
       "[ox-content] usePageProps() must be called during page rendering. " +
-      "Make sure you are using it inside a theme component."
+        "Make sure you are using it inside a theme component.",
     );
   }
   return currentContext.page as PageProps<T>;
@@ -163,7 +165,7 @@ export function useSiteConfig(): SiteConfig {
   if (!currentContext) {
     throw new Error(
       "[ox-content] useSiteConfig() must be called during page rendering. " +
-      "Make sure you are using it inside a theme component."
+        "Make sure you are using it inside a theme component.",
     );
   }
   return currentContext.site;
@@ -188,11 +190,13 @@ export function useSiteConfig(): SiteConfig {
  * }
  * ```
  */
-export function useRenderContext<T extends Record<string, unknown> = Record<string, unknown>>(): RenderContext<T> {
+export function useRenderContext<
+  T extends Record<string, unknown> = Record<string, unknown>,
+>(): RenderContext<T> {
   if (!currentContext) {
     throw new Error(
       "[ox-content] useRenderContext() must be called during page rendering. " +
-      "Make sure you are using it inside a theme component."
+        "Make sure you are using it inside a theme component.",
     );
   }
   return currentContext as RenderContext<T>;
@@ -276,9 +280,7 @@ export function inferType(value: unknown): string {
   if (typeof value === "object") {
     const entries = Object.entries(value as Record<string, unknown>);
     if (entries.length === 0) return "Record<string, unknown>";
-    const props = entries
-      .map(([k, v]) => `${k}: ${inferType(v)}`)
-      .join("; ");
+    const props = entries.map(([k, v]) => `${k}: ${inferType(v)}`).join("; ");
     return `{ ${props} }`;
   }
   return "unknown";
@@ -289,7 +291,7 @@ export function inferType(value: unknown): string {
  */
 export function generateFrontmatterTypes(
   samples: Record<string, unknown>[],
-  interfaceName = "PageFrontmatter"
+  interfaceName = "PageFrontmatter",
 ): string {
   // Collect all fields and their types across all samples
   const fields = new Map<string, { types: Set<string>; count: number }>();
@@ -322,7 +324,9 @@ export function generateFrontmatterTypes(
 
   lines.push("}");
   lines.push("");
-  lines.push(`export type PageProps = import('@ox-content/vite-plugin').PageProps<${interfaceName}>;`);
+  lines.push(
+    `export type PageProps = import('@ox-content/vite-plugin').PageProps<${interfaceName}>;`,
+  );
   lines.push("");
 
   return lines.join("\n");

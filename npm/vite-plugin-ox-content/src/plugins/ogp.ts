@@ -86,13 +86,15 @@ function parseOgpFromHtml(html: string, url: string): OgpData {
 
   // Extract title
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
+  const ogTitleMatch =
+    html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["']/i);
 
   result.title = ogTitleMatch?.[1] || titleMatch?.[1] || extractDomain(url);
 
   // Extract description
-  const descMatch = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i) ||
+  const descMatch =
+    html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:description["']/i) ||
     html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
@@ -102,7 +104,8 @@ function parseOgpFromHtml(html: string, url: string): OgpData {
   }
 
   // Extract image
-  const imageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+  const imageMatch =
+    html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
 
   if (imageMatch) {
@@ -120,7 +123,8 @@ function parseOgpFromHtml(html: string, url: string): OgpData {
   }
 
   // Extract site name
-  const siteNameMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["']/i) ||
+  const siteNameMatch =
+    html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:site_name["']/i);
 
   if (siteNameMatch) {
@@ -136,7 +140,10 @@ function parseOgpFromHtml(html: string, url: string): OgpData {
 /**
  * Fetch OGP data for a URL.
  */
-export async function fetchOgpData(url: string, options: Required<OgpOptions>): Promise<OgpData | null> {
+export async function fetchOgpData(
+  url: string,
+  options: Required<OgpOptions>,
+): Promise<OgpData | null> {
   // Check cache
   if (options.cache) {
     const cached = ogpCache.get(url);
@@ -333,7 +340,10 @@ export async function collectOgpUrls(html: string): Promise<string[]> {
 /**
  * Pre-fetch all OGP data.
  */
-export async function prefetchOgpData(urls: string[], options?: OgpOptions): Promise<Map<string, OgpData | null>> {
+export async function prefetchOgpData(
+  urls: string[],
+  options?: OgpOptions,
+): Promise<Map<string, OgpData | null>> {
   const mergedOptions = { ...defaultOptions, ...options };
   const results = new Map<string, OgpData | null>();
 

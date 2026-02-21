@@ -64,7 +64,11 @@ export function extractVideoId(input: string): string | null {
 /**
  * Build YouTube embed URL with parameters.
  */
-function buildEmbedUrl(videoId: string, options: Required<YouTubeOptions>, params?: Record<string, string>): string {
+function buildEmbedUrl(
+  videoId: string,
+  options: Required<YouTubeOptions>,
+  params?: Record<string, string>,
+): string {
   const domain = options.privacyEnhanced ? "www.youtube-nocookie.com" : "www.youtube.com";
   const url = new URL(`https://${domain}/embed/${videoId}`);
 
@@ -97,7 +101,8 @@ function createYouTubeElement(
   const iframeProps: Properties = {
     src: embedUrl,
     title: title || `YouTube video ${videoId}`,
-    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+    allow:
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
     referrerpolicy: "strict-origin-when-cross-origin",
     allowfullscreen: options.allowFullscreen || undefined,
     loading: options.lazyLoad ? "lazy" : undefined,

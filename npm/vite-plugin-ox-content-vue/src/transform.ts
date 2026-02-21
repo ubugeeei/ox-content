@@ -73,7 +73,8 @@ export async function transformMarkdownWithVue(
 
     // Create island placeholder
     const islandId = `ox-island-${islandIndex++}`;
-    const islandContent = typeof rawIslandContent === "string" ? rawIslandContent.trim() : undefined;
+    const islandContent =
+      typeof rawIslandContent === "string" ? rawIslandContent.trim() : undefined;
     islands.push({
       name: componentName,
       props,
@@ -132,7 +133,14 @@ export async function transformMarkdownWithVue(
 
   // Generate Vue SFC code
   const htmlWithIslands = injectIslandMarkers(transformed.html, islands);
-  const sfcCode = generateVueSFC(htmlWithIslands, usedComponents, islands, frontmatter, options, id);
+  const sfcCode = generateVueSFC(
+    htmlWithIslands,
+    usedComponents,
+    islands,
+    frontmatter,
+    options,
+    id,
+  );
 
   return {
     code: sfcCode,
@@ -199,9 +207,10 @@ function injectIslandMarkers(html: string, islands: ComponentIsland[]): string {
 
   for (const island of islands) {
     const marker = createIslandMarker(island.id);
-    const propsAttr = Object.keys(island.props).length > 0
-      ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
-      : "";
+    const propsAttr =
+      Object.keys(island.props).length > 0
+        ? ` data-ox-props='${JSON.stringify(island.props).replace(/'/g, "&#39;")}'`
+        : "";
     const contentAttr = island.content
       ? ` data-ox-content='${island.content.replace(/'/g, "&#39;")}'`
       : "";

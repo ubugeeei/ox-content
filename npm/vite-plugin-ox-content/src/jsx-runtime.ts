@@ -134,21 +134,12 @@ function renderAttr(name: string, value: unknown): string {
 /**
  * JSX element type - either a string (intrinsic) or a function component.
  */
-export type JSXElementType =
-  | string
-  | ((props: Record<string, unknown>) => JSXNode);
+export type JSXElementType = string | ((props: Record<string, unknown>) => JSXNode);
 
 /**
  * Valid JSX child types.
  */
-export type JSXChild =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | JSXNode
-  | JSXChild[];
+export type JSXChild = string | number | boolean | null | undefined | JSXNode | JSXChild[];
 
 /**
  * JSX node - the result of JSX expressions.
@@ -200,11 +191,7 @@ function renderChildren(children: JSXChild): string {
  * Creates a JSX element.
  * This is the core function called by the JSX transform.
  */
-export function jsx(
-  type: JSXElementType,
-  props: JSXProps,
-  _key?: string,
-): JSXNode {
+export function jsx(type: JSXElementType, props: JSXProps, _key?: string): JSXNode {
   const { children, ...restProps } = props;
 
   // Function component
@@ -245,11 +232,7 @@ export function jsx(
  * Creates a JSX element with static children.
  * Called by the JSX transform for elements with multiple children.
  */
-export function jsxs(
-  type: JSXElementType,
-  props: JSXProps,
-  key?: string,
-): JSXNode {
+export function jsxs(type: JSXElementType, props: JSXProps, key?: string): JSXNode {
   return jsx(type, props, key);
 }
 
@@ -300,10 +283,7 @@ export function when(condition: boolean, content: JSXNode): JSXNode {
  * {each(items, (item) => <li>{item.name}</li>)}
  * ```
  */
-export function each<T>(
-  items: T[],
-  render: (item: T, index: number) => JSXNode,
-): JSXNode {
+export function each<T>(items: T[], render: (item: T, index: number) => JSXNode): JSXNode {
   const html = items.map((item, i) => render(item, i).__html).join("");
   return { __html: html };
 }

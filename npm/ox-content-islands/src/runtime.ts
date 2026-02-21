@@ -14,7 +14,10 @@ import type {
   LoadStrategy,
 } from "./types";
 
-const defaultOptions: Required<Omit<InitIslandsOptions, "onHydrateStart" | "onHydrateEnd" | "onHydrateError">> & InitIslandsOptions = {
+const defaultOptions: Required<
+  Omit<InitIslandsOptions, "onHydrateStart" | "onHydrateEnd" | "onHydrateError">
+> &
+  InitIslandsOptions = {
   rootMargin: "200px",
   threshold: 0,
   idleTimeout: 200,
@@ -225,7 +228,11 @@ export function initIslands(
       element.classList.add("ox-island-error");
       element.dataset.oxError = error instanceof Error ? error.message : String(error);
 
-      opts.onHydrateError?.(element, config, error instanceof Error ? error : new Error(String(error)));
+      opts.onHydrateError?.(
+        element,
+        config,
+        error instanceof Error ? error : new Error(String(error)),
+      );
     }
   }
 
@@ -239,29 +246,23 @@ export function initIslands(
         break;
 
       case "idle": {
-        const cancel = scheduleIdle(
-          () => hydrateIsland(element, config),
-          opts.idleTimeout,
-        );
+        const cancel = scheduleIdle(() => hydrateIsland(element, config), opts.idleTimeout);
         cleanups.push(cancel);
         break;
       }
 
       case "visible": {
-        const cancel = observeVisibility(
-          element,
-          () => hydrateIsland(element, config),
-          { rootMargin: opts.rootMargin, threshold: opts.threshold },
-        );
+        const cancel = observeVisibility(element, () => hydrateIsland(element, config), {
+          rootMargin: opts.rootMargin,
+          threshold: opts.threshold,
+        });
         cleanups.push(cancel);
         break;
       }
 
       case "media": {
         if (config.mediaQuery) {
-          const cancel = observeMedia(config.mediaQuery, () =>
-            hydrateIsland(element, config),
-          );
+          const cancel = observeMedia(config.mediaQuery, () => hydrateIsland(element, config));
           cleanups.push(cancel);
         } else {
           // No media query specified, fall back to eager

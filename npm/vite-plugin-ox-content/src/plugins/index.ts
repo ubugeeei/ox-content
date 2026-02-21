@@ -5,17 +5,9 @@
  * They generate static HTML at build time and require no client-side JS.
  */
 
-export {
-  transformTabs,
-  generateTabsCSS,
-  resetTabGroupCounter,
-} from "./tabs";
+export { transformTabs, generateTabsCSS, resetTabGroupCounter } from "./tabs";
 
-export {
-  transformYouTube,
-  extractVideoId,
-  type YouTubeOptions,
-} from "./youtube";
+export { transformYouTube, extractVideoId, type YouTubeOptions } from "./youtube";
 
 export {
   transformGitHub,
@@ -35,11 +27,7 @@ export {
   type OgpOptions,
 } from "./ogp";
 
-export {
-  transformMermaidStatic,
-  mermaidClientScript,
-  type MermaidOptions,
-} from "./mermaid";
+export { transformMermaidStatic, mermaidClientScript, type MermaidOptions } from "./mermaid";
 
 /**
  * Transform all plugin components in HTML.

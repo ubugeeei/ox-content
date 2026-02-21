@@ -65,7 +65,9 @@ function parseTabChildren(children: Element["children"]): TabData[] {
       const label = getAttribute(child, "label") || `Tab ${tabs.length + 1}`;
       tabs.push({
         label,
-        content: child.children.filter((c): c is Element => c.type === "element" || c.type === "text") as Element[],
+        content: child.children.filter(
+          (c): c is Element => c.type === "element" || c.type === "text",
+        ) as Element[],
       });
     }
   }
