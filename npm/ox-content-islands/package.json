@@ -1,6 +1,6 @@
 {
   "name": "@ox-content/islands",
-  "version": "0.3.0-alpha.22",
+  "version": "0.4.0",
   "description": "Framework-agnostic Island Architecture for ox-content",
   "type": "module",
   "main": "./dist/index.js",

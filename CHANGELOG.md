@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0] - 2026-02-21
+
+### Bug Fixes
+
+- publishing
+
 ## [0.3.0-alpha.22] - 2026-02-21
 
 ### Bug Fixes
