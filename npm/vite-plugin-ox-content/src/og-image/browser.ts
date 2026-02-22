@@ -15,7 +15,7 @@ import { renderHtmlToPng } from "./renderer";
  * Implements AsyncDisposable for automatic cleanup via `await using`.
  */
 export interface OgBrowserSession extends AsyncDisposable {
-  renderPage(html: string, width: number, height: number): Promise<Buffer>;
+  renderPage(html: string, width: number, height: number, publicDir?: string): Promise<Buffer>;
 }
 
 /**
@@ -43,10 +43,15 @@ export async function openBrowser(): Promise<OgBrowserSession | null> {
     });
 
     return {
-      async renderPage(html: string, width: number, height: number): Promise<Buffer> {
+      async renderPage(
+        html: string,
+        width: number,
+        height: number,
+        publicDir?: string,
+      ): Promise<Buffer> {
         const page: Page = await browser.newPage();
         try {
-          return await renderHtmlToPng(page, html, width, height);
+          return await renderHtmlToPng(page, html, width, height, publicDir);
         } finally {
           await page.close();
         }

@@ -190,8 +190,6 @@ importers:
         specifier: ^3.5.1
         version: 3.5.1(@emnapi/runtime@1.8.1)(@types/node@22.19.3)
 
-  crates/ox_content_wasm/pkg: {}
-
   docs:
     devDependencies:
       '@ox-content/vite-plugin':

@@ -2,6 +2,7 @@
  * HTML → PNG renderer using Chromium screenshots via Playwright.
  */
 
+import * as path from "path";
 import type { Page } from "playwright";
 
 /**
@@ -28,6 +29,7 @@ html, body { width: ${width}px; height: ${height}px; overflow: hidden; }
  * @param html - HTML string from template function
  * @param width - Image width
  * @param height - Image height
+ * @param publicDir - Optional public directory for serving local assets (images, fonts, etc.)
  * @returns PNG buffer
  */
 export async function renderHtmlToPng(
@@ -35,8 +37,46 @@ export async function renderHtmlToPng(
   html: string,
   width: number,
   height: number,
+  publicDir?: string,
 ): Promise<Buffer> {
   await page.setViewportSize({ width, height });
+
+  // Serve local assets from the public directory
+  if (publicDir) {
+    const fs = await import("fs/promises");
+    await page.route("**/*", async (route) => {
+      const url = new URL(route.request().url());
+      // Only intercept paths that look like local assets (not data: or blob:)
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        await route.continue();
+        return;
+      }
+      const filePath = path.join(publicDir, url.pathname);
+      try {
+        const body = await fs.readFile(filePath);
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes: Record<string, string> = {
+          ".svg": "image/svg+xml",
+          ".png": "image/png",
+          ".jpg": "image/jpeg",
+          ".jpeg": "image/jpeg",
+          ".gif": "image/gif",
+          ".webp": "image/webp",
+          ".woff": "font/woff",
+          ".woff2": "font/woff2",
+          ".ttf": "font/ttf",
+          ".css": "text/css",
+          ".js": "application/javascript",
+        };
+        await route.fulfill({
+          body,
+          contentType: mimeTypes[ext] || "application/octet-stream",
+        });
+      } catch {
+        await route.continue();
+      }
+    });
+  }
 
   const fullHtml = wrapHtml(html, width, height);
   await page.setContent(fullHtml, { waitUntil: "networkidle" });

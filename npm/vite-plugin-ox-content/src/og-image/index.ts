@@ -181,13 +181,51 @@ async function resolveVueTemplate(
     );
   }
 
+  // Extract CSS from SFC <style> blocks (Vue SSR does not include styles)
+  let extractedCss = "";
+  try {
+    let compilerSfc: typeof import("@vue/compiler-sfc");
+    try {
+      compilerSfc = await import("@vue/compiler-sfc");
+    } catch {
+      compilerSfc = null as never;
+    }
+    if (compilerSfc) {
+      const sfcSource = await fs.readFile(templatePath, "utf-8");
+      const { descriptor } = compilerSfc.parse(sfcSource, { filename: templatePath });
+      // Use the scope ID from the compiled component (set by compileScript)
+      const scopeId: string | undefined = Component.__scopeId;
+      for (const style of descriptor.styles) {
+        if (style.scoped && scopeId) {
+          const result = compilerSfc.compileStyle({
+            id: scopeId,
+            source: style.content,
+            scoped: true,
+            filename: templatePath,
+          });
+          if (!result.errors.length) {
+            extractedCss += result.code;
+          }
+        } else {
+          extractedCss += style.content;
+        }
+      }
+    }
+  } catch {
+    // CSS extraction is best-effort
+  }
+
   // Import Vue SSR utilities
   const { createSSRApp } = await import("vue");
   const { renderToString } = await import("vue/server-renderer");
 
   return async (props) => {
     const app = createSSRApp(Component, props);
-    return renderToString(app);
+    const html = await renderToString(app);
+    if (extractedCss) {
+      return `<style>${extractedCss}</style>${html}`;
+    }
+    return html;
   };
 }
 
@@ -482,6 +520,9 @@ export async function generateOgImages(
 
   const results: OgImageResult[] = [];
 
+  // Resolve public directory for serving local assets in templates
+  const publicDir = path.join(root, "public");
+
   // Process pages with concurrency control
   const concurrency = Math.max(1, options.concurrency);
 
@@ -489,7 +530,7 @@ export async function generateOgImages(
     const batch = pages.slice(i, i + concurrency);
     const batchResults = await Promise.all(
       batch.map((entry) =>
-        renderSinglePage(entry, templateFn, templateSource, options, cacheDir, session),
+        renderSinglePage(entry, templateFn, templateSource, options, cacheDir, session, publicDir),
       ),
     );
     results.push(...batchResults);
@@ -540,6 +581,7 @@ async function renderSinglePage(
   options: ResolvedOgImageOptions,
   cacheDir: string,
   session: OgBrowserSession,
+  publicDir?: string,
 ): Promise<OgImageResult> {
   const fs = await import("fs/promises");
 
@@ -564,7 +606,7 @@ async function renderSinglePage(
     const html = await templateFn(entry.props);
 
     // Render HTML to PNG via session (page create/close handled internally)
-    const png = await session.renderPage(html, options.width, options.height);
+    const png = await session.renderPage(html, options.width, options.height, publicDir);
 
     // Write output
     await fs.mkdir(path.dirname(entry.outputPath), { recursive: true });
