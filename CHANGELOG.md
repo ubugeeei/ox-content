@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0] - 2026-02-22
+
+### Bug Fixes
+
+- vue scoped css on og image
+
 ## [0.8.0] - 2026-02-22
 
 ### Features
