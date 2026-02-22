@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0] - 2026-02-22
+
+### Features
+
+- render og with public dir
+- open graph viewer (#30)
+
 ## [0.7.0] - 2026-02-22
 
 ### Features
