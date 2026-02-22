@@ -213,9 +213,8 @@ impl<'a> Parser<'a> {
             let line = remaining.lines().next().unwrap_or("");
             let trimmed = line.trim_start();
 
-            if trimmed.starts_with('>') {
-                // Strip the `>` prefix (and optional single space after it)
-                let after_gt = &trimmed[1..];
+            if let Some(after_gt) = trimmed.strip_prefix('>') {
+                // Strip the optional single space after `>`
                 let stripped = after_gt.strip_prefix(' ').unwrap_or(after_gt);
                 inner.push_str(stripped);
                 inner.push('\n');
