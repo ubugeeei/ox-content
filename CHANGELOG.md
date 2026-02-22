@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0] - 2026-02-22
+
+### Features
+
+- block quote
+
 ## [0.9.0] - 2026-02-22
 
 ### Bug Fixes
