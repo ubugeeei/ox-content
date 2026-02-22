@@ -524,6 +524,26 @@ mod tests {
     }
 
     #[test]
+    fn test_render_block_quote() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "> Hello world").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert_eq!(html, "<blockquote>\n<p>Hello world</p>\n</blockquote>\n");
+    }
+
+    #[test]
+    fn test_render_block_quote_with_inline() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "> **Note:** This is important").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert!(html.contains("<blockquote>"));
+        assert!(html.contains("<strong>Note:</strong>"));
+        assert!(html.contains("</blockquote>"));
+    }
+
+    #[test]
     fn test_render_code_block() {
         let allocator = Allocator::new();
         let doc = Parser::new(&allocator, "```rust\nfn main() {}\n```").parse().unwrap();

@@ -2,8 +2,8 @@
 
 use ox_content_allocator::{Allocator, Vec};
 use ox_content_ast::{
-    AlignKind, Document, Image, Link, List, ListItem, Node, Paragraph, Span, Table, TableCell,
-    TableRow, Text,
+    AlignKind, BlockQuote, Document, Image, Link, List, ListItem, Node, Paragraph, Span, Table,
+    TableCell, TableRow, Text,
 };
 
 use crate::error::{ParseError, ParseResult};
@@ -158,6 +158,10 @@ impl<'a> Parser<'a> {
             return self.parse_thematic_break(start);
         }
 
+        if self.try_parse_block_quote() {
+            return self.parse_block_quote(start);
+        }
+
         if self.try_parse_fenced_code() {
             return self.parse_fenced_code(start);
         }
@@ -172,6 +176,70 @@ impl<'a> Parser<'a> {
 
         // Default: parse as paragraph
         self.parse_paragraph(start)
+    }
+
+    /// Checks if the current position starts a block quote.
+    fn try_parse_block_quote(&self) -> bool {
+        let remaining = self.remaining();
+        let line = remaining.lines().next().unwrap_or("");
+        let trimmed = line.trim_start();
+        trimmed.starts_with('>')
+    }
+
+    /// Parses a block quote.
+    fn parse_block_quote(&mut self, start: usize) -> ParseResult<Option<Node<'a>>> {
+        self.nesting_depth += 1;
+
+        // Collect lines belonging to this block quote and strip the `>` prefix.
+        let mut inner = String::new();
+
+        loop {
+            if self.is_at_end() {
+                break;
+            }
+
+            let line_start = self.position;
+            self.skip_whitespace();
+
+            // Blank line ends the block quote
+            if self.peek() == Some('\n') || self.is_at_end() {
+                self.position = line_start;
+                break;
+            }
+
+            self.position = line_start;
+
+            let remaining = self.remaining();
+            let line = remaining.lines().next().unwrap_or("");
+            let trimmed = line.trim_start();
+
+            if trimmed.starts_with('>') {
+                // Strip the `>` prefix (and optional single space after it)
+                let after_gt = &trimmed[1..];
+                let stripped = after_gt.strip_prefix(' ').unwrap_or(after_gt);
+                inner.push_str(stripped);
+                inner.push('\n');
+
+                // Advance past this line
+                self.position += line.len();
+                if self.peek() == Some('\n') {
+                    self.advance();
+                }
+            } else {
+                // Line doesn't start with `>`, block quote ends
+                break;
+            }
+        }
+
+        // Recursively parse the inner content
+        let inner_str = self.allocator.alloc_str(&inner);
+        let sub_parser = Parser::with_options(self.allocator, inner_str, self.options.clone());
+        let sub_doc = sub_parser.parse()?;
+
+        self.nesting_depth -= 1;
+
+        let span = Span::new(start as u32, self.position as u32);
+        Ok(Some(Node::BlockQuote(BlockQuote { children: sub_doc.children, span })))
     }
 
     /// Checks if the current position starts a list.
@@ -731,6 +799,7 @@ impl<'a> Parser<'a> {
             // Check for block-level element that would end paragraph
             if self.try_parse_heading()
                 || self.try_parse_thematic_break()
+                || self.try_parse_block_quote()
                 || self.try_parse_fenced_code()
                 || (self.options.tables && self.try_parse_table())
                 || self.try_parse_list()
@@ -1218,6 +1287,47 @@ mod tests {
                 assert_eq!(list.children.len(), 3);
             }
             _ => panic!("expected list, got {:?}", &doc.children[0]),
+        }
+    }
+
+    #[test]
+    fn test_parse_block_quote() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "> Hello world").parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::BlockQuote(bq) => {
+                assert_eq!(bq.children.len(), 1);
+                assert!(matches!(&bq.children[0], Node::Paragraph(_)));
+            }
+            _ => panic!("expected block quote, got {:?}", &doc.children[0]),
+        }
+    }
+
+    #[test]
+    fn test_parse_block_quote_multiline() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "> line 1\n> line 2").parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::BlockQuote(bq) => {
+                assert_eq!(bq.children.len(), 1);
+            }
+            _ => panic!("expected block quote, got {:?}", &doc.children[0]),
+        }
+    }
+
+    #[test]
+    fn test_parse_nested_block_quote() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "> > nested").parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::BlockQuote(bq) => {
+                assert_eq!(bq.children.len(), 1);
+                assert!(matches!(&bq.children[0], Node::BlockQuote(_)));
+            }
+            _ => panic!("expected block quote, got {:?}", &doc.children[0]),
         }
     }
 }
