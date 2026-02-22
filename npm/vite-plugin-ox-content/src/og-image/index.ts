@@ -185,23 +185,25 @@ async function resolveVueTemplate(
   // OG image templates render in complete isolation, so scoping is unnecessary.
   // We use raw CSS content to avoid scope ID mismatches between compilers
   // (e.g., vizejs and @vue/compiler-sfc may produce different scope hashes).
-  let extractedCss = "";
-  try {
-    let compilerSfc: typeof import("@vue/compiler-sfc");
+  let extractedCss = ((mod as Record<string, unknown>).__vize_css__ as string) || "";
+  if (!extractedCss) {
     try {
-      compilerSfc = await import("@vue/compiler-sfc");
-    } catch {
-      compilerSfc = null as never;
-    }
-    if (compilerSfc) {
-      const sfcSource = await fs.readFile(templatePath, "utf-8");
-      const { descriptor } = compilerSfc.parse(sfcSource, { filename: templatePath });
-      for (const style of descriptor.styles) {
-        extractedCss += style.content;
+      let compilerSfc: typeof import("@vue/compiler-sfc");
+      try {
+        compilerSfc = await import("@vue/compiler-sfc");
+      } catch {
+        compilerSfc = null as never;
       }
+      if (compilerSfc) {
+        const sfcSource = await fs.readFile(templatePath, "utf-8");
+        const { descriptor } = compilerSfc.parse(sfcSource, { filename: templatePath });
+        for (const style of descriptor.styles) {
+          extractedCss += style.content;
+        }
+      }
+    } catch {
+      // CSS extraction is best-effort
     }
-  } catch {
-    // CSS extraction is best-effort
   }
 
   // Import Vue SSR utilities
