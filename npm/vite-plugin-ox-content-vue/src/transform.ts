@@ -122,6 +122,7 @@ export async function transformMarkdownWithVue(
     },
     transformers: [],
     docs: false,
+    ogViewer: false,
     search: {
       enabled: false,
       limit: 10,

@@ -104,6 +104,7 @@ export async function transformMarkdownWithSvelte(
     },
     transformers: [],
     docs: false,
+    ogViewer: false,
     search: {
       enabled: false,
       limit: 10,

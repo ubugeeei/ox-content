@@ -181,7 +181,10 @@ async function resolveVueTemplate(
     );
   }
 
-  // Extract CSS from SFC <style> blocks (Vue SSR does not include styles)
+  // Extract CSS from SFC <style> blocks (Vue SSR does not include styles).
+  // OG image templates render in complete isolation, so scoping is unnecessary.
+  // We use raw CSS content to avoid scope ID mismatches between compilers
+  // (e.g., vizejs and @vue/compiler-sfc may produce different scope hashes).
   let extractedCss = "";
   try {
     let compilerSfc: typeof import("@vue/compiler-sfc");
@@ -193,22 +196,8 @@ async function resolveVueTemplate(
     if (compilerSfc) {
       const sfcSource = await fs.readFile(templatePath, "utf-8");
       const { descriptor } = compilerSfc.parse(sfcSource, { filename: templatePath });
-      // Use the scope ID from the compiled component (set by compileScript)
-      const scopeId: string | undefined = Component.__scopeId;
       for (const style of descriptor.styles) {
-        if (style.scoped && scopeId) {
-          const result = compilerSfc.compileStyle({
-            id: scopeId,
-            source: style.content,
-            scoped: true,
-            filename: templatePath,
-          });
-          if (!result.errors.length) {
-            extractedCss += result.code;
-          }
-        } else {
-          extractedCss += style.content;
-        }
+        extractedCss += style.content;
       }
     }
   } catch {

@@ -8,11 +8,12 @@ import type { Page } from "playwright";
 /**
  * Wraps template HTML in a minimal document with viewport locked to given dimensions.
  */
-function wrapHtml(bodyHtml: string, width: number, height: number): string {
+function wrapHtml(bodyHtml: string, width: number, height: number, useBaseUrl: boolean): string {
+  const baseTag = useBaseUrl ? `\n<base href="http://localhost/">` : "";
   return `<!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8">${baseTag}
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { width: ${width}px; height: ${height}px; overflow: hidden; }
@@ -78,7 +79,7 @@ export async function renderHtmlToPng(
     });
   }
 
-  const fullHtml = wrapHtml(html, width, height);
+  const fullHtml = wrapHtml(html, width, height, !!publicDir);
   await page.setContent(fullHtml, { waitUntil: "networkidle" });
 
   const screenshot = await page.screenshot({
