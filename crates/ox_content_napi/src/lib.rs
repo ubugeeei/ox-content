@@ -947,6 +947,22 @@ pub struct JsSsgConfig {
     pub og_image: Option<String>,
     /// Theme configuration.
     pub theme: Option<JsThemeConfig>,
+    /// Current locale for this page.
+    pub locale: Option<String>,
+    /// Available locales for locale switcher.
+    pub available_locales: Option<Vec<JsLocaleInfo>>,
+}
+
+/// Locale information for the locale switcher.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsLocaleInfo {
+    /// BCP 47 locale tag.
+    pub code: String,
+    /// Display name.
+    pub name: String,
+    /// Text direction.
+    pub dir: String,
 }
 
 /// Converts JsThemeColors to ox_content_ssg::ThemeColors.
@@ -1083,6 +1099,13 @@ pub fn generate_ssg_html(
         base: config.base,
         og_image: config.og_image,
         theme: convert_theme_config(config.theme),
+        locale: config.locale,
+        available_locales: config.available_locales.map(|locales| {
+            locales
+                .into_iter()
+                .map(|l| ox_content_ssg::LocaleInfo { code: l.code, name: l.name, dir: l.dir })
+                .collect()
+        }),
     };
 
     ox_content_ssg::generate_html(&ssg_page_data, &ssg_nav_groups, &ssg_config)
@@ -1315,4 +1338,182 @@ fn postprocess_mermaid_svg(svg: &str, id: u64) -> String {
     svg.replace("background-color: white;", "background-color: transparent;")
         .replace("background-color:white;", "background-color:transparent;")
         .replace("my-svg", &unique_id)
+}
+
+// ── i18n ──────────────────────────────────────────────────────
+
+/// Result of loading dictionaries.
+#[napi(object)]
+pub struct I18nLoadResult {
+    /// Number of locales loaded.
+    pub locale_count: u32,
+    /// All locale tags.
+    pub locales: Vec<String>,
+    /// Errors encountered during loading.
+    pub errors: Vec<String>,
+}
+
+/// Result of MF2 validation.
+#[napi(object)]
+pub struct Mf2ValidateResult {
+    /// Whether the message is valid.
+    pub valid: bool,
+    /// Validation errors.
+    pub errors: Vec<String>,
+    /// AST as JSON (if parsing succeeded).
+    pub ast_json: Option<String>,
+}
+
+/// A single i18n diagnostic.
+#[napi(object)]
+pub struct I18nDiagnostic {
+    /// Severity: "error", "warning", or "info".
+    pub severity: String,
+    /// Diagnostic message.
+    pub message: String,
+    /// Related translation key, if any.
+    pub key: Option<String>,
+    /// Related locale, if any.
+    pub locale: Option<String>,
+}
+
+/// Result of i18n checking.
+#[napi(object)]
+pub struct I18nCheckResult {
+    /// All diagnostics.
+    pub diagnostics: Vec<I18nDiagnostic>,
+    /// Number of errors.
+    pub error_count: u32,
+    /// Number of warnings.
+    pub warning_count: u32,
+}
+
+/// Loads dictionaries from the given directory.
+///
+/// The directory should contain locale subdirectories (e.g., `en/`, `ja/`)
+/// with JSON or YAML translation files.
+#[napi]
+pub fn load_dictionaries(dir: String) -> I18nLoadResult {
+    let path = std::path::Path::new(&dir);
+    match ox_content_i18n::dictionary::load_from_dir(path) {
+        Ok(set) => {
+            let locales: Vec<String> = set.locales().map(String::from).collect();
+            I18nLoadResult { locale_count: locales.len() as u32, locales, errors: vec![] }
+        }
+        Err(e) => I18nLoadResult { locale_count: 0, locales: vec![], errors: vec![e.to_string()] },
+    }
+}
+
+/// Validates an MF2 message string.
+///
+/// Returns parsing and semantic validation results.
+#[napi]
+pub fn validate_mf2(message: String) -> Mf2ValidateResult {
+    match ox_content_i18n::mf2::parse_and_validate(&message) {
+        Ok((ast, validation_errors)) => {
+            let ast_json = serde_json::to_string(&ast).ok();
+            let errors: Vec<String> = validation_errors.iter().map(|e| e.to_string()).collect();
+            Mf2ValidateResult { valid: errors.is_empty(), errors, ast_json }
+        }
+        Err(e) => Mf2ValidateResult { valid: false, errors: vec![e.to_string()], ast_json: None },
+    }
+}
+
+/// Runs i18n checks on dictionaries against used translation keys.
+///
+/// `dict_dir` is the path to the i18n directory with locale subdirectories.
+/// `used_keys` is a list of translation keys found in source code.
+#[napi]
+pub fn check_i18n(dict_dir: String, used_keys: Vec<String>) -> I18nCheckResult {
+    let path = std::path::Path::new(&dict_dir);
+    let dict_set = match ox_content_i18n::dictionary::load_from_dir(path) {
+        Ok(set) => set,
+        Err(e) => {
+            return I18nCheckResult {
+                diagnostics: vec![I18nDiagnostic {
+                    severity: "error".to_string(),
+                    message: e.to_string(),
+                    key: None,
+                    locale: None,
+                }],
+                error_count: 1,
+                warning_count: 0,
+            };
+        }
+    };
+
+    let keys_set: std::collections::HashSet<String> = used_keys.into_iter().collect();
+    let diagnostics = ox_content_i18n::checker::check_all(&keys_set, &dict_set);
+
+    let mut error_count = 0u32;
+    let mut warning_count = 0u32;
+    let js_diagnostics: Vec<I18nDiagnostic> = diagnostics
+        .into_iter()
+        .map(|d| {
+            let severity = match d.severity {
+                ox_content_i18n::checker::Severity::Error => {
+                    error_count += 1;
+                    "error"
+                }
+                ox_content_i18n::checker::Severity::Warning => {
+                    warning_count += 1;
+                    "warning"
+                }
+                ox_content_i18n::checker::Severity::Info => "info",
+            };
+            I18nDiagnostic {
+                severity: severity.to_string(),
+                message: d.message,
+                key: d.key,
+                locale: d.locale,
+            }
+        })
+        .collect();
+
+    I18nCheckResult { diagnostics: js_diagnostics, error_count, warning_count }
+}
+
+/// A translation key usage found in source code.
+#[napi(object)]
+pub struct I18nKeyUsage {
+    /// The translation key.
+    pub key: String,
+    /// Source file path.
+    pub file_path: String,
+    /// Line number.
+    pub line: u32,
+    /// Column number.
+    pub column: u32,
+}
+
+/// Extracts translation keys from a TypeScript/JavaScript source string.
+///
+/// Finds calls like `t('key')` and `$t('key')`.
+#[napi]
+pub fn extract_translation_keys(
+    source: String,
+    file_path: String,
+    function_names: Option<Vec<String>>,
+) -> Vec<I18nKeyUsage> {
+    let collector = if let Some(names) = function_names {
+        ox_content_i18n_checker::key_collector::KeyCollector::with_function_names(names)
+    } else {
+        ox_content_i18n_checker::key_collector::KeyCollector::new()
+    };
+
+    let source_type =
+        oxc_span::SourceType::from_path(std::path::Path::new(&file_path)).unwrap_or_default();
+
+    match collector.collect_source(&source, &file_path, source_type) {
+        Ok(usages) => usages
+            .into_iter()
+            .map(|u| I18nKeyUsage {
+                key: u.key,
+                file_path: u.file_path,
+                line: u.line,
+                column: u.column,
+            })
+            .collect(),
+        Err(_) => vec![],
+    }
 }

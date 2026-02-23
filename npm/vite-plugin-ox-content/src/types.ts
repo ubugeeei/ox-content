@@ -285,6 +285,13 @@ export interface OxContentOptions {
    * @default true
    */
   ogViewer?: boolean;
+
+  /**
+   * i18n (internationalization) options.
+   * Set to false to disable i18n.
+   * @default false
+   */
+  i18n?: I18nOptions | false;
 }
 
 /**
@@ -312,6 +319,7 @@ export interface ResolvedOptions {
   docs: ResolvedDocsOptions | false;
   search: ResolvedSearchOptions;
   ogViewer: boolean;
+  i18n: ResolvedI18nOptions | false;
 }
 
 /**
@@ -704,4 +712,81 @@ export interface SearchResult {
   score: number;
   matches: string[];
   snippet: string;
+}
+
+// ============================================
+// i18n Types
+// ============================================
+
+/**
+ * Locale configuration.
+ */
+export interface LocaleConfig {
+  /** BCP 47 locale tag (e.g., 'en', 'ja', 'zh-Hans'). */
+  code: string;
+  /** Display name for this locale (e.g., 'English', '日本語'). */
+  name: string;
+  /** Text direction. @default 'ltr' */
+  dir?: "ltr" | "rtl";
+}
+
+/**
+ * i18n (internationalization) options.
+ */
+export interface I18nOptions {
+  /**
+   * Enable i18n.
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Path to i18n dictionary directory (relative to project root).
+   * @default 'content/i18n'
+   */
+  dir?: string;
+
+  /**
+   * Default locale tag.
+   * @default 'en'
+   */
+  defaultLocale?: string;
+
+  /**
+   * Available locales.
+   */
+  locales?: LocaleConfig[];
+
+  /**
+   * Hide default locale prefix in URLs.
+   * When true, `/page` serves the default locale and `/ja/page` serves Japanese.
+   * When false, all locales get prefixed: `/en/page`, `/ja/page`.
+   * @default true
+   */
+  hideDefaultLocale?: boolean;
+
+  /**
+   * Run i18n checks during build.
+   * @default true
+   */
+  check?: boolean;
+
+  /**
+   * Translation function names to detect in source code.
+   * @default ['t', '$t']
+   */
+  functionNames?: string[];
+}
+
+/**
+ * Resolved i18n options with all defaults applied.
+ */
+export interface ResolvedI18nOptions {
+  enabled: boolean;
+  dir: string;
+  defaultLocale: string;
+  locales: LocaleConfig[];
+  hideDefaultLocale: boolean;
+  check: boolean;
+  functionNames: string[];
 }

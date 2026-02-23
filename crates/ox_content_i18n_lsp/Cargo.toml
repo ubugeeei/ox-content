@@ -1,0 +1,28 @@
+[package]
+name = "ox_content_i18n_lsp"
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "LSP server for i18n translation keys in Ox Content"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "ox-content-i18n-lsp"
+path = "src/main.rs"
+
+[dependencies]
+ox_content_i18n = { workspace = true }
+ox_content_i18n_checker = { workspace = true }
+oxc_span = { workspace = true }
+tower-lsp = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

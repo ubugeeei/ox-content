@@ -73,6 +73,8 @@ ox_content_og_image = { version = "0.12.0", path = "crates/ox_content_og_image" 
 ox_content_docs = { version = "0.12.0", path = "crates/ox_content_docs" }
 ox_content_search = { version = "0.12.0", path = "crates/ox_content_search" }
 ox_content_ssg = { version = "0.12.0", path = "crates/ox_content_ssg" }
+ox_content_i18n = { version = "0.12.0", path = "crates/ox_content_i18n" }
+ox_content_i18n_checker = { version = "0.12.0", path = "crates/ox_content_i18n_checker" }
 
 # Memory allocation
 bumpalo = "3.16"
@@ -88,9 +90,16 @@ logos = "0.14"
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_yaml = "0.9"
+
+# LSP
+tower-lsp = "0.20"
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
 
 # Error handling
 thiserror = "2"

@@ -25,6 +25,7 @@ import {
   invalidatePageCache,
 } from "./dev-server";
 import { createOgViewerPlugin } from "./og-viewer";
+import { resolveI18nOptions, createI18nPlugin } from "./i18n";
 import type { OxContentOptions, ResolvedOptions } from "./types";
 
 export type { OxContentOptions } from "./types";
@@ -47,6 +48,10 @@ export type {
   HeroConfig,
   FeatureConfig,
   EntryPageConfig,
+  // i18n types
+  I18nOptions,
+  ResolvedI18nOptions,
+  LocaleConfig,
 } from "./types";
 
 /**
@@ -356,6 +361,10 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
 
   const plugins: Plugin[] = [mainPlugin, environmentPlugin, docsPlugin, ssgPlugin, searchPlugin];
 
+  if (resolvedOptions.i18n) {
+    plugins.push(createI18nPlugin(resolvedOptions));
+  }
+
   if (resolvedOptions.ogViewer) {
     plugins.push(createOgViewerPlugin(resolvedOptions));
   }
@@ -389,6 +398,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     docs: resolveDocsOptions(options.docs),
     search: resolveSearchOptions(options.search),
     ogViewer: options.ogViewer ?? true,
+    i18n: resolveI18nOptions(options.i18n),
   };
 }
 
@@ -506,6 +516,7 @@ export type { LoadStrategy, IslandInfo, ParseIslandsResult } from "./island";
 
 // OG Image
 export { resolveOgImageOptions, generateOgImages } from "./og-image";
+export { resolveI18nOptions, createI18nPlugin } from "./i18n";
 export type {
   OgImageOptions as OgImagePluginOptions,
   ResolvedOgImageOptions,

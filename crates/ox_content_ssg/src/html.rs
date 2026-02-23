@@ -259,6 +259,23 @@ pub struct SsgConfig {
     pub og_image: Option<String>,
     /// Theme configuration.
     pub theme: Option<ThemeConfig>,
+    /// Current locale (BCP 47 tag) for this page, if i18n is enabled.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locale: Option<String>,
+    /// All available locales (for generating locale switcher and hreflang tags).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available_locales: Option<Vec<LocaleInfo>>,
+}
+
+/// Locale information for the locale switcher.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocaleInfo {
+    /// BCP 47 locale tag.
+    pub code: String,
+    /// Display name.
+    pub name: String,
+    /// Text direction.
+    pub dir: String,
 }
 
 // =============================================================================
