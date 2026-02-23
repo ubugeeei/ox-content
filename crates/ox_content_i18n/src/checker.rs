@@ -266,6 +266,11 @@ mod tests {
 
         let diags = check_type_mismatch(&set);
         assert!(!diags.is_empty());
-        assert!(diags.iter().any(|d| d.message.contains("missing variables")));
+        // Depending on HashMap iteration order, the diagnostic may report
+        // "missing variables" or "extra variables".
+        assert!(diags
+            .iter()
+            .any(|d| d.message.contains("missing variables")
+                || d.message.contains("extra variables")));
     }
 }

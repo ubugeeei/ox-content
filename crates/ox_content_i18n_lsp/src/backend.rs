@@ -160,7 +160,7 @@ impl LanguageServer for Backend {
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let uri = &params.text_document_position_params.text_document.uri;
-        let position = &params.text_document_position_params.position;
+        let position = params.text_document_position_params.position;
 
         let Ok(path) = uri.to_file_path() else {
             return Ok(None);
@@ -196,7 +196,7 @@ impl LanguageServer for Backend {
         params: GotoDefinitionParams,
     ) -> Result<Option<GotoDefinitionResponse>> {
         let uri = &params.text_document_position_params.text_document.uri;
-        let position = &params.text_document_position_params.position;
+        let position = params.text_document_position_params.position;
 
         let Ok(path) = uri.to_file_path() else {
             return Ok(None);
@@ -215,7 +215,7 @@ impl LanguageServer for Backend {
         let line = document::find_key_line_in_file(&dict_file, &key).unwrap_or(0);
 
         let target_uri = Url::from_file_path(&dict_file)
-            .map_err(|_| tower_lsp::jsonrpc::Error::invalid_params("Invalid file path"))?;
+            .map_err(|()| tower_lsp::jsonrpc::Error::invalid_params("Invalid file path"))?;
 
         Ok(Some(GotoDefinitionResponse::Scalar(Location {
             uri: target_uri,

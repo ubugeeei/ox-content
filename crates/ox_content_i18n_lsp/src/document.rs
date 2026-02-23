@@ -5,7 +5,7 @@ use tower_lsp::lsp_types::Position;
 ///
 /// Matches if the cursor's line (0-based) and character (0-based) fall within
 /// a `KeyUsage` range (which uses 1-based line/column).
-pub fn key_at_position(usages: &[KeyUsage], position: &Position) -> Option<String> {
+pub fn key_at_position(usages: &[KeyUsage], position: Position) -> Option<String> {
     let cursor_line = position.line + 1; // LSP is 0-based, KeyUsage is 1-based
     let cursor_col = position.character + 1;
 
