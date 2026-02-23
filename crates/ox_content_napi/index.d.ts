@@ -13,7 +13,7 @@ export declare function buildSearchIndex(documents: Array<JsSearchDocument>): st
  * `dict_dir` is the path to the i18n directory with locale subdirectories.
  * `used_keys` is a list of translation keys found in source code.
  */
-export declare function checkI18N(dictDir: string, usedKeys: Array<string>): I18NCheckResult
+export declare function checkI18n(dictDir: string, usedKeys: Array<string>): I18NCheckResult
 
 /**
  * Extracts searchable content from Markdown source.

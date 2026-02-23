@@ -273,7 +273,7 @@ mod tests {
         set.insert(Locale::new("ja").unwrap(), Dictionary::new());
 
         let mut locales: Vec<&str> = set.locales().collect();
-        locales.sort();
+        locales.sort_unstable();
         assert_eq!(locales, vec!["en", "ja"]);
     }
 }

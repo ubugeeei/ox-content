@@ -367,7 +367,7 @@ mod tests {
                 assert_eq!(pat.parts.len(), 1);
                 assert!(matches!(&pat.parts[0], PatternPart::Text(t) if t == "Hello world"));
             }
-            _ => panic!("expected simple message"),
+            Message::Complex(_) => panic!("expected simple message"),
         }
     }
 
@@ -382,10 +382,10 @@ mod tests {
                     PatternPart::Expression(expr) => {
                         assert_eq!(expr.operand, Some(Operand::Variable("name".to_string())));
                     }
-                    _ => panic!("expected expression"),
+                    PatternPart::Text(_) => panic!("expected expression"),
                 }
             }
-            _ => panic!("expected simple message"),
+            Message::Complex(_) => panic!("expected simple message"),
         }
     }
 
@@ -404,10 +404,10 @@ mod tests {
                         assert_eq!(ann.options[0].name, "minimumFractionDigits");
                         assert_eq!(ann.options[0].value, OptionValue::Literal("2".to_string()));
                     }
-                    _ => panic!("expected expression"),
+                    PatternPart::Text(_) => panic!("expected expression"),
                 }
             }
-            _ => panic!("expected simple message"),
+            Message::Complex(_) => panic!("expected simple message"),
         }
     }
 
@@ -423,7 +423,7 @@ mod tests {
                         assert_eq!(input.variable, "count");
                         assert_eq!(input.annotation.as_ref().unwrap().function, "number");
                     }
-                    _ => panic!("expected input declaration"),
+                    Declaration::Local(_) => panic!("expected input declaration"),
                 }
 
                 match &cm.body {
@@ -436,10 +436,10 @@ mod tests {
                         );
                         assert_eq!(matcher.variants[1].keys, vec![VariantKey::Wildcard]);
                     }
-                    _ => panic!("expected matcher body"),
+                    ComplexBody::QuotedPattern(_) => panic!("expected matcher body"),
                 }
             }
-            _ => panic!("expected complex message"),
+            Message::Simple(_) => panic!("expected complex message"),
         }
     }
 
@@ -455,10 +455,10 @@ mod tests {
                     Declaration::Local(local) => {
                         assert_eq!(local.variable, "greeting");
                     }
-                    _ => panic!("expected local declaration"),
+                    Declaration::Input(_) => panic!("expected local declaration"),
                 }
             }
-            _ => panic!("expected complex message"),
+            Message::Simple(_) => panic!("expected complex message"),
         }
     }
 
@@ -469,7 +469,7 @@ mod tests {
             Message::Simple(pat) => {
                 assert!(pat.parts.is_empty());
             }
-            _ => panic!("expected simple message"),
+            Message::Complex(_) => panic!("expected simple message"),
         }
     }
 
@@ -483,7 +483,7 @@ mod tests {
                 assert!(matches!(&pat.parts[1], PatternPart::Expression(_)));
                 assert!(matches!(&pat.parts[2], PatternPart::Text(t) if t == " items."));
             }
-            _ => panic!("expected simple message"),
+            Message::Complex(_) => panic!("expected simple message"),
         }
     }
 }

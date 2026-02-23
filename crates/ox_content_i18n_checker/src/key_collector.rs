@@ -151,21 +151,21 @@ mod tests {
 
     #[test]
     fn simple_t_call() {
-        let usages = collect(r#"const msg = t('common.greeting');"#);
+        let usages = collect(r"const msg = t('common.greeting');");
         assert_eq!(usages.len(), 1);
         assert_eq!(usages[0].key, "common.greeting");
     }
 
     #[test]
     fn dollar_t_call() {
-        let usages = collect(r#"const msg = $t('nav.home');"#);
+        let usages = collect(r"const msg = $t('nav.home');");
         assert_eq!(usages.len(), 1);
         assert_eq!(usages[0].key, "nav.home");
     }
 
     #[test]
     fn member_expression() {
-        let usages = collect(r#"const msg = i18n.t('common.farewell');"#);
+        let usages = collect(r"const msg = i18n.t('common.farewell');");
         assert_eq!(usages.len(), 1);
         assert_eq!(usages[0].key, "common.farewell");
     }
@@ -173,24 +173,24 @@ mod tests {
     #[test]
     fn multiple_calls() {
         let usages = collect(
-            r#"
+            r"
 const a = t('key1');
 const b = t('key2');
 const c = $t('key3');
-"#,
+",
         );
         assert_eq!(usages.len(), 3);
     }
 
     #[test]
     fn ignores_non_translation_calls() {
-        let usages = collect(r#"console.log('not a key'); foo('also not');"#);
+        let usages = collect(r"console.log('not a key'); foo('also not');");
         assert!(usages.is_empty());
     }
 
     #[test]
     fn ignores_non_string_arg() {
-        let usages = collect(r#"const msg = t(someVariable);"#);
+        let usages = collect(r"const msg = t(someVariable);");
         assert!(usages.is_empty());
     }
 

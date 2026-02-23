@@ -1445,7 +1445,7 @@ pub fn validate_mf2(message: String) -> Mf2ValidateResult {
 ///
 /// `dict_dir` is the path to the i18n directory with locale subdirectories.
 /// `used_keys` is a list of translation keys found in source code.
-#[napi]
+#[napi(js_name = "checkI18n")]
 pub fn check_i18n(dict_dir: String, used_keys: Vec<String>) -> I18nCheckResult {
     let path = std::path::Path::new(&dict_dir);
     let dict_set = match ox_content_i18n::dictionary::load_from_dir(path) {
