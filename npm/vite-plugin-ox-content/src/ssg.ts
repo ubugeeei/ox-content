@@ -872,7 +872,7 @@ function renderTemplate(template: string, data: Record<string, unknown>): string
 /**
  * Extracts title from content or frontmatter.
  */
-function extractTitle(content: string, frontmatter: Record<string, unknown>): string {
+export function extractTitle(content: string, frontmatter: Record<string, unknown>): string {
   if (frontmatter.title && typeof frontmatter.title === "string") {
     return frontmatter.title;
   }
@@ -1046,7 +1046,7 @@ export function getOutputPath(
 /**
  * Converts a markdown file path to a relative URL path.
  */
-function getUrlPath(inputPath: string, srcDir: string): string {
+export function getUrlPath(inputPath: string, srcDir: string): string {
   const relativePath = path.relative(srcDir, inputPath);
   const baseName = relativePath.replace(/\.(?:md|markdown)$/i, "");
 
@@ -1060,7 +1060,12 @@ function getUrlPath(inputPath: string, srcDir: string): string {
 /**
  * Converts a markdown file path to an href.
  */
-function getHref(inputPath: string, srcDir: string, base: string, extension: string): string {
+export function getHref(
+  inputPath: string,
+  srcDir: string,
+  base: string,
+  extension: string,
+): string {
   const urlPath = getUrlPath(inputPath, srcDir);
   if (urlPath === "/" || urlPath === "") {
     return `${base}index${extension}`;
@@ -1125,7 +1130,7 @@ function getDisplayTitle(filePath: string): string {
 /**
  * Formats a file/dir name as a title.
  */
-function formatTitle(name: string): string {
+export function formatTitle(name: string): string {
   return name
     .replace(/[-_]([a-z])/g, (_, char) => " " + char.toUpperCase())
     .replace(/^[a-z]/, (char) => char.toUpperCase());
@@ -1146,7 +1151,7 @@ export async function collectMarkdownFiles(srcDir: string): Promise<string[]> {
 /**
  * Navigation group for hierarchical navigation.
  */
-interface NavGroup {
+export interface NavGroup {
   title: string;
   items: SsgNavItem[];
 }
@@ -1154,7 +1159,7 @@ interface NavGroup {
 /**
  * Builds navigation items from markdown files, grouped by directory.
  */
-function buildNavItems(
+export function buildNavItems(
   markdownFiles: string[],
   srcDir: string,
   base: string,
