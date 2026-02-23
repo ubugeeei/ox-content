@@ -1404,6 +1404,28 @@ pub fn load_dictionaries(dir: String) -> I18nLoadResult {
     }
 }
 
+/// Loads dictionaries from the given directory and returns a flat key-value map per locale.
+///
+/// Each locale maps to a flat `{ "namespace.key": "value" }` structure.
+/// Supports both JSON and YAML dictionary files.
+#[napi]
+pub fn load_dictionaries_flat(dir: String) -> HashMap<String, HashMap<String, String>> {
+    let path = std::path::Path::new(&dir);
+    let Ok(set) = ox_content_i18n::dictionary::load_from_dir(path) else {
+        return HashMap::new();
+    };
+
+    let mut result = HashMap::new();
+    for locale in set.locales() {
+        if let Some(dict) = set.get(locale) {
+            let flat: HashMap<String, String> =
+                dict.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
+            result.insert(locale.to_string(), flat);
+        }
+    }
+    result
+}
+
 /// Validates an MF2 message string.
 ///
 /// Returns parsing and semantic validation results.
@@ -1484,6 +1506,8 @@ pub struct I18nKeyUsage {
     pub line: u32,
     /// Column number.
     pub column: u32,
+    /// End column number.
+    pub end_column: u32,
 }
 
 /// Extracts translation keys from a TypeScript/JavaScript source string.
@@ -1512,6 +1536,7 @@ pub fn extract_translation_keys(
                 file_path: u.file_path,
                 line: u.line,
                 column: u.column,
+                end_column: u.end_column,
             })
             .collect(),
         Err(_) => vec![],

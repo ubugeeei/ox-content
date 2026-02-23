@@ -85,7 +85,8 @@ export function createI18nPlugin(resolvedOptions: ResolvedOptions): Plugin {
       }
 
       try {
-        const { loadDictionaries, checkI18n } = await import("@ox-content/napi");
+        const { loadDictionaries, checkI18n, extractTranslationKeys } =
+          await import("@ox-content/napi");
 
         // Load and validate dictionaries
         const loadResult = loadDictionaries(dictDir);
@@ -100,9 +101,10 @@ export function createI18nPlugin(resolvedOptions: ResolvedOptions): Plugin {
           `[ox-content:i18n] Loaded ${loadResult.localeCount} locales: ${loadResult.locales.join(", ")}`,
         );
 
-        // Note: Full key collection from source requires the checker crate.
-        // For now, we validate dictionary syntax only.
-        const checkResult = checkI18n(dictDir, []);
+        // Collect translation keys from source files
+        const collectedKeys = collectKeysFromSource(root, extractTranslationKeys, i18nOptions);
+
+        const checkResult = checkI18n(dictDir, collectedKeys);
         if (checkResult.errorCount > 0 || checkResult.warningCount > 0) {
           for (const diag of checkResult.diagnostics) {
             if (diag.severity === "error") {
@@ -119,6 +121,26 @@ export function createI18nPlugin(resolvedOptions: ResolvedOptions): Plugin {
 
     configureServer(server: ViteDevServer) {
       if (!i18nOptions) return;
+
+      // Watch dictionary directory for changes
+      const dictDir = path.resolve(root, i18nOptions.dir);
+      if (fs.existsSync(dictDir)) {
+        server.watcher.add(dictDir);
+
+        server.watcher.on("change", (filePath: string) => {
+          if (!filePath.startsWith(dictDir)) return;
+          if (!/\.(json|yaml|yml)$/.test(filePath)) return;
+
+          // Invalidate the virtual module
+          const mod = server.moduleGraph.getModuleById("\0virtual:ox-content/i18n");
+          if (mod) {
+            server.moduleGraph.invalidateModule(mod);
+          }
+
+          // Trigger full reload
+          server.ws.send({ type: "full-reload" });
+        });
+      }
 
       // Add locale routing middleware
       server.middlewares.use((req, _res, next) => {
@@ -156,36 +178,24 @@ function generateI18nModule(options: ResolvedI18nOptions, root: string): string 
 
   // Load dictionaries synchronously for the virtual module
   let dictionariesCode = "{}";
+
+  // Try NAPI-based loading first (supports JSON + YAML)
   try {
-    const dictData: Record<string, Record<string, string>> = {};
-
-    for (const locale of options.locales) {
-      const localeDir = path.join(dictDir, locale.code);
-      if (!fs.existsSync(localeDir)) continue;
-
-      const files = fs.readdirSync(localeDir);
-      const localeDict: Record<string, string> = {};
-
-      for (const file of files) {
-        if (!file.endsWith(".json")) continue;
-        const filePath = path.join(localeDir, file);
-        const content = fs.readFileSync(filePath, "utf-8");
-        const namespace = path.basename(file, ".json");
-
-        try {
-          const data = JSON.parse(content);
-          flattenObject(data, namespace, localeDict);
-        } catch {
-          // Skip invalid JSON files
-        }
-      }
-
-      dictData[locale.code] = localeDict;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const napi = require("@ox-content/napi");
+    if (napi.loadDictionariesFlat) {
+      const dictData = napi.loadDictionariesFlat(dictDir);
+      dictionariesCode = JSON.stringify(dictData);
+    } else {
+      dictionariesCode = JSON.stringify(loadDictionariesFallback(options, dictDir));
     }
-
-    dictionariesCode = JSON.stringify(dictData);
   } catch {
-    // Fallback to empty dictionaries
+    // NAPI not available — fallback to TS-based JSON loading
+    try {
+      dictionariesCode = JSON.stringify(loadDictionariesFallback(options, dictDir));
+    } catch {
+      // Fallback to empty dictionaries
+    }
   }
 
   return `
@@ -256,6 +266,101 @@ function flattenObject(
       flattenObject(value as Record<string, unknown>, fullKey, result);
     } else {
       result[fullKey] = String(value);
+    }
+  }
+}
+
+/**
+ * Fallback dictionary loading using TS-based JSON file reading.
+ */
+function loadDictionariesFallback(
+  options: ResolvedI18nOptions,
+  dictDir: string,
+): Record<string, Record<string, string>> {
+  const dictData: Record<string, Record<string, string>> = {};
+
+  for (const locale of options.locales) {
+    const localeDir = path.join(dictDir, locale.code);
+    if (!fs.existsSync(localeDir)) continue;
+
+    const files = fs.readdirSync(localeDir);
+    const localeDict: Record<string, string> = {};
+
+    for (const file of files) {
+      if (!file.endsWith(".json")) continue;
+      const filePath = path.join(localeDir, file);
+      const content = fs.readFileSync(filePath, "utf-8");
+      const namespace = path.basename(file, ".json");
+
+      try {
+        const data = JSON.parse(content);
+        flattenObject(data, namespace, localeDict);
+      } catch {
+        // Skip invalid JSON files
+      }
+    }
+
+    dictData[locale.code] = localeDict;
+  }
+
+  return dictData;
+}
+
+/**
+ * Collects translation keys from source files using NAPI extractTranslationKeys.
+ */
+function collectKeysFromSource(
+  root: string,
+  extractTranslationKeys: (
+    source: string,
+    filePath: string,
+    functionNames?: string[],
+  ) => Array<{ key: string }>,
+  options: ResolvedI18nOptions,
+): string[] {
+  const srcDir = path.resolve(root, "src");
+  const keys = new Set<string>();
+
+  // Scan TS/JS/TSX/JSX files in src/
+  if (fs.existsSync(srcDir)) {
+    walkDir(srcDir, /\.(ts|tsx|js|jsx)$/, (filePath) => {
+      const source = fs.readFileSync(filePath, "utf-8");
+      const usages = extractTranslationKeys(source, filePath, options.functionNames);
+      for (const usage of usages) {
+        keys.add(usage.key);
+      }
+    });
+  }
+
+  // Scan Markdown files for {{t('key')}} patterns
+  const contentDir = path.resolve(root, "content");
+  if (fs.existsSync(contentDir)) {
+    const tPattern = /\{\{t\(['"]([^'"]+)['"]\)\}\}/g;
+    walkDir(contentDir, /\.(md|mdx)$/, (filePath) => {
+      const content = fs.readFileSync(filePath, "utf-8");
+      let match;
+      while ((match = tPattern.exec(content)) !== null) {
+        keys.add(match[1]);
+      }
+      tPattern.lastIndex = 0;
+    });
+  }
+
+  return Array.from(keys);
+}
+
+/**
+ * Recursively walks a directory, calling the callback for files matching the pattern.
+ */
+function walkDir(dir: string, pattern: RegExp, callback: (filePath: string) => void): void {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === "node_modules" || entry.name === ".git") continue;
+      walkDir(fullPath, pattern, callback);
+    } else if (pattern.test(entry.name)) {
+      callback(fullPath);
     }
   }
 }

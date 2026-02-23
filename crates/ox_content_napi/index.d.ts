@@ -8,11 +8,26 @@
 export declare function buildSearchIndex(documents: Array<JsSearchDocument>): string
 
 /**
+ * Runs i18n checks on dictionaries against used translation keys.
+ *
+ * `dict_dir` is the path to the i18n directory with locale subdirectories.
+ * `used_keys` is a list of translation keys found in source code.
+ */
+export declare function checkI18N(dictDir: string, usedKeys: Array<string>): I18NCheckResult
+
+/**
  * Extracts searchable content from Markdown source.
  *
  * Parses the Markdown and extracts title, body text, headings, and code.
  */
 export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument
+
+/**
+ * Extracts translation keys from a TypeScript/JavaScript source string.
+ *
+ * Finds calls like `t('key')` and `$t('key')`.
+ */
+export declare function extractTranslationKeys(source: string, filePath: string, functionNames?: Array<string> | undefined | null): Array<I18NKeyUsage>
 
 /**
  * Generates an OG image as SVG.
@@ -24,6 +39,52 @@ export declare function generateOgImageSvg(data: JsOgImageData, config?: JsOgIma
 
 /** Generates SSG HTML page with navigation and search. */
 export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Array<JsSsgNavGroup>, config: JsSsgConfig): string
+
+/** Result of i18n checking. */
+export interface I18NCheckResult {
+  /** All diagnostics. */
+  diagnostics: Array<I18NDiagnostic>
+  /** Number of errors. */
+  errorCount: number
+  /** Number of warnings. */
+  warningCount: number
+}
+
+/** A single i18n diagnostic. */
+export interface I18NDiagnostic {
+  /** Severity: "error", "warning", or "info". */
+  severity: string
+  /** Diagnostic message. */
+  message: string
+  /** Related translation key, if any. */
+  key?: string
+  /** Related locale, if any. */
+  locale?: string
+}
+
+/** A translation key usage found in source code. */
+export interface I18NKeyUsage {
+  /** The translation key. */
+  key: string
+  /** Source file path. */
+  filePath: string
+  /** Line number. */
+  line: number
+  /** Column number. */
+  column: number
+  /** End column number. */
+  endColumn: number
+}
+
+/** Result of loading dictionaries. */
+export interface I18NLoadResult {
+  /** Number of locales loaded. */
+  localeCount: number
+  /** All locale tags. */
+  locales: Array<string>
+  /** Errors encountered during loading. */
+  errors: Array<string>
+}
 
 /** Entry page configuration. */
 export interface JsEntryPageConfig {
@@ -81,6 +142,16 @@ export interface JsHeroImage {
   width?: number
   /** Image height. */
   height?: number
+}
+
+/** Locale information for the locale switcher. */
+export interface JsLocaleInfo {
+  /** BCP 47 locale tag. */
+  code: string
+  /** Display name. */
+  name: string
+  /** Text direction. */
+  dir: string
 }
 
 /** OG image configuration for JavaScript. */
@@ -191,6 +262,10 @@ export interface JsSsgConfig {
   ogImage?: string
   /** Theme configuration. */
   theme?: JsThemeConfig
+  /** Current locale for this page. */
+  locale?: string
+  /** Available locales for locale switcher. */
+  availableLocales?: Array<JsLocaleInfo>
 }
 
 /** Navigation group for SSG. */
@@ -355,12 +430,38 @@ export interface JsTransformOptions {
   sourcePath?: string
 }
 
+/**
+ * Loads dictionaries from the given directory.
+ *
+ * The directory should contain locale subdirectories (e.g., `en/`, `ja/`)
+ * with JSON or YAML translation files.
+ */
+export declare function loadDictionaries(dir: string): I18NLoadResult
+
+/**
+ * Loads dictionaries from the given directory and returns a flat key-value map per locale.
+ *
+ * Each locale maps to a flat `{ "namespace.key": "value" }` structure.
+ * Supports both JSON and YAML dictionary files.
+ */
+export declare function loadDictionariesFlat(dir: string): Record<string, Record<string, string>>
+
 /** Mermaid transform result. */
 export interface MermaidTransformResult {
   /** The transformed HTML with mermaid code blocks replaced by rendered SVGs. */
   html: string
   /** Non-fatal errors encountered during rendering (per-diagram). */
   errors: Array<string>
+}
+
+/** Result of MF2 validation. */
+export interface Mf2ValidateResult {
+  /** Whether the message is valid. */
+  valid: boolean
+  /** Validation errors. */
+  errors: Array<string>
+  /** AST as JSON (if parsing succeeded). */
+  astJson?: string
 }
 
 /**
@@ -443,6 +544,13 @@ export interface TransformResult {
   /** Parse/render errors, if any. */
   errors: Array<string>
 }
+
+/**
+ * Validates an MF2 message string.
+ *
+ * Returns parsing and semantic validation results.
+ */
+export declare function validateMf2(message: string): Mf2ValidateResult
 
 /** Returns the version of ox_content_napi. */
 export declare function version(): string

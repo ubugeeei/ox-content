@@ -18,6 +18,7 @@
 //! The server communicates over stdio using the LSP protocol.
 
 mod backend;
+mod document;
 mod state;
 
 use tower_lsp::{LspService, Server};

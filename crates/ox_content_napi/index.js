@@ -83,6 +83,7 @@ module.exports.extractSearchContent = binding.extractSearchContent
 module.exports.generateSsgHtml = binding.generateSsgHtml
 module.exports.transformMermaid = binding.transformMermaid
 module.exports.loadDictionaries = binding.loadDictionaries
+module.exports.loadDictionariesFlat = binding.loadDictionariesFlat
 module.exports.validateMf2 = binding.validateMf2
 module.exports.checkI18n = binding.checkI18n
 module.exports.extractTranslationKeys = binding.extractTranslationKeys

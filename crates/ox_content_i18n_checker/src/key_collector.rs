@@ -13,6 +13,7 @@ pub struct KeyUsage {
     pub file_path: String,
     pub line: u32,
     pub column: u32,
+    pub end_column: u32,
 }
 
 /// Extracts translation keys from TS/JS source files by finding `t('key')` calls.
@@ -122,11 +123,13 @@ impl<'a> Visit<'a> for KeyVisitor<'a> {
                 // Extract the first string argument as the key
                 if let Some(Argument::StringLiteral(lit)) = call.arguments.first() {
                     let (line, col) = self.line_col(call.span.start);
+                    let (_, end_col) = self.line_col(call.span.end);
                     self.usages.push(KeyUsage {
                         key: lit.value.to_string(),
                         file_path: self.file_path.to_string(),
                         line,
                         column: col,
+                        end_column: end_col,
                     });
                 }
             }

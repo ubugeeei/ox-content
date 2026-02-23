@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use tower_lsp::lsp_types::Url;
 
 use ox_content_i18n::dictionary::{self, DictionarySet};
 use ox_content_i18n_checker::key_collector::{KeyCollector, KeyUsage};
@@ -23,6 +24,10 @@ struct Inner {
     file_keys: HashMap<String, Vec<KeyUsage>>,
     /// All used keys (union of file_keys values).
     all_keys: HashSet<String>,
+    /// Text content of currently open documents.
+    document_texts: HashMap<String, String>,
+    /// URIs of currently open documents.
+    open_uris: Vec<Url>,
 }
 
 impl LspState {
@@ -35,6 +40,8 @@ impl LspState {
                 dict_set: DictionarySet::new(),
                 file_keys: HashMap::new(),
                 all_keys: HashSet::new(),
+                document_texts: HashMap::new(),
+                open_uris: Vec::new(),
             })),
         }
     }
@@ -66,7 +73,7 @@ impl LspState {
         }
     }
 
-    /// Updates the key cache for a file.
+    /// Updates the key cache and document text for a file.
     pub async fn update_file_keys(&self, file_path: &str, source: &str) {
         let collector = KeyCollector::new();
         let source_type = oxc_span::SourceType::from_path(Path::new(file_path)).unwrap_or_default();
@@ -75,16 +82,23 @@ impl LspState {
 
         let mut inner = self.inner.write().await;
         inner.file_keys.insert(file_path.to_string(), usages);
+        inner.document_texts.insert(file_path.to_string(), source.to_string());
 
         // Rebuild all_keys
         inner.all_keys =
             inner.file_keys.values().flatten().map(|usage| usage.key.clone()).collect();
     }
 
-    /// Removes cached keys for a file.
+    /// Removes cached keys, text, and URI for a file.
     pub async fn remove_file(&self, file_path: &str) {
         let mut inner = self.inner.write().await;
         inner.file_keys.remove(file_path);
+        inner.document_texts.remove(file_path);
+
+        // Remove matching URI
+        inner
+            .open_uris
+            .retain(|uri| uri.to_file_path().map_or(true, |p| p.to_string_lossy() != file_path));
 
         inner.all_keys =
             inner.file_keys.values().flatten().map(|usage| usage.key.clone()).collect();
@@ -184,6 +198,39 @@ impl LspState {
     pub async fn check_diagnostics(&self) -> Vec<ox_content_i18n::checker::Diagnostic> {
         let inner = self.inner.read().await;
         ox_content_i18n::checker::check_all(&inner.all_keys, &inner.dict_set)
+    }
+
+    /// Returns the stored document text for a file.
+    #[allow(dead_code)]
+    pub async fn get_document_text(&self, file_path: &str) -> Option<String> {
+        let inner = self.inner.read().await;
+        inner.document_texts.get(file_path).cloned()
+    }
+
+    /// Returns key usages for a specific file.
+    pub async fn get_file_key_usages(&self, file_path: &str) -> Vec<KeyUsage> {
+        let inner = self.inner.read().await;
+        inner.file_keys.get(file_path).cloned().unwrap_or_default()
+    }
+
+    /// Returns all currently open URIs.
+    pub async fn get_open_uris(&self) -> Vec<Url> {
+        let inner = self.inner.read().await;
+        inner.open_uris.clone()
+    }
+
+    /// Adds an open document URI.
+    pub async fn add_open_uri(&self, uri: Url) {
+        let mut inner = self.inner.write().await;
+        if !inner.open_uris.contains(&uri) {
+            inner.open_uris.push(uri);
+        }
+    }
+
+    /// Removes an open document URI.
+    pub async fn remove_open_uri(&self, uri: &Url) {
+        let mut inner = self.inner.write().await;
+        inner.open_uris.retain(|u| u != uri);
     }
 }
 

@@ -2,6 +2,7 @@ use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer};
 
+use crate::document;
 use crate::state::LspState;
 
 pub struct Backend {
@@ -30,6 +31,59 @@ impl Backend {
                 }
                 _ => {}
             }
+        }
+
+        self.publish_diagnostics().await;
+    }
+
+    async fn publish_diagnostics(&self) {
+        let checker_diags = self.state.check_diagnostics().await;
+        let open_uris = self.state.get_open_uris().await;
+
+        for uri in &open_uris {
+            let Ok(path) = uri.to_file_path() else {
+                continue;
+            };
+            let path_str = path.to_string_lossy().to_string();
+            let usages = self.state.get_file_key_usages(&path_str).await;
+
+            let mut lsp_diags = Vec::new();
+
+            for usage in &usages {
+                // Check if this key has a "missing" diagnostic
+                for diag in &checker_diags {
+                    if diag.key.as_deref() == Some(&usage.key) {
+                        let severity = match diag.severity {
+                            ox_content_i18n::checker::Severity::Error => DiagnosticSeverity::ERROR,
+                            ox_content_i18n::checker::Severity::Warning => {
+                                DiagnosticSeverity::WARNING
+                            }
+                            ox_content_i18n::checker::Severity::Info => {
+                                DiagnosticSeverity::INFORMATION
+                            }
+                        };
+
+                        lsp_diags.push(Diagnostic {
+                            range: Range {
+                                start: Position {
+                                    line: usage.line - 1,
+                                    character: usage.column - 1,
+                                },
+                                end: Position {
+                                    line: usage.line - 1,
+                                    character: usage.end_column - 1,
+                                },
+                            },
+                            severity: Some(severity),
+                            source: Some("ox-content-i18n".to_string()),
+                            message: diag.message.clone(),
+                            ..Default::default()
+                        });
+                    }
+                }
+            }
+
+            self.client.publish_diagnostics(uri.clone(), lsp_diags, None).await;
         }
     }
 }
@@ -71,6 +125,7 @@ impl LanguageServer for Backend {
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
+        self.state.add_open_uri(params.text_document.uri.clone()).await;
         self.on_change(&params.text_document.uri, &params.text_document.text).await;
     }
 
@@ -81,6 +136,7 @@ impl LanguageServer for Backend {
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
+        self.state.remove_open_uri(&params.text_document.uri).await;
         if let Ok(path) = params.text_document.uri.to_file_path() {
             self.state.remove_file(&path.to_string_lossy()).await;
         }
@@ -102,22 +158,112 @@ impl LanguageServer for Backend {
         Ok(Some(CompletionResponse::Array(items)))
     }
 
-    async fn hover(&self, _params: HoverParams) -> Result<Option<Hover>> {
-        // TODO: Extract the key at cursor position from document text,
-        // then show translations for all locales
-        Ok(None)
+    async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = &params.text_document_position_params.position;
+
+        let Ok(path) = uri.to_file_path() else {
+            return Ok(None);
+        };
+        let path_str = path.to_string_lossy().to_string();
+
+        let usages = self.state.get_file_key_usages(&path_str).await;
+        let Some(key) = document::key_at_position(&usages, position) else {
+            return Ok(None);
+        };
+
+        let translations = self.state.translations_for_key(&key).await;
+        if translations.is_empty() {
+            return Ok(None);
+        }
+
+        let mut md = format!("**`{key}`**\n\n| Locale | Translation |\n|--------|-------------|\n");
+        for (locale, value) in &translations {
+            md.push_str(&format!("| `{locale}` | {value} |\n"));
+        }
+
+        Ok(Some(Hover {
+            contents: HoverContents::Markup(MarkupContent {
+                kind: MarkupKind::Markdown,
+                value: md,
+            }),
+            range: None,
+        }))
     }
 
     async fn goto_definition(
         &self,
-        _params: GotoDefinitionParams,
+        params: GotoDefinitionParams,
     ) -> Result<Option<GotoDefinitionResponse>> {
-        // TODO: Extract key at cursor, then jump to dictionary file definition
-        Ok(None)
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = &params.text_document_position_params.position;
+
+        let Ok(path) = uri.to_file_path() else {
+            return Ok(None);
+        };
+        let path_str = path.to_string_lossy().to_string();
+
+        let usages = self.state.get_file_key_usages(&path_str).await;
+        let Some(key) = document::key_at_position(&usages, position) else {
+            return Ok(None);
+        };
+
+        let Some((dict_file, _locale)) = self.state.find_key_definition(&key).await else {
+            return Ok(None);
+        };
+
+        let line = document::find_key_line_in_file(&dict_file, &key).unwrap_or(0);
+
+        let target_uri = Url::from_file_path(&dict_file)
+            .map_err(|_| tower_lsp::jsonrpc::Error::invalid_params("Invalid file path"))?;
+
+        Ok(Some(GotoDefinitionResponse::Scalar(Location {
+            uri: target_uri,
+            range: Range {
+                start: Position { line, character: 0 },
+                end: Position { line, character: 0 },
+            },
+        })))
     }
 
-    async fn inlay_hint(&self, _params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        // TODO: Scan document for t('key') calls and show inline translations
-        Ok(None)
+    async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
+        let uri = &params.text_document.uri;
+
+        let Ok(path) = uri.to_file_path() else {
+            return Ok(None);
+        };
+        let path_str = path.to_string_lossy().to_string();
+
+        let usages = self.state.get_file_key_usages(&path_str).await;
+        if usages.is_empty() {
+            return Ok(None);
+        }
+
+        let mut hints = Vec::new();
+        for usage in &usages {
+            if let Some(translation) = self.state.default_translation(&usage.key).await {
+                let label = if translation.len() > 40 {
+                    format!(" {}...", &translation[..37])
+                } else {
+                    format!(" {translation}")
+                };
+
+                hints.push(InlayHint {
+                    position: Position {
+                        line: usage.line - 1, // KeyUsage is 1-based, LSP is 0-based
+                        character: usage.end_column - 1,
+                    },
+                    label: InlayHintLabel::String(label),
+                    kind: Some(InlayHintKind::PARAMETER),
+                    text_edits: None,
+                    tooltip: None,
+                    padding_left: Some(true),
+                    padding_right: None,
+                    data: None,
+                });
+            }
+        }
+
+        Ok(Some(hints))
     }
 }
