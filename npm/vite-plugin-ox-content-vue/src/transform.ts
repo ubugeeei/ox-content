@@ -130,6 +130,7 @@ export async function transformMarkdownWithVue(
       placeholder: "Search...",
       hotkey: "k",
     },
+    i18n: false,
   });
 
   // Generate Vue SFC code

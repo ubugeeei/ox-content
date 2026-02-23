@@ -111,6 +111,7 @@ export async function transformMarkdownWithReact(
       placeholder: "Search...",
       hotkey: "k",
     },
+    i18n: false,
   });
 
   const htmlWithIslands = injectIslandMarkers(transformed.html, islands);
