@@ -1,3 +1,22 @@
+//! # ox_content_i18n_checker
+//!
+//! Static checker for i18n translation keys in Ox Content projects.
+//!
+//! Collects `t("key")` / `$t("key")` calls from TypeScript/JavaScript source files using
+//! the OXC parser, and `{{t("key")}}` patterns from Markdown files. Then runs the collected
+//! keys against loaded dictionaries to detect missing keys, unused keys, type mismatches,
+//! and MF2 syntax errors.
+//!
+//! ## Usage
+//!
+//! ```no_run
+//! use ox_content_i18n_checker::{check, CheckConfig};
+//!
+//! let config = CheckConfig::default();
+//! let result = check(&config).expect("check failed");
+//! println!("{} errors, {} warnings", result.error_count, result.warning_count);
+//! ```
+
 pub mod diagnostic;
 pub mod key_collector;
 pub mod md_key_collector;

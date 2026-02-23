@@ -26,6 +26,7 @@
 - **Framework Agnostic** - Works with Vue, React, Svelte, and more
 - **Built-in SSG** - Static site generation with theming, search, and OG images
 - **API Docs Generation** - Generate docs from JSDoc/TypeScript (like `cargo doc`)
+- **i18n** - ICU MessageFormat 2 parser, dictionary management, static checker, and LSP
 
 ## Quick Start
 
@@ -77,6 +78,16 @@ npm install @ox-content/vite-plugin-react @ox-content/napi
 
 # Svelte
 npm install @ox-content/vite-plugin-svelte @ox-content/napi
+```
+
+### i18n Static Checker (CLI)
+
+```bash
+# Check for missing/unused translation keys
+ox-content-i18n check --dict-dir content/i18n --src src
+
+# Validate an ICU MessageFormat 2 message
+ox-content-i18n validate "Hello {$name}"
 ```
 
 **[Read the full documentation →](https://ubugeeei.github.io/ox-content/)**
