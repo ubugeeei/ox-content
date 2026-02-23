@@ -263,7 +263,7 @@ function createVueCompilerPlugin(): import("rolldown").Plugin {
         });
         if (templateResult.errors.length > 0) {
           throw new Error(
-            `[ox-content:og-image] Vue template compilation errors in ${id}: ${templateResult.errors.join(", ")}`,
+            `[ox-content:og-image] Vue template compilation errors in ${id}: ${templateResult.errors.map(String).join(", ")}`,
           );
         }
         scriptCode = `${templateResult.code}\nexport default { render }`;

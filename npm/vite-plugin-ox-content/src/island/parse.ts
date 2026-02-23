@@ -8,7 +8,7 @@
 import { unified } from "unified";
 import rehypeParse from "rehype-parse";
 import rehypeStringify from "rehype-stringify";
-import type { Root, Element, Text } from "hast";
+import type { Root, Element } from "hast";
 
 export type LoadStrategy = "eager" | "idle" | "visible" | "media";
 
@@ -238,7 +238,7 @@ export async function extractIslandInfo(html: string): Promise<IslandInfo[]> {
 export function generateHydrationScript(components: string[]): string {
   if (components.length === 0) return "";
 
-  const imports = components.map((name, i) => `import ${name} from './${name}';`).join("\n");
+  const imports = components.map((name) => `import ${name} from './${name}';`).join("\n");
 
   return `
 import { initIslands } from '@ox-content/islands';

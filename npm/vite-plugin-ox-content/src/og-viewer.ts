@@ -423,7 +423,7 @@ export function createOgViewerPlugin(options: ResolvedOptions): Plugin {
             res.end(html);
           } catch (err) {
             res.statusCode = 500;
-            res.end(`OG Viewer error: ${err}`);
+            res.end(`OG Viewer error: ${err instanceof Error ? err.message : String(err)}`);
           }
           return;
         }

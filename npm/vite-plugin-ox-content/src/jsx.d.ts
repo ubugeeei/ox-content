@@ -355,7 +355,7 @@ export namespace JSX {
     ping?: string;
     referrerPolicy?: string;
     rel?: string;
-    target?: "_self" | "_blank" | "_parent" | "_top" | string;
+    target?: string;
     type?: string;
   }
 
@@ -723,5 +723,3 @@ declare global {
     interface IntrinsicElements extends JsxRuntimeIntrinsicElements {}
   }
 }
-
-export {};

@@ -128,7 +128,7 @@ function renderAttr(name: string, value: unknown): string {
   }
 
   // Regular attribute
-  return ` ${htmlName}="${escapeHtml(String(value))}"`;
+  return ` ${htmlName}="${escapeHtml(String(value as string | number | boolean))}"`;
 }
 
 /**

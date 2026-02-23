@@ -8,7 +8,7 @@
 import { unified } from "unified";
 import rehypeParse from "rehype-parse";
 import rehypeStringify from "rehype-stringify";
-import type { Root, Element, Text } from "hast";
+import type { Root, Element } from "hast";
 
 let tabGroupCounter = 0;
 
@@ -17,23 +17,6 @@ let tabGroupCounter = 0;
  */
 export function resetTabGroupCounter(): void {
   tabGroupCounter = 0;
-}
-
-/**
- * Extract text content from a hast node.
- */
-function getTextContent(node: Element | Root): string {
-  let text = "";
-  if ("children" in node) {
-    for (const child of node.children) {
-      if (child.type === "text") {
-        text += (child as Text).value;
-      } else if (child.type === "element") {
-        text += getTextContent(child as Element);
-      }
-    }
-  }
-  return text;
 }
 
 /**
