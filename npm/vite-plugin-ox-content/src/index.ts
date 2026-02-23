@@ -18,6 +18,12 @@ import {
   generateSearchModule,
 } from "./search";
 import { resolveOgImageOptions } from "./og-image";
+import {
+  createDevServerMiddleware,
+  createDevServerCache,
+  invalidateNavCache,
+  invalidatePageCache,
+} from "./dev-server";
 import { createOgViewerPlugin } from "./og-viewer";
 import type { OxContentOptions, ResolvedOptions } from "./types";
 
@@ -228,8 +234,39 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
   };
 
   // SSG plugin (builtin, opt-in by default)
+  const ssgDevCache = createDevServerCache();
   const ssgPlugin: Plugin = {
     name: "ox-content:ssg",
+
+    configureServer(devServer) {
+      const ssgOptions = resolvedOptions.ssg;
+      if (!ssgOptions.enabled) return;
+
+      const root = config?.root || process.cwd();
+      const srcDir = path.resolve(root, resolvedOptions.srcDir);
+
+      // Register dev server middleware
+      devServer.middlewares.use(createDevServerMiddleware(resolvedOptions, root, ssgDevCache));
+
+      // Watch for .md file add/unlink to invalidate nav cache
+      devServer.watcher.on("add", (file: string) => {
+        if (file.startsWith(srcDir) && file.endsWith(".md")) {
+          invalidateNavCache(ssgDevCache);
+        }
+      });
+      devServer.watcher.on("unlink", (file: string) => {
+        if (file.startsWith(srcDir) && file.endsWith(".md")) {
+          invalidateNavCache(ssgDevCache);
+        }
+      });
+
+      // Watch for .md file changes to invalidate page cache
+      devServer.watcher.on("change", (file: string) => {
+        if (file.startsWith(srcDir) && file.endsWith(".md")) {
+          invalidatePageCache(ssgDevCache, file);
+        }
+      });
+    },
 
     async closeBundle() {
       const ssgOptions = resolvedOptions.ssg;
