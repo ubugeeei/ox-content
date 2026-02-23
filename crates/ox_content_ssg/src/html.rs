@@ -910,6 +910,8 @@ mod tests {
             base: "/docs/".to_string(),
             og_image: None,
             theme: None,
+            locale: None,
+            available_locales: None,
         };
 
         let html = generate_html(&page_data, &nav_groups, &config);
@@ -936,6 +938,8 @@ mod tests {
             site_name: "Themed Site".to_string(),
             base: "/".to_string(),
             og_image: None,
+            locale: None,
+            available_locales: None,
             theme: Some(ThemeConfig {
                 colors: Some(ThemeColors {
                     primary: Some("#3498db".to_string()),

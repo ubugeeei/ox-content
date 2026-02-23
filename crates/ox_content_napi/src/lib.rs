@@ -1412,7 +1412,7 @@ pub fn validate_mf2(message: String) -> Mf2ValidateResult {
     match ox_content_i18n::mf2::parse_and_validate(&message) {
         Ok((ast, validation_errors)) => {
             let ast_json = serde_json::to_string(&ast).ok();
-            let errors: Vec<String> = validation_errors.iter().map(|e| e.to_string()).collect();
+            let errors: Vec<String> = validation_errors.iter().map(ToString::to_string).collect();
             Mf2ValidateResult { valid: errors.is_empty(), errors, ast_json }
         }
         Err(e) => Mf2ValidateResult { valid: false, errors: vec![e.to_string()], ast_json: None },
