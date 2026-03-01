@@ -1,6 +1,6 @@
 {
   "name": "@ox-content/vite-plugin-react",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "React integration for Ox Content - Embed React components in Markdown",
   "type": "module",
   "main": "./dist/index.js",

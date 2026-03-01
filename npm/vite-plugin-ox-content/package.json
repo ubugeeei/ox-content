@@ -1,6 +1,6 @@
 {
   "name": "@ox-content/vite-plugin",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Vite plugin for Ox Content - High-performance Markdown processing with Environment API",
   "type": "module",
   "main": "./dist/index.js",
