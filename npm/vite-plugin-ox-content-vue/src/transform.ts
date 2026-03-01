@@ -111,6 +111,7 @@ export async function transformMarkdownWithVue(
     strikethrough: true,
     highlight: false,
     highlightTheme: "github-dark",
+    highlightLangs: [],
     mermaid: false,
     ogImage: false,
     ogImageOptions: {
