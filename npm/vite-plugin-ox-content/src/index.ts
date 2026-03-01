@@ -29,6 +29,7 @@ import { resolveI18nOptions, createI18nPlugin } from "./i18n";
 import type { OxContentOptions, ResolvedOptions } from "./types";
 
 export type { OxContentOptions } from "./types";
+export type { LanguageRegistration } from "shiki";
 export type {
   DocsOptions,
   ResolvedDocsOptions,
@@ -388,6 +389,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     strikethrough: options.strikethrough ?? true,
     highlight: options.highlight ?? false,
     highlightTheme: options.highlightTheme ?? "github-dark",
+    highlightLangs: options.highlightLangs ?? [],
     mermaid: options.mermaid ?? false,
     frontmatter: options.frontmatter ?? true,
     toc: options.toc ?? true,
