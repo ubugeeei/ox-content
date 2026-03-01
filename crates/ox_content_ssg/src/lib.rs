@@ -50,7 +50,7 @@
 mod html;
 
 pub use html::{
-    generate_html, EntryPageConfig, FeatureConfig, HeroAction, HeroConfig, HeroImage, NavGroup,
-    NavItem, PageData, SocialLinks, SsgConfig, ThemeColors, ThemeConfig, ThemeEmbed, ThemeFonts,
-    ThemeFooter, ThemeHeader, ThemeLayout, TocEntry,
+    generate_html, EntryPageConfig, FeatureConfig, HeroAction, HeroConfig, HeroImage, LocaleInfo,
+    NavGroup, NavItem, PageData, SocialLinks, SsgConfig, ThemeColors, ThemeConfig, ThemeEmbed,
+    ThemeFonts, ThemeFooter, ThemeHeader, ThemeLayout, TocEntry,
 };

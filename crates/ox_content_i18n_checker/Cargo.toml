@@ -1,0 +1,28 @@
+[package]
+name = "ox_content_i18n_checker"
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Static checker for i18n translation keys in Ox Content"
+
+[lints]
+workspace = true
+
+[dependencies]
+ox_content_i18n = { workspace = true }
+oxc_allocator = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_span = { workspace = true }
+miette = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }

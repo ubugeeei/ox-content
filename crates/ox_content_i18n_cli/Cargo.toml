@@ -1,0 +1,26 @@
+[package]
+name = "ox_content_i18n_cli"
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "CLI tool for i18n checking in Ox Content"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "ox-content-i18n"
+path = "src/main.rs"
+
+[dependencies]
+ox_content_i18n = { workspace = true }
+ox_content_i18n_checker = { workspace = true }
+clap = { version = "4", features = ["derive"] }
+miette = { workspace = true }
+serde_json = { workspace = true }
