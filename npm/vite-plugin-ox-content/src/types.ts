@@ -2,6 +2,7 @@
  * Type definitions for @ox-content/vite-plugin
  */
 
+import type { LanguageRegistration } from "shiki";
 import type { ThemeConfig, ResolvedThemeConfig } from "./theme";
 
 // =============================================================================
@@ -226,6 +227,13 @@ export interface OxContentOptions {
   highlightTheme?: string;
 
   /**
+   * Additional languages for syntax highlighting.
+   * Accepts Shiki LanguageRegistration objects (e.g., TextMate grammars).
+   * These are loaded alongside the built-in languages.
+   */
+  highlightLangs?: LanguageRegistration[];
+
+  /**
    * Enable mermaid diagram rendering.
    * @default false
    */
@@ -302,6 +310,7 @@ export interface ResolvedOptions {
   strikethrough: boolean;
   highlight: boolean;
   highlightTheme: string;
+  highlightLangs: LanguageRegistration[];
   mermaid: boolean;
   frontmatter: boolean;
   toc: boolean;

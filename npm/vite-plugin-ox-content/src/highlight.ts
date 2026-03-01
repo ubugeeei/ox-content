@@ -6,7 +6,39 @@ import { unified } from "unified";
 import rehypeParse from "rehype-parse";
 import rehypeStringify from "rehype-stringify";
 import type { Root, Element } from "hast";
-import { createHighlighter, type Highlighter, type BundledTheme } from "shiki";
+import {
+  createHighlighter,
+  type Highlighter,
+  type BundledTheme,
+  type LanguageRegistration,
+} from "shiki";
+
+const BUILTIN_LANGS = [
+  "javascript",
+  "typescript",
+  "jsx",
+  "tsx",
+  "vue",
+  "svelte",
+  "html",
+  "css",
+  "scss",
+  "json",
+  "yaml",
+  "markdown",
+  "bash",
+  "shell",
+  "rust",
+  "python",
+  "go",
+  "java",
+  "c",
+  "cpp",
+  "sql",
+  "graphql",
+  "diff",
+  "toml",
+] as const;
 
 // Cached highlighter instance
 let highlighterPromise: Promise<Highlighter> | null = null;
@@ -14,36 +46,14 @@ let highlighterPromise: Promise<Highlighter> | null = null;
 /**
  * Get or create the Shiki highlighter.
  */
-async function getHighlighter(theme: string): Promise<Highlighter> {
+async function getHighlighter(
+  theme: string,
+  customLangs: LanguageRegistration[] = [],
+): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: [theme as BundledTheme],
-      langs: [
-        "javascript",
-        "typescript",
-        "jsx",
-        "tsx",
-        "vue",
-        "svelte",
-        "html",
-        "css",
-        "scss",
-        "json",
-        "yaml",
-        "markdown",
-        "bash",
-        "shell",
-        "rust",
-        "python",
-        "go",
-        "java",
-        "c",
-        "cpp",
-        "sql",
-        "graphql",
-        "diff",
-        "toml",
-      ],
+      langs: [...BUILTIN_LANGS, ...customLangs],
     });
   }
   return highlighterPromise;
@@ -52,11 +62,11 @@ async function getHighlighter(theme: string): Promise<Highlighter> {
 /**
  * Rehype plugin for syntax highlighting with Shiki.
  */
-function rehypeShikiHighlight(options: { theme: string }) {
-  const { theme } = options;
+function rehypeShikiHighlight(options: { theme: string; langs?: LanguageRegistration[] }) {
+  const { theme, langs } = options;
 
   return async (tree: Root) => {
-    const highlighter = await getHighlighter(theme);
+    const highlighter = await getHighlighter(theme, langs);
 
     // Find all pre > code elements
     const visit = async (node: Root | Element) => {
@@ -137,10 +147,14 @@ function getTextContent(node: Element | Root): string {
 /**
  * Apply syntax highlighting to HTML using Shiki.
  */
-export async function highlightCode(html: string, theme: string = "github-dark"): Promise<string> {
+export async function highlightCode(
+  html: string,
+  theme: string = "github-dark",
+  langs: LanguageRegistration[] = [],
+): Promise<string> {
   const result = await unified()
     .use(rehypeParse, { fragment: true })
-    .use(rehypeShikiHighlight, { theme })
+    .use(rehypeShikiHighlight, { theme, langs })
     .use(rehypeStringify)
     .process(html);
 

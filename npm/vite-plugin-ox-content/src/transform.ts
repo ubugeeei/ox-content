@@ -414,7 +414,7 @@ export async function transformMarkdown(
 
   // Apply syntax highlighting if enabled
   if (options.highlight) {
-    html = await highlightCode(html, options.highlightTheme);
+    html = await highlightCode(html, options.highlightTheme, options.highlightLangs);
   }
 
   // Restore protected SVGs
