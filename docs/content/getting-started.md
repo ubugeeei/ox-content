@@ -368,23 +368,26 @@ See the [Benchmarks section](./index.md#benchmarks) for the latest results and t
 The playground provides an interactive environment to test the parser:
 
 ```bash
-# Install dependencies and start dev server
-mise run playground-install
+# Start docs and playground together
+mise run dev
+
+# Or run only the playground
 mise run playground
 
 # Or manually
-cd playground
-npm install
-npm run dev
+cd examples/playground
+pnpm dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173) in your browser.
+Then open [http://127.0.0.1:5173](http://127.0.0.1:5173) for the playground and
+[http://127.0.0.1:4173](http://127.0.0.1:4173) for the docs site.
 
 **Features:**
 - Live Markdown preview
-- AST visualization
-- Syntax highlighting
-- Performance metrics
+- HTML output inspection
+- Pseudo AST visualization
+- Simple split-pane editor
+- Copy actions for source and output
 
 ## Troubleshooting
 

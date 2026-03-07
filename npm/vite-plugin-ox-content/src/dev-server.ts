@@ -127,8 +127,64 @@ function injectViteHmrClient(html: string): string {
   const hmrScript = `<script type="module" src="/@vite/client"></script>
 <script type="module">
 if (import.meta.hot) {
+  const reexecuteBodyScripts = () => {
+    const scripts = Array.from(document.body.querySelectorAll('script'));
+    for (const script of scripts) {
+      const nextScript = document.createElement('script');
+      for (const attr of script.attributes) {
+        nextScript.setAttribute(attr.name, attr.value);
+      }
+      nextScript.textContent = script.textContent;
+      script.replaceWith(nextScript);
+    }
+  };
+
+  const applyHotUpdate = async () => {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set('__ox_hmr', String(Date.now()));
+
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const theme = document.documentElement.getAttribute('data-theme');
+
+    const response = await fetch(nextUrl.toString(), {
+      cache: 'no-store',
+      headers: {
+        'x-ox-content-hmr': '1',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch updated page');
+    }
+
+    const nextHtml = await response.text();
+    const nextDocument = new DOMParser().parseFromString(nextHtml, 'text/html');
+
+    if (!nextDocument.body) {
+      throw new Error('Updated page is missing a body');
+    }
+
+    document.title = nextDocument.title;
+    document.body.innerHTML = nextDocument.body.innerHTML;
+    reexecuteBodyScripts();
+
+    if (theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    window.scrollTo({ left: scrollX, top: scrollY });
+  };
+
+  let pendingUpdate = Promise.resolve();
+
   import.meta.hot.on('ox-content:update', () => {
-    location.reload();
+    pendingUpdate = pendingUpdate
+      .then(() => applyHotUpdate())
+      .catch((error) => {
+        console.warn('[ox-content] HMR patch failed, falling back to reload.', error);
+        location.reload();
+      });
   });
 }
 </script>`;

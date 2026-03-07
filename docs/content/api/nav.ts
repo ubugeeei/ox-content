@@ -12,6 +12,18 @@ export interface NavItem {
 
 export const apiNav: NavItem[] = [
   {
+    "title": "Browser",
+    "path": "/api/browser"
+  },
+  {
+    "title": "Cache",
+    "path": "/api/cache"
+  },
+  {
+    "title": "Dev Server",
+    "path": "/api/dev-server"
+  },
+  {
     "title": "Docs",
     "path": "/api/docs"
   },
@@ -20,8 +32,16 @@ export const apiNav: NavItem[] = [
     "path": "/api/environment"
   },
   {
+    "title": "Github",
+    "path": "/api/github"
+  },
+  {
     "title": "Highlight",
     "path": "/api/highlight"
+  },
+  {
+    "title": "I18n",
+    "path": "/api/i18n"
   },
   {
     "title": "Jsx Runtime",
@@ -36,8 +56,24 @@ export const apiNav: NavItem[] = [
     "path": "/api/mermaid"
   },
   {
+    "title": "Mermaid Protect",
+    "path": "/api/mermaid-protect"
+  },
+  {
     "title": "Nav Generator",
     "path": "/api/nav-generator"
+  },
+  {
+    "title": "Ogp",
+    "path": "/api/ogp"
+  },
+  {
+    "title": "Overview",
+    "path": "/api/index"
+  },
+  {
+    "title": "Overview",
+    "path": "/api/index"
   },
   {
     "title": "Overview",
@@ -48,12 +84,28 @@ export const apiNav: NavItem[] = [
     "path": "/api/page-context"
   },
   {
+    "title": "Parse",
+    "path": "/api/parse"
+  },
+  {
+    "title": "Renderer",
+    "path": "/api/renderer"
+  },
+  {
     "title": "Search",
     "path": "/api/search"
   },
   {
     "title": "Ssg",
     "path": "/api/ssg"
+  },
+  {
+    "title": "Tabs",
+    "path": "/api/tabs"
+  },
+  {
+    "title": "Template",
+    "path": "/api/template"
   },
   {
     "title": "Theme",
@@ -70,5 +122,13 @@ export const apiNav: NavItem[] = [
   {
     "title": "Types",
     "path": "/api/types"
+  },
+  {
+    "title": "Types",
+    "path": "/api/types"
+  },
+  {
+    "title": "Youtube",
+    "path": "/api/youtube"
   }
 ] as const;

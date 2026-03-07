@@ -79,6 +79,22 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
   let config: ResolvedConfig;
   let _server: ViteDevServer | undefined;
 
+  async function regenerateDocs(root: string): Promise<number> {
+    const docsOptions = resolvedOptions.docs;
+    if (!docsOptions || !docsOptions.enabled) {
+      return 0;
+    }
+
+    const srcDirs = docsOptions.src.map((src) => path.resolve(root, src));
+    const outDir = path.resolve(root, docsOptions.out);
+    const extracted = await extractDocs(srcDirs, docsOptions);
+    const generated = generateMarkdown(extracted, docsOptions);
+
+    await writeDocs(generated, outDir, extracted, docsOptions);
+
+    return Object.keys(generated).length;
+  }
+
   const mainPlugin: Plugin = {
     name: "ox-content",
 
@@ -181,22 +197,11 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
         return;
       }
 
-      // Generate docs at build start
       const root = config?.root || process.cwd();
-      const srcDirs = docsOptions.src.map((src) => path.resolve(root, src));
-      const outDir = path.resolve(root, docsOptions.out);
 
       try {
-        const extracted = await extractDocs(srcDirs, docsOptions);
-
-        if (extracted.length > 0) {
-          const generated = generateMarkdown(extracted, docsOptions);
-          await writeDocs(generated, outDir, extracted, docsOptions);
-
-          console.log(
-            `[ox-content] Generated ${Object.keys(generated).length} documentation files to ${docsOptions.out}`,
-          );
-        }
+        const count = await regenerateDocs(root);
+        console.log(`[ox-content] Generated ${count} documentation files to ${docsOptions.out}`);
       } catch (err) {
         console.warn("[ox-content] Failed to generate documentation:", err);
       }
@@ -217,20 +222,18 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
       }
 
       // Regenerate docs on file changes
-      devServer.watcher.on("change", async (file) => {
+      devServer.watcher.on("all", async (event, file) => {
+        if (event !== "add" && event !== "change" && event !== "unlink") {
+          return;
+        }
+
         const isSourceFile = srcDirs.some(
           (srcDir) => file.startsWith(srcDir) && (file.endsWith(".ts") || file.endsWith(".tsx")),
         );
 
         if (isSourceFile) {
-          const outDir = path.resolve(root, docsOptions.out);
-
           try {
-            const extracted = await extractDocs(srcDirs, docsOptions);
-            if (extracted.length > 0) {
-              const generated = generateMarkdown(extracted, docsOptions);
-              await writeDocs(generated, outDir, extracted, docsOptions);
-            }
+            await regenerateDocs(root);
           } catch {
             // Ignore errors during dev
           }
@@ -258,11 +261,21 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
       devServer.watcher.on("add", (file: string) => {
         if (file.startsWith(srcDir) && file.endsWith(".md")) {
           invalidateNavCache(ssgDevCache);
+          devServer.ws.send({
+            type: "custom",
+            event: "ox-content:update",
+            data: { file, type: "add" },
+          });
         }
       });
       devServer.watcher.on("unlink", (file: string) => {
         if (file.startsWith(srcDir) && file.endsWith(".md")) {
           invalidateNavCache(ssgDevCache);
+          devServer.ws.send({
+            type: "custom",
+            event: "ox-content:update",
+            data: { file, type: "unlink" },
+          });
         }
       });
 

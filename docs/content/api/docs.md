@@ -27,7 +27,7 @@ Patterns support:
 - Results are not cached; call once per build/dev session
 Each ExtractedDocs object contains file path and array of DocEntry items.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L102)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L104)**
 
 ```typescript
 export async function extractDocs(
@@ -86,7 +86,7 @@ const docs = await extractDocs(
 
 Recursively finds all source files matching include/exclude patterns.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L189)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L191)**
 
 ```typescript
 async function findFiles(dir: string, options: ResolvedDocsOptions): Promise<string[]>
@@ -104,7 +104,7 @@ async function findFiles(dir: string, options: ResolvedDocsOptions): Promise<str
 
 Extracts documentation entries from file content.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L246)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L248)**
 
 ```typescript
 function extractFromContent(
@@ -128,7 +128,7 @@ Extracts the complete function signature for display.
 Captures the full function declaration from `export/async/function name(...): ReturnType`
 or `export const name = (...): ReturnType => {}`, handling multi-line signatures.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L276)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L278)**
 
 ```typescript
 function extractFunctionSignature(signature: string): string | undefined
@@ -159,7 +159,7 @@ Handles various function declaration styles:
 - `const name = (param: type): ReturnType => {}`
 - `export async function name(param: type): Promise<ReturnType>`
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L309)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L311)**
 
 ```typescript
 function extractTypesFromSignature(
@@ -190,7 +190,7 @@ Handles cases like:
 - `a: string, b: number` → `["a: string", "b: number"]`
 - `a: Promise<string>, b: Record<string, any>` → `["a: Promise<string>", "b: Record<string, any>"]`
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L378)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L380)**
 
 ```typescript
 function splitParameters(paramListStr: string): string[]
@@ -215,7 +215,7 @@ function splitParameters(paramListStr: string): string[]
 Parses a JSDoc block and the following declaration.
 Only matches if the declaration is immediately after the JSDoc (with only whitespace/keywords between).
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L417)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L419)**
 
 ---
 
@@ -225,7 +225,7 @@ Only matches if the declaration is immediately after the JSDoc (with only whites
 
 Generates Markdown documentation from extracted docs.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L583)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L585)**
 
 ```typescript
 export function generateMarkdown(
@@ -246,7 +246,7 @@ export function generateMarkdown(
 
 Symbol location info for cross-file linking.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L781)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L783)**
 
 ---
 
@@ -264,7 +264,7 @@ Output: "See [transformMarkdown](#transformmarkdown) for usage"
 Input: "Uses [NavItem](./types.md#navitem) interface" (different file: types.ts)
 Output: "Uses [NavItem](./types.md#navitem) interface"
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L790)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L792)**
 
 ```typescript
 function convertSymbolLinks(
@@ -294,7 +294,7 @@ function convertSymbolLinks(
 
 Builds a map of all symbols to their file locations.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L836)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L838)**
 
 ```typescript
 function buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation>
@@ -312,7 +312,7 @@ function buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation>
 
 Writes generated documentation to the output directory.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L860)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L862)**
 
 ---
 
@@ -322,7 +322,7 @@ Writes generated documentation to the output directory.
 
 Generates a GitHub source link for a file and optional line number.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L888)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L918)**
 
 ```typescript
 function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: number): string

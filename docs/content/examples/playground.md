@@ -5,47 +5,47 @@ Interactive web playground for testing Markdown parsing.
 ## Setup
 
 ```bash
-cd examples/playground
-pnpm install
-pnpm dev
+# Start docs and playground together
+mise run dev
+
+# Or run only the playground
+mise run playground
 ```
 
 ## Features
 
-- **Live Preview**: See rendered HTML as you type
-- **AST Viewer**: Inspect the parsed AST structure
-- **Performance Metrics**: View parsing and rendering times
-- **GFM Toggle**: Enable/disable GitHub Flavored Markdown
-- **Syntax Highlighting**: Code blocks with highlighting
+- **Live Preview**: Edit Markdown and see the rendered result immediately
+- **HTML Output**: Inspect the generated HTML in a dedicated pane
+- **Pseudo AST Viewer**: Inspect a browser-friendly AST-style structure
+- **Minimal UI**: A simple split view with source on the left and output on the right
+- **Copy Actions**: Copy the current source or rendered output with one click
 
 ## Architecture
 
-The playground uses the `@ox-content/napi` package directly:
+The playground currently uses a lightweight browser-side parser shim:
 
 ```ts
-import { parseMarkdown, parseAndRender } from '@ox-content/napi';
+const result = parseMarkdown(input)
 
-// Get AST for visualization
-const ast = parseMarkdown(input, { gfm: true });
-
-// Get rendered HTML for preview
-const { html } = parseAndRender(input, { gfm: true });
+preview.innerHTML = result.html
+htmlPane.textContent = result.html
+astPane.textContent = result.ast
 ```
 
-## UI Components
-
-- **Editor**: Monaco Editor for Markdown input
-- **Preview**: Rendered HTML output
-- **AST Tree**: Collapsible AST visualization
-- **Toolbar**: Options and performance stats
+This keeps the demo easy to run in a plain Vite app while still making the
+output inspectable. Use native bindings when you need parser-accurate behavior.
 
 ## Running
 
 ```bash
-# Development
-pnpm dev
+# Start docs and playground together
+mise run dev
+
+# Start only the playground
+mise run playground
 
 # Build for production
+cd examples/playground
 pnpm build
 
 # Preview production build

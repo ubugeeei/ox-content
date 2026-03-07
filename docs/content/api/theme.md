@@ -62,11 +62,11 @@ Social links configuration.
 
 ---
 
-## ThemeSlots
+## ThemeEmbed
 
 `interface`
 
-Theme slots for injecting custom HTML.
+Embedded HTML content for specific positions in the page layout.
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L87)**
 
@@ -169,7 +169,7 @@ const merged = mergeThemes(defaultTheme, customTheme, overrides);
 
 Resolves a theme configuration by merging with its extends chain and defaults.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L284)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L287)**
 
 ```typescript
 export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig
@@ -187,7 +187,7 @@ export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig
 
 Converts resolved theme to the format expected by Rust NAPI.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L325)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L328)**
 
 ```typescript
 export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig
@@ -205,7 +205,7 @@ export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig
 
 NAPI-compatible theme colors type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L397)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L400)**
 
 ---
 
@@ -215,7 +215,7 @@ NAPI-compatible theme colors type.
 
 NAPI-compatible theme fonts type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L412)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L415)**
 
 ---
 
@@ -225,7 +225,7 @@ NAPI-compatible theme fonts type.
 
 NAPI-compatible theme layout type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L420)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L423)**
 
 ---
 
@@ -235,7 +235,7 @@ NAPI-compatible theme layout type.
 
 NAPI-compatible theme header type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L429)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L432)**
 
 ---
 
@@ -245,7 +245,7 @@ NAPI-compatible theme header type.
 
 NAPI-compatible theme footer type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L438)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L441)**
 
 ---
 
@@ -255,17 +255,17 @@ NAPI-compatible theme footer type.
 
 NAPI-compatible social links type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L446)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L449)**
 
 ---
 
-## NapiThemeSlots
+## NapiThemeEmbed
 
 `interface`
 
-NAPI-compatible theme slots type.
+NAPI-compatible theme embed type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L455)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L458)**
 
 ---
 
@@ -275,7 +275,7 @@ NAPI-compatible theme slots type.
 
 NAPI-compatible theme configuration type.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L470)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L473)**
 
 ---
 

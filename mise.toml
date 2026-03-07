@@ -200,11 +200,26 @@ description = "Run source docs generator example"
 dir = "examples/gen-source-docs"
 run = "pnpm run dev"
 
-[tasks.dev]
+[tasks."dev:docs"]
 description = "Start documentation dev server"
 depends = ["build:npm"]
 dir = "docs"
 run = "pnpm dev"
+
+[tasks."dev:playground"]
+description = "Start playground dev server"
+dir = "examples/playground"
+run = "pnpm dev"
+
+[tasks.dev]
+description = "Start documentation and playground dev servers"
+depends = ["build:npm"]
+run = """
+trap 'kill 0' EXIT INT TERM
+pnpm --dir docs dev &
+pnpm --dir examples/playground dev &
+wait
+"""
 
 [tasks.dev-build]
 description = "Build documentation site"

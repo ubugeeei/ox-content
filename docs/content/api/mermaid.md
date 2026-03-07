@@ -1,53 +1,21 @@
 # mermaid.ts
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/mermaid.ts)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/mermaid.ts)**
 
-## getTextContent
-
-`function`
-
-Extract text content from a hast node.
-
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/mermaid.ts#L13)**
-
-```typescript
-function getTextContent(node: Element | Root): string
-```
-
-### Returns
-
-`string` - 
-
----
-
-## rehypeMermaid
+## transformMermaidStatic
 
 `function`
 
-Rehype plugin to transform mermaid code blocks.
-Replaces ```mermaid blocks with a wrapper element
-that can be rendered client-side.
+Transforms mermaid code blocks in HTML to rendered SVG diagrams.
+Uses the native Rust NAPI transformMermaid function.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/mermaid.ts#L32)**
-
-```typescript
-function rehypeMermaid()
-```
-
----
-
-## transformMermaid
-
-`function`
-
-Transform mermaid code blocks in HTML.
-Creates wrapper elements that can be rendered client-side
-by the mermaid runtime.
-
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/mermaid.ts#L103)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/mermaid.ts#L73)**
 
 ```typescript
-export async function transformMermaid(html: string): Promise<string>
+export async function transformMermaidStatic(
+  html: string,
+  _options?: MermaidOptions,
+  ): Promise<string>
 ```
 
 ### Returns
