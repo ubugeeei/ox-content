@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
         docs: {
           enabled: true,
           src: ["../npm/vite-plugin-ox-content/src"],
-          out: "api",
+          out: "content/api",
           include: ["**/*.ts"],
           exclude: ["**/*.test.*"],
           toc: true,
@@ -60,6 +60,14 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
+
+    server: {
+      port: 4173,
+    },
+
+    preview: {
+      port: 4173,
+    },
 
     build: {
       outDir: "dist/docs",

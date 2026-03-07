@@ -38,7 +38,7 @@ Base HTML attributes shared by all elements.
 
 Type for intrinsic element constructors.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx.d.ts#L738)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx.d.ts#L707)**
 
 ---
 
@@ -48,7 +48,7 @@ Type for intrinsic element constructors.
 
 Props for a specific intrinsic element.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx.d.ts#L743)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx.d.ts#L712)**
 
 ---
 

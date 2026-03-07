@@ -51,10 +51,7 @@ Renders a page using the theme component.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L75)**
 
 ```typescript
-export function renderPage(
-  page: PageData,
-  options: ThemeRenderOptions
-  ): string
+export function renderPage(page: PageData, options: ThemeRenderOptions): string
 ```
 
 ### Parameters
@@ -76,12 +73,12 @@ export function renderPage(
 
 Renders all pages and generates type definitions.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L144)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L141)**
 
 ```typescript
 export async function renderAllPages(
   pages: PageData[],
-  options: ThemeRenderOptions
+  options: ThemeRenderOptions,
   ): Promise<Map<string, string>>
 ```
 
@@ -104,13 +101,10 @@ export async function renderAllPages(
 
 Generates TypeScript type definitions from page frontmatter.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L171)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L168)**
 
 ```typescript
-export async function generateTypes(
-  pages: PageData[],
-  outDir: string
-  ): Promise<void>
+export async function generateTypes(pages: PageData[], outDir: string): Promise<void>
 ```
 
 ### Parameters
@@ -133,7 +127,7 @@ export async function generateTypes(
 Default theme component.
 A minimal theme that renders page content with basic styling.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L193)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L187)**
 
 ### Returns
 
@@ -147,7 +141,7 @@ A minimal theme that renders page content with basic styling.
 
 Creates a theme with layout switching support.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L249)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L243)**
 
 ### Returns
 

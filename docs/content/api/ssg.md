@@ -8,7 +8,7 @@
 
 Navigation item for SSG.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L21)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L26)**
 
 ---
 
@@ -18,7 +18,7 @@ Navigation item for SSG.
 
 Entry page configuration for SSG (passed to Rust).
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L31)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L36)**
 
 ---
 
@@ -28,7 +28,7 @@ Entry page configuration for SSG (passed to Rust).
 
 Page data for SSG.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L39)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L44)**
 
 ---
 
@@ -38,7 +38,7 @@ Page data for SSG.
 
 Resolves SSG options with defaults.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L797)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L803)**
 
 ```typescript
 export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): ResolvedSsgOptions
@@ -56,7 +56,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
 
 Simple mustache-like template rendering.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L835)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L841)**
 
 ```typescript
 function renderTemplate(template: string, data: Record<string, unknown>): string
@@ -74,10 +74,10 @@ function renderTemplate(template: string, data: Record<string, unknown>): string
 
 Extracts title from content or frontmatter.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L861)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L872)**
 
 ```typescript
-function extractTitle(content: string, frontmatter: Record<string, unknown>): string
+export function extractTitle(content: string, frontmatter: Record<string, unknown>): string
 ```
 
 ### Returns
@@ -92,7 +92,7 @@ function extractTitle(content: string, frontmatter: Record<string, unknown>): st
 
 Generates navigation HTML from nav groups.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L877)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L888)**
 
 ```typescript
 function _generateNavHtml(navGroups: NavGroup[], currentPath: string): string
@@ -110,7 +110,7 @@ function _generateNavHtml(navGroups: NavGroup[], currentPath: string): string
 
 Generates TOC HTML from toc entries.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L901)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L912)**
 
 ```typescript
 function _generateTocHtml(toc: TocEntry[]): string
@@ -128,7 +128,7 @@ function _generateTocHtml(toc: TocEntry[]): string
 
 Generates bare HTML page (no navigation, no styles).
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L920)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L931)**
 
 ```typescript
 export function generateBareHtmlPage(content: string, title: string): string
@@ -146,7 +146,7 @@ export function generateBareHtmlPage(content: string, title: string): string
 
 Generates HTML page with navigation using Rust NAPI bindings.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L930)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L941)**
 
 ---
 
@@ -156,7 +156,7 @@ Generates HTML page with navigation using Rust NAPI bindings.
 
 Converts a markdown file path to its corresponding HTML output path.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1015)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1026)**
 
 ---
 
@@ -166,10 +166,10 @@ Converts a markdown file path to its corresponding HTML output path.
 
 Converts a markdown file path to a relative URL path.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1035)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1046)**
 
 ```typescript
-function getUrlPath(inputPath: string, srcDir: string): string
+export function getUrlPath(inputPath: string, srcDir: string): string
 ```
 
 ### Returns
@@ -184,15 +184,7 @@ function getUrlPath(inputPath: string, srcDir: string): string
 
 Converts a markdown file path to an href.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1049)**
-
-```typescript
-function getHref(inputPath: string, srcDir: string, base: string, extension: string): string
-```
-
-### Returns
-
-`string` - 
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1060)**
 
 ---
 
@@ -202,7 +194,7 @@ function getHref(inputPath: string, srcDir: string, base: string, extension: str
 
 Gets the OG image output path for a given markdown file.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1060)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1076)**
 
 ```typescript
 function getOgImagePath(inputPath: string, srcDir: string, outDir: string): string
@@ -221,7 +213,7 @@ function getOgImagePath(inputPath: string, srcDir: string, outDir: string): stri
 Gets the OG image URL for use in meta tags.
 If siteUrl is provided, returns an absolute URL (required for SNS sharing).
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1075)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1091)**
 
 ```typescript
 function getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?: string): string
@@ -239,7 +231,7 @@ function getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?
 
 Gets display title from file path.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1097)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1113)**
 
 ```typescript
 function getDisplayTitle(filePath: string): string
@@ -257,10 +249,10 @@ function getDisplayTitle(filePath: string): string
 
 Formats a file/dir name as a title.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1114)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1130)**
 
 ```typescript
-function formatTitle(name: string): string
+export function formatTitle(name: string): string
 ```
 
 ### Returns
@@ -275,7 +267,7 @@ function formatTitle(name: string): string
 
 Collects all markdown files from the source directory.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1123)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1139)**
 
 ```typescript
 export async function collectMarkdownFiles(srcDir: string): Promise<string[]>
@@ -293,7 +285,7 @@ export async function collectMarkdownFiles(srcDir: string): Promise<string[]>
 
 Navigation group for hierarchical navigation.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1135)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1151)**
 
 ---
 
@@ -303,7 +295,7 @@ Navigation group for hierarchical navigation.
 
 Builds navigation items from markdown files, grouped by directory.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1143)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1159)**
 
 ---
 
@@ -313,7 +305,7 @@ Builds navigation items from markdown files, grouped by directory.
 
 Builds all markdown files to static HTML.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1228)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1244)**
 
 ```typescript
 export async function buildSsg(

@@ -129,7 +129,7 @@ function PageTitle() {
 
 Gets the site configuration.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L148)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L150)**
 
 ```typescript
 export function useSiteConfig(): SiteConfig
@@ -156,7 +156,7 @@ function SiteHeader() {
 
 Gets the full render context.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L172)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L174)**
 
 ### Returns
 
@@ -184,7 +184,7 @@ function Layout({ children }) {
 
 Gets the navigation groups.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L201)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L205)**
 
 ```typescript
 export function useNav(): NavGroup[]
@@ -224,7 +224,7 @@ function Sidebar() {
 
 Checks if the given path is the current page.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L229)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L233)**
 
 ```typescript
 export function useIsActive(path: string): boolean
@@ -251,7 +251,7 @@ function NavLink({ href, children }) {
 
 Schema for frontmatter type generation.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L247)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L251)**
 
 ---
 
@@ -261,7 +261,7 @@ Schema for frontmatter type generation.
 
 Infers TypeScript types from frontmatter values.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L261)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L265)**
 
 ```typescript
 export function inferType(value: unknown): string
@@ -279,12 +279,12 @@ export function inferType(value: unknown): string
 
 Generates TypeScript interface from frontmatter samples.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L287)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L289)**
 
 ```typescript
 export function generateFrontmatterTypes(
   samples: Record<string, unknown>[],
-  interfaceName = "PageFrontmatter"
+  interfaceName = "PageFrontmatter",
   ): string
 ```
 

@@ -8,7 +8,7 @@
 
 Hero section action button.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L11)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L12)**
 
 ---
 
@@ -18,7 +18,7 @@ Hero section action button.
 
 Hero section image configuration.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L23)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L24)**
 
 ---
 
@@ -28,7 +28,7 @@ Hero section image configuration.
 
 Hero section configuration for entry page.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L37)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L38)**
 
 ---
 
@@ -38,7 +38,7 @@ Hero section configuration for entry page.
 
 Feature card for entry page.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L53)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L54)**
 
 ---
 
@@ -48,7 +48,7 @@ Feature card for entry page.
 
 Entry page frontmatter configuration.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L69)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L70)**
 
 ---
 
@@ -58,7 +58,7 @@ Entry page frontmatter configuration.
 
 SSG (Static Site Generation) options.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L81)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L82)**
 
 ---
 
@@ -68,7 +68,7 @@ SSG (Static Site Generation) options.
 
 Resolved SSG options.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L142)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L143)**
 
 ---
 
@@ -78,7 +78,7 @@ Resolved SSG options.
 
 Plugin options.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L157)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L158)**
 
 ---
 
@@ -88,7 +88,7 @@ Plugin options.
 
 Resolved options with all defaults applied.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L283)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L305)**
 
 ---
 
@@ -97,8 +97,19 @@ Resolved options with all defaults applied.
 `interface`
 
 OG image generation options.
+Uses Chromium-based rendering with customizable templates.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L309)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L334)**
+
+---
+
+## ResolvedOgImageOptions
+
+`interface`
+
+Resolved OG image options with all defaults applied.
+
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L383)**
 
 ---
 
@@ -108,7 +119,7 @@ OG image generation options.
 
 Custom AST transformer.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L349)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L395)**
 
 ---
 
@@ -118,7 +129,7 @@ Custom AST transformer.
 
 Transform context passed to transformers.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L364)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L410)**
 
 ---
 
@@ -128,7 +139,7 @@ Transform context passed to transformers.
 
 Markdown AST node (simplified for TypeScript).
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L384)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L430)**
 
 ---
 
@@ -138,7 +149,7 @@ Markdown AST node (simplified for TypeScript).
 
 Transform result.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L394)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L440)**
 
 ---
 
@@ -148,7 +159,7 @@ Transform result.
 
 Table of contents entry.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L424)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L470)**
 
 ---
 
@@ -158,7 +169,7 @@ Table of contents entry.
 
 Options for source documentation generation.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L453)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L499)**
 
 ---
 
@@ -168,7 +179,7 @@ Options for source documentation generation.
 
 Resolved docs options with all defaults applied.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L525)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L571)**
 
 ---
 
@@ -178,7 +189,7 @@ Resolved docs options with all defaults applied.
 
 A single documentation entry extracted from source.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L542)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L588)**
 
 ---
 
@@ -188,7 +199,7 @@ A single documentation entry extracted from source.
 
 Parameter documentation.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L559)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L605)**
 
 ---
 
@@ -198,7 +209,7 @@ Parameter documentation.
 
 Return type documentation.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L570)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L616)**
 
 ---
 
@@ -208,7 +219,7 @@ Return type documentation.
 
 Extracted documentation for a single file.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L578)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L624)**
 
 ---
 
@@ -218,7 +229,7 @@ Extracted documentation for a single file.
 
 Navigation item for sidebar navigation.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L586)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L632)**
 
 ---
 
@@ -228,7 +239,7 @@ Navigation item for sidebar navigation.
 
 Options for full-text search.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L610)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L656)**
 
 ---
 
@@ -238,7 +249,7 @@ Options for full-text search.
 
 Resolved search options.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L645)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L691)**
 
 ---
 
@@ -248,7 +259,7 @@ Resolved search options.
 
 Search document structure.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L656)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L702)**
 
 ---
 
@@ -258,7 +269,37 @@ Search document structure.
 
 Search result structure.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L668)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L714)**
+
+---
+
+## LocaleConfig
+
+`interface`
+
+Locale configuration.
+
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L730)**
+
+---
+
+## I18nOptions
+
+`interface`
+
+i18n (internationalization) options.
+
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L742)**
+
+---
+
+## ResolvedI18nOptions
+
+`interface`
+
+Resolved i18n options with all defaults applied.
+
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L790)**
 
 ---
 

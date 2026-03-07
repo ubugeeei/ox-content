@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "monaco-editor": "^0.55.1",
     "vite": "catalog:"
   }
 }

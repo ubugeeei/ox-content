@@ -1,70 +1,29 @@
 # index.ts
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/index.ts)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/index.ts)**
 
-## oxContent
+## TransformAllOptions
 
-`function`
+`interface`
 
-Creates the Ox Content Vite plugin.
+Transform all plugin components in HTML.
+Call this during SSG build to process all plugins at once.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/index.ts#L44)**
-
-### Returns
-
-`Plugin[]` - 
-
-### Examples
-
-```ts
-// vite.config.ts
-import { defineConfig } from 'vite';
-import { oxContent } from '@ox-content/vite-plugin';
-export default defineConfig({
-  plugins: [
-    oxContent({
-      srcDir: 'content',
-      gfm: true,
-    }),
-  ],
-});
-```
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/index.ts#L32)**
 
 ---
 
-## resolveOptions
+## transformAllPlugins
 
 `function`
 
-Resolves plugin options with defaults.
+Transform all enabled plugins in HTML content.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/index.ts#L321)**
-
-```typescript
-function resolveOptions(options: OxContentOptions): ResolvedOptions
-```
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/index.ts#L45)**
 
 ### Returns
 
-`ResolvedOptions` - 
-
----
-
-## generateVirtualModule
-
-`function`
-
-Generates virtual module content.
-
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/index.ts#L349)**
-
-```typescript
-function generateVirtualModule(path: string, options: ResolvedOptions): string
-```
-
-### Returns
-
-`string` - 
+`Promise<string>` - 
 
 ---
 

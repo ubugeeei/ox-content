@@ -53,6 +53,8 @@ import * as fs from "fs";
 import * as path from "path";
 import type { ResolvedDocsOptions, ExtractedDocs, DocEntry, ParamDoc } from "./types";
 import { generateNavMetadata, generateNavCode } from "./nav-generator";
+
+const DOCS_MANIFEST_FILE = ".ox-content-docs-manifest.json";
 /**
  * Regex pattern for matching JSDoc comment blocks.
  *
@@ -868,6 +870,28 @@ export async function writeDocs(
 ): Promise<void> {
   await fs.promises.mkdir(outDir, { recursive: true });
 
+  const generatedFiles = new Set(Object.keys(docs));
+  if (extractedDocs && options?.generateNav && options.groupBy === "file") {
+    generatedFiles.add("nav.ts");
+  }
+
+  const manifestPath = path.join(outDir, DOCS_MANIFEST_FILE);
+  let previousFiles: string[] = [];
+
+  try {
+    previousFiles = JSON.parse(await fs.promises.readFile(manifestPath, "utf-8")) as string[];
+  } catch {
+    previousFiles = [];
+  }
+
+  for (const staleFile of previousFiles) {
+    if (generatedFiles.has(staleFile)) {
+      continue;
+    }
+
+    await fs.promises.rm(path.join(outDir, staleFile), { force: true });
+  }
+
   for (const [fileName, content] of Object.entries(docs)) {
     const filePath = path.join(outDir, fileName);
     await fs.promises.writeFile(filePath, content, "utf-8");
@@ -880,6 +904,12 @@ export async function writeDocs(
     const navFilePath = path.join(outDir, "nav.ts");
     await fs.promises.writeFile(navFilePath, navCode, "utf-8");
   }
+
+  await fs.promises.writeFile(
+    manifestPath,
+    JSON.stringify([...generatedFiles].sort(), null, 2),
+    "utf-8",
+  );
 }
 
 /**

@@ -4,73 +4,104 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ox Content Playground</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2312202a'/%3E%3Cpath d='M20 32c0-7.2 5.4-12 12-12s12 4.8 12 12-5.4 12-12 12-12-4.8-12-12Zm7 0c0 3.2 2.1 5.8 5 5.8s5-2.6 5-5.8-2.1-5.8-5-5.8-5 2.6-5 5.8Z' fill='%23f7efe4'/%3E%3C/svg%3E"
+    />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>Ox Content Playground</h1>
-        <p>Interactive Markdown parser and renderer</p>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-copy">
+          <p class="eyebrow">Ox Content</p>
+          <h1>Markdown Playground</h1>
+          <p class="topbar-note">Write once. Inspect Preview, HTML, or AST.</p>
+        </div>
       </header>
 
-      <main>
-        <div class="editor-panel">
-          <div class="panel-header">
-            <h2>Markdown Input</h2>
-          </div>
-          <textarea id="markdown-input" placeholder="Enter Markdown here...">
-# Welcome to Ox Content
-
-This is a **fast** and _pluggable_ Markdown parser.
-
-## Features
-
-- Arena-based allocation with bumpalo
-- CommonMark compliant
-- GFM extensions support
-
-## Code Example
-
-```rust
-fn main() {
-    println!("Hello, Ox Content!");
-}
-```
-
----
-
-> This is a blockquote.
-
-Visit the [Ox Content repository](https://github.com/ubugeeei/ox-content) for more information.
-          </textarea>
-        </div>
-
-        <div class="preview-panel">
-          <div class="panel-header">
-            <h2>HTML Output</h2>
-            <div class="tabs">
-              <button id="preview-tab" class="tab active">Preview</button>
-              <button id="html-tab" class="tab">HTML</button>
-              <button id="ast-tab" class="tab">AST</button>
+      <main class="workspace">
+        <section class="panel editor-panel">
+          <div class="panel-top">
+            <div class="panel-heading">
+              <p class="panel-eyebrow">Source</p>
+              <h2>Markdown</h2>
+            </div>
+            <div class="panel-actions">
+              <button id="reset-button" class="button button-muted" type="button">
+                Reset
+              </button>
+              <button
+                id="copy-markdown-button"
+                class="button button-accent"
+                type="button"
+              >
+                Copy source
+              </button>
             </div>
           </div>
-          <div id="preview-view" class="view active">
-            <div id="preview-content"></div>
-          </div>
-          <div id="html-view" class="view">
-            <pre id="html-content"></pre>
-          </div>
-          <div id="ast-view" class="view">
-            <pre id="ast-content"></pre>
-          </div>
-        </div>
-      </main>
 
-      <footer>
-        <p>
-          Powered by <strong>Ox Content</strong>
-        </p>
-      </footer>
+          <div class="editor-frame">
+            <span id="markdown-editor-label" class="sr-only">Markdown input</span>
+            <div id="markdown-editor" aria-labelledby="markdown-editor-label"></div>
+          </div>
+        </section>
+
+        <section class="output-column">
+          <section class="panel preview-panel">
+            <div class="panel-top">
+              <div class="panel-heading">
+                <p class="panel-eyebrow">Render</p>
+                <h2>Output</h2>
+              </div>
+              <div class="output-toolbar">
+                <div class="tab-list" role="tablist" aria-label="Output views">
+                  <button
+                    id="preview-tab"
+                    class="tab active"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                  >
+                    Preview
+                  </button>
+                  <button
+                    id="html-tab"
+                    class="tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                  >
+                    HTML
+                  </button>
+                  <button
+                    id="ast-tab"
+                    class="tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                  >
+                    AST
+                  </button>
+                </div>
+                <button id="copy-output-button" class="button button-muted" type="button">
+                  Copy HTML
+                </button>
+              </div>
+            </div>
+
+            <div id="preview-view" class="view active" role="tabpanel">
+              <article id="preview-content" class="prose"></article>
+            </div>
+            <div id="html-view" class="view" role="tabpanel">
+              <pre id="html-content"></pre>
+            </div>
+            <div id="ast-view" class="view" role="tabpanel">
+              <pre id="ast-content"></pre>
+            </div>
+          </section>
+        </section>
+      </main>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

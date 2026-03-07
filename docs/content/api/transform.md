@@ -10,7 +10,7 @@ NAPI bindings for Rust-based Markdown processing.
 Provides access to compiled Rust functions for high-performance
 Markdown parsing and rendering operations.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L39)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L40)**
 
 ---
 
@@ -20,7 +20,7 @@ Markdown parsing and rendering operations.
 
 OG image data for generating social media preview images.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L87)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L88)**
 
 ---
 
@@ -30,7 +30,7 @@ OG image data for generating social media preview images.
 
 OG image configuration.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L101)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L102)**
 
 ---
 
@@ -42,7 +42,7 @@ Options for Rust-based Markdown transformation.
 Controls which Markdown extensions and features are enabled
 during parsing and rendering.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L119)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L120)**
 
 ---
 
@@ -64,7 +64,7 @@ If NAPI bindings are not available (not built, wrong architecture, etc.),
 this function returns `null`. The caller should handle this gracefully
 or provide fallback behavior.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L207)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L208)**
 
 ```typescript
 async function loadNapiBindings(): Promise<NapiBindings | null>
@@ -95,7 +95,7 @@ const result = napi.transform(content, { gfm: true });
 
 SSG-specific transform options.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L350)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L351)**
 
 ---
 
@@ -106,7 +106,7 @@ SSG-specific transform options.
 Parses YAML frontmatter from Markdown content.
 Uses proper YAML parser for full nested object support.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L426)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L434)**
 
 ```typescript
 function parseFrontmatter(source: string):
@@ -120,7 +120,7 @@ function parseFrontmatter(source: string):
 
 Builds nested TOC tree from flat list.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L459)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L467)**
 
 ```typescript
 function buildTocTree(entries: TocEntry[]): TocEntry[]
@@ -138,7 +138,7 @@ function buildTocTree(entries: TocEntry[]): TocEntry[]
 
 Generates the JavaScript module code.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L484)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L492)**
 
 ---
 
@@ -149,7 +149,7 @@ Generates the JavaScript module code.
 Extracts imports from Markdown content.
 Supports importing components for interactive islands.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L538)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L546)**
 
 ```typescript
 export function extractImports(content: string): string[]
@@ -172,7 +172,7 @@ or converted to PNG/JPEG for broader compatibility.
 In the future, custom JS templates can be provided to override
 the default Rust-based template.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L555)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L563)**
 
 ```typescript
 export async function generateOgImageSvg(

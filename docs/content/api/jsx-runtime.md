@@ -73,7 +73,7 @@ JSX element type - either a string (intrinsic) or a function component.
 
 Valid JSX child types.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L141)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L139)**
 
 ---
 
@@ -83,7 +83,7 @@ Valid JSX child types.
 
 JSX node - the result of JSX expressions.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L153)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L144)**
 
 ---
 
@@ -93,7 +93,7 @@ JSX node - the result of JSX expressions.
 
 Props with children.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L160)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L151)**
 
 ---
 
@@ -103,7 +103,7 @@ Props with children.
 
 Renders children to HTML string.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L168)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L159)**
 
 ```typescript
 function renderChildren(children: JSXChild): string
@@ -122,14 +122,10 @@ function renderChildren(children: JSXChild): string
 Creates a JSX element.
 This is the core function called by the JSX transform.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L199)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L190)**
 
 ```typescript
-export function jsx(
-  type: JSXElementType,
-  props: JSXProps,
-  _key?: string,
-  ): JSXNode
+export function jsx(type: JSXElementType, props: JSXProps, _key?: string): JSXNode
 ```
 
 ### Returns
@@ -145,14 +141,10 @@ export function jsx(
 Creates a JSX element with static children.
 Called by the JSX transform for elements with multiple children.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L244)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L231)**
 
 ```typescript
-export function jsxs(
-  type: JSXElementType,
-  props: JSXProps,
-  key?: string,
-  ): JSXNode
+export function jsxs(type: JSXElementType, props: JSXProps, key?: string): JSXNode
 ```
 
 ### Returns
@@ -167,7 +159,7 @@ export function jsxs(
 
 Fragment component - renders children without a wrapper element.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L256)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L239)**
 
 ### Returns
 
@@ -181,7 +173,7 @@ Fragment component - renders children without a wrapper element.
 
 Renders a JSX node to an HTML string.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L263)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L246)**
 
 ```typescript
 export function renderToString(node: JSXNode): string
@@ -200,7 +192,7 @@ export function renderToString(node: JSXNode): string
 Creates raw HTML without escaping.
 Use with caution - only for trusted content.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L270)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L253)**
 
 ```typescript
 export function raw(html: string): JSXNode
@@ -224,7 +216,7 @@ export function raw(html: string): JSXNode
 
 Conditionally renders content.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L283)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L266)**
 
 ```typescript
 export function when(condition: boolean, content: JSXNode): JSXNode
@@ -248,7 +240,7 @@ export function when(condition: boolean, content: JSXNode): JSXNode
 
 Maps over an array and renders each item.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L295)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L278)**
 
 ### Returns
 
