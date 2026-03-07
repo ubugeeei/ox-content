@@ -9,7 +9,7 @@ use ox_content_ast::{
 use crate::render::{RenderResult, Renderer};
 
 /// HTML renderer options.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct HtmlRendererOptions {
     /// Use XHTML-style self-closing tags (e.g., `<br />`).
     pub xhtml: bool,
@@ -44,6 +44,12 @@ impl HtmlRendererOptions {
             base_url: "/".to_string(),
             source_path: String::new(),
         }
+    }
+}
+
+impl Default for HtmlRendererOptions {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -510,13 +516,19 @@ impl HtmlRenderer {
         &mut self,
         row: &TableRow<'_>,
         is_header: bool,
-        _align: &ox_content_allocator::Vec<'_, ox_content_ast::AlignKind>,
+        align: &ox_content_allocator::Vec<'_, ox_content_ast::AlignKind>,
     ) {
         self.write("<tr>\n");
         let tag = if is_header { "th" } else { "td" };
-        for cell in &row.children {
+        for (idx, cell) in row.children.iter().enumerate() {
             self.write("<");
             self.write(tag);
+            match align.get(idx).copied().unwrap_or(ox_content_ast::AlignKind::None) {
+                ox_content_ast::AlignKind::Left => self.write(" align=\"left\""),
+                ox_content_ast::AlignKind::Center => self.write(" align=\"center\""),
+                ox_content_ast::AlignKind::Right => self.write(" align=\"right\""),
+                ox_content_ast::AlignKind::None => {}
+            }
             self.write(">");
             self.visit_table_cell(cell);
             self.write("</");

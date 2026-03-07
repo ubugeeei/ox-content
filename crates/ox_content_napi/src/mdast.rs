@@ -316,7 +316,7 @@ impl MdastJsonSerializer {
             if let Some(escaped) = escaped {
                 self.output.push_str(escaped);
             } else {
-                self.output.push_str(&format!("\\u{:04x}", byte));
+                self.output.push_str(&format!("\\u{byte:04x}"));
             }
             start = idx + 1;
         }
@@ -364,5 +364,22 @@ mod tests {
         );
         assert_eq!(json["children"][1]["type"], "table");
         assert_eq!(json["children"][1]["align"][0], "left");
+    }
+
+    #[test]
+    fn serializes_code_breaks_and_ordered_list_start() {
+        let json = parse_json(
+            "5. item\n\nline 1\\\nline 2\n\n```ts meta=1\nconsole.log(1)\n```",
+            ParserOptions::gfm(),
+        );
+
+        assert_eq!(json["children"][0]["type"], "list");
+        assert_eq!(json["children"][0]["ordered"], true);
+        assert_eq!(json["children"][0]["start"], 5);
+        assert_eq!(json["children"][1]["type"], "paragraph");
+        assert_eq!(json["children"][1]["children"][1]["type"], "break");
+        assert_eq!(json["children"][2]["type"], "code");
+        assert_eq!(json["children"][2]["lang"], "ts");
+        assert_eq!(json["children"][2]["meta"], "meta=1");
     }
 }
