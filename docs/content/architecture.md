@@ -15,9 +15,9 @@ graph TB
     end
 
     subgraph JSPackages["JavaScript Packages"]
-        VitePlugin[@ox-content/vite-plugin]
-        ViteVue[@ox-content/vite-plugin-vue]
-        ViteReact[...-react]
+        VitePlugin["@ox-content/vite-plugin"]
+        ViteVue["@ox-content/vite-plugin-vue"]
+        ViteReact["@ox-content/vite-plugin-react"]
     end
 
     subgraph NAPI["Node.js Bindings"]
@@ -503,15 +503,19 @@ The Vite plugin supports HMR for Markdown files:
 | 10 KB | ~500 KB heap | ~80 KB arena |
 | 100 KB | ~5 MB heap | ~800 KB arena |
 
-### Parse Speed (approximate)
+### Parse and Render Speed
 
-| Content Size | Traditional Parser | Ox Content |
-|-------------|-------------------|------------|
-| 1 KB | ~1 ms | ~0.1 ms |
-| 10 KB | ~10 ms | ~1 ms |
-| 100 KB | ~100 ms | ~10 ms |
+Latest local `parse-benchmark` run on 2026-03-07 with Node `v24.14.0` on Apple M2 Max:
 
-*Benchmarks vary by content complexity and hardware.*
+| Library | Parse Only (48.7 KB) | Parse + Render (48.7 KB) |
+|---------|---------------------:|-------------------------:|
+| `@ox-content/napi` | 2463 ops/sec | 2122 ops/sec |
+| `md4w (md4c)` | 735 ops/sec | 1903 ops/sec |
+| `markdown-it` | 639 ops/sec | 532 ops/sec |
+| `marked` | 362 ops/sec | 345 ops/sec |
+| `remark` | 32 ops/sec | 28 ops/sec |
+
+This benchmark uses `node benchmarks/bundle-size/parse-benchmark.mjs`. The comparison set now includes `md4w (md4c)` by default, and `Bun.markdown.html` is measured automatically when `bun` is available on the host.
 
 ## Security Considerations
 

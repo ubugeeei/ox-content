@@ -3,11 +3,13 @@
  * Measures parse and render throughput for markdown libraries
  */
 
+import { spawnSync } from "node:child_process"
 import { performance } from "node:perf_hooks"
-import { dirname } from "node:path"
+import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const BUN_BENCHMARK_SCRIPT = join(__dirname, "parse-benchmark-bun.mjs")
 
 // Sample markdown content for benchmarking
 const sampleMarkdown = `
@@ -147,6 +149,38 @@ function printTable(title, results) {
   }
 }
 
+function loadBunMarkdownBenchmarks() {
+  const version = spawnSync("bun", ["--version"], {
+    cwd: __dirname,
+    encoding: "utf8",
+  })
+
+  if (version.status !== 0) {
+    return null
+  }
+
+  const run = spawnSync("bun", [BUN_BENCHMARK_SCRIPT], {
+    cwd: __dirname,
+    encoding: "utf8",
+  })
+
+  if (run.status !== 0) {
+    const details = run.stderr.trim() || run.stdout.trim()
+    console.warn(`Failed to run Bun benchmark helper: ${details}`)
+    return null
+  }
+
+  try {
+    return {
+      version: version.stdout.trim(),
+      ...JSON.parse(run.stdout),
+    }
+  } catch (error) {
+    console.warn(`Failed to parse Bun benchmark output: ${String(error)}`)
+    return null
+  }
+}
+
 async function runBenchmarks() {
   console.log("Parse/Render Speed Benchmark")
   console.log("============================\n")
@@ -155,10 +189,12 @@ async function runBenchmarks() {
   const { marked } = await import("marked")
   const { Lexer: MarkedLexer } = await import("marked")
   const MarkdownIt = (await import("markdown-it")).default
+  const { init: initMd4w, mdToHtml, mdToJSON } = await import("md4w")
   const { micromark } = await import("micromark")
   const { unified } = await import("unified")
   const remarkParse = (await import("remark-parse")).default
   const remarkHtml = (await import("remark-html")).default
+  await initMd4w()
 
   // Try to import NAPI
   let napi = null
@@ -167,6 +203,13 @@ async function runBenchmarks() {
     console.log("Using @ox-content/napi (Native)\n")
   } catch {
     console.log("@ox-content/napi not available\n")
+  }
+
+  const bunMarkdown = loadBunMarkdownBenchmarks()
+  if (bunMarkdown) {
+    console.log(`Using Bun.markdown (Bun ${bunMarkdown.version})\n`)
+  } else {
+    console.log("bun not available, skipping Bun.markdown comparisons\n")
   }
 
   const md = new MarkdownIt()
@@ -185,6 +228,7 @@ async function runBenchmarks() {
 
   parsers.push(
     { name: "marked", fn: (input) => MarkedLexer.lex(input) },
+    { name: "md4w (md4c)", fn: (input) => mdToJSON(input) },
     { name: "markdown-it", fn: (input) => md.parse(input, {}) },
     { name: "remark", fn: (input) => remarkParseProcessor.parse(input) },
   )
@@ -201,6 +245,7 @@ async function runBenchmarks() {
 
   renderers.push(
     { name: "marked", fn: (input) => marked(input) },
+    { name: "md4w (md4c)", fn: (input) => mdToHtml(input) },
     { name: "markdown-it", fn: (input) => md.render(input) },
     { name: "micromark", fn: (input) => micromark(input) },
     {
@@ -253,6 +298,9 @@ async function runBenchmarks() {
       } catch {
         renderResults.push({ name: renderer.name, error: true })
       }
+    }
+    if (bunMarkdown?.render?.[sizeName]) {
+      renderResults.push(bunMarkdown.render[sizeName])
     }
     renderResults.sort((a, b) => (b.opsPerSec || 0) - (a.opsPerSec || 0))
     printTable("Parse + Render", renderResults)
