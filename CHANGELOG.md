@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.15.0] - 2026-03-07
+
+### Features
+
+- perf tuning and more compat for mdast (#34)
+
 ## [0.14.0] - 2026-03-01
 
 ### Features
