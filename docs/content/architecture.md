@@ -15,9 +15,9 @@ graph TB
     end
 
     subgraph JSPackages["JavaScript Packages"]
-        VitePlugin[@ox-content/vite-plugin]
-        ViteVue[@ox-content/vite-plugin-vue]
-        ViteReact[...-react]
+        VitePlugin["@ox-content/vite-plugin"]
+        ViteVue["@ox-content/vite-plugin-vue"]
+        ViteReact["@ox-content/vite-plugin-react"]
     end
 
     subgraph NAPI["Node.js Bindings"]
