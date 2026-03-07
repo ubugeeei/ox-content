@@ -57,6 +57,14 @@ pub struct Parser<'a> {
     nesting_depth: usize,
 }
 
+struct ParsedListItem<'a> {
+    ordered: bool,
+    start: Option<u32>,
+    content: &'a str,
+    content_offset: usize,
+    checked: Option<bool>,
+}
+
 impl<'a> Parser<'a> {
     /// Creates a new parser with default options.
     #[must_use]
@@ -288,29 +296,85 @@ impl<'a> Parser<'a> {
         indent
     }
 
+    fn parse_task_list_prefix(&self, content: &'a str) -> Option<(bool, usize)> {
+        if !self.options.task_lists || content.len() < 3 {
+            return None;
+        }
+
+        if (content.starts_with("[x]") || content.starts_with("[X]"))
+            && (content.len() == 3 || content.starts_with("[x] ") || content.starts_with("[X] "))
+        {
+            return Some((true, usize::from(content.len() > 3) + 3));
+        }
+
+        if content.starts_with("[ ]") && (content.len() == 3 || content.starts_with("[ ] ")) {
+            return Some((false, usize::from(content.len() > 3) + 3));
+        }
+
+        None
+    }
+
+    fn parse_list_item_line(&self, line_start: usize) -> Option<ParsedListItem<'a>> {
+        let remaining = &self.source[line_start..];
+        let line = remaining.lines().next().unwrap_or("");
+        let trimmed = line.trim_start();
+        let trimmed_offset = line_start + (line.len() - trimmed.len());
+
+        if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
+            let mut content = &trimmed[2..];
+            let mut content_offset = trimmed_offset + 2;
+            let mut checked = None;
+
+            if let Some((done, consumed)) = self.parse_task_list_prefix(content) {
+                checked = Some(done);
+                content = &content[consumed..];
+                content_offset += consumed;
+            }
+
+            return Some(ParsedListItem {
+                ordered: false,
+                start: None,
+                content,
+                content_offset,
+                checked,
+            });
+        }
+
+        let bytes = trimmed.as_bytes();
+        let mut marker_end = 0;
+        while marker_end < bytes.len() && bytes[marker_end].is_ascii_digit() {
+            marker_end += 1;
+        }
+
+        if marker_end == 0 || marker_end + 1 >= bytes.len() {
+            return None;
+        }
+
+        let marker = bytes[marker_end];
+        if !matches!(marker, b'.' | b')') || bytes[marker_end + 1] != b' ' {
+            return None;
+        }
+
+        Some(ParsedListItem {
+            ordered: true,
+            start: trimmed[..marker_end].parse().ok(),
+            content: &trimmed[marker_end + 2..],
+            content_offset: trimmed_offset + marker_end + 2,
+            checked: None,
+        })
+    }
+
     /// Parses a list (ordered or unordered).
     fn parse_list(&mut self, start: usize) -> ParseResult<Option<Node<'a>>> {
         let baseline_indent = self.calc_indentation(start);
 
         // Determine list type from the first line (already verified by try_parse_list)
         let first_line_start = self.position;
-        // Skip whitespace to get to content
-        let mut pos = first_line_start;
-        while pos < self.source.len() {
-            let ch = self.source.as_bytes()[pos];
-            if ch != b' ' && ch != b'\t' {
-                break;
-            }
-            pos += 1;
-        }
-        let trimmed_start = &self.source[pos..];
-        let ordered = trimmed_start.chars().next().is_some_and(|c| c.is_ascii_digit());
-        let list_start = if ordered {
-            let num_str: String = trimmed_start.chars().take_while(char::is_ascii_digit).collect();
-            num_str.parse::<u32>().ok()
-        } else {
-            None
+        let Some(first_item) = self.parse_list_item_line(first_line_start) else {
+            return Ok(None);
         };
+        let ordered = first_item.ordered;
+        let list_start = first_item.start;
 
         let mut children: Vec<'a, ListItem<'a>> = self.allocator.new_vec();
 
@@ -344,6 +408,7 @@ impl<'a> Parser<'a> {
                     if let Some(Node::List(nested_list)) = self.parse_list(line_start)? {
                         // Add to the LAST item's children
                         if let Some(last_item) = children.last_mut() {
+                            last_item.span = last_item.span.merge(nested_list.span);
                             last_item.children.push(Node::List(nested_list));
                         }
                     }
@@ -367,98 +432,44 @@ impl<'a> Parser<'a> {
             // Check if it's a list item
             let remaining = self.remaining();
             let line = remaining.lines().next().unwrap_or("");
-            let trimmed = line.trim_start();
-
-            // Check marker
-            let (is_list_item, content, checked) = if trimmed.starts_with("- ")
-                || trimmed.starts_with("* ")
-                || trimmed.starts_with("+ ")
-            {
-                let mut content = &trimmed[2..];
-                let mut checked = None;
-
-                // Check for task list
-                if self.options.task_lists && content.len() >= 3 {
-                    if (content.starts_with("[x]") || content.starts_with("[X]"))
-                        && (content.len() == 3
-                            || content.starts_with("[x] ")
-                            || content.starts_with("[X] "))
-                    {
-                        checked = Some(true);
-                        content = if content.len() > 3 { &content[4..] } else { "" };
-                    } else if content.starts_with("[ ]")
-                        && (content.len() == 3 || content.starts_with("[ ] "))
-                    {
-                        checked = Some(false);
-                        content = if content.len() > 3 { &content[4..] } else { "" };
-                    }
-                }
-                (true, content.to_string(), checked)
-            } else if ordered {
-                // Simplified ordered list check
-                // ... (reuse logic)
-                let mut chars = trimmed.chars().peekable();
-                let mut has_digit = false;
-                while let Some(ch) = chars.peek() {
-                    if ch.is_ascii_digit() {
-                        has_digit = true;
-                        chars.next();
-                    } else {
-                        break;
-                    }
-                }
-                if has_digit {
-                    chars.next().map_or_else(
-                        || (false, String::new(), None),
-                        |ch| {
-                            if (ch == '.' || ch == ')') && chars.peek() == Some(&' ') {
-                                chars.next(); // skip space
-                                let content: String = chars.collect();
-                                (true, content, None)
-                            } else {
-                                (false, String::new(), None)
-                            }
-                        },
-                    )
-                } else {
-                    (false, String::new(), None)
-                }
-            } else {
-                (false, String::new(), None)
+            let Some(item) = self.parse_list_item_line(line_start) else {
+                break;
             };
-
-            if !is_list_item {
+            if item.ordered != ordered {
                 // Not a list item, break
                 break;
             }
 
             // Consume line
-            while let Some(ch) = self.peek() {
+            self.position += line.len();
+            if self.peek() == Some('\n') {
                 self.advance();
-                if ch == '\n' {
-                    break;
-                }
             }
 
             // Create list item
-            let content_str = self.allocator.alloc_str(&content);
-            let item_children_inline = self.parse_inline(content_str, 0)?;
+            let item_children_inline = self.parse_inline(item.content, item.content_offset)?;
 
             // Wrap in Paragraph
             let mut para_children = self.allocator.new_vec();
             for child in item_children_inline {
                 para_children.push(child);
             }
-            let para = Paragraph { children: para_children, span: Span::new(0, 0) };
+            let para = Paragraph {
+                children: para_children,
+                span: Span::new(
+                    item.content_offset as u32,
+                    (item.content_offset + item.content.len()) as u32,
+                ),
+            };
 
             let mut list_item_children = self.allocator.new_vec();
             list_item_children.push(Node::Paragraph(para));
 
             let list_item = ListItem {
-                checked,
+                checked: item.checked,
                 spread: false,
                 children: list_item_children,
-                span: Span::new(0, 0),
+                span: Span::new(line_start as u32, self.position as u32),
             };
             children.push(list_item);
         }
@@ -623,12 +634,9 @@ impl<'a> Parser<'a> {
         let (lang, meta) = if info.is_empty() {
             (None, None)
         } else if let Some(space_idx) = info.find(' ') {
-            (
-                Some(self.allocator.alloc_str(&info[..space_idx])),
-                Some(self.allocator.alloc_str(&info[space_idx + 1..])),
-            )
+            (Some(&info[..space_idx]), Some(&info[space_idx + 1..]))
         } else {
-            (Some(self.allocator.alloc_str(info)), None)
+            (Some(info), None)
         };
 
         // Skip newline after info string
@@ -678,7 +686,7 @@ impl<'a> Parser<'a> {
             content_end = self.position;
         }
 
-        let value = self.allocator.alloc_str(&self.source[content_start..content_end]);
+        let value = &self.source[content_start..content_end];
         let span = Span::new(start as u32, self.position as u32);
 
         Ok(Some(Node::CodeBlock(ox_content_ast::CodeBlock { lang, meta, value, span })))
@@ -851,7 +859,7 @@ impl<'a> Parser<'a> {
             if pos > start {
                 let text_content = &content[start..pos];
                 let text = Text {
-                    value: self.allocator.alloc_str(text_content),
+                    value: text_content,
                     span: Span::new((offset + start) as u32, (offset + pos) as u32),
                 };
                 children.push(Node::Text(text));
@@ -864,16 +872,57 @@ impl<'a> Parser<'a> {
             // Handle special characters
             let ch = bytes[pos];
             match ch {
+                b'\\' if pos + 1 < content.len() && bytes[pos + 1] == b'\n' => {
+                    let break_node = ox_content_ast::Break {
+                        span: Span::new((offset + pos) as u32, (offset + pos + 2) as u32),
+                    };
+                    children.push(Node::Break(break_node));
+                    pos += 2;
+                }
                 b'\\' if pos + 1 < content.len() => {
                     // Escape sequence
                     pos += 1;
                     let escaped = &content[pos..pos + 1];
                     let text = Text {
-                        value: self.allocator.alloc_str(escaped),
+                        value: escaped,
                         span: Span::new((offset + pos - 1) as u32, (offset + pos + 1) as u32),
                     };
                     children.push(Node::Text(text));
                     pos += 1;
+                }
+                b'~' if self.options.strikethrough
+                    && pos + 1 < content.len()
+                    && bytes[pos + 1] == b'~' =>
+                {
+                    let inner_start = pos + 2;
+                    let mut inner_end = inner_start;
+                    let mut found = false;
+
+                    while inner_end + 1 < content.len() {
+                        if bytes[inner_end] == b'~' && bytes[inner_end + 1] == b'~' {
+                            found = true;
+                            break;
+                        }
+                        inner_end += 1;
+                    }
+
+                    if found {
+                        let inner_content = &content[inner_start..inner_end];
+                        let inner_children =
+                            self.parse_inline(inner_content, offset + inner_start)?;
+                        let span =
+                            Span::new((offset + pos) as u32, (offset + inner_end + 2) as u32);
+                        let delete = ox_content_ast::Delete { children: inner_children, span };
+                        children.push(Node::Delete(delete));
+                        pos = inner_end + 2;
+                    } else {
+                        let text = Text {
+                            value: &content[pos..pos + 2],
+                            span: Span::new((offset + pos) as u32, (offset + pos + 2) as u32),
+                        };
+                        children.push(Node::Text(text));
+                        pos += 2;
+                    }
                 }
                 b'*' | b'_' => {
                     // Emphasis or Strong
@@ -931,7 +980,7 @@ impl<'a> Parser<'a> {
                     } else {
                         // Treat as text
                         let text = Text {
-                            value: self.allocator.alloc_str(&content[pos..pos + count]),
+                            value: &content[pos..pos + count],
                             span: Span::new((offset + pos) as u32, (offset + pos + count) as u32),
                         };
                         children.push(Node::Text(text));
@@ -948,7 +997,7 @@ impl<'a> Parser<'a> {
                     if pos < content.len() {
                         let code_content = &content[code_start..pos];
                         let inline_code = ox_content_ast::InlineCode {
-                            value: self.allocator.alloc_str(code_content),
+                            value: code_content,
                             span: Span::new(
                                 (offset + code_start - 1) as u32,
                                 (offset + pos + 1) as u32,
@@ -959,7 +1008,7 @@ impl<'a> Parser<'a> {
                     } else {
                         // No closing backtick, treat as text
                         let text = Text {
-                            value: self.allocator.alloc_str(&content[code_start - 1..]),
+                            value: &content[code_start - 1..],
                             span: Span::new(
                                 (offset + code_start - 1) as u32,
                                 (offset + content.len()) as u32,
@@ -1018,7 +1067,7 @@ impl<'a> Parser<'a> {
                                 self.parse_inline(link_text, offset + text_start)?;
 
                             let link = Link {
-                                url: self.allocator.alloc_str(url),
+                                url,
                                 title: None,
                                 children: link_children,
                                 span: Span::new(
@@ -1030,7 +1079,7 @@ impl<'a> Parser<'a> {
                         } else {
                             // Invalid link, treat as text
                             let text = Text {
-                                value: self.allocator.alloc_str(&content[link_start..pos]),
+                                value: &content[link_start..pos],
                                 span: Span::new(
                                     (offset + link_start) as u32,
                                     (offset + pos) as u32,
@@ -1041,7 +1090,7 @@ impl<'a> Parser<'a> {
                     } else {
                         // Not a link, just a [
                         let text = Text {
-                            value: self.allocator.alloc_str("["),
+                            value: "[",
                             span: Span::new(
                                 (offset + link_start) as u32,
                                 (offset + link_start + 1) as u32,
@@ -1098,8 +1147,8 @@ impl<'a> Parser<'a> {
                                 pos += 1; // skip )
 
                                 let image = Image {
-                                    url: self.allocator.alloc_str(url),
-                                    alt: self.allocator.alloc_str(alt_text),
+                                    url,
+                                    alt: alt_text,
                                     title: None,
                                     span: Span::new(
                                         (offset + image_start) as u32,
@@ -1110,7 +1159,7 @@ impl<'a> Parser<'a> {
                             } else {
                                 // Invalid image, treat as text
                                 let text = Text {
-                                    value: self.allocator.alloc_str(&content[image_start..pos]),
+                                    value: &content[image_start..pos],
                                     span: Span::new(
                                         (offset + image_start) as u32,
                                         (offset + pos) as u32,
@@ -1121,7 +1170,7 @@ impl<'a> Parser<'a> {
                         } else {
                             // Not an image, just ![
                             let text = Text {
-                                value: self.allocator.alloc_str("!["),
+                                value: "![",
                                 span: Span::new(
                                     (offset + image_start) as u32,
                                     (offset + image_start + 2) as u32,
@@ -1133,7 +1182,7 @@ impl<'a> Parser<'a> {
                     } else {
                         // Just a !, treat as text
                         let text = Text {
-                            value: self.allocator.alloc_str("!"),
+                            value: "!",
                             span: Span::new((offset + pos) as u32, (offset + pos + 1) as u32),
                         };
                         children.push(Node::Text(text));
@@ -1143,7 +1192,7 @@ impl<'a> Parser<'a> {
                 _ => {
                     // Other special characters
                     let text = Text {
-                        value: self.allocator.alloc_str(&content[pos..pos + 1]),
+                        value: &content[pos..pos + 1],
                         span: Span::new((offset + pos) as u32, (offset + pos + 1) as u32),
                     };
                     children.push(Node::Text(text));
@@ -1237,6 +1286,33 @@ mod tests {
         match &doc.children[0] {
             Node::Paragraph(p) => {
                 assert!(p.children.iter().any(|n| matches!(n, Node::InlineCode(_))));
+            }
+            _ => panic!("expected paragraph"),
+        }
+    }
+
+    #[test]
+    fn test_parse_strikethrough() {
+        let allocator = Allocator::new();
+        let doc =
+            Parser::with_options(&allocator, "~~done~~", ParserOptions::gfm()).parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::Paragraph(p) => {
+                assert!(matches!(&p.children[0], Node::Delete(_)));
+            }
+            _ => panic!("expected paragraph"),
+        }
+    }
+
+    #[test]
+    fn test_parse_hard_break() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "line 1\\\nline 2").parse().unwrap();
+        assert_eq!(doc.children.len(), 1);
+        match &doc.children[0] {
+            Node::Paragraph(p) => {
+                assert!(p.children.iter().any(|n| matches!(n, Node::Break(_))));
             }
             _ => panic!("expected paragraph"),
         }

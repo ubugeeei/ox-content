@@ -352,7 +352,7 @@ mise run bench
 # Run only Rust benchmarks (cargo bench)
 mise run bench:rust
 
-# Run parse/render speed benchmarks (compares with marked, markdown-it, etc.)
+# Run parse/render speed benchmarks (compares with marked, markdown-it, md4w/md4c, and Bun when available)
 mise run bench:parse
 
 # Run bundle size benchmarks (compares with VitePress, Astro, etc.)
@@ -361,7 +361,7 @@ mise run bench:bundle
 
 ### Benchmark Results
 
-See the [Benchmarks section](./index.md#benchmarks) for the latest results.
+See the [Benchmarks section](./index.md#benchmarks) for the latest results and the current comparison set.
 
 ## Using the Playground
 

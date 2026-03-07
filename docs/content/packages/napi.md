@@ -211,13 +211,28 @@ const doc = extractSearchContent(markdown, 'hello', '/hello', { gfm: true });
 
 ## Performance
 
-The NAPI bindings provide near-native performance:
+Latest local `parse-benchmark` run on 2026-03-07 with Node `v24.14.0` on Apple M2 Max:
 
-| Operation | Time |
-|-----------|------|
-| Parse 1KB | ~50μs |
-| Parse 10KB | ~200μs |
-| Parse 100KB | ~1.5ms |
-| Parse + Render 10KB | ~300μs |
+| Size | Parse Only | Parse + Render |
+|------|-----------:|---------------:|
+| 0.5 KB | 222758 ops/sec | 153955 ops/sec |
+| 4.9 KB | 25640 ops/sec | 19403 ops/sec |
+| 48.7 KB | 2463 ops/sec | 2122 ops/sec |
 
-Benchmarks run on Apple M1 Pro.
+For the 48.7 KB case, the same benchmark measured:
+
+| Library | Parse Only | Parse + Render |
+|---------|-----------:|---------------:|
+| `@ox-content/napi` | 2463 ops/sec | 2122 ops/sec |
+| `md4w (md4c)` | 735 ops/sec | 1903 ops/sec |
+| `markdown-it` | 639 ops/sec | 532 ops/sec |
+| `marked` | 362 ops/sec | 345 ops/sec |
+| `remark` | 32 ops/sec | 28 ops/sec |
+
+Reproduce with:
+
+```bash
+node benchmarks/bundle-size/parse-benchmark.mjs
+```
+
+The benchmark includes `md4w (md4c)` by default and adds `Bun.markdown.html` automatically when `bun` is available.

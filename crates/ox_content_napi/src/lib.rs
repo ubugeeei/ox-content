@@ -3,6 +3,8 @@
 //! This crate provides NAPI bindings for using Ox Content from Node.js,
 //! enabling zero-copy AST transfer and JavaScript interoperability.
 
+mod mdast;
+
 use napi::bindgen_prelude::*;
 use napi::Task;
 use napi_derive::napi;
@@ -137,11 +139,8 @@ pub fn parse(source: String, options: Option<JsParserOptions>) -> ParseResult {
 
     let result = parser.parse();
     match result {
-        Ok(_doc) => {
-            // Serialize AST to JSON
-            // Note: In a production implementation, we would use a more efficient
-            // serialization method that avoids the JSON overhead
-            let ast = "{\"type\":\"document\",\"children\":[]}".to_string();
+        Ok(doc) => {
+            let ast = mdast::to_mdast_json(&doc);
             ParseResult { ast, errors: vec![] }
         }
         Err(e) => ParseResult { ast: String::new(), errors: vec![e.to_string()] },

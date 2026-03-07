@@ -70,6 +70,10 @@ impl HtmlRenderer {
     #[must_use]
     pub fn render(&mut self, document: &Document<'_>) -> String {
         self.output.clear();
+        let estimated_len = (document.span.len() as usize).saturating_mul(3) / 2;
+        if self.output.capacity() < estimated_len {
+            self.output.reserve(estimated_len - self.output.capacity());
+        }
         self.visit_document(document);
         std::mem::take(&mut self.output)
     }
@@ -79,28 +83,58 @@ impl HtmlRenderer {
     }
 
     fn write_escaped(&mut self, s: &str) {
-        for ch in s.chars() {
-            match ch {
-                '&' => self.output.push_str("&amp;"),
-                '<' => self.output.push_str("&lt;"),
-                '>' => self.output.push_str("&gt;"),
-                '"' => self.output.push_str("&quot;"),
-                '\'' => self.output.push_str("&#39;"),
-                _ => self.output.push(ch),
+        let bytes = s.as_bytes();
+        let mut start = 0;
+
+        for (idx, byte) in bytes.iter().copied().enumerate() {
+            let escaped = match byte {
+                b'&' => Some("&amp;"),
+                b'<' => Some("&lt;"),
+                b'>' => Some("&gt;"),
+                b'"' => Some("&quot;"),
+                b'\'' => Some("&#39;"),
+                _ => None,
+            };
+
+            if let Some(escaped) = escaped {
+                if start < idx {
+                    self.output.push_str(&s[start..idx]);
+                }
+                self.output.push_str(escaped);
+                start = idx + 1;
             }
+        }
+
+        if start < s.len() {
+            self.output.push_str(&s[start..]);
         }
     }
 
     fn write_url_escaped(&mut self, s: &str) {
-        for ch in s.chars() {
-            match ch {
-                '&' => self.output.push_str("&amp;"),
-                '<' => self.output.push_str("%3C"),
-                '>' => self.output.push_str("%3E"),
-                '"' => self.output.push_str("%22"),
-                ' ' => self.output.push_str("%20"),
-                _ => self.output.push(ch),
+        let bytes = s.as_bytes();
+        let mut start = 0;
+
+        for (idx, byte) in bytes.iter().copied().enumerate() {
+            let escaped = match byte {
+                b'&' => Some("&amp;"),
+                b'<' => Some("%3C"),
+                b'>' => Some("%3E"),
+                b'"' => Some("%22"),
+                b' ' => Some("%20"),
+                _ => None,
+            };
+
+            if let Some(escaped) = escaped {
+                if start < idx {
+                    self.output.push_str(&s[start..idx]);
+                }
+                self.output.push_str(escaped);
+                start = idx + 1;
             }
+        }
+
+        if start < s.len() {
+            self.output.push_str(&s[start..]);
         }
     }
 
@@ -394,7 +428,7 @@ impl<'a> Visit<'a> for HtmlRenderer {
     }
 
     fn visit_break(&mut self, _break_node: &Break) {
-        self.write(&self.options.hard_break.clone());
+        self.output.push_str(self.options.hard_break.as_str());
     }
 
     fn visit_link(&mut self, link: &Link<'a>) {
@@ -637,6 +671,27 @@ mod tests {
         let html = renderer.render(&doc);
         assert!(html.contains("<input type=\"checkbox\" checked disabled> <p>task 1</p>"));
         assert!(html.contains("<input type=\"checkbox\" disabled> <p>task 2</p>"));
+    }
+
+    #[test]
+    fn test_render_strikethrough() {
+        let allocator = Allocator::new();
+        let doc =
+            Parser::with_options(&allocator, "~~done~~", ox_content_parser::ParserOptions::gfm())
+                .parse()
+                .unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert_eq!(html, "<p><del>done</del></p>\n");
+    }
+
+    #[test]
+    fn test_render_hard_break() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "line 1\\\nline 2").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+        assert_eq!(html, "<p>line 1<br>\nline 2</p>\n");
     }
 
     #[test]
