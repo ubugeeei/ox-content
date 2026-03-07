@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.16.0] - 2026-03-07
+
+### Features
+
+- new playground (#35)
+
 ## [0.15.0] - 2026-03-07
 
 ### Features
