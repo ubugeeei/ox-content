@@ -2,6 +2,7 @@
  * SSG (Static Site Generation) module for ox-content
  */
 
+import { createHash } from "node:crypto";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { glob } from "glob";
@@ -1023,6 +1024,206 @@ export async function generateHtmlPage(
   );
 }
 
+interface GeneratedHtmlPage {
+  inputPath: string;
+  outputPath: string;
+  html: string;
+}
+
+interface SharedAssetChunk {
+  outputPath: string;
+  publicPath: string;
+  content: string;
+}
+
+const SSG_STYLE_BLOCK_RE =
+  /[ \t]*<!-- ox-content:styles:start -->\s*<style>([\s\S]*?)<\/style>\s*<!-- ox-content:styles:end -->/;
+const SSG_SCRIPT_BLOCK_RE =
+  /[ \t]*<!-- ox-content:scripts:start -->\s*<script>([\s\S]*?)<\/script>\s*<!-- ox-content:scripts:end -->/;
+const FIRST_INLINE_STYLE_RE = /[ \t]*<style>([\s\S]*?)<\/style>/;
+const LAST_INLINE_BODY_SCRIPT_RE = /[ \t]*<script>([\s\S]*?)<\/script>\s*<\/body>/;
+
+function createContentHash(content: string): string {
+  return createHash("sha256").update(content).digest("hex").slice(0, 10);
+}
+
+function toPublicAssetPath(base: string, fileName: string): string {
+  const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+  return `${normalizedBase}assets/${fileName}`;
+}
+
+function hasRelativeCssUrls(css: string): boolean {
+  let cursor = 0;
+
+  while (cursor < css.length) {
+    const urlIndex = css.indexOf("url(", cursor);
+    if (urlIndex === -1) {
+      return false;
+    }
+
+    let valueStart = urlIndex + 4;
+    while (valueStart < css.length && /\s/.test(css[valueStart])) {
+      valueStart++;
+    }
+
+    const quote = css[valueStart] === '"' || css[valueStart] === "'" ? css[valueStart] : "";
+    if (quote) {
+      valueStart++;
+    }
+
+    let valueEnd = valueStart;
+    while (valueEnd < css.length) {
+      const char = css[valueEnd];
+      if (quote) {
+        if (char === "\\") {
+          valueEnd += 2;
+          continue;
+        }
+        if (char === quote) {
+          break;
+        }
+      } else if (char === ")") {
+        break;
+      }
+      valueEnd++;
+    }
+
+    const value = css.slice(valueStart, valueEnd).trim();
+    if (
+      value &&
+      !value.startsWith("data:") &&
+      !value.startsWith("http:") &&
+      !value.startsWith("https:") &&
+      !value.startsWith("//") &&
+      !value.startsWith("/") &&
+      !value.startsWith("#") &&
+      !value.startsWith("blob:") &&
+      !value.startsWith("var(")
+    ) {
+      return true;
+    }
+
+    cursor = valueEnd + 1;
+  }
+
+  return false;
+}
+
+function createSharedAssetChunk(
+  type: "css" | "js",
+  content: string,
+  outDir: string,
+  base: string,
+): SharedAssetChunk {
+  const hash = createContentHash(content);
+  const fileName = `ox-content-${type}-${hash}.${type}`;
+
+  return {
+    outputPath: path.join(outDir, "assets", fileName),
+    publicPath: toPublicAssetPath(base, fileName),
+    content,
+  };
+}
+
+async function externalizeSharedPageAssets(
+  pages: GeneratedHtmlPage[],
+  outDir: string,
+  base: string,
+): Promise<{ pages: GeneratedHtmlPage[]; assets: string[] }> {
+  const cssChunks = new Map<string, SharedAssetChunk>();
+  const jsChunks = new Map<string, SharedAssetChunk>();
+
+  const optimizedPages = pages.map((page) => {
+    let html = page.html;
+
+    const styleMatch = html.match(SSG_STYLE_BLOCK_RE);
+    if (styleMatch) {
+      const cssContent = styleMatch[1];
+      const replacement = hasRelativeCssUrls(cssContent)
+        ? `  <style>${cssContent}</style>`
+        : (() => {
+            let chunk = cssChunks.get(cssContent);
+            if (!chunk) {
+              chunk = createSharedAssetChunk("css", cssContent, outDir, base);
+              cssChunks.set(cssContent, chunk);
+            }
+            return `  <link rel="stylesheet" href="${chunk.publicPath}">`;
+          })();
+
+      html = html.replace(SSG_STYLE_BLOCK_RE, replacement);
+    } else {
+      const inlineStyleMatch = html.match(FIRST_INLINE_STYLE_RE);
+      if (inlineStyleMatch) {
+        const cssContent = inlineStyleMatch[1];
+        const replacement = hasRelativeCssUrls(cssContent)
+          ? `  <style>${cssContent}</style>`
+          : (() => {
+              let chunk = cssChunks.get(cssContent);
+              if (!chunk) {
+                chunk = createSharedAssetChunk("css", cssContent, outDir, base);
+                cssChunks.set(cssContent, chunk);
+              }
+              return `  <link rel="stylesheet" href="${chunk.publicPath}">`;
+            })();
+
+        html = html.replace(FIRST_INLINE_STYLE_RE, replacement);
+      }
+    }
+
+    const scriptMatch = html.match(SSG_SCRIPT_BLOCK_RE);
+    if (scriptMatch) {
+      const jsContent = scriptMatch[1];
+      const replacement = jsContent.trim()
+        ? (() => {
+            let chunk = jsChunks.get(jsContent);
+            if (!chunk) {
+              chunk = createSharedAssetChunk("js", jsContent, outDir, base);
+              jsChunks.set(jsContent, chunk);
+            }
+            return `  <script defer src="${chunk.publicPath}"></script>`;
+          })()
+        : "";
+
+      html = html.replace(SSG_SCRIPT_BLOCK_RE, replacement);
+    } else {
+      const inlineScriptMatch = html.match(LAST_INLINE_BODY_SCRIPT_RE);
+      if (inlineScriptMatch) {
+        const jsContent = inlineScriptMatch[1];
+        const replacement = jsContent.trim()
+          ? (() => {
+              let chunk = jsChunks.get(jsContent);
+              if (!chunk) {
+                chunk = createSharedAssetChunk("js", jsContent, outDir, base);
+                jsChunks.set(jsContent, chunk);
+              }
+              return `  <script defer src="${chunk.publicPath}"></script>\n</body>`;
+            })()
+          : "</body>";
+
+        html = html.replace(LAST_INLINE_BODY_SCRIPT_RE, replacement);
+      }
+    }
+
+    return {
+      ...page,
+      html,
+    };
+  });
+
+  const chunks = [...cssChunks.values(), ...jsChunks.values()];
+  await Promise.all(
+    chunks.map(async (chunk) => {
+      await fs.mkdir(path.dirname(chunk.outputPath), { recursive: true });
+      await fs.writeFile(chunk.outputPath, chunk.content, "utf-8");
+    }),
+  );
+
+  return {
+    pages: optimizedPages,
+    assets: chunks.map((chunk) => chunk.outputPath),
+  };
+}
+
 /**
  * Converts a markdown file path to its corresponding HTML output path.
  */
@@ -1257,6 +1458,7 @@ export async function buildSsg(
   const outDir = path.resolve(root, options.outDir);
   const base = options.base.endsWith("/") ? options.base : options.base + "/";
   const generatedFiles: string[] = [];
+  const generatedPages: GeneratedHtmlPage[] = [];
   const errors: string[] = [];
 
   // Clean output directory if requested
@@ -1461,17 +1663,25 @@ export async function buildSsg(
         );
       }
 
-      // Write output file
       const outputPath = getOutputPath(inputPath, srcDir, outDir, ssgOptions.extension);
-
-      await fs.mkdir(path.dirname(outputPath), { recursive: true });
-      await fs.writeFile(outputPath, html, "utf-8");
-
-      generatedFiles.push(outputPath);
+      generatedPages.push({
+        inputPath,
+        outputPath,
+        html,
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       errors.push(`Failed to generate HTML for ${pageResult.inputPath}: ${errorMessage}`);
     }
+  }
+
+  const optimizedOutput = await externalizeSharedPageAssets(generatedPages, outDir, base);
+  generatedFiles.push(...optimizedOutput.assets);
+
+  for (const page of optimizedOutput.pages) {
+    await fs.mkdir(path.dirname(page.outputPath), { recursive: true });
+    await fs.writeFile(page.outputPath, page.html, "utf-8");
+    generatedFiles.push(page.outputPath);
   }
 
   return { files: generatedFiles, errors };

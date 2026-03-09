@@ -299,7 +299,7 @@ export function oxContent(options: OxContentOptions = {}): Plugin[] {
         const result = await buildSsg(resolvedOptions, root);
 
         if (result.files.length > 0) {
-          console.log(`[ox-content] Generated ${result.files.length} HTML files`);
+          console.log(`[ox-content] Generated ${result.files.length} output files`);
         }
 
         if (result.errors.length > 0) {

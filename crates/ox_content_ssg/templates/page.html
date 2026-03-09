@@ -17,7 +17,9 @@
   {% endif %}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ title }} - {{ site_name }}">
+  <!-- ox-content:styles:start -->
   <style>{{ css|safe }}</style>
+  <!-- ox-content:styles:end -->
   {{ embed_head|safe }}
   <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
 </head>
@@ -111,6 +113,8 @@
       <span class="mobile-footer-label">Theme</span>
     </button>
   </footer>
+  <!-- ox-content:scripts:start -->
   <script>{{ js|safe }}</script>
+  <!-- ox-content:scripts:end -->
 </body>
 </html>
