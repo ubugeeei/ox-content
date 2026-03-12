@@ -1,11 +1,13 @@
 const toggle = document.querySelector(".menu-toggle"),
   sidebar = document.querySelector(".sidebar"),
   overlay = document.querySelector(".overlay")
+
 if (toggle && sidebar && overlay) {
   const close = () => {
     sidebar.classList.remove("open")
     overlay.classList.remove("open")
   }
+
   toggle.addEventListener("click", () => {
     sidebar.classList.toggle("open")
     overlay.classList.toggle("open")
@@ -15,6 +17,7 @@ if (toggle && sidebar && overlay) {
     .querySelectorAll("a")
     .forEach((a) => a.addEventListener("click", close))
 }
+
 if (sidebar) {
   const savedPos = sessionStorage.getItem("sidebarScroll")
   if (savedPos) sidebar.scrollTop = parseInt(savedPos, 10)
@@ -22,221 +25,97 @@ if (sidebar) {
     sessionStorage.setItem("sidebarScroll", sidebar.scrollTop),
   )
 }
+
 const themeToggle = document.querySelector(".theme-toggle"),
-  setTheme = (t) => {
-    document.documentElement.setAttribute("data-theme", t)
-    localStorage.setItem("theme", t)
+  setTheme = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme)
+    localStorage.setItem("theme", theme)
   },
   getTheme = () =>
     document.documentElement.getAttribute("data-theme") || "light"
+
 themeToggle?.addEventListener("click", () =>
   setTheme(getTheme() === "dark" ? "light" : "dark"),
 )
-const searchBtn = document.querySelector(".search-button"),
-  searchOverlay = document.querySelector(".search-modal-overlay"),
-  searchInput = document.querySelector(".search-input"),
-  searchResults = document.querySelector(".search-results"),
-  searchClose = document.querySelector(".search-close")
-let searchIndex = null,
-  selectedIdx = 0,
-  results = []
-const openSearch = () => {
-    searchOverlay.classList.add("open")
-    searchInput.focus()
-  },
-  closeSearch = () => {
-    searchOverlay.classList.remove("open")
-    searchInput.value = ""
-    searchResults.innerHTML = ""
-    selectedIdx = 0
-    results = []
+
+const searchBtn = document.querySelector(".search-button")
+let searchApiPromise = null
+
+const loadSearchApi = async () => {
+  if (searchApiPromise) {
+    return searchApiPromise
   }
-const loadIndex = async () => {
-  if (searchIndex) return
-  try {
-    searchIndex = await (await fetch("{{base}}search-index.json")).json()
-  } catch (e) {
-    console.warn("Search index load failed:", e)
-  }
-}
-const tokenize = (t) => {
-  const r = []
-  let c = ""
-  for (const ch of t) {
-    if (
-      /[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(
-        ch,
+
+  searchApiPromise = new Promise((resolve) => {
+    if (typeof window.__oxContentInitSearch === "function") {
+      resolve(window.__oxContentInitSearch())
+      return
+    }
+
+    const script = document.createElement("script")
+    script.src = "__OX_CONTENT_SEARCH_CHUNK__"
+    script.defer = true
+    script.onload = () =>
+      resolve(
+        typeof window.__oxContentInitSearch === "function"
+          ? window.__oxContentInitSearch()
+          : null,
       )
-    ) {
-      if (c) {
-        r.push(c.toLowerCase())
-        c = ""
-      }
-      r.push(ch)
-    } else if (/[a-zA-Z0-9_]/.test(ch)) c += ch
-    else if (c) {
-      r.push(c.toLowerCase())
-      c = ""
+    script.onerror = () => {
+      console.warn("[ox-content] Search chunk failed to load")
+      searchApiPromise = null
+      resolve(null)
     }
-  }
-  if (c) r.push(c.toLowerCase())
-  return r
+    document.head.appendChild(script)
+  })
+
+  return searchApiPromise
 }
-const search = async (q) => {
-  if (!q.trim()) {
-    searchResults.innerHTML = ""
-    results = []
-    return
-  }
-  await loadIndex()
-  if (!searchIndex) {
-    searchResults.innerHTML =
-      '<div class="search-empty">Index unavailable</div>'
-    return
-  }
-  const tokens = tokenize(q)
-  if (!tokens.length) {
-    searchResults.innerHTML = ""
-    results = []
-    return
-  }
-  const k1 = 1.2,
-    b = 0.75,
-    scores = new Map()
-  for (let i = 0; i < tokens.length; i++) {
-    const tok = tokens[i],
-      isLast = i === tokens.length - 1
-    let terms =
-      isLast && tok.length >= 2
-        ? Object.keys(searchIndex.index).filter((t) => t.startsWith(tok))
-        : searchIndex.index[tok]
-          ? [tok]
-          : []
-    for (const term of terms) {
-      const posts = searchIndex.index[term] || [],
-        df = searchIndex.df[term] || 1,
-        idf = Math.log((searchIndex.doc_count - df + 0.5) / (df + 0.5) + 1)
-      for (const p of posts) {
-        const doc = searchIndex.documents[p.doc_idx]
-        if (!doc) continue
-        const boost = p.field === "Title" ? 10 : p.field === "Heading" ? 5 : 1,
-          score =
-            idf *
-            ((p.tf * (k1 + 1)) /
-              (p.tf +
-                k1 * (1 - b + (b * doc.body.length) / searchIndex.avg_dl))) *
-            boost
-        if (!scores.has(p.doc_idx))
-          scores.set(p.doc_idx, { score: 0, matches: new Set() })
-        const e = scores.get(p.doc_idx)
-        e.score += score
-        e.matches.add(term)
-      }
-    }
-  }
-  results = Array.from(scores.entries())
-    .map(([idx, d]) => {
-      const doc = searchIndex.documents[idx]
-      let snip = ""
-      if (doc.body) {
-        const bl = doc.body.toLowerCase()
-        let fp = -1
-        for (const m of d.matches) {
-          const pos = bl.indexOf(m)
-          if (pos !== -1 && (fp === -1 || pos < fp)) fp = pos
-        }
-        const st = Math.max(0, fp - 50),
-          en = Math.min(doc.body.length, st + 150)
-        snip = doc.body.slice(st, en)
-        if (st > 0) snip = "..." + snip
-        if (en < doc.body.length) snip += "..."
-      }
-      return { ...doc, score: d.score, snippet: snip }
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10)
-  selectedIdx = 0
-  render()
+
+const openSearch = async () => {
+  const api = await loadSearchApi()
+  api?.openSearch()
 }
-const render = () => {
-  if (!results.length) {
-    searchResults.innerHTML = '<div class="search-empty">No results</div>'
-    return
-  }
-  searchResults.innerHTML = results
-    .map(
-      (r, i) =>
-        '<a href="' +
-        r.url +
-        '" class="search-result' +
-        (i === selectedIdx ? " selected" : "") +
-        '"><div class="search-result-title">' +
-        r.title +
-        "</div>" +
-        (r.snippet
-          ? '<div class="search-result-snippet">' + r.snippet + "</div>"
-          : "") +
-        "</a>",
-    )
-    .join("")
-}
-searchBtn?.addEventListener("click", openSearch)
-searchClose?.addEventListener("click", closeSearch)
-searchOverlay?.addEventListener("click", (e) => {
-  if (e.target === searchOverlay) closeSearch()
+
+const isTypingTarget = (target) =>
+  target instanceof HTMLInputElement ||
+  target instanceof HTMLTextAreaElement ||
+  target instanceof HTMLSelectElement ||
+  (target instanceof HTMLElement && target.isContentEditable)
+
+searchBtn?.addEventListener("click", () => {
+  void openSearch()
 })
-let timeout = null
-searchInput?.addEventListener("input", () => {
-  if (timeout) clearTimeout(timeout)
-  timeout = setTimeout(() => search(searchInput.value), 150)
-})
-searchInput?.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeSearch()
-  else if (e.key === "ArrowDown") {
-    e.preventDefault()
-    if (selectedIdx < results.length - 1) {
-      selectedIdx++
-      render()
-    }
-  } else if (e.key === "ArrowUp") {
-    e.preventDefault()
-    if (selectedIdx > 0) {
-      selectedIdx--
-      render()
-    }
-  } else if (e.key === "Enter" && results[selectedIdx]) {
-    e.preventDefault()
-    location.href = results[selectedIdx].url
-  }
-})
+
 document.addEventListener("keydown", (e) => {
   if (
-    (e.key === "/" && !(e.target instanceof HTMLInputElement)) ||
+    (e.key === "/" && !isTypingTarget(e.target)) ||
     ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")
   ) {
     e.preventDefault()
-    openSearch()
+    void openSearch()
   }
 })
-// Scroll to hash on page load and handle hash link clicks
+
 const scrollToHash = () => {
   const hash = location.hash
-  if (hash) {
-    const target = document.querySelector(hash)
-    if (target) {
-      setTimeout(
-        () => target.scrollIntoView({ behavior: "smooth", block: "start" }),
-        100,
-      )
-    }
-  }
+  if (!hash) return
+
+  const target = document.querySelector(hash)
+  if (!target) return
+
+  setTimeout(
+    () => target.scrollIntoView({ behavior: "smooth", block: "start" }),
+    100,
+  )
 }
+
 scrollToHash()
 window.addEventListener("hashchange", scrollToHash)
 document.querySelectorAll('a[href^="#"]').forEach((a) =>
   a.addEventListener("click", (e) => {
     const hash = a.getAttribute("href")
-    const target = document.querySelector(hash)
+    const target = hash ? document.querySelector(hash) : null
     if (target) {
       e.preventDefault()
       target.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -244,17 +123,258 @@ document.querySelectorAll('a[href^="#"]').forEach((a) =>
     }
   }),
 )
-// Mobile footer buttons
+
 const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),
   mobileSearchBtn = document.querySelector("[data-mobile-search]"),
   mobileThemeBtn = document.querySelector("[data-mobile-theme]")
+
 mobileMenuBtn?.addEventListener("click", () => {
   if (sidebar && overlay) {
     sidebar.classList.toggle("open")
     overlay.classList.toggle("open")
   }
 })
-mobileSearchBtn?.addEventListener("click", openSearch)
+
+mobileSearchBtn?.addEventListener("click", () => {
+  void openSearch()
+})
+
 mobileThemeBtn?.addEventListener("click", () =>
   setTheme(getTheme() === "dark" ? "light" : "dark"),
 )
+
+// ox-content:search:start
+window.__oxContentInitSearch = (() => {
+  let api = null
+
+  return () => {
+    if (api) {
+      return api
+    }
+
+    const searchOverlay = document.querySelector(".search-modal-overlay"),
+      searchInput = document.querySelector(".search-input"),
+      searchResults = document.querySelector(".search-results"),
+      searchClose = document.querySelector(".search-close")
+
+    if (!searchOverlay || !searchInput || !searchResults) {
+      return null
+    }
+
+    let searchIndex = null,
+      selectedIdx = 0,
+      results = [],
+      searchTimeout = null
+
+    const openSearch = () => {
+      searchOverlay.classList.add("open")
+      searchInput.focus()
+    }
+
+    const closeSearch = () => {
+      searchOverlay.classList.remove("open")
+      searchInput.value = ""
+      searchResults.innerHTML = ""
+      selectedIdx = 0
+      results = []
+    }
+
+    const loadIndex = async () => {
+      if (searchIndex) return
+      try {
+        searchIndex = await (await fetch("{{base}}search-index.json")).json()
+      } catch (e) {
+        console.warn("Search index load failed:", e)
+      }
+    }
+
+    const tokenize = (text) => {
+      const tokens = []
+      let current = ""
+
+      for (const ch of text) {
+        if (
+          /[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(
+            ch,
+          )
+        ) {
+          if (current) {
+            tokens.push(current.toLowerCase())
+            current = ""
+          }
+          tokens.push(ch)
+        } else if (/[a-zA-Z0-9_]/.test(ch)) {
+          current += ch
+        } else if (current) {
+          tokens.push(current.toLowerCase())
+          current = ""
+        }
+      }
+
+      if (current) tokens.push(current.toLowerCase())
+      return tokens
+    }
+
+    const render = () => {
+      if (!results.length) {
+        searchResults.innerHTML = '<div class="search-empty">No results</div>'
+        return
+      }
+
+      searchResults.innerHTML = results
+        .map(
+          (result, index) =>
+            '<a href="' +
+            result.url +
+            '" class="search-result' +
+            (index === selectedIdx ? " selected" : "") +
+            '"><div class="search-result-title">' +
+            result.title +
+            "</div>" +
+            (result.snippet
+              ? '<div class="search-result-snippet">' + result.snippet + "</div>"
+              : "") +
+            "</a>",
+        )
+        .join("")
+    }
+
+    const search = async (query) => {
+      if (!query.trim()) {
+        searchResults.innerHTML = ""
+        results = []
+        return
+      }
+
+      await loadIndex()
+      if (!searchIndex) {
+        searchResults.innerHTML =
+          '<div class="search-empty">Index unavailable</div>'
+        return
+      }
+
+      const tokens = tokenize(query)
+      if (!tokens.length) {
+        searchResults.innerHTML = ""
+        results = []
+        return
+      }
+
+      const k1 = 1.2,
+        b = 0.75,
+        scores = new Map()
+
+      for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i],
+          isLast = i === tokens.length - 1
+        let terms =
+          isLast && token.length >= 2
+            ? Object.keys(searchIndex.index).filter((term) =>
+                term.startsWith(token),
+              )
+            : searchIndex.index[token]
+              ? [token]
+              : []
+
+        for (const term of terms) {
+          const postings = searchIndex.index[term] || [],
+            df = searchIndex.df[term] || 1,
+            idf =
+              Math.log((searchIndex.doc_count - df + 0.5) / (df + 0.5) + 1)
+
+          for (const posting of postings) {
+            const doc = searchIndex.documents[posting.doc_idx]
+            if (!doc) continue
+
+            const boost =
+                posting.field === "Title"
+                  ? 10
+                  : posting.field === "Heading"
+                    ? 5
+                    : 1,
+              score =
+                idf *
+                ((posting.tf * (k1 + 1)) /
+                  (posting.tf +
+                    k1 *
+                      (1 - b + (b * doc.body.length) / searchIndex.avg_dl))) *
+                boost
+
+            if (!scores.has(posting.doc_idx)) {
+              scores.set(posting.doc_idx, { score: 0, matches: new Set() })
+            }
+
+            const entry = scores.get(posting.doc_idx)
+            entry.score += score
+            entry.matches.add(term)
+          }
+        }
+      }
+
+      results = Array.from(scores.entries())
+        .map(([idx, data]) => {
+          const doc = searchIndex.documents[idx]
+          let snippet = ""
+
+          if (doc.body) {
+            const bodyLower = doc.body.toLowerCase()
+            let firstPos = -1
+            for (const match of data.matches) {
+              const pos = bodyLower.indexOf(match)
+              if (pos !== -1 && (firstPos === -1 || pos < firstPos)) {
+                firstPos = pos
+              }
+            }
+            const start = Math.max(0, firstPos - 50),
+              end = Math.min(doc.body.length, start + 150)
+            snippet = doc.body.slice(start, end)
+            if (start > 0) snippet = "..." + snippet
+            if (end < doc.body.length) snippet += "..."
+          }
+
+          return { ...doc, score: data.score, snippet }
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10)
+
+      selectedIdx = 0
+      render()
+    }
+
+    searchClose?.addEventListener("click", closeSearch)
+    searchOverlay.addEventListener("click", (e) => {
+      if (e.target === searchOverlay) closeSearch()
+    })
+    searchInput.addEventListener("input", () => {
+      if (searchTimeout) clearTimeout(searchTimeout)
+      searchTimeout = setTimeout(() => search(searchInput.value), 150)
+    })
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSearch()
+      else if (e.key === "ArrowDown") {
+        e.preventDefault()
+        if (selectedIdx < results.length - 1) {
+          selectedIdx++
+          render()
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault()
+        if (selectedIdx > 0) {
+          selectedIdx--
+          render()
+        }
+      } else if (e.key === "Enter" && results[selectedIdx]) {
+        e.preventDefault()
+        location.href = results[selectedIdx].url
+      }
+    })
+
+    api = {
+      openSearch,
+      closeSearch,
+    }
+
+    return api
+  }
+})()
+// ox-content:search:end

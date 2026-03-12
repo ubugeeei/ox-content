@@ -689,6 +689,18 @@ const FOOTER_CSS: &str = r"
 }
 ";
 
+fn wrap_css_section(name: &str, css: &str) -> String {
+    if css.trim().is_empty() {
+        return String::new();
+    }
+
+    format!("/* ox-content:css:{name}:start */\n{css}\n/* ox-content:css:{name}:end */\n")
+}
+
+fn page_content_contains_any(content: &str, needles: &[&str]) -> bool {
+    needles.iter().any(|needle| content.contains(needle))
+}
+
 /// Generates a complete HTML page for SSG.
 ///
 /// This function creates a full HTML document with navigation sidebar,
@@ -711,12 +723,37 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
 
     // Check if this is an entry page
     let is_entry_page = page_data.entry_page.is_some();
-    let entry_css = if is_entry_page { ENTRY_CSS } else { "" };
+    let mut css_sections = vec![wrap_css_section("base", SSG_CSS)];
 
-    // Combine all CSS (including plugins)
-    let plugins_css =
-        format!("{TABS_CSS}{YOUTUBE_CSS}{GITHUB_CSS}{OGP_CSS}{MERMAID_CSS}{ISLAND_CSS}");
-    let all_css = format!("{SSG_CSS}{entry_css}{plugins_css}{footer_css}{theme_css}");
+    if is_entry_page {
+        css_sections.push(wrap_css_section("entry", ENTRY_CSS));
+    }
+    if page_content_contains_any(&page_data.content, &["ox-tabs", "ox-tab-panel"]) {
+        css_sections.push(wrap_css_section("plugin-tabs", TABS_CSS));
+    }
+    if page_content_contains_any(&page_data.content, &["ox-youtube"]) {
+        css_sections.push(wrap_css_section("plugin-youtube", YOUTUBE_CSS));
+    }
+    if page_content_contains_any(&page_data.content, &["ox-github-card", "ox-github-error"]) {
+        css_sections.push(wrap_css_section("plugin-github", GITHUB_CSS));
+    }
+    if page_content_contains_any(&page_data.content, &["ox-ogp-card", "ox-ogp-simple"]) {
+        css_sections.push(wrap_css_section("plugin-ogp", OGP_CSS));
+    }
+    if page_content_contains_any(&page_data.content, &["ox-mermaid"]) {
+        css_sections.push(wrap_css_section("plugin-mermaid", MERMAID_CSS));
+    }
+    if page_content_contains_any(&page_data.content, &["data-ox-island", "ox-island"]) {
+        css_sections.push(wrap_css_section("plugin-island", ISLAND_CSS));
+    }
+    if has_footer {
+        css_sections.push(wrap_css_section("footer", footer_css));
+    }
+    if !theme_css.is_empty() {
+        css_sections.push(wrap_css_section("theme", &theme_css));
+    }
+
+    let all_css = css_sections.join("");
 
     // Embedded HTML for specific positions
     let embed_head = embed.and_then(|e| e.head.as_deref()).unwrap_or("");
