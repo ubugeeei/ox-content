@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ox-content/islands": "workspace:*",
     "svelte": "catalog:"
   },
   "devDependencies": {

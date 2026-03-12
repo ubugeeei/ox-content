@@ -9,7 +9,7 @@ Before you begin, ensure you have the following installed:
 | Requirement | Version | Installation |
 |-------------|---------|--------------|
 | **Rust** | 1.83+ | [rustup.rs](https://rustup.rs/) |
-| **Node.js** | 22+ | [nodejs.org](https://nodejs.org/) |
+| **Node.js** | 24+ | [nodejs.org](https://nodejs.org/) |
 | **mise** | Latest | [mise.jdx.dev](https://mise.jdx.dev/) |
 
 ## Installation
@@ -438,9 +438,9 @@ xcode-select --install
 Ensure you have the correct Node.js version:
 
 ```bash
-mise use node@22
+mise use node@24
 # or
-nvm use 22
+nvm use 24
 ```
 
 ### Getting Help
