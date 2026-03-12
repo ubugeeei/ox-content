@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.0-alpha.0] - 2026-03-12
+
+### Performance
+
+- chunking common js/css assets (#36)
+
 ## [0.17.0] - 2026-03-12
 
 ## [0.16.0] - 2026-03-07
