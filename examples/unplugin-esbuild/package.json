@@ -10,7 +10,7 @@
     "@ox-content/unplugin": "workspace:*"
   },
   "devDependencies": {
-    "esbuild": "^0.24.2",
+    "esbuild": "catalog:",
     "typescript": "catalog:"
   }
 }
