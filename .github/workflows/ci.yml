@@ -117,11 +117,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install Chromium for mermaid-cli
+        run: pnpm --filter @ox-content/vite-plugin exec puppeteer browsers install chrome-headless-shell
+
       - name: Build NAPI
         run: pnpm -C crates/ox_content_napi build
 
       - name: Build packages
         run: pnpm -r --filter './npm/*' run build
+
+      - name: Build documentation site
+        run: pnpm -C docs build
 
       - name: Typecheck
         run: pnpm check
