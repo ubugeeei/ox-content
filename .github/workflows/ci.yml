@@ -30,8 +30,8 @@ jobs:
       - name: Run clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-  lint-ts:
-    name: Lint (TypeScript)
+  check-ts:
+    name: Check (JS/TS)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,8 +43,8 @@ jobs:
           cache: true
           run-install: true
 
-      - name: Lint (Vite+)
-        run: vp run lint:ts
+      - name: Check (Vite+)
+        run: vp run check:ts
 
   test-rust:
     name: Test (Rust)
@@ -111,5 +111,5 @@ jobs:
       - name: Build documentation site
         run: vp run dev-build
 
-      - name: Typecheck
+      - name: Check JS/TS
         run: vp run check:ts

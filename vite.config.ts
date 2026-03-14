@@ -68,16 +68,16 @@ export default defineConfig({
 
       fmt: noopTask(["fmt:rust", "fmt:ts"]),
       "fmt:rust": task("cargo fmt --all"),
-      "fmt:check": noopTask(["fmt:rust-check", "fmt:ts-check"]),
+      "fmt:check": noopTask(["fmt:rust-check", "check:ts"]),
       "fmt:rust-check": task("cargo fmt --all -- --check"),
       "fmt:ts": task('vp fmt "npm/*/src" scripts'),
-      "fmt:ts-check": task('vp fmt --check "npm/*/src" scripts'),
+      "fmt:ts-check": noopTask(["check:ts"]),
 
-      lint: noopTask(["lint:rust", "lint:ts"]),
+      lint: noopTask(["lint:rust", "check:ts"]),
       "lint:rust": task("cargo clippy --workspace --all-targets -- -D warnings"),
-      "lint:ts": task("vp lint --type-aware npm scripts"),
+      "lint:ts": noopTask(["check:ts"]),
       "check:ts": task(
-        'vp fmt --check "npm/*/src" scripts && vp lint --type-aware npm scripts && vp run --filter "./npm/*" typecheck',
+        'vp check vite.config.ts scripts crates/ox_content_napi/index.d.ts && vp exec --filter "./npm/*" -- vp check src vite.config.ts',
       ),
 
       bench: noopTask(["bench:rust", "bench:parse", "bench:bundle"], { cache: false }),
@@ -92,7 +92,7 @@ export default defineConfig({
         cwd: "crates/ox_content_napi",
       }),
 
-      ci: noopTask(["fmt:check", "lint", "test"]),
+      ci: noopTask(["fmt:rust-check", "lint:rust", "check:ts", "test"]),
       ready: noopTask(["fmt", "lint", "test"]),
       coverage: uncachedTask("cargo llvm-cov --workspace --html"),
       setup: uncachedTask(

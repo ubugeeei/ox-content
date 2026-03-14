@@ -254,6 +254,7 @@ export default defineConfig({
 ### Available Workspace Tasks
 
 The canonical workspace tasks are defined in `vite.config.ts` and are invoked with `vp run <task>`.
+For JS/TS quality checks, `check:ts`, `lint:ts`, and `fmt:ts-check` all delegate to `vp check`.
 
 ```bash
 # Setup
