@@ -36,19 +36,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        run: pnpm install
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
       - name: Lint (Vite+)
-        run: pnpm exec vp run --workspace-root lint:ts
+        run: vp run lint:ts
 
   test-rust:
     name: Test (Rust)
@@ -71,13 +67,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -85,14 +80,11 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Build NAPI
-        run: pnpm exec vp run --workspace-root build:napi
+        run: vp run build:napi
 
       - name: Run tests
-        run: pnpm exec vp run --workspace-root test:ts
+        run: vp run test:ts
 
   build:
     name: Build
@@ -100,13 +92,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -114,14 +105,11 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Install Chromium for mermaid-cli
-        run: pnpm --filter @ox-content/vite-plugin exec puppeteer browsers install chrome-headless-shell
+        run: vp exec --filter @ox-content/vite-plugin -- puppeteer browsers install chrome-headless-shell
 
       - name: Build documentation site
-        run: pnpm exec vp run --workspace-root dev-build
+        run: vp run dev-build
 
       - name: Typecheck
-        run: pnpm exec vp run --workspace-root check:ts
+        run: vp run check:ts

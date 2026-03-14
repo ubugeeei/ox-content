@@ -28,6 +28,9 @@ const uncachedTask = (
 ) => task(command, { ...options, cache: false });
 
 export default defineConfig({
+  fmt: {
+    ignorePatterns: ["crates/ox_content_ssg/templates/*.html"],
+  },
   lint: {
     options: {
       typeAware: true,

@@ -128,13 +128,13 @@ The script now compares against `md4w (md4c)` by default and will include `Bun.m
 ## Development
 
 ```bash
-mise run install        # Install JS dependencies through Vite+
-mise run build:napi     # Build NAPI bindings
-mise run build:npm      # Build npm packages
-mise run test           # Run tests
+vp install             # Install JS dependencies through Vite+
+vp run build:napi      # Build NAPI bindings
+vp run build:npm       # Build npm packages
+vp run test            # Run tests
 ```
 
-These commands delegate to the Vite+ task graph defined in `vite.config.ts`.
+The workspace task graph is defined in `vite.config.ts`, and Node.js is pinned in `.node-version`.
 
 See the [documentation](https://ubugeeei.github.io/ox-content/) for more details.
 

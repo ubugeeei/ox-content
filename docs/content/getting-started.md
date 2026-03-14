@@ -6,11 +6,11 @@ This guide will help you set up Ox Content and start using it in your projects.
 
 Before you begin, ensure you have the following installed:
 
-| Requirement | Version | Installation                          |
-| ----------- | ------- | ------------------------------------- |
-| **Rust**    | 1.83+   | [rustup.rs](https://rustup.rs/)       |
-| **Node.js** | 24+     | [nodejs.org](https://nodejs.org/)     |
-| **mise**    | Latest  | [mise.jdx.dev](https://mise.jdx.dev/) |
+| Requirement | Version | Installation                                                            |
+| ----------- | ------- | ----------------------------------------------------------------------- |
+| **Rust**    | 1.83+   | [rustup.rs](https://rustup.rs/)                                         |
+| **Node.js** | 24+     | Managed via `.node-version` / `vp` or [nodejs.org](https://nodejs.org/) |
+| **Vite+**   | Latest  | [vite.plus](https://vite.plus/)                                         |
 
 ## Installation
 
@@ -21,16 +21,18 @@ Before you begin, ensure you have the following installed:
 git clone https://github.com/ubugeeei/ox-content.git
 cd ox-content
 
-# Setup with mise (recommended)
+# Optional: install Rust via mise
 mise trust
 mise install
-mise run install
+
+# Install JS dependencies
+vp install
 
 # Build all crates
-mise run build
+vp run build
 
 # Run tests to verify installation
-mise run test
+vp run test
 ```
 
 ### As a Rust Dependency
@@ -251,54 +253,54 @@ export default defineConfig({
 
 ### Available Workspace Tasks
 
-`mise.toml` delegates to the Vite+ task graph defined in `vite.config.ts`, so you can use `mise run <task>` as a thin wrapper around the canonical Vite+ tasks.
+The canonical workspace tasks are defined in `vite.config.ts` and are invoked with `vp run <task>`.
 
 ```bash
 # Setup
-mise run install        # Install JS dependencies with Vite+
+vp install              # Install JS dependencies with Vite+
 
 # Building
-mise run build          # Build everything (Rust + NAPI + npm packages)
-mise run build:rust     # Build Rust crates
-mise run build:rust-release
-mise run build:napi
-mise run build:npm
+vp run build            # Build everything (Rust + NAPI + npm packages)
+vp run build:rust       # Build Rust crates
+vp run build:rust-release
+vp run build:napi
+vp run build:npm
 
 # Testing
-mise run test           # Run all tests
-mise run test:rust
-mise run test:rust-verbose
-mise run test:ts
-mise run watch          # Watch for changes and run tests
+vp run test             # Run all tests
+vp run test:rust
+vp run test:rust-verbose
+vp run test:ts
+vp run watch            # Watch for changes and run tests
 
 # Code Quality
-mise run fmt            # Format Rust + JavaScript/TypeScript
-mise run fmt:check      # Check formatting (CI mode)
-mise run clippy         # Run clippy lints
-mise run lint           # Run all lints
+vp run fmt              # Format Rust + JavaScript/TypeScript
+vp run fmt:check        # Check formatting (CI mode)
+vp run clippy           # Run clippy lints
+vp run lint             # Run all lints
 
 # Pre-commit Check
-mise run ready          # Run format, lint, and tests
+vp run ready            # Run format, lint, and tests
 
 # Documentation
-mise run doc:cargo      # Generate Rust documentation
-mise run doc:cargo-open # Generate and open in browser
+vp run doc:cargo        # Generate Rust documentation
+vp run doc:cargo-open   # Generate and open in browser
 
 # Docs and examples
-mise run dev            # Start docs + playground
-mise run dev:docs
-mise run dev:playground
-mise run playground
-mise run integ-vue
-mise run integ-react
-mise run integ-svelte
-mise run ssg-vite
+vp run dev              # Start docs + playground
+vp run dev:docs
+vp run dev:playground
+vp run playground
+vp run integ-vue
+vp run integ-react
+vp run integ-svelte
+vp run ssg-vite
 
 # Benchmarks
-mise run bench              # Run all benchmarks (Rust + JS)
-mise run bench:rust         # Run Rust benchmarks only
-mise run bench:parse        # Run parse/render speed benchmarks
-mise run bench:bundle       # Run bundle size benchmarks
+vp run bench                # Run all benchmarks (Rust + JS)
+vp run bench:rust           # Run Rust benchmarks only
+vp run bench:parse          # Run parse/render speed benchmarks
+vp run bench:bundle         # Run bundle size benchmarks
 ```
 
 ### Project Structure
@@ -307,7 +309,7 @@ mise run bench:bundle       # Run bundle size benchmarks
 ox-content/
 ├── Cargo.toml              # Workspace configuration
 ├── vite.config.ts          # Vite+ workspace task graph
-├── mise.toml               # Thin mise wrappers around Vite+ tasks
+├── mise.toml               # Optional Rust toolchain config for mise
 ├── crates/                 # Rust crates
 │   ├── ox_content_allocator/   # Arena allocator
 │   ├── ox_content_ast/         # AST node definitions
@@ -335,8 +337,8 @@ ox-content/
 ### All Tests
 
 ```bash
-# With mise
-mise run test
+# With Vite+
+vp run test
 
 # With cargo directly
 cargo test --workspace
@@ -358,7 +360,7 @@ cargo test --workspace -- --nocapture
 ### Watch Mode
 
 ```bash
-mise run watch
+vp run watch
 # or
 cargo watch -x "test --workspace"
 ```
@@ -369,16 +371,16 @@ Ox Content includes comprehensive benchmarks to measure performance:
 
 ```bash
 # Run all benchmarks
-mise run bench
+vp run bench
 
 # Run only Rust benchmarks (cargo bench)
-mise run bench:rust
+vp run bench:rust
 
 # Run parse/render speed benchmarks (compares with marked, markdown-it, md4w/md4c, and Bun when available)
-mise run bench:parse
+vp run bench:parse
 
 # Run bundle size benchmarks (compares with VitePress, Astro, etc.)
-mise run bench:bundle
+vp run bench:bundle
 ```
 
 ### Benchmark Results
@@ -391,14 +393,14 @@ The playground provides an interactive environment to test the parser:
 
 ```bash
 # Start docs and playground together
-mise run dev
+vp run dev
 
 # Or run only the playground
-mise run playground
+vp run playground
 
 # Or manually
 cd examples/playground
-npm run dev
+vp dev
 ```
 
 Then open [http://127.0.0.1:5173](http://127.0.0.1:5173) for the playground and

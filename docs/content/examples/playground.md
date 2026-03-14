@@ -6,10 +6,10 @@ Interactive web playground for testing Markdown parsing.
 
 ```bash
 # Start docs and playground together
-mise run dev
+vp run dev
 
 # Or run only the playground
-mise run playground
+vp run playground
 ```
 
 ## Features
@@ -39,15 +39,15 @@ output inspectable. Use native bindings when you need parser-accurate behavior.
 
 ```bash
 # Start docs and playground together
-mise run dev
+vp run dev
 
 # Start only the playground
-mise run playground
+vp run playground
 
 # Build for production
 cd examples/playground
-npm run build
+vp build
 
 # Preview production build
-npm run preview
+vp preview
 ```
