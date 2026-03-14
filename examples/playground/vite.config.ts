@@ -1,4 +1,4 @@
-import { defineConfig } from "vite"
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   server: {
@@ -7,4 +7,4 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
-})
+});

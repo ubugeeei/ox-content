@@ -27,15 +27,15 @@ Components work seamlessly in Markdown!
 
 ```tsx
 // vite.config.ts
-import { oxContentReact } from '@ox-content/vite-plugin-react';
+import { oxContentReact } from "@ox-content/vite-plugin-react";
 
 export default defineConfig({
   plugins: [
     react(),
     oxContentReact({
       components: {
-        Counter: './src/components/Counter.tsx',
-        Alert: './src/components/Alert.tsx',
+        Counter: "./src/components/Counter.tsx",
+        Alert: "./src/components/Alert.tsx",
       },
     }),
   ],

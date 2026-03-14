@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  type?: 'info' | 'warning' | 'error' | 'success';
+  type?: "info" | "warning" | "error" | "success";
   title?: string;
 }>();
 </script>

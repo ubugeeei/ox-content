@@ -4,14 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "vp dev",
+    "build": "vp build"
   },
   "dependencies": {
     "@ox-content/unplugin": "workspace:*",
     "markdown-it-emoji": "^3.0.0"
   },
   "devDependencies": {
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

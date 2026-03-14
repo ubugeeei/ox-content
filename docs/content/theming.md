@@ -13,25 +13,25 @@ ox-content provides a flexible Theme API that allows you to customize the appear
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import { oxContent, defineTheme, defaultTheme } from '@ox-content/vite-plugin';
+import { defineConfig } from "vite";
+import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   plugins: [
     oxContent({
       ssg: {
-        siteName: 'My Docs',
+        siteName: "My Docs",
         theme: defineTheme({
           extends: defaultTheme,
           colors: {
-            primary: '#3498db',
+            primary: "#3498db",
           },
           socialLinks: {
-            github: 'https://github.com/your/repo',
+            github: "https://github.com/your/repo",
           },
           footer: {
-            message: 'Released under the MIT License.',
-            copyright: 'Copyright © 2024 My Company',
+            message: "Released under the MIT License.",
+            copyright: "Copyright © 2024 My Company",
           },
         }),
       },
@@ -46,13 +46,7 @@ ox-content supports JSX/TSX themes that render to static HTML with **zero client
 
 ```tsx
 // theme/Layout.tsx
-import {
-  usePageProps,
-  useSiteConfig,
-  useNav,
-  raw,
-  each,
-} from '@ox-content/vite-plugin';
+import { usePageProps, useSiteConfig, useNav, raw, each } from "@ox-content/vite-plugin";
 
 export function Layout({ children }) {
   const page = usePageProps();
@@ -63,7 +57,9 @@ export function Layout({ children }) {
     <html lang="en">
       <head>
         <meta charset="UTF-8" />
-        <title>{page.title} - {site.name}</title>
+        <title>
+          {page.title} - {site.name}
+        </title>
       </head>
       <body>
         <nav>
@@ -72,7 +68,9 @@ export function Layout({ children }) {
               <h3>{group.title}</h3>
               <ul>
                 {each(group.items, (item) => (
-                  <li><a href={item.href}>{item.title}</a></li>
+                  <li>
+                    <a href={item.href}>{item.title}</a>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -102,32 +100,32 @@ All CSS variables use the `--octc-` prefix for namespacing.
 
 ### Colors
 
-| Option | CSS Variable | Description |
-|--------|-------------|-------------|
-| `colors.primary` | `--octc-color-primary` | Primary accent color for links, active states |
-| `colors.primaryHover` | `--octc-color-primary-hover` | Primary color on hover |
-| `colors.background` | `--octc-color-bg` | Main background color |
-| `colors.backgroundAlt` | `--octc-color-bg-alt` | Alternative background (sidebar, code blocks) |
-| `colors.text` | `--octc-color-text` | Main text color |
-| `colors.textMuted` | `--octc-color-text-muted` | Muted/secondary text color |
-| `colors.border` | `--octc-color-border` | Border color |
-| `colors.codeBackground` | `--octc-color-code-bg` | Code block background |
-| `colors.codeText` | `--octc-color-code-text` | Code block text color |
+| Option                  | CSS Variable                 | Description                                   |
+| ----------------------- | ---------------------------- | --------------------------------------------- |
+| `colors.primary`        | `--octc-color-primary`       | Primary accent color for links, active states |
+| `colors.primaryHover`   | `--octc-color-primary-hover` | Primary color on hover                        |
+| `colors.background`     | `--octc-color-bg`            | Main background color                         |
+| `colors.backgroundAlt`  | `--octc-color-bg-alt`        | Alternative background (sidebar, code blocks) |
+| `colors.text`           | `--octc-color-text`          | Main text color                               |
+| `colors.textMuted`      | `--octc-color-text-muted`    | Muted/secondary text color                    |
+| `colors.border`         | `--octc-color-border`        | Border color                                  |
+| `colors.codeBackground` | `--octc-color-code-bg`       | Code block background                         |
+| `colors.codeText`       | `--octc-color-code-text`     | Code block text color                         |
 
 ### Layout
 
-| Option | CSS Variable | Description |
-|--------|-------------|-------------|
-| `layout.sidebarWidth` | `--octc-sidebar-width` | Sidebar width (default: `260px`) |
-| `layout.headerHeight` | `--octc-header-height` | Header height (default: `60px`) |
+| Option                   | CSS Variable               | Description                              |
+| ------------------------ | -------------------------- | ---------------------------------------- |
+| `layout.sidebarWidth`    | `--octc-sidebar-width`     | Sidebar width (default: `260px`)         |
+| `layout.headerHeight`    | `--octc-header-height`     | Header height (default: `60px`)          |
 | `layout.maxContentWidth` | `--octc-max-content-width` | Maximum content width (default: `960px`) |
 
 ### Fonts
 
-| Option | CSS Variable | Description |
-|--------|-------------|-------------|
+| Option       | CSS Variable       | Description           |
+| ------------ | ------------------ | --------------------- |
 | `fonts.sans` | `--octc-font-sans` | Sans-serif font stack |
-| `fonts.mono` | `--octc-font-mono` | Monospace font stack |
+| `fonts.mono` | `--octc-font-mono` | Monospace font stack  |
 
 ## Page Props & Hooks
 
@@ -151,6 +149,7 @@ function PageHeader() {
 ```
 
 **Available properties:**
+
 - `title` - Page title
 - `description` - Page description
 - `html` - Rendered HTML content
@@ -204,7 +203,7 @@ function NavLink({ href, children }) {
   const isActive = useIsActive(href);
 
   return (
-    <a href={href} class={isActive ? 'active' : ''}>
+    <a href={href} class={isActive ? "active" : ""}>
       {children}
     </a>
   );
@@ -226,9 +225,9 @@ Renders raw HTML without escaping:
 Maps over arrays:
 
 ```tsx
-{each(items, (item, index) => (
-  <li key={index}>{item.name}</li>
-))}
+{
+  each(items, (item, index) => <li key={index}>{item.name}</li>);
+}
 ```
 
 ### `when(condition, content)`
@@ -236,9 +235,9 @@ Maps over arrays:
 Conditional rendering:
 
 ```tsx
-{when(page.toc.length > 0, (
-  <aside class="toc">...</aside>
-))}
+{
+  when(page.toc.length > 0, <aside class="toc">...</aside>);
+}
 ```
 
 ## Type Generation
@@ -254,16 +253,16 @@ export interface PageFrontmatter {
   // ... other fields from your frontmatter
 }
 
-export type PageProps = import('@ox-content/vite-plugin').PageProps<PageFrontmatter>;
+export type PageProps = import("@ox-content/vite-plugin").PageProps<PageFrontmatter>;
 ```
 
 Use the generated types:
 
 ```tsx
-import type { PageProps } from './page-props';
+import type { PageProps } from "./page-props";
 
 function Layout() {
-  const page = usePageProps<PageProps['frontmatter']>();
+  const page = usePageProps<PageProps["frontmatter"]>();
   // page.frontmatter is now fully typed
 }
 ```
@@ -274,10 +273,10 @@ Support multiple layouts based on frontmatter:
 
 ```tsx
 // theme/index.tsx
-import { createTheme } from '@ox-content/vite-plugin';
-import { DefaultLayout } from './layouts/Default';
-import { EntryLayout } from './layouts/Entry';
-import { BlogLayout } from './layouts/Blog';
+import { createTheme } from "@ox-content/vite-plugin";
+import { DefaultLayout } from "./layouts/Default";
+import { EntryLayout } from "./layouts/Entry";
+import { BlogLayout } from "./layouts/Blog";
 
 export default createTheme({
   layouts: {
@@ -307,9 +306,9 @@ Add social links to the header:
 defineTheme({
   extends: defaultTheme,
   socialLinks: {
-    github: 'https://github.com/your/repo',
-    twitter: 'https://twitter.com/yourhandle',
-    discord: 'https://discord.gg/yourserver',
+    github: "https://github.com/your/repo",
+    twitter: "https://twitter.com/yourhandle",
+    discord: "https://discord.gg/yourserver",
   },
 });
 ```
@@ -324,12 +323,12 @@ defineTheme({
   slots: {
     head: '<link rel="preconnect" href="https://fonts.googleapis.com">',
     headerBefore: '<div class="announcement">New version!</div>',
-    headerAfter: '',
-    sidebarBefore: '',
-    sidebarAfter: '',
-    contentBefore: '',
+    headerAfter: "",
+    sidebarBefore: "",
+    sidebarAfter: "",
+    contentBefore: "",
     contentAfter: '<div class="feedback">Was this helpful?</div>',
-    footerBefore: '',
+    footerBefore: "",
     footer: '<footer class="custom">...</footer>',
   },
 });
@@ -357,37 +356,37 @@ defineTheme({
 
 ```ts
 const defaultTheme = {
-  name: 'default',
+  name: "default",
   colors: {
-    primary: '#e04d0a',
-    primaryHover: '#f5602a',
-    background: '#ffffff',
-    backgroundAlt: '#f8f9fa',
-    text: '#1a1a1a',
-    textMuted: '#666666',
-    border: '#e5e7eb',
-    codeBackground: '#1e293b',
-    codeText: '#e2e8f0',
+    primary: "#e04d0a",
+    primaryHover: "#f5602a",
+    background: "#ffffff",
+    backgroundAlt: "#f8f9fa",
+    text: "#1a1a1a",
+    textMuted: "#666666",
+    border: "#e5e7eb",
+    codeBackground: "#1e293b",
+    codeText: "#e2e8f0",
   },
   darkColors: {
-    primary: '#f5714a',
-    primaryHover: '#ff8a66',
-    background: '#141414',
-    backgroundAlt: '#141414',
-    text: '#e5e5e5',
-    textMuted: '#a3a3a3',
-    border: '#2a2a2a',
-    codeBackground: '#1a1a1a',
-    codeText: '#e5e5e5',
+    primary: "#f5714a",
+    primaryHover: "#ff8a66",
+    background: "#141414",
+    backgroundAlt: "#141414",
+    text: "#e5e5e5",
+    textMuted: "#a3a3a3",
+    border: "#2a2a2a",
+    codeBackground: "#1a1a1a",
+    codeText: "#e5e5e5",
   },
   fonts: {
     sans: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     mono: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
   },
   layout: {
-    sidebarWidth: '260px',
-    headerHeight: '60px',
-    maxContentWidth: '960px',
+    sidebarWidth: "260px",
+    headerHeight: "60px",
+    maxContentWidth: "960px",
   },
   socialLinks: {},
 };
@@ -415,5 +414,5 @@ import type {
   NavItem,
   ThemeComponent,
   ThemeProps,
-} from '@ox-content/vite-plugin';
+} from "@ox-content/vite-plugin";
 ```

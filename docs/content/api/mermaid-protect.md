@@ -27,12 +27,12 @@ with HTML comment placeholders that rehype will preserve.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/mermaid-protect.ts#L17)**
 
 ```typescript
-export function protectMermaidSvgs(html: string): MermaidSvgProtection
+export function protectMermaidSvgs(html: string): MermaidSvgProtection;
 ```
 
 ### Returns
 
-`MermaidSvgProtection` - 
+`MermaidSvgProtection` -
 
 ---
 
@@ -45,12 +45,11 @@ Restore protected mermaid SVG blocks from placeholders.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/mermaid-protect.ts#L66)**
 
 ```typescript
-export function restoreMermaidSvgs(html: string, svgs: Map<string, string>): string
+export function restoreMermaidSvgs(html: string, svgs: Map<string, string>): string;
 ```
 
 ### Returns
 
-`string` - 
+`string` -
 
 ---
-

@@ -6,10 +6,10 @@
 
 // Import Markdown content directly
 // The @ox-content/vite-plugin transforms this into a module
-import content from "./content/index.md"
+import content from "./content/index.md";
 
 // Render the content
-const app = document.getElementById("app")
+const app = document.getElementById("app");
 if (app) {
   app.innerHTML = `
     <nav class="toc">
@@ -44,14 +44,14 @@ if (app) {
     <main class="content">
       ${content.html}
     </main>
-  `
+  `;
 }
 
 // HMR support
 if (import.meta.hot) {
   import.meta.hot.on("ox-content:update", (data) => {
-    console.log("Markdown updated:", data.file)
+    console.log("Markdown updated:", data.file);
     // Reload to get new content
-    import.meta.hot?.invalidate()
-  })
+    import.meta.hot?.invalidate();
+  });
 }

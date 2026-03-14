@@ -7,16 +7,16 @@
 Clamps a number between a minimum and maximum value.
 
 ```typescript
-export function clamp(value: number, min: number, max: number): number
+export function clamp(value: number, min: number, max: number): number;
 ```
 
 ### Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| `value` | `number` | The value to clamp |
-| `min` | `number` | The minimum allowed value |
-| `max` | `number` | The maximum allowed value |
+| Name    | Type     | Description               |
+| ------- | -------- | ------------------------- |
+| `value` | `number` | The value to clamp        |
+| `min`   | `number` | The minimum allowed value |
+| `max`   | `number` | The maximum allowed value |
 
 ### Returns
 
@@ -25,9 +25,9 @@ export function clamp(value: number, min: number, max: number): number
 ### Examples
 
 ```ts
-clamp(5, 0, 10) // => 5
-clamp(-5, 0, 10) // => 0
-clamp(15, 0, 10) // => 10
+clamp(5, 0, 10); // => 5
+clamp(-5, 0, 10); // => 0
+clamp(15, 0, 10); // => 10
 ```
 
 ---
@@ -39,16 +39,16 @@ clamp(15, 0, 10) // => 10
 Linearly interpolates between two values.
 
 ```typescript
-export function lerp(start: number, end: number, t: number): number
+export function lerp(start: number, end: number, t: number): number;
 ```
 
 ### Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| `start` | `number` | The start value |
-| `end` | `number` | The end value |
-| `t` | `number` | The interpolation factor (0 to 1) |
+| Name    | Type     | Description                       |
+| ------- | -------- | --------------------------------- |
+| `start` | `number` | The start value                   |
+| `end`   | `number` | The end value                     |
+| `t`     | `number` | The interpolation factor (0 to 1) |
 
 ### Returns
 
@@ -57,8 +57,8 @@ export function lerp(start: number, end: number, t: number): number
 ### Examples
 
 ```ts
-lerp(0, 100, 0.5) // => 50
-lerp(0, 100, 0.25) // => 25
+lerp(0, 100, 0.5); // => 50
+lerp(0, 100, 0.25); // => 25
 ```
 
 ---
@@ -70,14 +70,14 @@ lerp(0, 100, 0.25) // => 25
 Rounds a number to a specified number of decimal places.
 
 ```typescript
-export function round(value: number, decimals: number): number
+export function round(value: number, decimals: number): number;
 ```
 
 ### Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| `value` | `number` | The value to round |
+| Name       | Type     | Description                  |
+| ---------- | -------- | ---------------------------- |
+| `value`    | `number` | The value to round           |
 | `decimals` | `number` | The number of decimal places |
 
 ### Returns
@@ -87,9 +87,8 @@ export function round(value: number, decimals: number): number
 ### Examples
 
 ```ts
-round(3.14159, 2) // => 3.14
-round(3.14159, 4) // => 3.1416
+round(3.14159, 2); // => 3.14
+round(3.14159, 4); // => 3.1416
 ```
 
 ---
-

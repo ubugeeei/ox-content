@@ -153,8 +153,7 @@ button {
 
 .editor-panel {
   color: var(--ink-inverse);
-  background:
-    linear-gradient(180deg, rgba(18, 32, 42, 0.98) 0%, rgba(13, 25, 34, 0.98) 100%);
+  background: linear-gradient(180deg, rgba(18, 32, 42, 0.98) 0%, rgba(13, 25, 34, 0.98) 100%);
   border: 1px solid var(--editor-line);
 }
 

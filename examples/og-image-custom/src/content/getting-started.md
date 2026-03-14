@@ -21,7 +21,7 @@ oxContent({
   ogImageOptions: {
     template: "./og-template.ts",
   },
-})
+});
 ```
 
 ## 2. Create a Template

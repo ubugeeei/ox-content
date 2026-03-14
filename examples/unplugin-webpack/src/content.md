@@ -17,17 +17,17 @@ This is a **Markdown** file processed by `@ox-content/unplugin`.
 ## Code Example
 
 ```javascript
-const message = 'Hello, World!';
+const message = "Hello, World!";
 console.log(message);
 ```
 
 ## Table Example
 
 | Bundler | Status |
-|---------|--------|
-| webpack | OK |
-| rollup  | OK |
-| esbuild | OK |
+| ------- | ------ |
+| webpack | OK     |
+| rollup  | OK     |
+| esbuild | OK     |
 
 > This is a blockquote.
 

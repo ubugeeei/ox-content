@@ -2,22 +2,65 @@
   "name": "@ox-content/vite-plugin",
   "version": "1.0.0-alpha.0",
   "description": "Vite plugin for Ox Content - High-performance Markdown processing with Environment API",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+  "keywords": [
+    "environment-api",
+    "markdown",
+    "ox-content",
+    "ssg",
+    "vite",
+    "vite-plugin"
+  ],
+  "license": "MIT",
+  "author": "ubugeeei",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/ox-content.git",
+    "directory": "npm/vite-plugin-ox-content"
   },
   "files": [
     "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
+    "build": "vp pack",
+    "dev": "vp pack --watch",
     "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.12.0",
+    "@ox-content/napi": "workspace:*",
+    "glob": "^11.0.0",
+    "playwright": "^1.50.0",
+    "puppeteer": "^23.11.1",
+    "rehype-parse": "^9.0.1",
+    "rehype-stringify": "^10.0.1",
+    "rolldown": "^1.0.0-rc.1",
+    "shiki": "^1.24.0",
+    "unified": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/hast": "^3.0.4",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "yaml": "^2.8.2"
   },
   "peerDependencies": {
     "@vue/compiler-sfc": "^3.4.0",
@@ -43,47 +86,5 @@
     "react-dom": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "@mermaid-js/mermaid-cli": "^11.12.0",
-    "@ox-content/napi": "workspace:*",
-    "glob": "^11.0.0",
-    "playwright": "^1.50.0",
-    "puppeteer": "^23.11.1",
-    "rehype-parse": "^9.0.1",
-    "rehype-stringify": "^10.0.1",
-    "rolldown": "^1.0.0-rc.1",
-    "shiki": "^1.24.0",
-    "unified": "^11.0.5"
-  },
-  "devDependencies": {
-    "@types/hast": "^3.0.4",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "yaml": "^2.8.2"
-  },
-  "keywords": [
-    "vite",
-    "vite-plugin",
-    "markdown",
-    "ox-content",
-    "ssg",
-    "environment-api"
-  ],
-  "license": "MIT",
-  "author": "ubugeeei",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ubugeeei/ox-content.git",
-    "directory": "npm/vite-plugin-ox-content"
-  },
-  "publishConfig": {
-    "provenance": true,
-    "access": "public"
   }
 }

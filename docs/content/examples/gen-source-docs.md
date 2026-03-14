@@ -6,18 +6,18 @@ Demonstrates auto-generating API documentation from JSDoc/TSDoc comments.
 
 ```bash
 cd examples/gen-source-docs
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 ## Configuration
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { oxContent } from '@ox-content/vite-plugin';
-import { oxContentVue } from '@ox-content/vite-plugin-vue';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { oxContent } from "@ox-content/vite-plugin";
+import { oxContentVue } from "@ox-content/vite-plugin-vue";
 
 export default defineConfig({
   plugins: [
@@ -25,23 +25,23 @@ export default defineConfig({
 
     // Base plugin with docs generation
     oxContent({
-      srcDir: 'docs',
+      srcDir: "docs",
       docs: {
         enabled: true,
-        src: ['./src'],
-        out: 'docs/api',
-        include: ['**/*.ts'],
-        exclude: ['**/*.test.*'],
-        format: 'markdown',
+        src: ["./src"],
+        out: "docs/api",
+        include: ["**/*.ts"],
+        exclude: ["**/*.test.*"],
+        format: "markdown",
         toc: true,
-        groupBy: 'file',
+        groupBy: "file",
       },
     }),
 
     // Vue integration for interactive docs
     oxContentVue({
-      srcDir: 'docs',
-      components: './src/components/*.vue',
+      srcDir: "docs",
+      components: "./src/components/*.vue",
     }),
   ],
 });
@@ -51,7 +51,7 @@ export default defineConfig({
 
 ### utils.ts
 
-```ts
+````ts
 /**
  * Capitalizes the first letter of a string.
  *
@@ -67,7 +67,7 @@ export function capitalize(str: string): string {
   if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
-```
+````
 
 ### math.ts
 

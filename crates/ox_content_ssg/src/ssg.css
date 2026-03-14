@@ -2,10 +2,8 @@
   --octc-sidebar-width: 260px;
   --octc-header-height: 60px;
   --octc-max-content-width: 960px;
-  --octc-font-sans:
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --octc-font-mono:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --octc-font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --octc-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   --octc-color-bg: #ffffff;
   --octc-color-bg-alt: #f8f9fa;
   --octc-color-text: #1a1a1a;

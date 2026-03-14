@@ -4,11 +4,11 @@ This directory contains logo assets for Ox Content.
 
 ## Files
 
-| File | Description | Use Case |
-|------|-------------|----------|
-| `logo.svg` | Full logo with background | Marketing, documentation |
-| `logo-dark.svg` | Logo on transparent background | Dark theme websites |
-| `logo-icon.svg` | Small icon version | Favicons, small displays |
+| File            | Description                    | Use Case                 |
+| --------------- | ------------------------------ | ------------------------ |
+| `logo.svg`      | Full logo with background      | Marketing, documentation |
+| `logo-dark.svg` | Logo on transparent background | Dark theme websites      |
+| `logo-icon.svg` | Small icon version             | Favicons, small displays |
 
 ## Design Concept
 
@@ -19,12 +19,12 @@ The Ox Content logo combines two key concepts:
 
 ## Color Palette
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Primary | `#e94560` | Accent, highlights |
-| Background Dark | `#1a1a2e` | Dark backgrounds |
+| Color             | Hex       | Usage                 |
+| ----------------- | --------- | --------------------- |
+| Primary           | `#e94560` | Accent, highlights    |
+| Background Dark   | `#1a1a2e` | Dark backgrounds      |
 | Background Medium | `#16213e` | Secondary backgrounds |
-| Accent Dark | `#0f3460` | Borders, outlines |
+| Accent Dark       | `#0f3460` | Borders, outlines     |
 
 ## Usage Guidelines
 

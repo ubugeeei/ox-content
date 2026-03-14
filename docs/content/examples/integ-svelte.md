@@ -6,25 +6,25 @@ Demonstrates embedding Svelte 5 components in Markdown.
 
 ```bash
 cd examples/integ-svelte
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 ## Configuration
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
-import { oxContentSvelte } from '@ox-content/vite-plugin-svelte';
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { oxContentSvelte } from "@ox-content/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [
     svelte(),
     oxContentSvelte({
-      srcDir: 'docs',
+      srcDir: "docs",
       // Auto-discover all Svelte components
-      components: './src/components/*.svelte',
+      components: "./src/components/*.svelte",
     }),
   ],
 });

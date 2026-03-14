@@ -6,10 +6,10 @@ Interactive web playground for testing Markdown parsing.
 
 ```bash
 # Start docs and playground together
-mise run dev
+vp run dev
 
 # Or run only the playground
-mise run playground
+vp run playground
 ```
 
 ## Features
@@ -25,11 +25,11 @@ mise run playground
 The playground currently uses a lightweight browser-side parser shim:
 
 ```ts
-const result = parseMarkdown(input)
+const result = parseMarkdown(input);
 
-preview.innerHTML = result.html
-htmlPane.textContent = result.html
-astPane.textContent = result.ast
+preview.innerHTML = result.html;
+htmlPane.textContent = result.html;
+astPane.textContent = result.ast;
 ```
 
 This keeps the demo easy to run in a plain Vite app while still making the
@@ -39,15 +39,15 @@ output inspectable. Use native bindings when you need parser-accurate behavior.
 
 ```bash
 # Start docs and playground together
-mise run dev
+vp run dev
 
 # Start only the playground
-mise run playground
+vp run playground
 
 # Build for production
 cd examples/playground
-pnpm build
+vp build
 
 # Preview production build
-pnpm preview
+vp preview
 ```

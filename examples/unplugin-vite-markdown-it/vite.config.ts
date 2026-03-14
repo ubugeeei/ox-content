@@ -1,6 +1,6 @@
-import { defineConfig } from "vite"
-import oxContent from "@ox-content/unplugin/vite"
-import { full as emoji } from "markdown-it-emoji"
+import { defineConfig } from "vite-plus";
+import oxContent from "@ox-content/unplugin/vite";
+import { full as emoji } from "markdown-it-emoji";
 
 export default defineConfig({
   plugins: [
@@ -11,4 +11,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+});

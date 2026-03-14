@@ -1,20 +1,21 @@
 {
   "name": "ox-content-integ-svelte-example",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview"
   },
   "dependencies": {
     "@ox-content/islands": "workspace:*",
     "svelte": "catalog:"
   },
   "devDependencies": {
+    "@ox-content/vite-plugin-svelte": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "vite": "catalog:",
-    "@ox-content/vite-plugin-svelte": "workspace:*"
+    "vite-plus": "catalog:"
   }
 }

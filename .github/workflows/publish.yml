@@ -30,13 +30,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -56,12 +55,9 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Build NAPI
         working-directory: crates/ox_content_napi
-        run: pnpm build --target ${{ matrix.target }} ${{ matrix.target == 'aarch64-unknown-linux-gnu' && '--cross-compile' || '' }}
+        run: vp exec -- napi build --release --target ${{ matrix.target }} ${{ matrix.target == 'aarch64-unknown-linux-gnu' && '--cross-compile' || '' }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -81,20 +77,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
+
+      - name: Setup npm publishing auth
         uses: actions/setup-node@v4
         with:
-          node-version: 24
           registry-url: https://registry.npmjs.org
 
       - name: Install npm 11+ (required for OIDC trusted publishing)
         run: npm install -g npm@11
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        run: pnpm install
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -103,7 +99,7 @@ jobs:
 
       - name: Create npm sub-package directories
         working-directory: crates/ox_content_napi
-        run: npx napi create-npm-dirs --npm-dir ../../binding-packages
+        run: vp exec -- napi create-npm-dirs --npm-dir ../../binding-packages
 
       - name: Move artifacts to sub-packages
         working-directory: crates/ox_content_napi
@@ -142,7 +138,7 @@ jobs:
 
       - name: Update optionalDependencies
         working-directory: crates/ox_content_napi
-        run: npx napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release --skip-optional-publish
+        run: vp exec -- napi pre-publish -t npm --npm-dir ../../binding-packages --no-gh-release --skip-optional-publish
 
       - name: Publish binding sub-packages
         run: |
@@ -168,17 +164,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
+
+      - name: Setup npm publishing auth
         uses: actions/setup-node@v4
         with:
-          node-version: 24
           registry-url: https://registry.npmjs.org
 
       - name: Install npm 11+ (required for OIDC trusted publishing)
         run: npm install -g npm@11
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -186,14 +185,11 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Build NAPI (for local use)
-        run: pnpm -C crates/ox_content_napi build
+        run: vp run build:napi
 
       - name: Build packages
-        run: pnpm -r --filter './npm/*' run build
+        run: vp run build:npm
 
       - name: Determine npm tag
         id: npm-tag

@@ -22,11 +22,11 @@ pnpm add my-package
 Import and use the main function:
 
 ```typescript
-import { createApp, defineConfig } from 'my-package';
+import { createApp, defineConfig } from "my-package";
 
 const config = defineConfig({
-  name: 'my-app',
-  version: '1.0.0',
+  name: "my-app",
+  version: "1.0.0",
   plugins: [],
 });
 
@@ -36,12 +36,12 @@ app.start();
 
 ## Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `name` | `string` | required | Application name |
-| `version` | `string` | `'0.0.0'` | Version string |
-| `plugins` | `Plugin[]` | `[]` | List of plugins |
-| `debug` | `boolean` | `false` | Enable debug mode |
+| Option    | Type       | Default   | Description       |
+| --------- | ---------- | --------- | ----------------- |
+| `name`    | `string`   | required  | Application name  |
+| `version` | `string`   | `'0.0.0'` | Version string    |
+| `plugins` | `Plugin[]` | `[]`      | List of plugins   |
+| `debug`   | `boolean`  | `false`   | Enable debug mode |
 
 ## Next Steps
 

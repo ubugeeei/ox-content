@@ -7,13 +7,13 @@
 Capitalizes the first letter of a string.
 
 ```typescript
-export function capitalize(str: string): string
+export function capitalize(str: string): string;
 ```
 
 ### Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
+| Name  | Type     | Description                    |
+| ----- | -------- | ------------------------------ |
 | `str` | `string` | The input string to capitalize |
 
 ### Returns
@@ -23,8 +23,8 @@ export function capitalize(str: string): string
 ### Examples
 
 ```ts
-capitalize('hello') // => 'Hello'
-capitalize('WORLD') // => 'WORLD'
+capitalize("hello"); // => 'Hello'
+capitalize("WORLD"); // => 'WORLD'
 ```
 
 ---
@@ -36,20 +36,16 @@ capitalize('WORLD') // => 'WORLD'
 Truncates a string to a specified length.
 
 ```typescript
-export function truncate(
-  str: string,
-  maxLength: number,
-  suffix: string = "...",
-  ): string
+export function truncate(str: string, maxLength: number, suffix: string = "..."): string;
 ```
 
 ### Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| `str` | `string` | The input string to truncate |
-| `maxLength` | `number` | Maximum length of the output string |
-| `suffix` | `string` | Suffix to append when truncated (default: '...') |
+| Name        | Type     | Description                                      |
+| ----------- | -------- | ------------------------------------------------ |
+| `str`       | `string` | The input string to truncate                     |
+| `maxLength` | `number` | Maximum length of the output string              |
+| `suffix`    | `string` | Suffix to append when truncated (default: '...') |
 
 ### Returns
 
@@ -58,8 +54,8 @@ export function truncate(
 ### Examples
 
 ```ts
-truncate('Hello World', 5) // => 'Hello...'
-truncate('Hi', 10) // => 'Hi'
+truncate("Hello World", 5); // => 'Hello...'
+truncate("Hi", 10); // => 'Hi'
 ```
 
 ---
@@ -71,13 +67,13 @@ truncate('Hi', 10) // => 'Hi'
 Converts a string to kebab-case.
 
 ```typescript
-export function toKebabCase(str: string): string
+export function toKebabCase(str: string): string;
 ```
 
 ### Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
+| Name  | Type     | Description                 |
+| ----- | -------- | --------------------------- |
 | `str` | `string` | The input string to convert |
 
 ### Returns
@@ -87,9 +83,8 @@ export function toKebabCase(str: string): string
 ### Examples
 
 ```ts
-toKebabCase('helloWorld') // => 'hello-world'
-toKebabCase('HelloWorld') // => 'hello-world'
+toKebabCase("helloWorld"); // => 'hello-world'
+toKebabCase("HelloWorld"); // => 'hello-world'
 ```
 
 ---
-

@@ -12,10 +12,10 @@ This example demonstrates **dogfooding** - using Ox Content's own tools to gener
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { oxContent } from '@ox-content/vite-plugin';
-import { oxContentVue } from '@ox-content/vite-plugin-vue';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { oxContent } from "@ox-content/vite-plugin";
+import { oxContentVue } from "@ox-content/vite-plugin-vue";
 
 export default defineConfig({
   plugins: [
@@ -23,19 +23,19 @@ export default defineConfig({
 
     // Base plugin with docs generation (builtin, opt-out)
     oxContent({
-      srcDir: 'docs',
+      srcDir: "docs",
       docs: {
         enabled: true,
-        src: ['./src'],
-        out: 'docs/api',
-        include: ['**/*.ts'],
+        src: ["./src"],
+        out: "docs/api",
+        include: ["**/*.ts"],
       },
     }),
 
     // Vue integration with glob pattern
     oxContentVue({
-      srcDir: 'docs',
-      components: './src/components/*.vue',
+      srcDir: "docs",
+      components: "./src/components/*.vue",
     }),
   ],
 });
@@ -45,13 +45,13 @@ export default defineConfig({
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Start development server
-pnpm dev
+npm run dev
 
 # Build for production
-pnpm build
+npm run build
 ```
 
 ## How It Works
@@ -66,7 +66,7 @@ pnpm build
 
 ### JSDoc
 
-```javascript
+````javascript
 /**
  * Adds two numbers together.
  *
@@ -81,7 +81,7 @@ pnpm build
 export function add(a, b) {
   return a + b;
 }
-```
+````
 
 ### TypeScript
 

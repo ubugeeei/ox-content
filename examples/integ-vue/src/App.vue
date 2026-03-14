@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Import Markdown document as Vue component
-import IndexDoc from '../docs/index.md';
+import IndexDoc from "../docs/index.md";
 </script>
 
 <template>
@@ -23,7 +23,7 @@ import IndexDoc from '../docs/index.md';
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #0f0f0f;
   color: #e5e5e5;
   min-height: 100vh;
@@ -57,14 +57,22 @@ main {
   line-height: 1.8;
 }
 
-main h1, main h2, main h3 {
+main h1,
+main h2,
+main h3 {
   color: #ff6b35;
   margin: 2rem 0 1rem;
 }
 
-main h1 { font-size: 2rem; }
-main h2 { font-size: 1.5rem; }
-main h3 { font-size: 1.25rem; }
+main h1 {
+  font-size: 2rem;
+}
+main h2 {
+  font-size: 1.5rem;
+}
+main h3 {
+  font-size: 1.25rem;
+}
 
 main p {
   margin: 1rem 0;
@@ -74,7 +82,7 @@ main code {
   background: #1a1a1a;
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
 }
 
 main pre {
@@ -90,7 +98,8 @@ main pre code {
   padding: 0;
 }
 
-main ul, main ol {
+main ul,
+main ol {
   margin: 1rem 0;
   padding-left: 2rem;
 }

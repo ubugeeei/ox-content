@@ -155,15 +155,17 @@ export function oxContentSvelte(options: SvelteIntegrationOptions = {}): PluginO
     },
   };
 
-  const basePlugins = oxContent(options);
-  const environmentPlugin = basePlugins.find((p) => p.name === "ox-content:environment");
+  const basePlugins = oxContent(options).flatMap((plugin) =>
+    Array.isArray(plugin) ? plugin : [plugin],
+  ) as Plugin[];
+  const environmentPlugin = basePlugins.find((plugin) => plugin.name === "ox-content:environment");
+  const plugins: Plugin[] = [svelteTransformPlugin, svelteEnvironmentPlugin, svelteHmrPlugin];
 
-  return [
-    svelteTransformPlugin,
-    svelteEnvironmentPlugin,
-    svelteHmrPlugin,
-    ...(environmentPlugin ? [environmentPlugin] : []),
-  ];
+  if (environmentPlugin) {
+    plugins.push(environmentPlugin);
+  }
+
+  return plugins;
 }
 
 function resolveSvelteOptions(

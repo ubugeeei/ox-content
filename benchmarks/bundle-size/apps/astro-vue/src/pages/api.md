@@ -9,7 +9,7 @@ Complete API documentation for the package.
 Creates a new application instance.
 
 ```typescript
-function createApp(config: Config): App
+function createApp(config: Config): App;
 ```
 
 **Parameters:**
@@ -22,7 +22,7 @@ function createApp(config: Config): App
 
 ```typescript
 const app = createApp({
-  name: 'my-app',
+  name: "my-app",
 });
 ```
 
@@ -31,7 +31,7 @@ const app = createApp({
 Helper function to define configuration with type safety.
 
 ```typescript
-function defineConfig(config: UserConfig): Config
+function defineConfig(config: UserConfig): Config;
 ```
 
 **Parameters:**
@@ -75,7 +75,7 @@ interface App {
 
 ## Constants
 
-| Name | Value | Description |
-|------|-------|-------------|
-| `VERSION` | `'1.0.0'` | Package version |
-| `DEFAULT_PORT` | `3000` | Default server port |
+| Name           | Value     | Description         |
+| -------------- | --------- | ------------------- |
+| `VERSION`      | `'1.0.0'` | Package version     |
+| `DEFAULT_PORT` | `3000`    | Default server port |

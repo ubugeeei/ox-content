@@ -12,17 +12,17 @@ pnpm add @ox-content/vite-plugin-vue vue @vitejs/plugin-vue
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from '@ox-content/vite-plugin-vue';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { oxContentVue } from "@ox-content/vite-plugin-vue";
 
 export default defineConfig({
   plugins: [
     vue(),
     oxContentVue({
-      srcDir: 'docs',
+      srcDir: "docs",
       // Auto-discover components with glob pattern
-      components: './src/components/*.vue',
+      components: "./src/components/*.vue",
     }),
   ],
 });
@@ -40,13 +40,14 @@ Components to register for use in Markdown. Supports:
 
 ```ts
 // Single pattern
-components: './src/components/*.vue'
+components: "./src/components/*.vue";
 
 // Multiple patterns
-components: ['./src/components/*.vue', './src/ui/*.vue']
+components: ["./src/components/*.vue", "./src/ui/*.vue"];
 ```
 
 Component names are derived from file names in PascalCase:
+
 - `counter.vue` → `Counter`
 - `my-button.vue` → `MyButton`
 - `AlertBox.vue` → `AlertBox`
@@ -95,7 +96,7 @@ And an alert:
 ```vue
 <!-- src/components/Counter.vue -->
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const props = defineProps<{
   initial?: number;
@@ -127,8 +128,8 @@ const count = ref(props.initial ?? 0);
 - `virtual:ox-content-vue/components` - Registered components
 
 ```ts
-import { OxContentRenderer, useOxContent } from 'virtual:ox-content-vue/runtime';
-import components from 'virtual:ox-content-vue/components';
+import { OxContentRenderer, useOxContent } from "virtual:ox-content-vue/runtime";
+import components from "virtual:ox-content-vue/components";
 ```
 
 ## HMR

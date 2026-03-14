@@ -1,11 +1,11 @@
-import { useState } from "react"
+import { useState } from "react";
 
 interface CounterProps {
-  start?: number
+  start?: number;
 }
 
 export default function Counter({ start = 0 }: CounterProps) {
-  const [count, setCount] = useState(start)
+  const [count, setCount] = useState(start);
 
   return (
     <div className="counter">
@@ -41,5 +41,5 @@ export default function Counter({ start = 0 }: CounterProps) {
         }
       `}</style>
     </div>
-  )
+  );
 }

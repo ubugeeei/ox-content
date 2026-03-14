@@ -12,17 +12,17 @@ pnpm add @ox-content/vite-plugin-react react react-dom @vitejs/plugin-react
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { oxContentReact } from '@ox-content/vite-plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { oxContentReact } from "@ox-content/vite-plugin-react";
 
 export default defineConfig({
   plugins: [
     react(),
     oxContentReact({
-      srcDir: 'docs',
+      srcDir: "docs",
       // Auto-discover components with glob pattern
-      components: './src/components/*.tsx',
+      components: "./src/components/*.tsx",
     }),
   ],
 });
@@ -40,13 +40,14 @@ Components to register for use in Markdown. Supports:
 
 ```ts
 // Single pattern
-components: './src/components/*.tsx'
+components: "./src/components/*.tsx";
 
 // Multiple patterns
-components: ['./src/components/*.tsx', './src/ui/*.tsx']
+components: ["./src/components/*.tsx", "./src/ui/*.tsx"];
 ```
 
 Component names are derived from file names in PascalCase:
+
 - `counter.tsx` → `Counter`
 - `my-button.tsx` → `MyButton`
 
@@ -86,7 +87,7 @@ And an alert:
 
 ```tsx
 // src/components/Counter.tsx
-import { useState } from 'react';
+import { useState } from "react";
 
 interface CounterProps {
   initial?: number;
@@ -97,9 +98,9 @@ export default function Counter({ initial = 0 }: CounterProps) {
 
   return (
     <div className="counter">
-      <button onClick={() => setCount(c => c - 1)}>-</button>
+      <button onClick={() => setCount((c) => c - 1)}>-</button>
       <span>{count}</span>
-      <button onClick={() => setCount(c => c + 1)}>+</button>
+      <button onClick={() => setCount((c) => c + 1)}>+</button>
     </div>
   );
 }
@@ -111,8 +112,8 @@ export default function Counter({ initial = 0 }: CounterProps) {
 - `virtual:ox-content-react/components` - Registered components
 
 ```ts
-import { OxContentRenderer, useOxContent } from 'virtual:ox-content-react/runtime';
-import components from 'virtual:ox-content-react/components';
+import { OxContentRenderer, useOxContent } from "virtual:ox-content-react/runtime";
+import components from "virtual:ox-content-react/components";
 ```
 
 ## HMR

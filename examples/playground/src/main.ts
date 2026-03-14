@@ -1,27 +1,27 @@
-import { createMarkdownEditor } from "./monaco.ts"
+import { createMarkdownEditor } from "./monaco.ts";
 
-type ViewId = "preview" | "html" | "ast"
+type ViewId = "preview" | "html" | "ast";
 
 type ListItemNode = {
-  type: "listItem"
-  text: string
-  checked?: boolean
-}
+  type: "listItem";
+  text: string;
+  checked?: boolean;
+};
 
 type AstNode = {
-  type: string
-  depth?: number
-  lang?: string
-  ordered?: boolean
-  text?: string
-  items?: ListItemNode[]
-}
+  type: string;
+  depth?: number;
+  lang?: string;
+  ordered?: boolean;
+  text?: string;
+  items?: ListItemNode[];
+};
 
 type ParseResult = {
-  html: string
-  ast: string
-  renderMs: number
-}
+  html: string;
+  ast: string;
+  renderMs: number;
+};
 
 type HighlightRule = {
   type:
@@ -35,9 +35,9 @@ type HighlightRule = {
     | "string"
     | "tag"
     | "type"
-    | "variable"
-  pattern: RegExp
-}
+    | "variable";
+  pattern: RegExp;
+};
 
 type HighlightMode =
   | "plain"
@@ -47,7 +47,7 @@ type HighlightMode =
   | "style"
   | "shell"
   | "data"
-  | "markdown"
+  | "markdown";
 
 const defaultMarkdown = `# Ox Content
 
@@ -71,17 +71,14 @@ export default {
 
 > This browser demo uses a lightweight parser shim so you can iterate on content and inspect the shape of the output.
 
-Visit the [repository](https://github.com/ubugeeei/ox-content) to see the full project.`
+Visit the [repository](https://github.com/ubugeeei/ox-content) to see the full project.`;
 
 function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function escapeAttribute(value: string): string {
-  return escapeHtml(value).replace(/"/g, "&quot;")
+  return escapeHtml(value).replace(/"/g, "&quot;");
 }
 
 const LANGUAGE_ALIASES: Record<string, HighlightMode> = {
@@ -118,7 +115,7 @@ const LANGUAGE_ALIASES: Record<string, HighlightMode> = {
   yaml: "data",
   yml: "data",
   zsh: "shell",
-}
+};
 
 const LANGUAGE_LABELS: Record<string, string> = {
   ast: "AST",
@@ -141,7 +138,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
   xml: "XML",
   yaml: "YAML",
   yml: "YAML",
-}
+};
 
 const SCRIPT_RULES: HighlightRule[] = [
   {
@@ -182,7 +179,7 @@ const SCRIPT_RULES: HighlightRule[] = [
     type: "punctuation",
     pattern: /[()[\]{}.,;]/,
   },
-]
+];
 
 const JSON_RULES: HighlightRule[] = [
   {
@@ -205,7 +202,7 @@ const JSON_RULES: HighlightRule[] = [
     type: "punctuation",
     pattern: /[{}[\],:]/,
   },
-]
+];
 
 const MARKUP_RULES: HighlightRule[] = [
   {
@@ -232,7 +229,7 @@ const MARKUP_RULES: HighlightRule[] = [
     type: "punctuation",
     pattern: /\/?>|</,
   },
-]
+];
 
 const STYLE_RULES: HighlightRule[] = [
   {
@@ -267,7 +264,7 @@ const STYLE_RULES: HighlightRule[] = [
     type: "punctuation",
     pattern: /[{}():;.,]/,
   },
-]
+];
 
 const SHELL_RULES: HighlightRule[] = [
   {
@@ -284,8 +281,7 @@ const SHELL_RULES: HighlightRule[] = [
   },
   {
     type: "function",
-    pattern:
-      /\b(?:pnpm|npm|node|npx|git|cargo|mise|vite|cd|ls|cat|echo|cp|mv|rm|mkdir|touch)\b/,
+    pattern: /\b(?:pnpm|npm|node|npx|git|cargo|mise|vite|cd|ls|cat|echo|cp|mv|rm|mkdir|touch)\b/,
   },
   {
     type: "variable",
@@ -303,7 +299,7 @@ const SHELL_RULES: HighlightRule[] = [
     type: "punctuation",
     pattern: /[()[\]{}]/,
   },
-]
+];
 
 const DATA_RULES: HighlightRule[] = [
   {
@@ -330,7 +326,7 @@ const DATA_RULES: HighlightRule[] = [
     type: "punctuation",
     pattern: /[{}[\],:=]/,
   },
-]
+];
 
 const MARKDOWN_RULES: HighlightRule[] = [
   {
@@ -353,7 +349,7 @@ const MARKDOWN_RULES: HighlightRule[] = [
     type: "string",
     pattern: /\[[^\]]+\]\([^)]+\)|`[^`]+`|\*\*[^*]+\*\*|_[^_]+_/,
   },
-]
+];
 
 const HIGHLIGHT_RULES: Record<Exclude<HighlightMode, "plain">, HighlightRule[]> = {
   data: DATA_RULES,
@@ -363,118 +359,116 @@ const HIGHLIGHT_RULES: Record<Exclude<HighlightMode, "plain">, HighlightRule[]> 
   script: SCRIPT_RULES,
   shell: SHELL_RULES,
   style: STYLE_RULES,
-}
+};
 
 function normalizeHighlightMode(language: string): HighlightMode {
-  const normalized = language.trim().toLowerCase()
+  const normalized = language.trim().toLowerCase();
 
   if (!normalized || normalized === "plain" || normalized === "text") {
-    return "plain"
+    return "plain";
   }
 
-  return LANGUAGE_ALIASES[normalized] ?? "plain"
+  return LANGUAGE_ALIASES[normalized] ?? "plain";
 }
 
 function getLanguageLabel(language: string): string {
-  const normalized = language.trim().toLowerCase()
+  const normalized = language.trim().toLowerCase();
 
   if (!normalized || normalized === "plain" || normalized === "text") {
-    return ""
+    return "";
   }
 
-  return LANGUAGE_LABELS[normalized] ?? normalized.toUpperCase()
+  return LANGUAGE_LABELS[normalized] ?? normalized.toUpperCase();
 }
 
 function renderHighlightedSource(source: string, language: string): string {
-  const mode = normalizeHighlightMode(language)
+  const mode = normalizeHighlightMode(language);
 
   if (mode === "plain") {
-    return escapeHtml(source)
+    return escapeHtml(source);
   }
 
-  const rules = HIGHLIGHT_RULES[mode]
+  const rules = HIGHLIGHT_RULES[mode];
   const pattern = new RegExp(
     rules.map((rule, index) => `(?<rule${index}>${rule.pattern.source})`).join("|"),
     "gm",
-  )
+  );
 
-  let rendered = ""
-  let lastIndex = 0
+  let rendered = "";
+  let lastIndex = 0;
 
   for (const match of source.matchAll(pattern)) {
-    const index = match.index ?? 0
-    const value = match[0]
+    const index = match.index ?? 0;
+    const value = match[0];
 
     if (!value) {
-      continue
+      continue;
     }
 
-    rendered += escapeHtml(source.slice(lastIndex, index))
+    rendered += escapeHtml(source.slice(lastIndex, index));
 
     const tokenIndex = rules.findIndex(
       (_rule, ruleIndex) => match.groups?.[`rule${ruleIndex}`] !== undefined,
-    )
-    const tokenType = tokenIndex >= 0 ? rules[tokenIndex].type : "string"
+    );
+    const tokenType = tokenIndex >= 0 ? rules[tokenIndex].type : "string";
 
-    rendered += `<span class="token token-${tokenType}">${escapeHtml(value)}</span>`
-    lastIndex = index + value.length
+    rendered += `<span class="token token-${tokenType}">${escapeHtml(value)}</span>`;
+    lastIndex = index + value.length;
   }
 
-  rendered += escapeHtml(source.slice(lastIndex))
+  rendered += escapeHtml(source.slice(lastIndex));
 
-  return rendered
+  return rendered;
 }
 
 function setCodeFrameLanguage(element: HTMLElement, language: string): void {
-  const label = getLanguageLabel(language)
+  const label = getLanguageLabel(language);
 
   if (!label) {
-    delete element.dataset.language
-    return
+    delete element.dataset.language;
+    return;
   }
 
-  element.dataset.language = label
+  element.dataset.language = label;
 }
 
 function highlightPreviewCodeBlocks(container: ParentNode): void {
-  const blocks = container.querySelectorAll("pre > code")
+  const blocks = container.querySelectorAll("pre > code");
 
   blocks.forEach((block) => {
-    const languageClass = Array.from(block.classList).find((name) =>
-      name.startsWith("language-"),
-    )
-    const language = languageClass ? languageClass.replace("language-", "") : "plain"
+    const languageClass = Array.from(block.classList).find((name) => name.startsWith("language-"));
+    const language = languageClass ? languageClass.replace("language-", "") : "plain";
 
     if (block.parentElement instanceof HTMLPreElement) {
-      setCodeFrameLanguage(block.parentElement, language)
+      setCodeFrameLanguage(block.parentElement, language);
     }
 
-    block.innerHTML = renderHighlightedSource(block.textContent ?? "", language)
-  })
+    block.innerHTML = renderHighlightedSource(block.textContent ?? "", language);
+  });
 }
 
 function renderCodePane(element: HTMLPreElement, source: string, language: string): void {
-  setCodeFrameLanguage(element, language)
-  element.innerHTML = renderHighlightedSource(source, language)
+  setCodeFrameLanguage(element, language);
+  element.innerHTML = renderHighlightedSource(source, language);
 }
 
 function sanitizeHref(value: string): string {
-  const href = value.trim()
+  const href = value.trim();
   if (/^(https?:\/\/|mailto:|\/|#)/.test(href)) {
-    return escapeAttribute(href)
+    return escapeAttribute(href);
   }
-  return "#"
+  return "#";
 }
 
 function renderInline(text: string): string {
-  const codeTokens: string[] = []
-  let rendered = escapeHtml(text)
+  const codeTokens: string[] = [];
+  let rendered = escapeHtml(text);
 
   rendered = rendered.replace(/`([^`]+)`/g, (_match, code) => {
-    const token = `@@code-${codeTokens.length}@@`
-    codeTokens.push(`<code>${code}</code>`)
-    return token
-  })
+    const token = `@@code-${codeTokens.length}@@`;
+    codeTokens.push(`<code>${code}</code>`);
+    return token;
+  });
 
   rendered = rendered
     .replace(
@@ -483,82 +477,80 @@ function renderInline(text: string): string {
         `<a href="${sanitizeHref(href)}" target="_blank" rel="noreferrer">${label}</a>`,
     )
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/_([^_]+)_/g, "<em>$1</em>")
+    .replace(/_([^_]+)_/g, "<em>$1</em>");
 
   return codeTokens.reduce(
     (value, token, index) => value.replace(`@@code-${index}@@`, token),
     rendered,
-  )
+  );
 }
 
 function renderParagraph(lines: string[]): string {
   return lines
     .map((line) => renderInline(line.trim()))
     .join("<br />")
-    .replace(/(<br \/>)+$/, "")
+    .replace(/(<br \/>)+$/, "");
 }
 
 function parseMarkdown(source: string): ParseResult {
-  const startedAt = performance.now()
-  const htmlBlocks: string[] = []
-  const astNodes: AstNode[] = []
-  const lines = source.replace(/\r\n/g, "\n").split("\n")
+  const startedAt = performance.now();
+  const htmlBlocks: string[] = [];
+  const astNodes: AstNode[] = [];
+  const lines = source.replace(/\r\n/g, "\n").split("\n");
 
-  let paragraphLines: string[] = []
-  let quoteLines: string[] = []
-  let codeBlock: { lang: string; lines: string[] } | null = null
-  let listState:
-    | {
-        ordered: boolean
-        items: Array<{ text: string; checked?: boolean }>
-      }
-    | null = null
+  let paragraphLines: string[] = [];
+  let quoteLines: string[] = [];
+  let codeBlock: { lang: string; lines: string[] } | null = null;
+  let listState: {
+    ordered: boolean;
+    items: Array<{ text: string; checked?: boolean }>;
+  } | null = null;
 
   const flushParagraph = () => {
-    const text = paragraphLines.join("\n").trim()
+    const text = paragraphLines.join("\n").trim();
     if (!text) {
-      paragraphLines = []
-      return
+      paragraphLines = [];
+      return;
     }
 
-    htmlBlocks.push(`<p>${renderParagraph(paragraphLines)}</p>`)
-    astNodes.push({ type: "paragraph", text })
-    paragraphLines = []
-  }
+    htmlBlocks.push(`<p>${renderParagraph(paragraphLines)}</p>`);
+    astNodes.push({ type: "paragraph", text });
+    paragraphLines = [];
+  };
 
   const flushQuote = () => {
-    const text = quoteLines.join("\n").trim()
+    const text = quoteLines.join("\n").trim();
     if (!text) {
-      quoteLines = []
-      return
+      quoteLines = [];
+      return;
     }
 
-    htmlBlocks.push(`<blockquote><p>${renderParagraph(quoteLines)}</p></blockquote>`)
-    astNodes.push({ type: "blockquote", text })
-    quoteLines = []
-  }
+    htmlBlocks.push(`<blockquote><p>${renderParagraph(quoteLines)}</p></blockquote>`);
+    astNodes.push({ type: "blockquote", text });
+    quoteLines = [];
+  };
 
   const flushList = () => {
     if (!listState || listState.items.length === 0) {
-      listState = null
-      return
+      listState = null;
+      return;
     }
 
-    const tag = listState.ordered ? "ol" : "ul"
+    const tag = listState.ordered ? "ol" : "ul";
     const itemsHtml = listState.items
       .map((item) => {
         if (item.checked === undefined) {
-          return `<li>${renderInline(item.text)}</li>`
+          return `<li>${renderInline(item.text)}</li>`;
         }
 
-        const stateClass = item.checked ? " checked" : ""
-        const marker = item.checked ? "x" : " "
+        const stateClass = item.checked ? " checked" : "";
+        const marker = item.checked ? "x" : " ";
 
-        return `<li class="task-item"><span class="task-mark${stateClass}" aria-hidden="true">${marker}</span><span>${renderInline(item.text)}</span></li>`
+        return `<li class="task-item"><span class="task-mark${stateClass}" aria-hidden="true">${marker}</span><span>${renderInline(item.text)}</span></li>`;
       })
-      .join("")
+      .join("");
 
-    htmlBlocks.push(`<${tag}>${itemsHtml}</${tag}>`)
+    htmlBlocks.push(`<${tag}>${itemsHtml}</${tag}>`);
     astNodes.push({
       type: listState.ordered ? "orderedList" : "unorderedList",
       ordered: listState.ordered,
@@ -567,124 +559,124 @@ function parseMarkdown(source: string): ParseResult {
         text: item.text,
         checked: item.checked,
       })),
-    })
-    listState = null
-  }
+    });
+    listState = null;
+  };
 
   const flushTextBlocks = () => {
-    flushParagraph()
-    flushQuote()
-    flushList()
-  }
+    flushParagraph();
+    flushQuote();
+    flushList();
+  };
 
   const flushCodeBlock = () => {
     if (!codeBlock) {
-      return
+      return;
     }
 
-    const language = codeBlock.lang || "plain"
-    const value = codeBlock.lines.join("\n")
+    const language = codeBlock.lang || "plain";
+    const value = codeBlock.lines.join("\n");
     htmlBlocks.push(
       `<pre><code class="language-${escapeAttribute(language)}">${escapeHtml(value)}</code></pre>`,
-    )
+    );
     astNodes.push({
       type: "code",
       lang: language,
       text: value,
-    })
-    codeBlock = null
-  }
+    });
+    codeBlock = null;
+  };
 
   for (const rawLine of lines) {
-    const line = rawLine.replace(/\t/g, "  ")
-    const fenceMatch = line.match(/^```([\w-]*)\s*$/)
+    const line = rawLine.replace(/\t/g, "  ");
+    const fenceMatch = line.match(/^```([\w-]*)\s*$/);
 
     if (codeBlock) {
       if (fenceMatch) {
-        flushCodeBlock()
+        flushCodeBlock();
       } else {
-        codeBlock.lines.push(rawLine)
+        codeBlock.lines.push(rawLine);
       }
-      continue
+      continue;
     }
 
     if (fenceMatch) {
-      flushTextBlocks()
-      codeBlock = { lang: fenceMatch[1] || "plain", lines: [] }
-      continue
+      flushTextBlocks();
+      codeBlock = { lang: fenceMatch[1] || "plain", lines: [] };
+      continue;
     }
 
     if (/^\s*$/.test(line)) {
-      flushTextBlocks()
-      continue
+      flushTextBlocks();
+      continue;
     }
 
-    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/)
+    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
     if (headingMatch) {
-      flushTextBlocks()
-      const depth = headingMatch[1].length
-      const text = headingMatch[2].trim()
-      htmlBlocks.push(`<h${depth}>${renderInline(text)}</h${depth}>`)
-      astNodes.push({ type: "heading", depth, text })
-      continue
+      flushTextBlocks();
+      const depth = headingMatch[1].length;
+      const text = headingMatch[2].trim();
+      htmlBlocks.push(`<h${depth}>${renderInline(text)}</h${depth}>`);
+      astNodes.push({ type: "heading", depth, text });
+      continue;
     }
 
     if (/^---+$/.test(line.trim())) {
-      flushTextBlocks()
-      htmlBlocks.push("<hr />")
-      astNodes.push({ type: "thematicBreak" })
-      continue
+      flushTextBlocks();
+      htmlBlocks.push("<hr />");
+      astNodes.push({ type: "thematicBreak" });
+      continue;
     }
 
-    const quoteMatch = line.match(/^>\s?(.*)$/)
+    const quoteMatch = line.match(/^>\s?(.*)$/);
     if (quoteMatch) {
-      flushParagraph()
-      flushList()
-      quoteLines.push(quoteMatch[1])
-      continue
+      flushParagraph();
+      flushList();
+      quoteLines.push(quoteMatch[1]);
+      continue;
     }
 
-    const taskMatch = line.match(/^[-*+]\s+\[( |x|X)\]\s+(.*)$/)
+    const taskMatch = line.match(/^[-*+]\s+\[( |x|X)\]\s+(.*)$/);
     if (taskMatch) {
-      flushParagraph()
-      flushQuote()
+      flushParagraph();
+      flushQuote();
       if (!listState || listState.ordered) {
-        listState = { ordered: false, items: [] }
+        listState = { ordered: false, items: [] };
       }
       listState.items.push({
         text: taskMatch[2],
         checked: taskMatch[1].toLowerCase() === "x",
-      })
-      continue
+      });
+      continue;
     }
 
-    const unorderedMatch = line.match(/^[-*+]\s+(.*)$/)
+    const unorderedMatch = line.match(/^[-*+]\s+(.*)$/);
     if (unorderedMatch) {
-      flushParagraph()
-      flushQuote()
+      flushParagraph();
+      flushQuote();
       if (!listState || listState.ordered) {
-        listState = { ordered: false, items: [] }
+        listState = { ordered: false, items: [] };
       }
-      listState.items.push({ text: unorderedMatch[1] })
-      continue
+      listState.items.push({ text: unorderedMatch[1] });
+      continue;
     }
 
-    const orderedMatch = line.match(/^\d+\.\s+(.*)$/)
+    const orderedMatch = line.match(/^\d+\.\s+(.*)$/);
     if (orderedMatch) {
-      flushParagraph()
-      flushQuote()
+      flushParagraph();
+      flushQuote();
       if (!listState || !listState.ordered) {
-        listState = { ordered: true, items: [] }
+        listState = { ordered: true, items: [] };
       }
-      listState.items.push({ text: orderedMatch[1] })
-      continue
+      listState.items.push({ text: orderedMatch[1] });
+      continue;
     }
 
-    paragraphLines.push(line)
+    paragraphLines.push(line);
   }
 
-  flushTextBlocks()
-  flushCodeBlock()
+  flushTextBlocks();
+  flushCodeBlock();
 
   return {
     html: htmlBlocks.join("\n\n"),
@@ -698,86 +690,78 @@ function parseMarkdown(source: string): ParseResult {
       2,
     ),
     renderMs: performance.now() - startedAt,
-  }
+  };
 }
 
-const markdownEditorHost = document.getElementById(
-  "markdown-editor",
-) as HTMLDivElement
-const previewContent = document.getElementById(
-  "preview-content",
-) as HTMLDivElement
-const htmlContent = document.getElementById("html-content") as HTMLPreElement
-const astContent = document.getElementById("ast-content") as HTMLPreElement
+const markdownEditorHost = document.getElementById("markdown-editor") as HTMLDivElement;
+const previewContent = document.getElementById("preview-content") as HTMLDivElement;
+const htmlContent = document.getElementById("html-content") as HTMLPreElement;
+const astContent = document.getElementById("ast-content") as HTMLPreElement;
 
-const previewTab = document.getElementById("preview-tab") as HTMLButtonElement
-const htmlTab = document.getElementById("html-tab") as HTMLButtonElement
-const astTab = document.getElementById("ast-tab") as HTMLButtonElement
+const previewTab = document.getElementById("preview-tab") as HTMLButtonElement;
+const htmlTab = document.getElementById("html-tab") as HTMLButtonElement;
+const astTab = document.getElementById("ast-tab") as HTMLButtonElement;
 
-const previewView = document.getElementById("preview-view") as HTMLDivElement
-const htmlView = document.getElementById("html-view") as HTMLDivElement
-const astView = document.getElementById("ast-view") as HTMLDivElement
+const previewView = document.getElementById("preview-view") as HTMLDivElement;
+const htmlView = document.getElementById("html-view") as HTMLDivElement;
+const astView = document.getElementById("ast-view") as HTMLDivElement;
 
-const resetButton = document.getElementById("reset-button") as HTMLButtonElement
-const copyMarkdownButton = document.getElementById(
-  "copy-markdown-button",
-) as HTMLButtonElement
-const copyOutputButton = document.getElementById(
-  "copy-output-button",
-) as HTMLButtonElement
+const resetButton = document.getElementById("reset-button") as HTMLButtonElement;
+const copyMarkdownButton = document.getElementById("copy-markdown-button") as HTMLButtonElement;
+const copyOutputButton = document.getElementById("copy-output-button") as HTMLButtonElement;
 
 const tabs: Record<ViewId, HTMLButtonElement> = {
   preview: previewTab,
   html: htmlTab,
   ast: astTab,
-}
+};
 
 const views: Record<ViewId, HTMLDivElement> = {
   preview: previewView,
   html: htmlView,
   ast: astView,
-}
+};
 
-let activeView: ViewId = "preview"
-let currentHtml = ""
-let currentAst = ""
-const buttonTimers = new WeakMap<HTMLButtonElement, number>()
-const markdownEditor = createMarkdownEditor(markdownEditorHost, defaultMarkdown)
+let activeView: ViewId = "preview";
+let currentHtml = "";
+let currentAst = "";
+const buttonTimers = new WeakMap<HTMLButtonElement, number>();
+const markdownEditor = createMarkdownEditor(markdownEditorHost, defaultMarkdown);
 
 function updateCopyButtonLabel(): void {
-  const label = activeView === "ast" ? "Copy AST" : "Copy HTML"
-  copyOutputButton.dataset.label = label
-  copyOutputButton.textContent = label
+  const label = activeView === "ast" ? "Copy AST" : "Copy HTML";
+  copyOutputButton.dataset.label = label;
+  copyOutputButton.textContent = label;
 }
 
 function switchTab(nextView: ViewId): void {
-  activeView = nextView
+  activeView = nextView;
 
-  ;(Object.keys(tabs) as ViewId[]).forEach((viewId) => {
-    const isActive = viewId === nextView
-    tabs[viewId].classList.toggle("active", isActive)
-    tabs[viewId].setAttribute("aria-selected", String(isActive))
-    views[viewId].classList.toggle("active", isActive)
-  })
+  (Object.keys(tabs) as ViewId[]).forEach((viewId) => {
+    const isActive = viewId === nextView;
+    tabs[viewId].classList.toggle("active", isActive);
+    tabs[viewId].setAttribute("aria-selected", String(isActive));
+    views[viewId].classList.toggle("active", isActive);
+  });
 
-  updateCopyButtonLabel()
+  updateCopyButtonLabel();
 }
 
 function flashButtonLabel(button: HTMLButtonElement, label: string): void {
-  const restoreLabel = button.dataset.label ?? button.textContent ?? ""
-  const currentTimer = buttonTimers.get(button)
+  const restoreLabel = button.dataset.label ?? button.textContent ?? "";
+  const currentTimer = buttonTimers.get(button);
 
   if (currentTimer) {
-    window.clearTimeout(currentTimer)
+    window.clearTimeout(currentTimer);
   }
 
-  button.textContent = label
+  button.textContent = label;
 
   const timer = window.setTimeout(() => {
-    button.textContent = restoreLabel
-  }, 1400)
+    button.textContent = restoreLabel;
+  }, 1400);
 
-  buttonTimers.set(button, timer)
+  buttonTimers.set(button, timer);
 }
 
 async function copyText(
@@ -786,52 +770,52 @@ async function copyText(
   successLabel: string,
 ): Promise<void> {
   try {
-    await navigator.clipboard.writeText(value)
-    flashButtonLabel(button, successLabel)
+    await navigator.clipboard.writeText(value);
+    flashButtonLabel(button, successLabel);
   } catch {
-    flashButtonLabel(button, "Clipboard unavailable")
+    flashButtonLabel(button, "Clipboard unavailable");
   }
 }
 
 function updatePreview(): void {
-  const source = markdownEditor.getValue()
-  const result = parseMarkdown(source)
+  const source = markdownEditor.getValue();
+  const result = parseMarkdown(source);
 
-  currentHtml = result.html
-  currentAst = result.ast
+  currentHtml = result.html;
+  currentAst = result.ast;
 
-  previewContent.innerHTML = result.html
-  highlightPreviewCodeBlocks(previewContent)
-  renderCodePane(htmlContent, result.html, "html")
-  renderCodePane(astContent, result.ast, "json")
-  copyOutputButton.title = `Updated in ${result.renderMs.toFixed(2)} ms`
+  previewContent.innerHTML = result.html;
+  highlightPreviewCodeBlocks(previewContent);
+  renderCodePane(htmlContent, result.html, "html");
+  renderCodePane(astContent, result.ast, "json");
+  copyOutputButton.title = `Updated in ${result.renderMs.toFixed(2)} ms`;
 }
 
-markdownEditor.onDidChangeValue(updatePreview)
+markdownEditor.onDidChangeValue(updatePreview);
 
-previewTab.addEventListener("click", () => switchTab("preview"))
-htmlTab.addEventListener("click", () => switchTab("html"))
-astTab.addEventListener("click", () => switchTab("ast"))
+previewTab.addEventListener("click", () => switchTab("preview"));
+htmlTab.addEventListener("click", () => switchTab("html"));
+astTab.addEventListener("click", () => switchTab("ast"));
 
 resetButton.addEventListener("click", () => {
-  markdownEditor.setValue(defaultMarkdown)
-  markdownEditor.focus()
-  updatePreview()
-})
+  markdownEditor.setValue(defaultMarkdown);
+  markdownEditor.focus();
+  updatePreview();
+});
 copyMarkdownButton.addEventListener("click", () => {
-  void copyText(copyMarkdownButton, markdownEditor.getValue(), "Copied")
-})
+  void copyText(copyMarkdownButton, markdownEditor.getValue(), "Copied");
+});
 copyOutputButton.addEventListener("click", () => {
-  const output = activeView === "ast" ? currentAst : currentHtml
-  void copyText(copyOutputButton, output, "Copied")
-})
+  const output = activeView === "ast" ? currentAst : currentHtml;
+  void copyText(copyOutputButton, output, "Copied");
+});
 
-switchTab("preview")
-updatePreview()
-markdownEditor.focus()
+switchTab("preview");
+updatePreview();
+markdownEditor.focus();
 
 console.log(
   "%c Ox Content Playground ",
   "background: #d66a45; color: #fffaf2; font-weight: 700; padding: 4px 10px; border-radius: 999px;",
-)
-console.log("Browser demo ready")
+);
+console.log("Browser demo ready");

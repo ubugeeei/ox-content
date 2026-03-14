@@ -4,26 +4,26 @@ This directory contains example integrations and use cases for Ox Content.
 
 ## Framework Integrations
 
-| Example | Description | Features |
-|---------|-------------|----------|
-| [vue-integration](./vue-integration) | Vue 3 + Vite | Composition API, reactive Markdown preview |
-| [react-integration](./react-integration) | React 18 + Vite | Hooks, useMemo optimization |
-| [svelte-integration](./svelte-integration) | Svelte 5 + Vite | Runes, reactive state |
-| [vite-ssg](./vite-ssg) | Vite SSG | Environment API, static generation |
+| Example                                    | Description     | Features                                   |
+| ------------------------------------------ | --------------- | ------------------------------------------ |
+| [vue-integration](./vue-integration)       | Vue 3 + Vite    | Composition API, reactive Markdown preview |
+| [react-integration](./react-integration)   | React 18 + Vite | Hooks, useMemo optimization                |
+| [svelte-integration](./svelte-integration) | Svelte 5 + Vite | Runes, reactive state                      |
+| [vite-ssg](./vite-ssg)                     | Vite SSG        | Environment API, static generation         |
 
 ## Plugin Integrations
 
-| Example | Description | Use Case |
-|---------|-------------|----------|
-| [markdown-it-plugin](./markdown-it-plugin) | markdown-it integration | Use Ox Content parser with markdown-it plugins |
-| [rehype-plugin](./rehype-plugin) | unified/rehype integration | Post-process HTML with rehype plugins |
+| Example                                    | Description                | Use Case                                       |
+| ------------------------------------------ | -------------------------- | ---------------------------------------------- |
+| [markdown-it-plugin](./markdown-it-plugin) | markdown-it integration    | Use Ox Content parser with markdown-it plugins |
+| [rehype-plugin](./rehype-plugin)           | unified/rehype integration | Post-process HTML with rehype plugins          |
 
 ## Tooling Examples
 
-| Example | Description | Features |
-|---------|-------------|----------|
-| [source-docs](./source-docs) | Source code documentation | JSDoc extraction, Markdown generation |
-| [basic-playground](./basic-playground) | Interactive playground | Live preview, AST visualization |
+| Example                                | Description               | Features                              |
+| -------------------------------------- | ------------------------- | ------------------------------------- |
+| [source-docs](./source-docs)           | Source code documentation | JSDoc extraction, Markdown generation |
+| [basic-playground](./basic-playground) | Interactive playground    | Live preview, AST visualization       |
 
 ## Running Examples
 
@@ -66,12 +66,12 @@ examples/
 ### Vite Environment API
 
 ```typescript
-import { oxContent } from '@ox-content/vite-plugin';
+import { oxContent } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   plugins: [
     oxContent({
-      srcDir: 'docs',
+      srcDir: "docs",
       gfm: true,
     }),
   ],
@@ -81,7 +81,7 @@ export default defineConfig({
 ### Direct NAPI Usage
 
 ```javascript
-import { parseAndRender } from '@ox-content/napi';
+import { parseAndRender } from "@ox-content/napi";
 
 const { html, frontmatter, toc } = parseAndRender(markdown, {
   gfm: true,
@@ -91,8 +91,8 @@ const { html, frontmatter, toc } = parseAndRender(markdown, {
 ### markdown-it Plugin
 
 ```javascript
-import MarkdownIt from 'markdown-it';
-import { oxContentPlugin } from './plugin.js';
+import MarkdownIt from "markdown-it";
+import { oxContentPlugin } from "./plugin.js";
 
 const md = new MarkdownIt();
 md.use(oxContentPlugin, { gfm: true });
@@ -101,8 +101,8 @@ md.use(oxContentPlugin, { gfm: true });
 ### rehype Pipeline
 
 ```javascript
-import { unified } from 'unified';
-import rehypeParse from 'rehype-parse';
+import { unified } from "unified";
+import rehypeParse from "rehype-parse";
 
 const result = await unified()
   .use(rehypeParse, { fragment: true })

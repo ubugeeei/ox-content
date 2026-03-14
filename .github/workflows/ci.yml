@@ -30,25 +30,21 @@ jobs:
       - name: Run clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-  lint-ts:
-    name: Lint (TypeScript)
+  check-ts:
+    name: Check (JS/TS)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Lint (oxlint)
-        run: pnpm lint
+      - name: Check (Vite+)
+        run: vp run check:ts
 
   test-rust:
     name: Test (Rust)
@@ -71,13 +67,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -85,14 +80,11 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Build NAPI
-        run: pnpm -C crates/ox_content_napi build
+        run: vp run build:napi
 
       - name: Run tests
-        run: pnpm test
+        run: vp run test:ts
 
   build:
     name: Build
@@ -100,13 +92,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -114,20 +105,11 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Install Chromium for mermaid-cli
-        run: pnpm --filter @ox-content/vite-plugin exec puppeteer browsers install chrome-headless-shell
-
-      - name: Build NAPI
-        run: pnpm -C crates/ox_content_napi build
-
-      - name: Build packages
-        run: pnpm -r --filter './npm/*' run build
+        run: vp exec --filter @ox-content/vite-plugin -- puppeteer browsers install chrome-headless-shell
 
       - name: Build documentation site
-        run: pnpm -C docs build
+        run: vp run dev-build
 
-      - name: Typecheck
-        run: pnpm check
+      - name: Check JS/TS
+        run: vp run check:ts

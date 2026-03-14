@@ -24,7 +24,7 @@ This example showcases:
 Here's how you import Markdown files:
 
 ```typescript
-import content from './content/index.md';
+import content from "./content/index.md";
 
 // Access the rendered HTML
 console.log(content.html);
@@ -33,7 +33,7 @@ console.log(content.html);
 console.log(content.frontmatter.title);
 
 // Access table of contents
-content.toc.forEach(entry => {
+content.toc.forEach((entry) => {
   console.log(entry.text, entry.slug);
 });
 ```

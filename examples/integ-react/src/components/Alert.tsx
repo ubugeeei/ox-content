@@ -1,7 +1,7 @@
 interface AlertProps {
-  type?: "info" | "warning" | "error" | "success"
-  title?: string
-  children?: React.ReactNode
+  type?: "info" | "warning" | "error" | "success";
+  title?: string;
+  children?: React.ReactNode;
 }
 
 const colors = {
@@ -9,10 +9,10 @@ const colors = {
   warning: { bg: "#422006", border: "#f59e0b" },
   error: { bg: "#450a0a", border: "#ef4444" },
   success: { bg: "#052e16", border: "#22c55e" },
-}
+};
 
 export default function Alert({ type = "info", title, children }: AlertProps) {
-  const color = colors[type]
+  const color = colors[type];
 
   return (
     <div
@@ -24,12 +24,8 @@ export default function Alert({ type = "info", title, children }: AlertProps) {
         borderLeft: `4px solid ${color.border}`,
       }}
     >
-      {title && (
-        <strong style={{ display: "block", marginBottom: "0.5rem" }}>
-          {title}
-        </strong>
-      )}
+      {title && <strong style={{ display: "block", marginBottom: "0.5rem" }}>{title}</strong>}
       {children}
     </div>
-  )
+  );
 }

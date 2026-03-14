@@ -9,7 +9,9 @@
   background: var(--octc-color-bg);
   text-decoration: none;
   color: var(--octc-color-text);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .ox-github-card:hover {
@@ -91,23 +93,57 @@
 }
 
 /* Language colors */
-.ox-github-language-color[data-lang="javascript"] { background: #f1e05a; }
-.ox-github-language-color[data-lang="typescript"] { background: #3178c6; }
-.ox-github-language-color[data-lang="rust"] { background: #dea584; }
-.ox-github-language-color[data-lang="python"] { background: #3572A5; }
-.ox-github-language-color[data-lang="go"] { background: #00ADD8; }
-.ox-github-language-color[data-lang="java"] { background: #b07219; }
-.ox-github-language-color[data-lang="c++"] { background: #f34b7d; }
-.ox-github-language-color[data-lang="c"] { background: #555555; }
-.ox-github-language-color[data-lang="ruby"] { background: #701516; }
-.ox-github-language-color[data-lang="php"] { background: #4F5D95; }
-.ox-github-language-color[data-lang="swift"] { background: #F05138; }
-.ox-github-language-color[data-lang="kotlin"] { background: #A97BFF; }
-.ox-github-language-color[data-lang="vue"] { background: #41b883; }
-.ox-github-language-color[data-lang="svelte"] { background: #ff3e00; }
-.ox-github-language-color[data-lang="html"] { background: #e34c26; }
-.ox-github-language-color[data-lang="css"] { background: #563d7c; }
-.ox-github-language-color[data-lang="shell"] { background: #89e051; }
+.ox-github-language-color[data-lang="javascript"] {
+  background: #f1e05a;
+}
+.ox-github-language-color[data-lang="typescript"] {
+  background: #3178c6;
+}
+.ox-github-language-color[data-lang="rust"] {
+  background: #dea584;
+}
+.ox-github-language-color[data-lang="python"] {
+  background: #3572a5;
+}
+.ox-github-language-color[data-lang="go"] {
+  background: #00add8;
+}
+.ox-github-language-color[data-lang="java"] {
+  background: #b07219;
+}
+.ox-github-language-color[data-lang="c++"] {
+  background: #f34b7d;
+}
+.ox-github-language-color[data-lang="c"] {
+  background: #555555;
+}
+.ox-github-language-color[data-lang="ruby"] {
+  background: #701516;
+}
+.ox-github-language-color[data-lang="php"] {
+  background: #4f5d95;
+}
+.ox-github-language-color[data-lang="swift"] {
+  background: #f05138;
+}
+.ox-github-language-color[data-lang="kotlin"] {
+  background: #a97bff;
+}
+.ox-github-language-color[data-lang="vue"] {
+  background: #41b883;
+}
+.ox-github-language-color[data-lang="svelte"] {
+  background: #ff3e00;
+}
+.ox-github-language-color[data-lang="html"] {
+  background: #e34c26;
+}
+.ox-github-language-color[data-lang="css"] {
+  background: #563d7c;
+}
+.ox-github-language-color[data-lang="shell"] {
+  background: #89e051;
+}
 
 /* Loading state */
 .ox-github-card.loading {
@@ -127,7 +163,9 @@
 }
 
 @keyframes ox-github-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error state */

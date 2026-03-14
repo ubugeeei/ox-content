@@ -1,9 +1,9 @@
-import path from "path"
-import { fileURLToPath } from "url"
-import oxContent from "@ox-content/unplugin/webpack"
-import { full as emoji } from "markdown-it-emoji"
+import path from "path";
+import { fileURLToPath } from "url";
+import oxContent from "@ox-content/unplugin/webpack";
+import { full as emoji } from "markdown-it-emoji";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
   mode: "development",
@@ -34,4 +34,4 @@ export default {
       },
     }),
   ],
-}
+};

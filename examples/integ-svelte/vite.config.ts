@@ -1,6 +1,6 @@
-import { defineConfig } from "vite"
-import { svelte } from "@sveltejs/vite-plugin-svelte"
-import { oxContentSvelte } from "@ox-content/vite-plugin-svelte"
+import { defineConfig } from "vite-plus";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { oxContentSvelte } from "@ox-content/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [
@@ -11,4 +11,4 @@ export default defineConfig({
       components: "./src/components/*.svelte",
     }),
   ],
-})
+});

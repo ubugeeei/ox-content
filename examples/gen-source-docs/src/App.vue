@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
-const currentPage = ref<'home' | 'utils' | 'math'>('home');
+const currentPage = ref<"home" | "utils" | "math">("home");
 </script>
 
 <template>
@@ -27,9 +27,9 @@ const currentPage = ref<'home' | 'utils' | 'math'>('home');
       <div v-if="currentPage === 'home'" class="home">
         <h2>Welcome to the API Documentation</h2>
         <p>
-          This example demonstrates how <strong>Ox Content</strong> can be used to
-          generate documentation from source code JSDoc comments, with interactive
-          Vue components embedded for a rich documentation experience.
+          This example demonstrates how <strong>Ox Content</strong> can be used to generate
+          documentation from source code JSDoc comments, with interactive Vue components embedded
+          for a rich documentation experience.
         </p>
 
         <div class="features">
@@ -63,7 +63,9 @@ const currentPage = ref<'home' | 'utils' | 'math'>('home');
           <p>Capitalizes the first letter of a string.</p>
 
           <h3>truncate</h3>
-          <code class="signature">function truncate(str: string, maxLength: number, suffix?: string): string</code>
+          <code class="signature"
+            >function truncate(str: string, maxLength: number, suffix?: string): string</code
+          >
           <p>Truncates a string to a specified length.</p>
 
           <h3>toKebabCase</h3>
@@ -107,7 +109,7 @@ const currentPage = ref<'home' | 'utils' | 'math'>('home');
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 header {

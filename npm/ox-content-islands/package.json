@@ -2,39 +2,12 @@
   "name": "@ox-content/islands",
   "version": "1.0.0-alpha.0",
   "description": "Framework-agnostic Island Architecture for ox-content",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./runtime": {
-      "import": "./dist/runtime.js",
-      "types": "./dist/runtime.d.ts"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "typecheck": "tsgo --noEmit"
-  },
-  "devDependencies": {
-    "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "tsdown": "catalog:",
-    "typescript": "catalog:"
-  },
   "keywords": [
-    "islands",
+    "framework-agnostic",
     "island-architecture",
-    "partial-hydration",
+    "islands",
     "ox-content",
-    "framework-agnostic"
+    "partial-hydration"
   ],
   "license": "MIT",
   "author": "ubugeeei",
@@ -43,7 +16,34 @@
     "url": "https://github.com/ubugeeei/ox-content.git",
     "directory": "npm/ox-content-islands"
   },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./runtime": {
+      "import": "./dist/runtime.mjs",
+      "types": "./dist/runtime.d.mts"
+    }
+  },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "typecheck": "tsgo --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

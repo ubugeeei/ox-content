@@ -1,15 +1,16 @@
 {
   "name": "ox-content-docs",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview"
   },
   "devDependencies": {
+    "@ox-content/vite-plugin": "workspace:*",
     "vite": "catalog:",
-    "@ox-content/vite-plugin": "workspace:*"
+    "vite-plus": "catalog:"
   }
 }

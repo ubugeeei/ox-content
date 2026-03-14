@@ -7,14 +7,14 @@ Real-world examples of using this package.
 A simple "Hello World" application:
 
 ```typescript
-import { createApp } from 'my-package';
+import { createApp } from "my-package";
 
 const app = createApp({
-  name: 'hello-world',
+  name: "hello-world",
 });
 
 app.start().then(() => {
-  console.log('App started!');
+  console.log("App started!");
 });
 ```
 
@@ -23,11 +23,11 @@ app.start().then(() => {
 Using plugins to extend functionality:
 
 ```typescript
-import { createApp } from 'my-package';
-import { loggerPlugin } from 'my-package/plugins';
+import { createApp } from "my-package";
+import { loggerPlugin } from "my-package/plugins";
 
 const app = createApp({
-  name: 'with-plugins',
+  name: "with-plugins",
   plugins: [loggerPlugin()],
 });
 
@@ -39,15 +39,15 @@ app.start();
 Full configuration example:
 
 ```typescript
-import { createApp, defineConfig } from 'my-package';
+import { createApp, defineConfig } from "my-package";
 
 const config = defineConfig({
-  name: 'advanced-app',
-  version: '2.0.0',
-  debug: process.env.NODE_ENV === 'development',
+  name: "advanced-app",
+  version: "2.0.0",
+  debug: process.env.NODE_ENV === "development",
   plugins: [
     {
-      name: 'custom-plugin',
+      name: "custom-plugin",
       setup(app) {
         console.log(`Setting up ${app.config.name}`);
       },
@@ -58,7 +58,7 @@ const config = defineConfig({
 const app = createApp(config);
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   app.stop();
 });
 

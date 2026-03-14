@@ -6,11 +6,11 @@ This guide will help you set up Ox Content and start using it in your projects.
 
 Before you begin, ensure you have the following installed:
 
-| Requirement | Version | Installation |
-|-------------|---------|--------------|
-| **Rust** | 1.83+ | [rustup.rs](https://rustup.rs/) |
-| **Node.js** | 24+ | [nodejs.org](https://nodejs.org/) |
-| **mise** | Latest | [mise.jdx.dev](https://mise.jdx.dev/) |
+| Requirement | Version | Installation                                                            |
+| ----------- | ------- | ----------------------------------------------------------------------- |
+| **Rust**    | 1.83+   | [rustup.rs](https://rustup.rs/)                                         |
+| **Node.js** | 24+     | Managed via `.node-version` / `vp` or [nodejs.org](https://nodejs.org/) |
+| **Vite+**   | Latest  | [vite.plus](https://vite.plus/)                                         |
 
 ## Installation
 
@@ -21,15 +21,18 @@ Before you begin, ensure you have the following installed:
 git clone https://github.com/ubugeeei/ox-content.git
 cd ox-content
 
-# Setup with mise (recommended)
+# Optional: install Rust via mise
 mise trust
 mise install
 
+# Install JS dependencies
+vp install
+
 # Build all crates
-mise run build
+vp run build
 
 # Run tests to verify installation
-mise run test
+vp run test
 ```
 
 ### As a Rust Dependency
@@ -136,10 +139,10 @@ fn main() {
 ### Node.js Usage
 
 ```javascript
-import { parseMarkdown, parseAndRender } from '@ox-content/napi';
+import { parseMarkdown, parseAndRender } from "@ox-content/napi";
 
 // Option 1: Get AST only
-const markdown = '# Hello World\n\nThis is **bold** text.';
+const markdown = "# Hello World\n\nThis is **bold** text.";
 const ast = parseMarkdown(markdown, { gfm: true });
 console.log(JSON.stringify(ast, null, 2));
 
@@ -154,7 +157,12 @@ console.log(result.html);
 ### TypeScript with Types
 
 ```typescript
-import { parseMarkdown, parseAndRender, type ParseOptions, type RenderResult } from '@ox-content/napi';
+import {
+  parseMarkdown,
+  parseAndRender,
+  type ParseOptions,
+  type RenderResult,
+} from "@ox-content/napi";
 
 const options: ParseOptions = {
   gfm: true,
@@ -185,32 +193,32 @@ npm install @ox-content/vite-plugin @ox-content/napi
 
 ```typescript
 // vite.config.ts
-import { defineConfig } from 'vite';
-import { oxContent, defineTheme, defaultTheme } from '@ox-content/vite-plugin';
+import { defineConfig } from "vite";
+import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   plugins: [
     oxContent({
       // Source directory (default: 'content')
-      srcDir: 'content',
-      outDir: 'dist',
+      srcDir: "content",
+      outDir: "dist",
       // Enable syntax highlighting
       highlight: true,
       // SSG with themes and OG images
       ssg: {
-        siteName: 'My Docs',
-        ogImage: 'https://example.com/og-image.png',
+        siteName: "My Docs",
+        ogImage: "https://example.com/og-image.png",
         theme: defineTheme({
           extends: defaultTheme,
           socialLinks: {
-            github: 'https://github.com/your/repo',
+            github: "https://github.com/your/repo",
           },
         }),
       },
       // Built-in full-text search (enabled by default)
       search: {
         enabled: true,
-        placeholder: 'Search docs...',
+        placeholder: "Search docs...",
       },
     }),
   ],
@@ -232,9 +240,9 @@ npm install @ox-content/vite-plugin-svelte @ox-content/napi
 
 ```typescript
 // vite.config.ts (Vue example)
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from '@ox-content/vite-plugin-vue';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { oxContentVue } from "@ox-content/vite-plugin-vue";
 
 export default defineConfig({
   plugins: [vue(), oxContentVue()],
@@ -243,41 +251,57 @@ export default defineConfig({
 
 ## Development Workflow
 
-### Available mise Tasks
+### Available Workspace Tasks
+
+The canonical workspace tasks are defined in `vite.config.ts` and are invoked with `vp run <task>`.
+For JS/TS quality checks, `check:ts`, `lint:ts`, and `fmt:ts-check` all delegate to `vp check`.
 
 ```bash
+# Setup
+vp install              # Install JS dependencies with Vite+
+
 # Building
-mise run build          # Build all crates in release mode
-mise run build-debug    # Build in debug mode
+vp run build            # Build everything (Rust + NAPI + npm packages)
+vp run build:rust       # Build Rust crates
+vp run build:rust-release
+vp run build:napi
+vp run build:npm
 
 # Testing
-mise run test           # Run all tests
-mise run test-verbose   # Run tests with verbose output
-mise run watch          # Watch for changes and run tests
+vp run test             # Run all tests
+vp run test:rust
+vp run test:rust-verbose
+vp run test:ts
+vp run watch            # Watch for changes and run tests
 
 # Code Quality
-mise run fmt            # Format all Rust code
-mise run fmt-check      # Check formatting (CI mode)
-mise run clippy         # Run clippy lints
-mise run lint           # Run all lints (fmt-check + clippy)
+vp run fmt              # Format Rust + JavaScript/TypeScript
+vp run fmt:check        # Check formatting (CI mode)
+vp run clippy           # Run clippy lints
+vp run lint             # Run all lints
 
 # Pre-commit Check
-mise run ready          # Run fmt, clippy, and tests
+vp run ready            # Run format, lint, and tests
 
 # Documentation
-mise run docs           # Generate Rust documentation
-mise run docs-open      # Generate and open in browser
+vp run doc:cargo        # Generate Rust documentation
+vp run doc:cargo-open   # Generate and open in browser
 
-# Playground
-mise run playground         # Start playground dev server
-mise run playground-build   # Build playground for production
-mise run playground-install # Install playground dependencies
+# Docs and examples
+vp run dev              # Start docs + playground
+vp run dev:docs
+vp run dev:playground
+vp run playground
+vp run integ-vue
+vp run integ-react
+vp run integ-svelte
+vp run ssg-vite
 
 # Benchmarks
-mise run bench              # Run all benchmarks (Rust + JS)
-mise run bench:rust         # Run Rust benchmarks only
-mise run bench:parse        # Run parse/render speed benchmarks
-mise run bench:bundle       # Run bundle size benchmarks
+vp run bench                # Run all benchmarks (Rust + JS)
+vp run bench:rust           # Run Rust benchmarks only
+vp run bench:parse          # Run parse/render speed benchmarks
+vp run bench:bundle         # Run bundle size benchmarks
 ```
 
 ### Project Structure
@@ -285,7 +309,8 @@ mise run bench:bundle       # Run bundle size benchmarks
 ```
 ox-content/
 ├── Cargo.toml              # Workspace configuration
-├── mise.toml               # mise task definitions
+├── vite.config.ts          # Vite+ workspace task graph
+├── mise.toml               # Optional Rust toolchain config for mise
 ├── crates/                 # Rust crates
 │   ├── ox_content_allocator/   # Arena allocator
 │   ├── ox_content_ast/         # AST node definitions
@@ -313,8 +338,8 @@ ox-content/
 ### All Tests
 
 ```bash
-# With mise
-mise run test
+# With Vite+
+vp run test
 
 # With cargo directly
 cargo test --workspace
@@ -336,7 +361,7 @@ cargo test --workspace -- --nocapture
 ### Watch Mode
 
 ```bash
-mise run watch
+vp run watch
 # or
 cargo watch -x "test --workspace"
 ```
@@ -347,16 +372,16 @@ Ox Content includes comprehensive benchmarks to measure performance:
 
 ```bash
 # Run all benchmarks
-mise run bench
+vp run bench
 
 # Run only Rust benchmarks (cargo bench)
-mise run bench:rust
+vp run bench:rust
 
 # Run parse/render speed benchmarks (compares with marked, markdown-it, md4w/md4c, and Bun when available)
-mise run bench:parse
+vp run bench:parse
 
 # Run bundle size benchmarks (compares with VitePress, Astro, etc.)
-mise run bench:bundle
+vp run bench:bundle
 ```
 
 ### Benchmark Results
@@ -369,20 +394,21 @@ The playground provides an interactive environment to test the parser:
 
 ```bash
 # Start docs and playground together
-mise run dev
+vp run dev
 
 # Or run only the playground
-mise run playground
+vp run playground
 
 # Or manually
 cd examples/playground
-pnpm dev
+vp dev
 ```
 
 Then open [http://127.0.0.1:5173](http://127.0.0.1:5173) for the playground and
 [http://127.0.0.1:4173](http://127.0.0.1:4173) for the docs site.
 
 **Features:**
+
 - Live Markdown preview
 - HTML output inspection
 - Pseudo AST visualization
@@ -456,15 +482,15 @@ Ox Content can generate API documentation from your TypeScript/JavaScript source
 
 ```typescript
 // vite.config.ts
-import oxContent from '@ox-content/unplugin/vite';
+import oxContent from "@ox-content/unplugin/vite";
 
 export default defineConfig({
   plugins: [
     oxContent({
       docs: {
         enabled: true,
-        src: ['./src'],
-        out: 'docs/api',
+        src: ["./src"],
+        out: "docs/api",
       },
     }),
   ],
@@ -473,16 +499,16 @@ export default defineConfig({
 
 ### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | `boolean` | `false` | Enable API docs generation |
-| `src` | `string[]` | `['./src']` | Source directories to scan |
-| `out` | `string` | `'docs/api'` | Output directory |
-| `include` | `string[]` | `['**/*.ts', ...]` | File patterns to include |
-| `exclude` | `string[]` | `['**/*.test.*', ...]` | File patterns to exclude |
-| `includePrivate` | `boolean` | `false` | Include private items (`_` prefixed) |
-| `toc` | `boolean` | `true` | Generate table of contents |
-| `groupBy` | `'file' \| 'kind'` | `'file'` | How to group documentation |
+| Option           | Type               | Default                | Description                          |
+| ---------------- | ------------------ | ---------------------- | ------------------------------------ |
+| `enabled`        | `boolean`          | `false`                | Enable API docs generation           |
+| `src`            | `string[]`         | `['./src']`            | Source directories to scan           |
+| `out`            | `string`           | `'docs/api'`           | Output directory                     |
+| `include`        | `string[]`         | `['**/*.ts', ...]`     | File patterns to include             |
+| `exclude`        | `string[]`         | `['**/*.test.*', ...]` | File patterns to exclude             |
+| `includePrivate` | `boolean`          | `false`                | Include private items (`_` prefixed) |
+| `toc`            | `boolean`          | `true`                 | Generate table of contents           |
+| `groupBy`        | `'file' \| 'kind'` | `'file'`               | How to group documentation           |
 
 ### Writing Documentation
 
@@ -515,6 +541,7 @@ export function createUser(name: string, email: string): User {
 ```
 
 Supported JSDoc tags:
+
 - `@param` - Parameter description
 - `@returns` / `@return` - Return value description
 - `@example` - Usage examples

@@ -1,27 +1,14 @@
 {
   "name": "ox-content",
-  "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@10.27.0",
-  "scripts": {
-    "build": "pnpm -r run build",
-    "dev": "pnpm -r run dev",
-    "test": "vitest",
-    "lint": "oxlint --type-aware",
-    "fmt": "oxfmt --write npm/*/src scripts",
-    "fmt:check": "oxfmt --check npm/*/src scripts",
-    "check": "pnpm -r run typecheck",
-    "release": "node --experimental-strip-types scripts/release.ts"
-  },
+  "private": true,
   "devDependencies": {
-    "oxfmt": "catalog:",
-    "oxlint": "catalog:",
-    "oxlint-tsgolint": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   },
   "engines": {
     "node": ">=24",
     "pnpm": ">=9"
-  }
+  },
+  "packageManager": "pnpm@10.27.0"
 }

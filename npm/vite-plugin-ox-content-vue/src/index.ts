@@ -186,15 +186,17 @@ export function oxContentVue(options: VueIntegrationOptions = {}): PluginOption[
   };
 
   // Get base ox-content plugins (environment plugin only)
-  const basePlugins = oxContent(options);
-  const environmentPlugin = basePlugins.find((p) => p.name === "ox-content:environment");
+  const basePlugins = oxContent(options).flatMap((plugin) =>
+    Array.isArray(plugin) ? plugin : [plugin],
+  ) as Plugin[];
+  const environmentPlugin = basePlugins.find((plugin) => plugin.name === "ox-content:environment");
+  const plugins: Plugin[] = [vueTransformPlugin, vueEnvironmentPlugin, vueHmrPlugin];
 
-  return [
-    vueTransformPlugin,
-    vueEnvironmentPlugin,
-    vueHmrPlugin,
-    ...(environmentPlugin ? [environmentPlugin] : []),
-  ];
+  if (environmentPlugin) {
+    plugins.push(environmentPlugin);
+  }
+
+  return plugins;
 }
 
 /**
