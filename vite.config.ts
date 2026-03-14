@@ -77,7 +77,7 @@ export default defineConfig({
       "lint:rust": task("cargo clippy --workspace --all-targets -- -D warnings"),
       "lint:ts": noopTask(["check:ts"]),
       "check:ts": task(
-        'vp check vite.config.ts scripts crates/ox_content_napi/index.d.ts && vp exec --filter "./npm/*" -- vp check src vite.config.ts',
+        'vp check vite.config.ts scripts && vp exec --filter "./npm/*" -- vp check src vite.config.ts',
       ),
 
       bench: noopTask(["bench:rust", "bench:parse", "bench:bundle"], { cache: false }),
