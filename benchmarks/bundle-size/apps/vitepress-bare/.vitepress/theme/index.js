@@ -1,5 +1,5 @@
-import Layout from "./Layout.vue"
+import Layout from "./Layout.vue";
 
 export default {
   Layout,
-}
+};

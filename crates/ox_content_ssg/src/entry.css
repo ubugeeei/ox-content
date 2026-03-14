@@ -50,7 +50,8 @@
 }
 
 @keyframes scroll-hint {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
@@ -279,7 +280,9 @@
   width: 2rem;
   height: 2rem;
   color: var(--octc-color-text-muted);
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .feature-link::after {

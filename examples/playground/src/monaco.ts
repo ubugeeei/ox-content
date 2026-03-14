@@ -1,31 +1,31 @@
-import "monaco-editor/min/vs/editor/editor.main.css"
-import * as monaco from "monaco-editor"
-import "monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution"
+import "monaco-editor/min/vs/editor/editor.main.css";
+import * as monaco from "monaco-editor";
+import "monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution";
 
-import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker"
-import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker"
-import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker"
-import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker"
-import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker"
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
+import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
+import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 
 type MonacoEnvironmentWindow = typeof globalThis & {
   MonacoEnvironment?: {
-    getWorker: (_moduleId: string, label: string) => Worker
-  }
-}
+    getWorker: (_moduleId: string, label: string) => Worker;
+  };
+};
 
 type MarkdownEditor = {
-  focus: () => void
-  getValue: () => string
-  onDidChangeValue: (listener: () => void) => monaco.IDisposable
-  setValue: (value: string) => void
-}
+  focus: () => void;
+  getValue: () => string;
+  onDidChangeValue: (listener: () => void) => monaco.IDisposable;
+  setValue: (value: string) => void;
+};
 
 type SnippetDefinition = {
-  description: string
-  insertText: string
-  label: string
-}
+  description: string;
+  insertText: string;
+  label: string;
+};
 
 const snippetDefinitions: SnippetDefinition[] = [
   {
@@ -71,15 +71,14 @@ const snippetDefinitions: SnippetDefinition[] = [
   {
     label: "table",
     description: "Simple table",
-    insertText:
-      "| ${1:Column} | ${2:Column} |\n| --- | --- |\n| ${3:Value} | ${4:Value} |\n$0",
+    insertText: "| ${1:Column} | ${2:Column} |\n| --- | --- |\n| ${3:Value} | ${4:Value} |\n$0",
   },
-]
+];
 
-let themeRegistered = false
-let completionRegistered = false
+let themeRegistered = false;
+let completionRegistered = false;
 
-const monacoEnvironment = globalThis as MonacoEnvironmentWindow
+const monacoEnvironment = globalThis as MonacoEnvironmentWindow;
 
 monacoEnvironment.MonacoEnvironment = {
   getWorker(_moduleId: string, label: string): Worker {
@@ -87,25 +86,25 @@ monacoEnvironment.MonacoEnvironment = {
       case "css":
       case "less":
       case "scss":
-        return new cssWorker()
+        return new cssWorker();
       case "handlebars":
       case "html":
       case "razor":
-        return new htmlWorker()
+        return new htmlWorker();
       case "javascript":
       case "typescript":
-        return new tsWorker()
+        return new tsWorker();
       case "json":
-        return new jsonWorker()
+        return new jsonWorker();
       default:
-        return new editorWorker()
+        return new editorWorker();
     }
   },
-}
+};
 
 function ensureTheme(): void {
   if (themeRegistered) {
-    return
+    return;
   }
 
   monaco.editor.defineTheme("ox-playground", {
@@ -146,59 +145,54 @@ function ensureTheme(): void {
       "scrollbarSlider.hoverBackground": "#4A697A88",
       "scrollbarSlider.activeBackground": "#5D819599",
     },
-  })
+  });
 
-  themeRegistered = true
+  themeRegistered = true;
 }
 
 function ensureMarkdownCompletionProvider(): void {
   if (completionRegistered) {
-    return
+    return;
   }
 
   monaco.languages.registerCompletionItemProvider("markdown", {
     triggerCharacters: ["#", "-", "[", "`", "!", ">", "|"],
     provideCompletionItems(model, position) {
-      const word = model.getWordUntilPosition(position)
+      const word = model.getWordUntilPosition(position);
       const range = new monaco.Range(
         position.lineNumber,
         word.startColumn,
         position.lineNumber,
         word.endColumn,
-      )
+      );
 
       return {
         suggestions: snippetDefinitions.map((snippet, index) => ({
           detail: snippet.description,
           documentation: snippet.description,
           insertText: snippet.insertText,
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           kind: monaco.languages.CompletionItemKind.Snippet,
           label: snippet.label,
           range,
           sortText: `0${index}`,
         })),
-      }
+      };
     },
-  })
+  });
 
-  completionRegistered = true
+  completionRegistered = true;
 }
 
-export function createMarkdownEditor(
-  container: HTMLElement,
-  initialValue: string,
-): MarkdownEditor {
-  ensureTheme()
-  ensureMarkdownCompletionProvider()
+export function createMarkdownEditor(container: HTMLElement, initialValue: string): MarkdownEditor {
+  ensureTheme();
+  ensureMarkdownCompletionProvider();
 
-  const model = monaco.editor.createModel(initialValue, "markdown")
+  const model = monaco.editor.createModel(initialValue, "markdown");
   const editor = monaco.editor.create(container, {
     ariaLabel: "Markdown input",
     automaticLayout: true,
-    fontFamily:
-      '"SFMono-Regular", "JetBrains Mono", Menlo, Monaco, Consolas, monospace',
+    fontFamily: '"SFMono-Regular", "JetBrains Mono", Menlo, Monaco, Consolas, monospace',
     fontLigatures: false,
     fontSize: 15,
     guides: {
@@ -242,26 +236,26 @@ export function createMarkdownEditor(
     theme: "ox-playground",
     wordBasedSuggestions: "currentDocument",
     wordWrap: "on",
-  })
+  });
 
   return {
     focus(): void {
-      editor.focus()
+      editor.focus();
     },
     getValue(): string {
-      return editor.getValue()
+      return editor.getValue();
     },
     onDidChangeValue(listener: () => void): monaco.IDisposable {
       return editor.onDidChangeModelContent(() => {
-        listener()
-      })
+        listener();
+      });
     },
     setValue(value: string): void {
       if (value === editor.getValue()) {
-        return
+        return;
       }
 
-      editor.setValue(value)
+      editor.setValue(value);
     },
-  }
+  };
 }

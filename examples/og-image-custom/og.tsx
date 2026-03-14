@@ -18,15 +18,7 @@ interface OgImageProps {
 }
 
 export default function OgTemplate(props: OgImageProps) {
-  const {
-    title,
-    description,
-    siteName,
-    author,
-    tags,
-    category,
-    coverColor = "#6366f1",
-  } = props;
+  const { title, description, siteName, author, tags, category, coverColor = "#6366f1" } = props;
 
   return (
     <>

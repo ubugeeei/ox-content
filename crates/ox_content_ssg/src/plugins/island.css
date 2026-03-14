@@ -38,7 +38,9 @@
 }
 
 @keyframes ox-island-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Hydrated state */
@@ -95,8 +97,12 @@ noscript .ox-island-fallback {
 }
 
 @keyframes ox-island-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Common skeleton sizes */

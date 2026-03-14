@@ -9,13 +9,13 @@ Ox Content provides several examples demonstrating different use cases.
 Embed Vue 3 components in Markdown using `@ox-content/vite-plugin-vue`.
 
 ```ts
-import { oxContentVue } from '@ox-content/vite-plugin-vue';
+import { oxContentVue } from "@ox-content/vite-plugin-vue";
 
 export default defineConfig({
   plugins: [
     vue(),
     oxContentVue({
-      components: './src/components/*.vue',
+      components: "./src/components/*.vue",
     }),
   ],
 });
@@ -26,13 +26,13 @@ export default defineConfig({
 Embed React components in Markdown using `@ox-content/vite-plugin-react`.
 
 ```ts
-import { oxContentReact } from '@ox-content/vite-plugin-react';
+import { oxContentReact } from "@ox-content/vite-plugin-react";
 
 export default defineConfig({
   plugins: [
     react(),
     oxContentReact({
-      components: './src/components/*.tsx',
+      components: "./src/components/*.tsx",
     }),
   ],
 });
@@ -43,13 +43,13 @@ export default defineConfig({
 Embed Svelte 5 components in Markdown using `@ox-content/vite-plugin-svelte`.
 
 ```ts
-import { oxContentSvelte } from '@ox-content/vite-plugin-svelte';
+import { oxContentSvelte } from "@ox-content/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [
     svelte(),
     oxContentSvelte({
-      components: './src/components/*.svelte',
+      components: "./src/components/*.svelte",
     }),
   ],
 });
@@ -74,11 +74,11 @@ Generate API documentation from JSDoc/TSDoc comments automatically.
 ```ts
 oxContent({
   docs: {
-    src: ['./src'],
-    out: 'docs/api',
-    include: ['**/*.ts'],
+    src: ["./src"],
+    out: "docs/api",
+    include: ["**/*.ts"],
   },
-})
+});
 ```
 
 ## OG Image Examples
@@ -95,9 +95,9 @@ Generate per-page Open Graph images with a custom template. Pass arbitrary front
 oxContent({
   ogImage: true,
   ogImageOptions: {
-    template: './og-template.ts',
+    template: "./og-template.ts",
   },
-})
+});
 ```
 
 ## Other Examples
@@ -118,9 +118,9 @@ git clone https://github.com/ubugeeei/ox-content.git
 cd ox-content
 
 # Install dependencies
-pnpm install
+npm install
 
 # Run an example
 cd examples/integ-vue
-pnpm dev
+npm run dev
 ```

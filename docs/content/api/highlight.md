@@ -14,12 +14,12 @@ Get or create the Shiki highlighter.
 async function getHighlighter(
   theme: string,
   customLangs: LanguageRegistration[] = [],
-  ): Promise<Highlighter>
+): Promise<Highlighter>;
 ```
 
 ### Returns
 
-`Promise<Highlighter>` - 
+`Promise<Highlighter>` -
 
 ---
 
@@ -42,12 +42,12 @@ Extract text content from a hast node.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L128)**
 
 ```typescript
-function getTextContent(node: Element | Root): string
+function getTextContent(node: Element | Root): string;
 ```
 
 ### Returns
 
-`string` - 
+`string` -
 
 ---
 
@@ -64,12 +64,11 @@ export async function highlightCode(
   html: string,
   theme: string = "github-dark",
   langs: LanguageRegistration[] = [],
-  ): Promise<string>
+): Promise<string>;
 ```
 
 ### Returns
 
-`Promise<string>` - 
+`Promise<string>` -
 
 ---
-

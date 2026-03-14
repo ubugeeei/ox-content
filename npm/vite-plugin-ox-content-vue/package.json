@@ -2,47 +2,13 @@
   "name": "@ox-content/vite-plugin-vue",
   "version": "1.0.0-alpha.0",
   "description": "Vue integration for Ox Content - Embed Vue components in Markdown",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "typecheck": "tsgo --noEmit"
-  },
-  "peerDependencies": {
-    "vite": "catalog:",
-    "vue": "catalog:"
-  },
-  "dependencies": {
-    "@ox-content/islands": "workspace:*",
-    "@ox-content/vite-plugin": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/node": "catalog:",
-    "@vitejs/plugin-vue": "catalog:",
-    "tsdown": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vue": "catalog:"
-  },
   "keywords": [
+    "markdown",
+    "mdx",
+    "ox-content",
     "vite",
     "vite-plugin",
-    "vue",
-    "markdown",
-    "ox-content",
-    "mdx"
+    "vue"
   ],
   "license": "MIT",
   "author": "ubugeeei",
@@ -51,8 +17,43 @@
     "url": "https://github.com/ubugeeei/ox-content.git",
     "directory": "npm/vite-plugin-ox-content-vue"
   },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
   "publishConfig": {
-    "provenance": true,
-    "access": "public"
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@ox-content/islands": "workspace:*",
+    "@ox-content/vite-plugin": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vue": "catalog:"
+  },
+  "peerDependencies": {
+    "vite": "catalog:",
+    "vue": "catalog:"
   }
 }

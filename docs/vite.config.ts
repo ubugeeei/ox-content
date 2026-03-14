@@ -1,5 +1,5 @@
-import { defineConfig } from "vite"
-import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin"
+import { defineConfig } from "vite-plus";
+import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
 
 /**
  * Ox Content Documentation Site
@@ -8,8 +8,8 @@ import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin"
  * Uses SSG to generate static HTML from Markdown files.
  */
 export default defineConfig(({ mode }) => {
-  const isProd = mode === "production"
-  const base = isProd ? "/ox-content/" : "/"
+  const isProd = mode === "production";
+  const base = isProd ? "/ox-content/" : "/";
 
   return {
     // Site base path (for GitHub Pages in prod, root for dev)
@@ -33,7 +33,8 @@ export default defineConfig(({ mode }) => {
           theme: defineTheme({
             extends: defaultTheme,
             footer: {
-              message: 'Released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>.',
+              message:
+                'Released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>.',
               copyright: `Copyright © 2024-${new Date().getFullYear()} ubugeeei`,
             },
           }),
@@ -72,5 +73,5 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: "dist/docs",
     },
-  }
-})
+  };
+});

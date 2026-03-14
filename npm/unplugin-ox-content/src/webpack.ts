@@ -2,9 +2,9 @@
  * Webpack plugin export for @ox-content/unplugin
  */
 
-import unplugin from "./index";
+import oxContentUnplugin from "./index";
 import type { OxContentOptions, ResolvedOptions, TocEntry, TransformResult } from "./types";
 
-export default unplugin.webpack;
-export { unplugin };
+export default oxContentUnplugin.webpack;
+export { oxContentUnplugin as unplugin };
 export type { OxContentOptions, ResolvedOptions, TocEntry, TransformResult };

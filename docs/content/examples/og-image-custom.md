@@ -10,12 +10,12 @@ By default a built-in dark gradient template is used. With the custom template f
 
 Supported template formats:
 
-| Extension | Framework | Rendering |
-|-----------|-----------|-----------|
-| `.ts` | TypeScript | Direct HTML string return |
-| `.vue` | Vue SFC | SSR via `vue/server-renderer` |
-| `.svelte` | Svelte SFC | SSR via `svelte/server` |
-| `.tsx`/`.jsx` | React Server Component | SSR via `react-dom/server` |
+| Extension     | Framework              | Rendering                     |
+| ------------- | ---------------------- | ----------------------------- |
+| `.ts`         | TypeScript             | Direct HTML string return     |
+| `.vue`        | Vue SFC                | SSR via `vue/server-renderer` |
+| `.svelte`     | Svelte SFC             | SSR via `svelte/server`       |
+| `.tsx`/`.jsx` | React Server Component | SSR via `react-dom/server`    |
 
 ## Quick Start
 
@@ -23,21 +23,21 @@ Supported template formats:
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import { oxContent } from '@ox-content/vite-plugin';
+import { defineConfig } from "vite";
+import { oxContent } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   plugins: [
     oxContent({
-      srcDir: 'content',
+      srcDir: "content",
 
       ogImage: true,
       ogImageOptions: {
-        template: './og.tsx', // path relative to project root
+        template: "./og.tsx", // path relative to project root
       },
 
       ssg: {
-        siteName: 'My Site',
+        siteName: "My Site",
       },
     }),
   ],
@@ -57,7 +57,7 @@ export default function OgTemplate(props: {
   category?: string;
   coverColor?: string;
 }) {
-  const { title, description, siteName, category, coverColor = '#6366f1' } = props;
+  const { title, description, siteName, category, coverColor = "#6366f1" } = props;
 
   return (
     <>
@@ -122,6 +122,7 @@ tags:
 ---
 
 # Getting Started
+
 ...
 ```
 
@@ -135,18 +136,21 @@ Write your OG image template as a Vue Single File Component:
 <!-- og.vue -->
 <script setup lang="ts">
 const props = defineProps<{
-  title: string
-  description?: string
-  siteName?: string
-  category?: string
-  coverColor?: string
-}>()
-const color = props.coverColor ?? '#6366f1'
+  title: string;
+  description?: string;
+  siteName?: string;
+  category?: string;
+  coverColor?: string;
+}>();
+const color = props.coverColor ?? "#6366f1";
 </script>
 
 <template>
   <div class="og">
-    <div class="accent-bar" :style="{ background: `linear-gradient(90deg, ${color}, ${color}cc)` }" />
+    <div
+      class="accent-bar"
+      :style="{ background: `linear-gradient(90deg, ${color}, ${color}cc)` }"
+    />
     <div class="body">
       <span v-if="category" class="category" :style="{ background: color }">{{ category }}</span>
       <h1 class="title">{{ title }}</h1>
@@ -319,7 +323,7 @@ export default function OgTemplate(props: {
   category?: string;
   coverColor?: string;
 }) {
-  const { title, description, siteName, category, coverColor = '#6366f1' } = props;
+  const { title, description, siteName, category, coverColor = "#6366f1" } = props;
 
   return (
     <>
@@ -371,9 +375,16 @@ export default function OgTemplate(props: {
         }
       `}</style>
       <div className="og">
-        <div className="accent-bar" style={{ background: `linear-gradient(90deg, ${coverColor}, ${coverColor}cc)` }} />
+        <div
+          className="accent-bar"
+          style={{ background: `linear-gradient(90deg, ${coverColor}, ${coverColor}cc)` }}
+        />
         <div className="body">
-          {category && <span className="category" style={{ background: coverColor }}>{category}</span>}
+          {category && (
+            <span className="category" style={{ background: coverColor }}>
+              {category}
+            </span>
+          )}
           <h1 className="title">{title}</h1>
           {description && <p className="description">{description}</p>}
         </div>
@@ -424,14 +435,14 @@ ogImageOptions: {
 
 Your template function receives an `OgImageTemplateProps` object:
 
-| Prop | Type | Source |
-|------|------|--------|
-| `title` | `string` | Extracted from first `#` heading or `title` frontmatter |
-| `description` | `string?` | `description` frontmatter |
-| `siteName` | `string?` | `ssg.siteName` from plugin config |
-| `author` | `string?` | `author` frontmatter |
-| `tags` | `string[]?` | `tags` frontmatter |
-| `[key]` | `unknown` | Any other frontmatter field |
+| Prop          | Type        | Source                                                  |
+| ------------- | ----------- | ------------------------------------------------------- |
+| `title`       | `string`    | Extracted from first `#` heading or `title` frontmatter |
+| `description` | `string?`   | `description` frontmatter                               |
+| `siteName`    | `string?`   | `ssg.siteName` from plugin config                       |
+| `author`      | `string?`   | `author` frontmatter                                    |
+| `tags`        | `string[]?` | `tags` frontmatter                                      |
+| `[key]`       | `unknown`   | Any other frontmatter field                             |
 
 The `layout` field is excluded since it controls page rendering, not OG images.
 

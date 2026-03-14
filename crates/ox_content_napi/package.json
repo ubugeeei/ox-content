@@ -2,12 +2,37 @@
   "name": "@ox-content/napi",
   "version": "1.0.0-alpha.0",
   "description": "Node.js bindings for Ox Content - High-performance Markdown parser",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "keywords": [
+    "markdown",
+    "napi",
+    "oxc",
+    "parser",
+    "rust"
+  ],
+  "license": "MIT",
+  "author": "ubugeeei",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/ox-content.git",
+    "directory": "crates/ox_content_napi"
+  },
   "files": [
     "index.js",
     "index.d.ts"
   ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "napi build --release",
+    "build:debug": "napi build"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.1"
+  },
   "napi": {
     "binaryName": "ox-content",
     "packageName": "@ox-content/binding",
@@ -18,30 +43,5 @@
       "aarch64-unknown-linux-gnu",
       "x86_64-pc-windows-msvc"
     ]
-  },
-  "scripts": {
-    "build": "napi build --release",
-    "build:debug": "napi build"
-  },
-  "devDependencies": {
-    "@napi-rs/cli": "^3.5.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ubugeeei/ox-content.git",
-    "directory": "crates/ox_content_napi"
-  },
-  "publishConfig": {
-    "provenance": true,
-    "access": "public"
-  },
-  "keywords": [
-    "markdown",
-    "parser",
-    "napi",
-    "rust",
-    "oxc"
-  ],
-  "author": "ubugeeei",
-  "license": "MIT"
+  }
 }

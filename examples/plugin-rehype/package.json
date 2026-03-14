@@ -1,16 +1,16 @@
 {
   "name": "ox-content-rehype-example",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "unified": "^11.0.0",
+    "rehype-parse": "^9.0.0",
     "rehype-stringify": "^10.0.0",
-    "rehype-parse": "^9.0.0"
+    "unified": "^11.0.0"
   },
   "devDependencies": {
     "@ox-content/napi": "workspace:*"

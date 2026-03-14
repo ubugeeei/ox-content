@@ -1,224 +1,208 @@
 const toggle = document.querySelector(".menu-toggle"),
   sidebar = document.querySelector(".sidebar"),
-  overlay = document.querySelector(".overlay")
+  overlay = document.querySelector(".overlay");
 
 if (toggle && sidebar && overlay) {
   const close = () => {
-    sidebar.classList.remove("open")
-    overlay.classList.remove("open")
-  }
+    sidebar.classList.remove("open");
+    overlay.classList.remove("open");
+  };
 
   toggle.addEventListener("click", () => {
-    sidebar.classList.toggle("open")
-    overlay.classList.toggle("open")
-  })
-  overlay.addEventListener("click", close)
-  sidebar
-    .querySelectorAll("a")
-    .forEach((a) => a.addEventListener("click", close))
+    sidebar.classList.toggle("open");
+    overlay.classList.toggle("open");
+  });
+  overlay.addEventListener("click", close);
+  sidebar.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
 }
 
 if (sidebar) {
-  const savedPos = sessionStorage.getItem("sidebarScroll")
-  if (savedPos) sidebar.scrollTop = parseInt(savedPos, 10)
+  const savedPos = sessionStorage.getItem("sidebarScroll");
+  if (savedPos) sidebar.scrollTop = parseInt(savedPos, 10);
   sidebar.addEventListener("scroll", () =>
     sessionStorage.setItem("sidebarScroll", sidebar.scrollTop),
-  )
+  );
 }
 
 const themeToggle = document.querySelector(".theme-toggle"),
   setTheme = (theme) => {
-    document.documentElement.setAttribute("data-theme", theme)
-    localStorage.setItem("theme", theme)
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
   },
-  getTheme = () =>
-    document.documentElement.getAttribute("data-theme") || "light"
+  getTheme = () => document.documentElement.getAttribute("data-theme") || "light";
 
-themeToggle?.addEventListener("click", () =>
-  setTheme(getTheme() === "dark" ? "light" : "dark"),
-)
+themeToggle?.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
 
-const searchBtn = document.querySelector(".search-button")
-let searchApiPromise = null
+const searchBtn = document.querySelector(".search-button");
+let searchApiPromise = null;
 
 const loadSearchApi = async () => {
   if (searchApiPromise) {
-    return searchApiPromise
+    return searchApiPromise;
   }
 
   searchApiPromise = new Promise((resolve) => {
     if (typeof window.__oxContentInitSearch === "function") {
-      resolve(window.__oxContentInitSearch())
-      return
+      resolve(window.__oxContentInitSearch());
+      return;
     }
 
-    const script = document.createElement("script")
-    script.src = "__OX_CONTENT_SEARCH_CHUNK__"
-    script.defer = true
+    const script = document.createElement("script");
+    script.src = "__OX_CONTENT_SEARCH_CHUNK__";
+    script.defer = true;
     script.onload = () =>
       resolve(
-        typeof window.__oxContentInitSearch === "function"
-          ? window.__oxContentInitSearch()
-          : null,
-      )
+        typeof window.__oxContentInitSearch === "function" ? window.__oxContentInitSearch() : null,
+      );
     script.onerror = () => {
-      console.warn("[ox-content] Search chunk failed to load")
-      searchApiPromise = null
-      resolve(null)
-    }
-    document.head.appendChild(script)
-  })
+      console.warn("[ox-content] Search chunk failed to load");
+      searchApiPromise = null;
+      resolve(null);
+    };
+    document.head.appendChild(script);
+  });
 
-  return searchApiPromise
-}
+  return searchApiPromise;
+};
 
 const openSearch = async () => {
-  const api = await loadSearchApi()
-  api?.openSearch()
-}
+  const api = await loadSearchApi();
+  api?.openSearch();
+};
 
 const isTypingTarget = (target) =>
   target instanceof HTMLInputElement ||
   target instanceof HTMLTextAreaElement ||
   target instanceof HTMLSelectElement ||
-  (target instanceof HTMLElement && target.isContentEditable)
+  (target instanceof HTMLElement && target.isContentEditable);
 
 searchBtn?.addEventListener("click", () => {
-  void openSearch()
-})
+  void openSearch();
+});
 
 document.addEventListener("keydown", (e) => {
   if (
     (e.key === "/" && !isTypingTarget(e.target)) ||
     ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")
   ) {
-    e.preventDefault()
-    void openSearch()
+    e.preventDefault();
+    void openSearch();
   }
-})
+});
 
 const scrollToHash = () => {
-  const hash = location.hash
-  if (!hash) return
+  const hash = location.hash;
+  if (!hash) return;
 
-  const target = document.querySelector(hash)
-  if (!target) return
+  const target = document.querySelector(hash);
+  if (!target) return;
 
-  setTimeout(
-    () => target.scrollIntoView({ behavior: "smooth", block: "start" }),
-    100,
-  )
-}
+  setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+};
 
-scrollToHash()
-window.addEventListener("hashchange", scrollToHash)
+scrollToHash();
+window.addEventListener("hashchange", scrollToHash);
 document.querySelectorAll('a[href^="#"]').forEach((a) =>
   a.addEventListener("click", (e) => {
-    const hash = a.getAttribute("href")
-    const target = hash ? document.querySelector(hash) : null
+    const hash = a.getAttribute("href");
+    const target = hash ? document.querySelector(hash) : null;
     if (target) {
-      e.preventDefault()
-      target.scrollIntoView({ behavior: "smooth", block: "start" })
-      history.pushState(null, null, hash)
+      e.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      history.pushState(null, null, hash);
     }
   }),
-)
+);
 
 const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),
   mobileSearchBtn = document.querySelector("[data-mobile-search]"),
-  mobileThemeBtn = document.querySelector("[data-mobile-theme]")
+  mobileThemeBtn = document.querySelector("[data-mobile-theme]");
 
 mobileMenuBtn?.addEventListener("click", () => {
   if (sidebar && overlay) {
-    sidebar.classList.toggle("open")
-    overlay.classList.toggle("open")
+    sidebar.classList.toggle("open");
+    overlay.classList.toggle("open");
   }
-})
+});
 
 mobileSearchBtn?.addEventListener("click", () => {
-  void openSearch()
-})
+  void openSearch();
+});
 
-mobileThemeBtn?.addEventListener("click", () =>
-  setTheme(getTheme() === "dark" ? "light" : "dark"),
-)
+mobileThemeBtn?.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
 
 // ox-content:search:start
 window.__oxContentInitSearch = (() => {
-  let api = null
+  let api = null;
 
   return () => {
     if (api) {
-      return api
+      return api;
     }
 
     const searchOverlay = document.querySelector(".search-modal-overlay"),
       searchInput = document.querySelector(".search-input"),
       searchResults = document.querySelector(".search-results"),
-      searchClose = document.querySelector(".search-close")
+      searchClose = document.querySelector(".search-close");
 
     if (!searchOverlay || !searchInput || !searchResults) {
-      return null
+      return null;
     }
 
     let searchIndex = null,
       selectedIdx = 0,
       results = [],
-      searchTimeout = null
+      searchTimeout = null;
 
     const openSearch = () => {
-      searchOverlay.classList.add("open")
-      searchInput.focus()
-    }
+      searchOverlay.classList.add("open");
+      searchInput.focus();
+    };
 
     const closeSearch = () => {
-      searchOverlay.classList.remove("open")
-      searchInput.value = ""
-      searchResults.innerHTML = ""
-      selectedIdx = 0
-      results = []
-    }
+      searchOverlay.classList.remove("open");
+      searchInput.value = "";
+      searchResults.innerHTML = "";
+      selectedIdx = 0;
+      results = [];
+    };
 
     const loadIndex = async () => {
-      if (searchIndex) return
+      if (searchIndex) return;
       try {
-        searchIndex = await (await fetch("{{base}}search-index.json")).json()
+        searchIndex = await (await fetch("{{base}}search-index.json")).json();
       } catch (e) {
-        console.warn("Search index load failed:", e)
+        console.warn("Search index load failed:", e);
       }
-    }
+    };
 
     const tokenize = (text) => {
-      const tokens = []
-      let current = ""
+      const tokens = [];
+      let current = "";
 
       for (const ch of text) {
-        if (
-          /[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(
-            ch,
-          )
-        ) {
+        if (/[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(ch)) {
           if (current) {
-            tokens.push(current.toLowerCase())
-            current = ""
+            tokens.push(current.toLowerCase());
+            current = "";
           }
-          tokens.push(ch)
+          tokens.push(ch);
         } else if (/[a-zA-Z0-9_]/.test(ch)) {
-          current += ch
+          current += ch;
         } else if (current) {
-          tokens.push(current.toLowerCase())
-          current = ""
+          tokens.push(current.toLowerCase());
+          current = "";
         }
       }
 
-      if (current) tokens.push(current.toLowerCase())
-      return tokens
-    }
+      if (current) tokens.push(current.toLowerCase());
+      return tokens;
+    };
 
     const render = () => {
       if (!results.length) {
-        searchResults.innerHTML = '<div class="search-empty">No results</div>'
-        return
+        searchResults.innerHTML = '<div class="search-empty">No results</div>';
+        return;
       }
 
       searchResults.innerHTML = results
@@ -236,145 +220,134 @@ window.__oxContentInitSearch = (() => {
               : "") +
             "</a>",
         )
-        .join("")
-    }
+        .join("");
+    };
 
     const search = async (query) => {
       if (!query.trim()) {
-        searchResults.innerHTML = ""
-        results = []
-        return
+        searchResults.innerHTML = "";
+        results = [];
+        return;
       }
 
-      await loadIndex()
+      await loadIndex();
       if (!searchIndex) {
-        searchResults.innerHTML =
-          '<div class="search-empty">Index unavailable</div>'
-        return
+        searchResults.innerHTML = '<div class="search-empty">Index unavailable</div>';
+        return;
       }
 
-      const tokens = tokenize(query)
+      const tokens = tokenize(query);
       if (!tokens.length) {
-        searchResults.innerHTML = ""
-        results = []
-        return
+        searchResults.innerHTML = "";
+        results = [];
+        return;
       }
 
       const k1 = 1.2,
         b = 0.75,
-        scores = new Map()
+        scores = new Map();
 
       for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i],
-          isLast = i === tokens.length - 1
+          isLast = i === tokens.length - 1;
         let terms =
           isLast && token.length >= 2
-            ? Object.keys(searchIndex.index).filter((term) =>
-                term.startsWith(token),
-              )
+            ? Object.keys(searchIndex.index).filter((term) => term.startsWith(token))
             : searchIndex.index[token]
               ? [token]
-              : []
+              : [];
 
         for (const term of terms) {
           const postings = searchIndex.index[term] || [],
             df = searchIndex.df[term] || 1,
-            idf =
-              Math.log((searchIndex.doc_count - df + 0.5) / (df + 0.5) + 1)
+            idf = Math.log((searchIndex.doc_count - df + 0.5) / (df + 0.5) + 1);
 
           for (const posting of postings) {
-            const doc = searchIndex.documents[posting.doc_idx]
-            if (!doc) continue
+            const doc = searchIndex.documents[posting.doc_idx];
+            if (!doc) continue;
 
-            const boost =
-                posting.field === "Title"
-                  ? 10
-                  : posting.field === "Heading"
-                    ? 5
-                    : 1,
+            const boost = posting.field === "Title" ? 10 : posting.field === "Heading" ? 5 : 1,
               score =
                 idf *
                 ((posting.tf * (k1 + 1)) /
-                  (posting.tf +
-                    k1 *
-                      (1 - b + (b * doc.body.length) / searchIndex.avg_dl))) *
-                boost
+                  (posting.tf + k1 * (1 - b + (b * doc.body.length) / searchIndex.avg_dl))) *
+                boost;
 
             if (!scores.has(posting.doc_idx)) {
-              scores.set(posting.doc_idx, { score: 0, matches: new Set() })
+              scores.set(posting.doc_idx, { score: 0, matches: new Set() });
             }
 
-            const entry = scores.get(posting.doc_idx)
-            entry.score += score
-            entry.matches.add(term)
+            const entry = scores.get(posting.doc_idx);
+            entry.score += score;
+            entry.matches.add(term);
           }
         }
       }
 
       results = Array.from(scores.entries())
         .map(([idx, data]) => {
-          const doc = searchIndex.documents[idx]
-          let snippet = ""
+          const doc = searchIndex.documents[idx];
+          let snippet = "";
 
           if (doc.body) {
-            const bodyLower = doc.body.toLowerCase()
-            let firstPos = -1
+            const bodyLower = doc.body.toLowerCase();
+            let firstPos = -1;
             for (const match of data.matches) {
-              const pos = bodyLower.indexOf(match)
+              const pos = bodyLower.indexOf(match);
               if (pos !== -1 && (firstPos === -1 || pos < firstPos)) {
-                firstPos = pos
+                firstPos = pos;
               }
             }
             const start = Math.max(0, firstPos - 50),
-              end = Math.min(doc.body.length, start + 150)
-            snippet = doc.body.slice(start, end)
-            if (start > 0) snippet = "..." + snippet
-            if (end < doc.body.length) snippet += "..."
+              end = Math.min(doc.body.length, start + 150);
+            snippet = doc.body.slice(start, end);
+            if (start > 0) snippet = "..." + snippet;
+            if (end < doc.body.length) snippet += "...";
           }
 
-          return { ...doc, score: data.score, snippet }
+          return { ...doc, score: data.score, snippet };
         })
         .sort((a, b) => b.score - a.score)
-        .slice(0, 10)
+        .slice(0, 10);
 
-      selectedIdx = 0
-      render()
-    }
+      selectedIdx = 0;
+      render();
+    };
 
-    searchClose?.addEventListener("click", closeSearch)
+    searchClose?.addEventListener("click", closeSearch);
     searchOverlay.addEventListener("click", (e) => {
-      if (e.target === searchOverlay) closeSearch()
-    })
+      if (e.target === searchOverlay) closeSearch();
+    });
     searchInput.addEventListener("input", () => {
-      if (searchTimeout) clearTimeout(searchTimeout)
-      searchTimeout = setTimeout(() => search(searchInput.value), 150)
-    })
+      if (searchTimeout) clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => search(searchInput.value), 150);
+    });
     searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeSearch()
+      if (e.key === "Escape") closeSearch();
       else if (e.key === "ArrowDown") {
-        e.preventDefault()
+        e.preventDefault();
         if (selectedIdx < results.length - 1) {
-          selectedIdx++
-          render()
+          selectedIdx++;
+          render();
         }
       } else if (e.key === "ArrowUp") {
-        e.preventDefault()
+        e.preventDefault();
         if (selectedIdx > 0) {
-          selectedIdx--
-          render()
+          selectedIdx--;
+          render();
         }
       } else if (e.key === "Enter" && results[selectedIdx]) {
-        e.preventDefault()
-        location.href = results[selectedIdx].url
+        e.preventDefault();
+        location.href = results[selectedIdx].url;
       }
-    })
+    });
 
     api = {
       openSearch,
       closeSearch,
-    }
+    };
 
-    return api
-  }
-})()
+    return api;
+  };
+})();
 // ox-content:search:end

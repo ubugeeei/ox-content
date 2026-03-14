@@ -12,13 +12,13 @@ pnpm add @ox-content/vite-plugin
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import { oxContent } from '@ox-content/vite-plugin';
+import { defineConfig } from "vite";
+import { oxContent } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   plugins: [
     oxContent({
-      srcDir: 'docs',
+      srcDir: "docs",
     }),
   ],
 });
@@ -51,20 +51,20 @@ SSG (Static Site Generation) options. By default, ox-content generates static HT
 oxContent({
   ssg: {
     enabled: true,
-    extension: '.html',
+    extension: ".html",
     clean: false,
   },
-})
+});
 ```
 
 #### SsgOptions
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable/disable SSG mode |
-| `extension` | `string` | `'.html'` | Output file extension |
-| `clean` | `boolean` | `false` | Clean output directory before build |
-| `bare` | `boolean` | `false` | Bare HTML output (no navigation, no styles) |
+| Option      | Type      | Default   | Description                                 |
+| ----------- | --------- | --------- | ------------------------------------------- |
+| `enabled`   | `boolean` | `true`    | Enable/disable SSG mode                     |
+| `extension` | `string`  | `'.html'` | Output file extension                       |
+| `clean`     | `boolean` | `false`   | Clean output directory before build         |
+| `bare`      | `boolean` | `false`   | Bare HTML output (no navigation, no styles) |
 
 ### Bare Mode (for benchmarking)
 
@@ -73,7 +73,7 @@ oxContent({
   ssg: {
     bare: true, // Output minimal HTML without navigation/styles
   },
-})
+});
 ```
 
 ### Disabling SSG
@@ -81,7 +81,7 @@ oxContent({
 ```ts
 oxContent({
   ssg: false, // Disable SSG, use as module transformer only
-})
+});
 ```
 
 ### gfm
@@ -109,37 +109,37 @@ Source documentation generation options. Set to `false` to disable.
 oxContent({
   docs: {
     enabled: true,
-    src: ['./src'],
-    out: 'docs/api',
-    include: ['**/*.ts'],
-    exclude: ['**/*.test.*'],
-    format: 'markdown',
+    src: ["./src"],
+    out: "docs/api",
+    include: ["**/*.ts"],
+    exclude: ["**/*.test.*"],
+    format: "markdown",
     toc: true,
-    groupBy: 'file',
+    groupBy: "file",
   },
-})
+});
 ```
 
 #### DocsOptions
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable/disable docs generation |
-| `src` | `string[]` | `['./src']` | Source directories to scan |
-| `out` | `string` | `'docs/api'` | Output directory |
-| `include` | `string[]` | `['**/*.ts', '**/*.tsx']` | Files to include |
-| `exclude` | `string[]` | `['**/*.test.*', '**/*.spec.*']` | Files to exclude |
-| `format` | `'markdown' \| 'json' \| 'html'` | `'markdown'` | Output format |
-| `private` | `boolean` | `false` | Include @private members |
-| `toc` | `boolean` | `true` | Generate table of contents |
-| `groupBy` | `'file' \| 'category'` | `'file'` | Group docs by file or category |
+| Option    | Type                             | Default                          | Description                    |
+| --------- | -------------------------------- | -------------------------------- | ------------------------------ |
+| `enabled` | `boolean`                        | `true`                           | Enable/disable docs generation |
+| `src`     | `string[]`                       | `['./src']`                      | Source directories to scan     |
+| `out`     | `string`                         | `'docs/api'`                     | Output directory               |
+| `include` | `string[]`                       | `['**/*.ts', '**/*.tsx']`        | Files to include               |
+| `exclude` | `string[]`                       | `['**/*.test.*', '**/*.spec.*']` | Files to exclude               |
+| `format`  | `'markdown' \| 'json' \| 'html'` | `'markdown'`                     | Output format                  |
+| `private` | `boolean`                        | `false`                          | Include @private members       |
+| `toc`     | `boolean`                        | `true`                           | Generate table of contents     |
+| `groupBy` | `'file' \| 'category'`           | `'file'`                         | Group docs by file or category |
 
 ## Disabling Docs Generation
 
 ```ts
 oxContent({
   docs: false, // Opt-out of builtin docs generation
-})
+});
 ```
 
 ### search
@@ -155,21 +155,21 @@ oxContent({
     enabled: true,
     limit: 10,
     prefix: true,
-    placeholder: 'Search documentation...',
-    hotkey: '/',
+    placeholder: "Search documentation...",
+    hotkey: "/",
   },
-})
+});
 ```
 
 #### SearchOptions
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable/disable search functionality |
-| `limit` | `number` | `10` | Maximum number of search results |
-| `prefix` | `boolean` | `true` | Enable prefix matching for autocomplete |
-| `placeholder` | `string` | `'Search documentation...'` | Placeholder text for search input |
-| `hotkey` | `string` | `'/'` | Keyboard shortcut to open search |
+| Option        | Type      | Default                     | Description                             |
+| ------------- | --------- | --------------------------- | --------------------------------------- |
+| `enabled`     | `boolean` | `true`                      | Enable/disable search functionality     |
+| `limit`       | `number`  | `10`                        | Maximum number of search results        |
+| `prefix`      | `boolean` | `true`                      | Enable prefix matching for autocomplete |
+| `placeholder` | `string`  | `'Search documentation...'` | Placeholder text for search input       |
+| `hotkey`      | `string`  | `'/'`                       | Keyboard shortcut to open search        |
 
 #### How It Works
 
@@ -190,7 +190,7 @@ oxContent({
 ```ts
 oxContent({
   search: false, // Disable built-in search
-})
+});
 ```
 
 ### Using with Custom Search UI
@@ -198,10 +198,10 @@ oxContent({
 You can access the search index programmatically via the virtual module:
 
 ```ts
-import { search, searchOptions } from 'virtual:ox-content/search';
+import { search, searchOptions } from "virtual:ox-content/search";
 
 // Search the index
-const results = await search('query text', { limit: 5 });
+const results = await search("query text", { limit: 5 });
 
 // Results include:
 // - id: document ID
@@ -222,8 +222,8 @@ Markdown files are hot-reloaded during development. The plugin sends custom HMR 
 ```ts
 // Client-side
 if (import.meta.hot) {
-  import.meta.hot.on('ox-content:update', (data) => {
-    console.log('Markdown updated:', data.file);
+  import.meta.hot.on("ox-content:update", (data) => {
+    console.log("Markdown updated:", data.file);
   });
 }
 ```
@@ -237,10 +237,10 @@ The plugin provides virtual modules:
 - `virtual:ox-content/search` - Search functionality
 
 ```ts
-import config from 'virtual:ox-content/config';
-import { useMarkdown } from 'virtual:ox-content/runtime';
-import { search, searchOptions } from 'virtual:ox-content/search';
+import config from "virtual:ox-content/config";
+import { useMarkdown } from "virtual:ox-content/runtime";
+import { search, searchOptions } from "virtual:ox-content/search";
 
 // Use the search function
-const results = await search('query', { limit: 10 });
+const results = await search("query", { limit: 10 });
 ```

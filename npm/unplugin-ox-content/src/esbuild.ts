@@ -2,9 +2,9 @@
  * esbuild plugin export for @ox-content/unplugin
  */
 
-import unplugin from "./index";
+import oxContentUnplugin from "./index";
 import type { OxContentOptions, ResolvedOptions, TocEntry, TransformResult } from "./types";
 
-export default unplugin.esbuild;
-export { unplugin };
+export default oxContentUnplugin.esbuild;
+export { oxContentUnplugin as unplugin };
 export type { OxContentOptions, ResolvedOptions, TocEntry, TransformResult };

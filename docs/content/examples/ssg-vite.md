@@ -17,17 +17,17 @@ npm install @ox-content/vite-plugin
 Create or update `vite.config.ts`:
 
 ```typescript
-import { defineConfig } from 'vite';
-import { oxContent } from '@ox-content/vite-plugin';
+import { defineConfig } from "vite";
+import { oxContent } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   plugins: [
     oxContent({
-      srcDir: 'docs',
-      outDir: 'dist',
+      srcDir: "docs",
+      outDir: "dist",
       gfm: true,
       highlight: true,
-      highlightTheme: 'github-dark',
+      highlightTheme: "github-dark",
       // SSG is enabled by default
     }),
   ],
@@ -54,9 +54,9 @@ This is my first page with **Ox Content**.
 Import and use in your application:
 
 ```typescript
-import content from './docs/hello.md';
+import content from "./docs/hello.md";
 
-document.getElementById('app').innerHTML = content.html;
+document.getElementById("app").innerHTML = content.html;
 ```
 
 ### Using SSG (Static HTML Generation)
@@ -85,9 +85,9 @@ If you only want to use Ox Content as a module transformer (without generating s
 
 ```typescript
 oxContent({
-  srcDir: 'docs',
+  srcDir: "docs",
   ssg: false, // Disable SSG
-})
+});
 ```
 
 ## Bare Mode
@@ -96,11 +96,11 @@ For benchmarking or when using custom post-processing, use bare mode to output m
 
 ```typescript
 oxContent({
-  srcDir: 'docs',
+  srcDir: "docs",
   ssg: {
     bare: true,
   },
-})
+});
 ```
 
 ## Features

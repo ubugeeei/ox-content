@@ -1,12 +1,12 @@
 {
   "name": "ox-content-integ-react-example",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview"
   },
   "dependencies": {
     "@ox-content/islands": "workspace:*",
@@ -14,10 +14,11 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@ox-content/vite-plugin-react": "workspace:*",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "vite": "catalog:",
-    "@ox-content/vite-plugin-react": "workspace:*"
+    "vite-plus": "catalog:"
   }
 }

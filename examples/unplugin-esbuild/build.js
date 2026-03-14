@@ -1,5 +1,5 @@
-import * as esbuild from "esbuild"
-import oxContent from "@ox-content/unplugin/esbuild"
+import * as esbuild from "esbuild";
+import oxContent from "@ox-content/unplugin/esbuild";
 
 await esbuild.build({
   entryPoints: ["src/index.ts"],
@@ -13,6 +13,6 @@ await esbuild.build({
       toc: true,
     }),
   ],
-})
+});
 
-console.log("Build complete!")
+console.log("Build complete!");

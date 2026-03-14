@@ -1,7 +1,7 @@
 <script setup>
-import { useData } from 'vitepress'
+import { useData } from "vitepress";
 
-const { page, frontmatter } = useData()
+const { page, frontmatter } = useData();
 </script>
 
 <template>

@@ -2,46 +2,12 @@
   "name": "@ox-content/vite-plugin-svelte",
   "version": "1.0.0-alpha.0",
   "description": "Svelte integration for Ox Content - Embed Svelte components in Markdown",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "typecheck": "tsgo --noEmit"
-  },
-  "peerDependencies": {
-    "svelte": "catalog:",
-    "vite": "catalog:"
-  },
-  "dependencies": {
-    "@ox-content/islands": "workspace:*",
-    "@ox-content/vite-plugin": "workspace:*"
-  },
-  "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "catalog:",
-    "@types/node": "catalog:",
-    "svelte": "catalog:",
-    "tsdown": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:"
-  },
   "keywords": [
-    "vite",
-    "vite-plugin",
-    "svelte",
     "markdown",
-    "ox-content"
+    "ox-content",
+    "svelte",
+    "vite",
+    "vite-plugin"
   ],
   "license": "MIT",
   "author": "ubugeeei",
@@ -50,8 +16,43 @@
     "url": "https://github.com/ubugeeei/ox-content.git",
     "directory": "npm/vite-plugin-ox-content-svelte"
   },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
   "publishConfig": {
-    "provenance": true,
-    "access": "public"
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@ox-content/islands": "workspace:*",
+    "@ox-content/vite-plugin": "workspace:*"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "svelte": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "svelte": "catalog:",
+    "vite": "catalog:"
   }
 }

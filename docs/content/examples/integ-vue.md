@@ -6,25 +6,25 @@ Demonstrates embedding Vue 3 components in Markdown.
 
 ```bash
 cd examples/integ-vue
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 ## Configuration
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { oxContentVue } from '@ox-content/vite-plugin-vue';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { oxContentVue } from "@ox-content/vite-plugin-vue";
 
 export default defineConfig({
   plugins: [
     vue(),
     oxContentVue({
-      srcDir: 'docs',
+      srcDir: "docs",
       // Auto-discover all Vue components
-      components: './src/components/*.vue',
+      components: "./src/components/*.vue",
     }),
   ],
 });
@@ -38,7 +38,7 @@ Interactive counter with increment/decrement buttons.
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const props = defineProps<{
   initial?: number;
@@ -61,7 +61,7 @@ Styled alert box with different types.
 ```vue
 <script setup lang="ts">
 defineProps<{
-  type?: 'info' | 'warning' | 'error' | 'success';
+  type?: "info" | "warning" | "error" | "success";
 }>();
 </script>
 

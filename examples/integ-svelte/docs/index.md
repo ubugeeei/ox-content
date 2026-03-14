@@ -27,15 +27,15 @@ Components work seamlessly!
 
 ```ts
 // vite.config.ts
-import { oxContentSvelte } from '@ox-content/vite-plugin-svelte';
+import { oxContentSvelte } from "@ox-content/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [
     svelte(),
     oxContentSvelte({
       components: {
-        Counter: './src/components/Counter.svelte',
-        Alert: './src/components/Alert.svelte',
+        Counter: "./src/components/Counter.svelte",
+        Alert: "./src/components/Alert.svelte",
       },
     }),
   ],

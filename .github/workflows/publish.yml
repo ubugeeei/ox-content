@@ -190,10 +190,10 @@ jobs:
         run: pnpm install
 
       - name: Build NAPI (for local use)
-        run: pnpm -C crates/ox_content_napi build
+        run: pnpm exec vp run --workspace-root build:napi
 
       - name: Build packages
-        run: pnpm -r --filter './npm/*' run build
+        run: pnpm exec vp run --workspace-root build:npm
 
       - name: Determine npm tag
         id: npm-tag

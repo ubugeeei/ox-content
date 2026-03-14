@@ -34,14 +34,14 @@ Operation completed successfully!
 <CodeDemo language="typescript" code="import { oxContentVue } from '@ox-content/vite-plugin-vue';
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    oxContentVue({
-      components: {
-        Counter: './src/components/Counter.vue',
-      },
-    }),
-  ],
+plugins: [
+vue(),
+oxContentVue({
+components: {
+Counter: './src/components/Counter.vue',
+},
+}),
+],
 });" />
 
 ## How It Works

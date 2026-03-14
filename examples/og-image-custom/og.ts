@@ -27,15 +27,7 @@ function escapeHtml(str: string): string {
 }
 
 export default function ogTemplate(props: OgImageProps): string {
-  const {
-    title,
-    description,
-    siteName,
-    author,
-    tags,
-    category,
-    coverColor = "#6366f1",
-  } = props;
+  const { title, description, siteName, author, tags, category, coverColor = "#6366f1" } = props;
 
   const categoryBadge = category
     ? `<span style="display:inline-block;background:${coverColor};color:#fff;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">${escapeHtml(category)}</span>`

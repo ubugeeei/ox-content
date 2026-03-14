@@ -4,15 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build"
+    "build": "vp build"
   },
   "dependencies": {
-    "vue": "catalog:",
     "@ox-content/vite-plugin": "workspace:*",
-    "@ox-content/vite-plugin-vue": "workspace:*"
+    "@ox-content/vite-plugin-vue": "workspace:*",
+    "vue": "catalog:"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

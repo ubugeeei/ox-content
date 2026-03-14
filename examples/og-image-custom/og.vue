@@ -6,21 +6,24 @@
 -->
 <script setup lang="ts">
 const props = defineProps<{
-  title: string
-  description?: string
-  siteName?: string
-  author?: string
-  tags?: string[]
-  category?: string
-  coverColor?: string
-}>()
+  title: string;
+  description?: string;
+  siteName?: string;
+  author?: string;
+  tags?: string[];
+  category?: string;
+  coverColor?: string;
+}>();
 
-const color = props.coverColor ?? '#6366f1'
+const color = props.coverColor ?? "#6366f1";
 </script>
 
 <template>
   <div class="og">
-    <div class="accent-bar" :style="{ background: `linear-gradient(90deg, ${color}, ${color}cc)` }" />
+    <div
+      class="accent-bar"
+      :style="{ background: `linear-gradient(90deg, ${color}, ${color}cc)` }"
+    />
     <div class="body">
       <span v-if="category" class="category" :style="{ background: color }">
         {{ category }}
@@ -28,9 +31,7 @@ const color = props.coverColor ?? '#6366f1'
       <h1 class="title">{{ title }}</h1>
       <p v-if="description" class="description">{{ description }}</p>
       <div v-if="tags?.length" class="tags">
-        <span v-for="tag in tags" :key="tag" class="tag" :style="{ color }">
-          #{{ tag }}
-        </span>
+        <span v-for="tag in tags" :key="tag" class="tag" :style="{ color }"> #{{ tag }} </span>
       </div>
     </div>
     <div class="footer">
@@ -52,7 +53,10 @@ const color = props.coverColor ?? '#6366f1'
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 .accent-bar {

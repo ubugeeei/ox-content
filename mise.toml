@@ -7,242 +7,215 @@ RUST_BACKTRACE = "1"
 
 [tasks.build]
 description = "Build everything (Rust + NAPI + npm packages)"
-depends = ["build:rust", "build:napi", "build:npm"]
+run = "pnpm exec vp run --workspace-root build"
 
 [tasks."build:rust"]
 description = "Build Rust crates"
-run = "cargo build --workspace"
+run = "pnpm exec vp run --workspace-root build:rust"
 
 [tasks."build:rust-release"]
 description = "Build Rust crates in release mode"
-run = "cargo build --workspace --release"
+run = "pnpm exec vp run --workspace-root build:rust-release"
 
 [tasks."build:napi"]
 description = "Build NAPI bindings"
-dir = "crates/ox_content_napi"
-run = "pnpm build"
+run = "pnpm exec vp run --workspace-root build:napi"
 
 [tasks."build:npm"]
 description = "Build npm packages"
-depends = ["build:napi"]
-run = "pnpm -r --filter './npm/*' run build"
+run = "pnpm exec vp run --workspace-root build:npm"
 
 [tasks."build:wasm"]
 description = "Build WASM bindings"
-dir = "crates/ox_content_wasm"
-run = "wasm-pack build --target web --out-dir pkg"
+run = "pnpm exec vp run --workspace-root build:wasm"
 
 [tasks.test]
 description = "Run all tests (Rust + TypeScript)"
-depends = ["test:rust", "test:ts"]
+run = "pnpm exec vp run --workspace-root test"
 
 [tasks."test:rust"]
 description = "Run Rust tests"
-run = "cargo test --workspace"
+run = "pnpm exec vp run --workspace-root test:rust"
 
 [tasks."test:rust-verbose"]
 description = "Run Rust tests with verbose output"
-run = "cargo test --workspace -- --nocapture"
+run = "pnpm exec vp run --workspace-root test:rust-verbose"
 
 [tasks."test:ts"]
-description = "Run TypeScript tests with vitest"
-run = "pnpm test"
+description = "Run JavaScript tests with Vite+"
+run = "pnpm exec vp run --workspace-root test:ts"
 
 [tasks.check]
 description = "Check all (Rust + TypeScript)"
-depends = ["check:rust", "check:ts"]
+run = "pnpm exec vp run --workspace-root check"
 
 [tasks."check:rust"]
 description = "Check Rust crates"
-run = "cargo check --workspace"
+run = "pnpm exec vp run --workspace-root check:rust"
 
 [tasks.clippy]
 description = "Run clippy on all crates"
-run = "cargo clippy --workspace --all-targets -- -D warnings"
+run = "pnpm exec vp run --workspace-root clippy"
 
 [tasks.fmt]
 description = "Format all code (Rust + TypeScript)"
-depends = ["fmt:rust", "fmt:ts"]
+run = "pnpm exec vp run --workspace-root fmt"
 
 [tasks."fmt:rust"]
 description = "Format Rust code"
-run = "cargo fmt --all"
+run = "pnpm exec vp run --workspace-root fmt:rust"
 
 [tasks."fmt:check"]
 description = "Check all formatting"
-depends = ["fmt:rust-check", "fmt:ts-check"]
+run = "pnpm exec vp run --workspace-root fmt:check"
 
 [tasks."fmt:rust-check"]
 description = "Check Rust formatting"
-run = "cargo fmt --all -- --check"
+run = "pnpm exec vp run --workspace-root fmt:rust-check"
 
 [tasks."fmt:ts"]
-description = "Format TypeScript code"
-run = "pnpm fmt"
+description = "Format JavaScript and TypeScript code"
+run = "pnpm exec vp run --workspace-root fmt:ts"
 
 [tasks."fmt:ts-check"]
-description = "Check TypeScript formatting"
-run = "pnpm fmt:check"
+description = "Check JavaScript and TypeScript formatting"
+run = "pnpm exec vp run --workspace-root fmt:ts-check"
 
 [tasks.lint]
 description = "Run all lints (Rust + TypeScript)"
-depends = ["lint:rust", "lint:ts"]
+run = "pnpm exec vp run --workspace-root lint"
 
 [tasks."lint:rust"]
 description = "Run Rust lints (clippy)"
-run = "cargo clippy --workspace --all-targets -- -D warnings"
+run = "pnpm exec vp run --workspace-root lint:rust"
 
 [tasks."lint:ts"]
-description = "Run TypeScript lints (oxlint)"
-run = "pnpm lint"
+description = "Run JavaScript and TypeScript lints (Vite+)"
+run = "pnpm exec vp run --workspace-root lint:ts"
 
 [tasks."check:ts"]
-description = "Run TypeScript type check"
-run = "pnpm check"
+description = "Run JavaScript and TypeScript checks"
+run = "pnpm exec vp run --workspace-root check:ts"
 
 [tasks.bench]
 description = "Run all benchmarks (Rust + JS)"
-depends = ["bench:rust", "bench:parse", "bench:bundle"]
+run = "pnpm exec vp run --workspace-root bench"
 
 [tasks."bench:rust"]
 description = "Run Rust benchmarks"
-run = "cargo bench --workspace"
+run = "pnpm exec vp run --workspace-root bench:rust"
 
 [tasks."bench:parse"]
 description = "Run parse/render speed benchmarks"
-run = "pnpm -r --filter='ox-content-bundle-size-benchmark' run benchmark:parse"
+run = "pnpm exec vp run --workspace-root bench:parse"
 
 [tasks."bench:bundle"]
 description = "Run bundle size benchmarks"
-run = "pnpm -r --filter='ox-content-bundle-size-benchmark' run benchmark"
+run = "pnpm exec vp run --workspace-root bench:bundle"
 
 [tasks."doc:cargo"]
 description = "Generate Rust documentation"
-run = "cargo doc --workspace --no-deps"
+run = "pnpm exec vp run --workspace-root doc:cargo"
 
 [tasks."doc:cargo-open"]
 description = "Generate and open Rust documentation"
-run = "cargo doc --workspace --no-deps --open"
+run = "pnpm exec vp run --workspace-root doc:cargo-open"
 
 [tasks.clean]
 description = "Clean build artifacts"
-run = "cargo clean"
+run = "pnpm exec vp run --workspace-root clean"
 
 [tasks.napi-prepublish]
 description = "Prepare NAPI package for publishing"
-dir = "crates/ox_content_napi"
-run = "napi prepublish"
+run = "pnpm exec vp run --workspace-root napi-prepublish"
 
 [tasks.ci]
 description = "Run CI checks"
-depends = ["fmt:check", "lint", "test"]
+run = "pnpm exec vp run --workspace-root ci"
 
 [tasks.ready]
 description = "Run all checks before committing"
-depends = ["fmt", "lint", "test"]
+run = "pnpm exec vp run --workspace-root ready"
 
 [tasks.coverage]
 description = "Generate test coverage report"
-run = "cargo llvm-cov --workspace --html"
+run = "pnpm exec vp run --workspace-root coverage"
 
 [tasks.setup]
 description = "Setup development environment"
-run = """
-rustup component add clippy rustfmt
-cargo install cargo-watch cargo-llvm-cov
-"""
+run = "pnpm exec vp run --workspace-root setup"
 
 [tasks.watch]
 description = "Watch for changes and run tests"
-run = "cargo watch -x test"
+run = "pnpm exec vp run --workspace-root watch"
 
 [tasks.watch-check]
 description = "Watch for changes and run check"
-run = "cargo watch -x check"
+run = "pnpm exec vp run --workspace-root watch-check"
 
 [tasks.playground]
 description = "Start the playground"
-dir = "examples/playground"
-run = "pnpm run dev"
+run = "pnpm exec vp run --workspace-root playground"
 
 [tasks.integ-vue]
 description = "Start Vue integration example"
-dir = "examples/integ-vue"
-run = "pnpm run dev"
+run = "pnpm exec vp run --workspace-root integ-vue"
 
 [tasks.integ-react]
 description = "Start React integration example"
-dir = "examples/integ-react"
-run = "pnpm run dev"
+run = "pnpm exec vp run --workspace-root integ-react"
 
 [tasks.integ-svelte]
 description = "Start Svelte integration example"
-dir = "examples/integ-svelte"
-run = "pnpm run dev"
+run = "pnpm exec vp run --workspace-root integ-svelte"
 
 [tasks.ssg-vite]
 description = "Start Vite SSG example"
-dir = "examples/ssg-vite"
-run = "pnpm run dev"
+run = "pnpm exec vp run --workspace-root ssg-vite"
 
 [tasks.plugin-markdown-it]
 description = "Run markdown-it plugin example"
-dir = "examples/plugin-markdown-it"
-run = "pnpm run start"
+run = "pnpm exec vp run --workspace-root plugin-markdown-it"
 
 [tasks.plugin-rehype]
 description = "Run rehype plugin example"
-dir = "examples/plugin-rehype"
-run = "pnpm run start"
+run = "pnpm exec vp run --workspace-root plugin-rehype"
 
 [tasks.gen-source-docs]
 description = "Run source docs generator example"
-dir = "examples/gen-source-docs"
-run = "pnpm run dev"
+run = "pnpm exec vp run --workspace-root gen-source-docs"
 
 [tasks."dev:docs"]
 description = "Start documentation dev server"
-depends = ["build:npm"]
-dir = "docs"
-run = "pnpm dev"
+run = "pnpm exec vp run --workspace-root dev:docs"
 
 [tasks."dev:playground"]
 description = "Start playground dev server"
-dir = "examples/playground"
-run = "pnpm dev"
+run = "pnpm exec vp run --workspace-root dev:playground"
 
 [tasks.dev]
 description = "Start documentation and playground dev servers"
-depends = ["build:npm"]
-run = """
-trap 'kill 0' EXIT INT TERM
-pnpm --dir docs dev &
-pnpm --dir examples/playground dev &
-wait
-"""
+run = "pnpm exec vp run --workspace-root dev"
 
 [tasks.dev-build]
 description = "Build documentation site"
-depends = ["build:npm"]
-dir = "docs"
-run = "pnpm build"
+run = "pnpm exec vp run --workspace-root dev-build"
 
 [tasks.dev-preview]
 description = "Preview documentation build"
-dir = "docs"
-run = "pnpm preview"
+run = "pnpm exec vp run --workspace-root dev-preview"
 
 [tasks.install]
-description = "Install all dependencies with pnpm"
-run = "pnpm install"
+description = "Install workspace dependencies with Vite+"
+run = "pnpm --package=vite-plus dlx vp run --workspace-root install"
 
 [tasks.release]
 description = "Release a new version"
 usage = '''
 arg "<version>" help="Version bump type (alpha|beta|patch|minor|major) or explicit version (x.y.z)"
 '''
-run = "node --experimental-strip-types scripts/release.ts ${usage_version}"
+run = "pnpm exec vp run --workspace-root release -- ${usage_version}"
 
 [tasks.examples-install]
 description = "Install all example dependencies"
-depends = ["install"]
+run = "pnpm exec vp run --workspace-root examples-install"

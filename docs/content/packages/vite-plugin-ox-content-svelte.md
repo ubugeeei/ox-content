@@ -12,17 +12,17 @@ pnpm add @ox-content/vite-plugin-svelte svelte @sveltejs/vite-plugin-svelte
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
-import { oxContentSvelte } from '@ox-content/vite-plugin-svelte';
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { oxContentSvelte } from "@ox-content/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [
     svelte(),
     oxContentSvelte({
-      srcDir: 'docs',
+      srcDir: "docs",
       // Auto-discover components with glob pattern
-      components: './src/components/*.svelte',
+      components: "./src/components/*.svelte",
     }),
   ],
 });
@@ -40,13 +40,14 @@ Components to register for use in Markdown. Supports:
 
 ```ts
 // Single pattern
-components: './src/components/*.svelte'
+components: "./src/components/*.svelte";
 
 // Multiple patterns
-components: ['./src/components/*.svelte', './src/ui/*.svelte']
+components: ["./src/components/*.svelte", "./src/ui/*.svelte"];
 ```
 
 Component names are derived from file names in PascalCase:
+
 - `counter.svelte` → `Counter`
 - `my-button.svelte` → `MyButton`
 
@@ -116,8 +117,8 @@ And an alert:
 - `virtual:ox-content-svelte/components` - Registered components
 
 ```ts
-import { mount, unmount } from 'virtual:ox-content-svelte/runtime';
-import components from 'virtual:ox-content-svelte/components';
+import { mount, unmount } from "virtual:ox-content-svelte/runtime";
+import components from "virtual:ox-content-svelte/components";
 ```
 
 ## HMR

@@ -5,8 +5,8 @@
  * for static site generation.
  */
 
-import { defineConfig } from "vite"
-import { oxContent } from "@ox-content/vite-plugin"
+import { defineConfig } from "vite-plus";
+import { oxContent } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   plugins: [
@@ -49,4 +49,4 @@ export default defineConfig({
     ssr: false,
     outDir: "dist",
   },
-})
+});

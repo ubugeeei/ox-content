@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const props = defineProps<{
   code: string;
@@ -20,9 +20,9 @@ async function copyCode() {
 <template>
   <div class="code-demo">
     <div class="code-header">
-      <span class="language">{{ language ?? 'code' }}</span>
+      <span class="language">{{ language ?? "code" }}</span>
       <button @click="copyCode" class="copy-btn">
-        {{ copied ? '✓ Copied!' : 'Copy' }}
+        {{ copied ? "✓ Copied!" : "Copy" }}
       </button>
     </div>
     <pre><code>{{ code }}</code></pre>
@@ -73,7 +73,7 @@ pre {
 }
 
 code {
-  font-family: 'Fira Code', 'Consolas', monospace;
+  font-family: "Fira Code", "Consolas", monospace;
   font-size: 0.9rem;
   color: #d4d4d4;
 }

@@ -1,5 +1,5 @@
-import oxContent from "@ox-content/unplugin/rollup"
-import typescript from "@rollup/plugin-typescript"
+import oxContent from "@ox-content/unplugin/rollup";
+import typescript from "@rollup/plugin-typescript";
 
 export default {
   input: "src/index.ts",
@@ -14,4 +14,4 @@ export default {
     }),
     typescript(),
   ],
-}
+};

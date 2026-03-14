@@ -47,8 +47,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Lint (oxlint)
-        run: pnpm lint
+      - name: Lint (Vite+)
+        run: pnpm exec vp run --workspace-root lint:ts
 
   test-rust:
     name: Test (Rust)
@@ -89,10 +89,10 @@ jobs:
         run: pnpm install
 
       - name: Build NAPI
-        run: pnpm -C crates/ox_content_napi build
+        run: pnpm exec vp run --workspace-root build:napi
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm exec vp run --workspace-root test:ts
 
   build:
     name: Build
@@ -120,14 +120,8 @@ jobs:
       - name: Install Chromium for mermaid-cli
         run: pnpm --filter @ox-content/vite-plugin exec puppeteer browsers install chrome-headless-shell
 
-      - name: Build NAPI
-        run: pnpm -C crates/ox_content_napi build
-
-      - name: Build packages
-        run: pnpm -r --filter './npm/*' run build
-
       - name: Build documentation site
-        run: pnpm -C docs build
+        run: pnpm exec vp run --workspace-root dev-build
 
       - name: Typecheck
-        run: pnpm check
+        run: pnpm exec vp run --workspace-root check:ts

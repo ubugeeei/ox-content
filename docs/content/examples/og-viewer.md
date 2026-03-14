@@ -19,7 +19,7 @@ To disable it:
 ```ts
 oxContent({
   ogViewer: false,
-})
+});
 ```
 
 ## Features
@@ -27,6 +27,7 @@ oxContent({
 ### Metadata Display
 
 Each page card shows:
+
 - File path and URL path
 - Title, description, author, tags
 - OG image URL (computed from your config)
@@ -35,17 +36,18 @@ Each page card shows:
 
 OG Viewer checks each page for common issues:
 
-| Check | Level | Condition |
-|-------|-------|-----------|
-| Missing title | Error | No title in frontmatter or `# heading` |
-| Missing description | Warning | No `description` in frontmatter |
-| Title too long | Warning | More than 70 characters |
-| Description too long | Warning | More than 200 characters |
-| No siteUrl | Warning | ogImage enabled but `ssg.siteUrl` not set |
+| Check                | Level   | Condition                                 |
+| -------------------- | ------- | ----------------------------------------- |
+| Missing title        | Error   | No title in frontmatter or `# heading`    |
+| Missing description  | Warning | No `description` in frontmatter           |
+| Title too long       | Warning | More than 70 characters                   |
+| Description too long | Warning | More than 200 characters                  |
+| No siteUrl           | Warning | ogImage enabled but `ssg.siteUrl` not set |
 
 ### Social Card Previews
 
 Two preview modes are rendered for each page:
+
 - **Twitter** - `summary_large_image` card format
 - **Facebook** - Open Graph card format
 

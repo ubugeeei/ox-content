@@ -22,10 +22,10 @@ npm start
 4. Output final HTML
 
 ```javascript
-import { unified } from 'unified';
-import rehypeParse from 'rehype-parse';
-import rehypeStringify from 'rehype-stringify';
-import { parseAndRender } from '@ox-content/napi';
+import { unified } from "unified";
+import rehypeParse from "rehype-parse";
+import rehypeStringify from "rehype-stringify";
+import { parseAndRender } from "@ox-content/napi";
 
 // Get HTML from Ox Content
 const { html } = parseAndRender(markdown, { gfm: true });

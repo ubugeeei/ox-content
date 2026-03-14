@@ -159,15 +159,17 @@ export function oxContentReact(options: ReactIntegrationOptions = {}): PluginOpt
     },
   };
 
-  const basePlugins = oxContent(options);
-  const environmentPlugin = basePlugins.find((p) => p.name === "ox-content:environment");
+  const basePlugins = oxContent(options).flatMap((plugin) =>
+    Array.isArray(plugin) ? plugin : [plugin],
+  ) as Plugin[];
+  const environmentPlugin = basePlugins.find((plugin) => plugin.name === "ox-content:environment");
+  const plugins: Plugin[] = [reactTransformPlugin, reactEnvironmentPlugin, reactHmrPlugin];
 
-  return [
-    reactTransformPlugin,
-    reactEnvironmentPlugin,
-    reactHmrPlugin,
-    ...(environmentPlugin ? [environmentPlugin] : []),
-  ];
+  if (environmentPlugin) {
+    plugins.push(environmentPlugin);
+  }
+
+  return plugins;
 }
 
 function resolveReactOptions(

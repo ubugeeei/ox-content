@@ -220,6 +220,7 @@ impl Span {
 ```
 
 This enables:
+
 - Error messages with precise source locations
 - Source maps for debugging
 - Syntax highlighting in editors
@@ -423,13 +424,13 @@ pub trait Renderer {
 
 The renderer properly escapes HTML entities:
 
-| Character | Entity |
-|-----------|--------|
-| `&` | `&amp;` |
-| `<` | `&lt;` |
-| `>` | `&gt;` |
-| `"` | `&quot;` |
-| `'` | `&#39;` |
+| Character | Entity   |
+| --------- | -------- |
+| `&`       | `&amp;`  |
+| `<`       | `&lt;`   |
+| `>`       | `&gt;`   |
+| `"`       | `&quot;` |
+| `'`       | `&#39;`  |
 
 URL encoding is also handled for link/image URLs.
 
@@ -458,6 +459,7 @@ graph TB
 ### Thread Safety
 
 The NAPI bindings are designed to be thread-safe:
+
 - Each parse operation creates its own allocator
 - No shared mutable state between calls
 
@@ -469,14 +471,14 @@ Ox Content integrates with Vite's Environment API for SSG:
 
 ```typescript
 // Creates a server-side environment for Markdown processing
-const mdEnv = new Environment('markdown', {
+const mdEnv = new Environment("markdown", {
   // Custom module resolution for .md files
   resolve: {
-    extensions: ['.md'],
+    extensions: [".md"],
   },
   // Transform .md to JS modules
   transform: async (code, id) => {
-    if (id.endsWith('.md')) {
+    if (id.endsWith(".md")) {
       const result = await parseAndRender(code);
       return `export default ${JSON.stringify(result)}`;
     }
@@ -497,23 +499,23 @@ The Vite plugin supports HMR for Markdown files:
 
 ### Memory Usage
 
-| Content Size | Traditional Parser | Ox Content |
-|-------------|-------------------|------------|
-| 1 KB | ~50 KB heap | ~8 KB arena |
-| 10 KB | ~500 KB heap | ~80 KB arena |
-| 100 KB | ~5 MB heap | ~800 KB arena |
+| Content Size | Traditional Parser | Ox Content    |
+| ------------ | ------------------ | ------------- |
+| 1 KB         | ~50 KB heap        | ~8 KB arena   |
+| 10 KB        | ~500 KB heap       | ~80 KB arena  |
+| 100 KB       | ~5 MB heap         | ~800 KB arena |
 
 ### Parse and Render Speed
 
 Latest local `parse-benchmark` run on 2026-03-07 with Node `v24.14.0` on Apple M2 Max:
 
-| Library | Parse Only (48.7 KB) | Parse + Render (48.7 KB) |
-|---------|---------------------:|-------------------------:|
-| `@ox-content/napi` | 2463 ops/sec | 2122 ops/sec |
-| `md4w (md4c)` | 735 ops/sec | 1903 ops/sec |
-| `markdown-it` | 639 ops/sec | 532 ops/sec |
-| `marked` | 362 ops/sec | 345 ops/sec |
-| `remark` | 32 ops/sec | 28 ops/sec |
+| Library            | Parse Only (48.7 KB) | Parse + Render (48.7 KB) |
+| ------------------ | -------------------: | -----------------------: |
+| `@ox-content/napi` |         2463 ops/sec |             2122 ops/sec |
+| `md4w (md4c)`      |          735 ops/sec |             1903 ops/sec |
+| `markdown-it`      |          639 ops/sec |              532 ops/sec |
+| `marked`           |          362 ops/sec |              345 ops/sec |
+| `remark`           |           32 ops/sec |               28 ops/sec |
 
 This benchmark uses `node benchmarks/bundle-size/parse-benchmark.mjs`. The comparison set now includes `md4w (md4c)` by default, and `Bun.markdown.html` is measured automatically when `bun` is available on the host.
 

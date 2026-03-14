@@ -1,7 +1,7 @@
-import { performance } from "node:perf_hooks"
+import { performance } from "node:perf_hooks";
 
 if (!globalThis.Bun?.markdown) {
-  throw new Error("Bun.markdown is not available in this runtime")
+  throw new Error("Bun.markdown is not available in this runtime");
 }
 
 const sampleMarkdown = `
@@ -37,48 +37,47 @@ Here's a [link](https://example.com) and an image: ![alt](image.png)
 ---
 
 Final paragraph with \`inline code\` and more text.
-`
+`;
 
 const sizes = {
   small: sampleMarkdown,
   medium: Array(10).fill(sampleMarkdown).join("\n\n"),
   large: Array(100).fill(sampleMarkdown).join("\n\n"),
-}
+};
 
 function benchmark(name, fn, input, iterations = 100) {
   for (let i = 0; i < 5; i++) {
-    fn(input)
+    fn(input);
   }
 
-  const start = performance.now()
+  const start = performance.now();
   for (let i = 0; i < iterations; i++) {
-    fn(input)
+    fn(input);
   }
-  const elapsed = performance.now() - start
+  const elapsed = performance.now() - start;
 
-  const avgMs = elapsed / iterations
-  const opsPerSec = 1000 / avgMs
+  const avgMs = elapsed / iterations;
+  const opsPerSec = 1000 / avgMs;
 
   return {
     name,
     opsPerSec,
     avgMs,
     throughputMBs: (input.length / 1024 / 1024) * opsPerSec,
-  }
+  };
 }
 
-const render = {}
+const render = {};
 
 for (const [sizeName, content] of Object.entries(sizes)) {
-  const iterations =
-    sizeName === "large" ? 20 : sizeName === "medium" ? 50 : 100
+  const iterations = sizeName === "large" ? 20 : sizeName === "medium" ? 50 : 100;
 
   render[sizeName] = benchmark(
     "Bun.markdown.html",
     (input) => Bun.markdown.html(input),
     content,
     iterations,
-  )
+  );
 }
 
-console.log(JSON.stringify({ render }))
+console.log(JSON.stringify({ render }));

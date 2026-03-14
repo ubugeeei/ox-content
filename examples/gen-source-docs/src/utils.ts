@@ -16,8 +16,8 @@
  * ```
  */
 export function capitalize(str: string): string {
-  if (!str) return str
-  return str.charAt(0).toUpperCase() + str.slice(1)
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
@@ -34,13 +34,9 @@ export function capitalize(str: string): string {
  * truncate('Hi', 10) // => 'Hi'
  * ```
  */
-export function truncate(
-  str: string,
-  maxLength: number,
-  suffix: string = "...",
-): string {
-  if (str.length <= maxLength) return str
-  return str.slice(0, maxLength) + suffix
+export function truncate(str: string, maxLength: number, suffix: string = "..."): string {
+  if (str.length <= maxLength) return str;
+  return str.slice(0, maxLength) + suffix;
 }
 
 /**
@@ -59,5 +55,5 @@ export function toKebabCase(str: string): string {
   return str
     .replace(/([a-z])([A-Z])/g, "$1-$2")
     .replace(/\s+/g, "-")
-    .toLowerCase()
+    .toLowerCase();
 }

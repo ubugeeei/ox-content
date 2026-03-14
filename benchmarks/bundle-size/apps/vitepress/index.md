@@ -15,9 +15,9 @@ npm install my-package
 ```
 
 ```javascript
-import { hello } from 'my-package';
+import { hello } from "my-package";
 
-hello('World');
+hello("World");
 ```
 
 ## Links

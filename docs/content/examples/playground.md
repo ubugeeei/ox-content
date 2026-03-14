@@ -25,11 +25,11 @@ mise run playground
 The playground currently uses a lightweight browser-side parser shim:
 
 ```ts
-const result = parseMarkdown(input)
+const result = parseMarkdown(input);
 
-preview.innerHTML = result.html
-htmlPane.textContent = result.html
-astPane.textContent = result.ast
+preview.innerHTML = result.html;
+htmlPane.textContent = result.html;
+astPane.textContent = result.ast;
 ```
 
 This keeps the demo easy to run in a plain Vite app while still making the
@@ -46,8 +46,8 @@ mise run playground
 
 # Build for production
 cd examples/playground
-pnpm build
+npm run build
 
 # Preview production build
-pnpm preview
+npm run preview
 ```
