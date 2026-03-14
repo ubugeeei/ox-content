@@ -20,12 +20,12 @@
     "typecheck": "tsgo --noEmit"
   },
   "peerDependencies": {
-    "vite": "catalog:",
-    "vue": "^3.4.0",
     "@vue/compiler-sfc": "^3.4.0",
-    "svelte": "^5.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "svelte": "^5.0.0",
+    "vite": "catalog:",
+    "vue": "^3.4.0"
   },
   "peerDependenciesMeta": {
     "vue": {
@@ -46,12 +46,13 @@
   },
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",
-    "playwright": "^1.50.0",
     "@ox-content/napi": "workspace:*",
-    "rolldown": "^1.0.0-rc.1",
     "glob": "^11.0.0",
+    "playwright": "^1.50.0",
+    "puppeteer": "^23.11.1",
     "rehype-parse": "^9.0.1",
     "rehype-stringify": "^10.0.1",
+    "rolldown": "^1.0.0-rc.1",
     "shiki": "^1.24.0",
     "unified": "^11.0.5"
   },

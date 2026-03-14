@@ -566,6 +566,9 @@ importers:
       playwright:
         specifier: ^1.50.0
         version: 1.58.2
+      puppeteer:
+        specifier: ^23.11.1
+        version: 23.11.1(typescript@5.9.3)
       react:
         specifier: ^19.0.0
         version: 19.2.3
