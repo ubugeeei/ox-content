@@ -24,6 +24,38 @@ export default defineConfig({
 });
 ```
 
+## VitePress Migration
+
+If you already have a VitePress site, you can reuse the common config directly:
+
+```ts
+import { defineConfig } from "vite";
+import vitepressConfig from "./.vitepress/config";
+import { oxContent, fromVitePressConfig } from "@ox-content/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    oxContent(
+      fromVitePressConfig(vitepressConfig, {
+        srcDir: "docs",
+        outDir: "dist",
+      }),
+    ),
+  ],
+});
+```
+
+`fromVitePressConfig()` maps these settings into ox-content:
+
+- `title` / `themeConfig.siteTitle` -> `ssg.siteName`
+- `base` -> `base`
+- `themeConfig.sidebar` -> `ssg.navigation`
+- `themeConfig.socialLinks` / `themeConfig.footer` / `themeConfig.logo` -> `ssg.theme`
+- `themeConfig.search.placeholder` -> `search.placeholder`
+
+For landing pages, VitePress-style `layout: home` frontmatter is treated the same as
+ox-content's `layout: entry`.
+
 ## Options
 
 ### srcDir
