@@ -67,6 +67,30 @@ export default defineConfig({
 });
 ```
 
+### Migrate from VitePress
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import vitepressConfig from "./.vitepress/config";
+import { oxContent, fromVitePressConfig } from "@ox-content/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    oxContent(
+      fromVitePressConfig(vitepressConfig, {
+        srcDir: "docs",
+        outDir: "dist",
+      }),
+    ),
+  ],
+});
+```
+
+`fromVitePressConfig()` reuses common VitePress settings such as `title`, `base`,
+`themeConfig.sidebar`, `themeConfig.socialLinks`, `themeConfig.footer`, and search placeholder.
+`layout: home` frontmatter is also accepted for landing pages during SSG/dev rendering.
+
 ### Framework Integration
 
 ```bash
