@@ -251,3 +251,12 @@ for each fixture so you can distinguish parser cost from transfer-format cost.
 
 This benchmark measures the Rust-side pipeline only. For end-to-end unified bridge evaluation, pair it
 with a JavaScript benchmark that includes the N-API boundary and JS-side mdast materialization.
+
+### Transfer Envelope
+
+Raw transfers now use a payload-kind-aware envelope via `parseTransferRaw(source, kind, options)`.
+`mdast` is the baseline payload and remains the highest-priority path, but the envelope is designed so
+future payloads such as markdown-it token streams can reuse the same zero-copy memory block shape
+instead of introducing a second ad-hoc binary format.
+
+`parseMdastRaw(source, options)` is kept as the mdast-specific compatibility wrapper.
