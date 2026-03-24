@@ -1,28 +1,25 @@
 ---
-title: ox-content mdast js plugin example
+title: Unified Bridge Demo
+badge: mdast bridge
+stage: mdast -> remark -> html
 ---
 
-# mdast JS Plugins
+# Existing unified plugins still run
 
-This example demonstrates **ox-content mdast JS plugins**.
+This page starts as plain Markdown and is then processed by the Ox Content unified bridge.
 
-## How It Works
+## What the bridge changes
 
-mdast plugins receive the parsed tree before HTML rendering.
+- The custom mdast plugin appends a badge to the first heading.
+- An existing remark plugin reads `vfile.data.matter` and appends a summary paragraph.
+- A final ox-content HTML plugin wraps the output in an `<article>` and prepends reading time.
 
-```typescript
-const myPlugin = defineMdastPlugin("annotate-headings", (tree) => {
-  for (const node of tree.children) {
-    if (node.type === "heading") {
-      node.children?.push({ type: "text", value: " (via mdast plugin)" });
-    }
-  }
-});
-```
+## Why this matters
 
-## Benefits
+You can keep the native Ox Content parser, but still run the existing unified ecosystem at the mdast stage.
 
-- mdast-shaped authoring experience
-- Existing unified/remark plugins keep working
-- Native parser speed with JS extensibility
-- TOC stays in sync with transformed headings
+### Signals to look for in the rendered result
+
+- The top heading should include `[mdast bridge]`.
+- The final paragraph should mention the frontmatter title and stage.
+- The table of contents should stay aligned with the transformed heading text.
