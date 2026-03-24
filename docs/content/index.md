@@ -47,6 +47,7 @@ features:
 
 - [Getting Started](./getting-started.md) - Installation and first steps
 - [Architecture](./architecture.md) - Deep dive into the design
+- [unplugin mdast Bridge Example](./examples/unplugin-mdast-bridge.md) - Native parser plus unified-compatible mdast plugins
 - [Theming](./theming.md) - Customize your documentation site
 - [GitHub](https://github.com/ubugeeei/ox-content) - Source code and issues
 

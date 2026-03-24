@@ -65,6 +65,10 @@ Use Ox Content as a markdown-it plugin for existing markdown-it projects.
 
 Use Ox Content as a rehype plugin in the unified ecosystem.
 
+### [unplugin mdast Bridge](./unplugin-mdast-bridge.md)
+
+Run custom mdast plugins and existing remark plugins on top of Ox Content's native parser.
+
 ## Generator Examples
 
 ### [Source Docs Generation](./gen-source-docs.md)
