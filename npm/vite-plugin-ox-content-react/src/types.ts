@@ -31,7 +31,7 @@ export interface ReactIntegrationOptions extends OxContentOptions {
    * // Explicit map
    * components: { Counter: './src/components/Counter.tsx' }
    * ```
-  */
+   */
   components?: ComponentsOption;
   codeAnnotations?: boolean | CodeAnnotationsOptions;
   jsxRuntime?: "automatic" | "classic";

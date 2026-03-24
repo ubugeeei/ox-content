@@ -10,8 +10,12 @@ describe("code annotations", () => {
 
     const highlighted = await highlightCode(html, "github-dark");
 
-    expect(highlighted).toContain('class="shiki github-dark ox-code-block ox-code-block--annotated"');
-    expect(highlighted).toContain('class="line ox-code-line ox-code-line--highlight" data-line="1"');
+    expect(highlighted).toContain(
+      'class="shiki github-dark ox-code-block ox-code-block--annotated"',
+    );
+    expect(highlighted).toContain(
+      'class="line ox-code-line ox-code-line--highlight" data-line="1"',
+    );
     expect(highlighted).toContain('class="line ox-code-line ox-code-line--warning" data-line="2"');
     expect(highlighted).toContain('class="line ox-code-line ox-code-line--error" data-line="3"');
     expect(highlighted).toContain('class="language-ts"');

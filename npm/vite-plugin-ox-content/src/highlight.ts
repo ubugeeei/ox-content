@@ -171,7 +171,9 @@ function normalizeClassName(className: unknown): string[] {
   return [];
 }
 
-function collectLineMetadata(codeElement: Element): Array<{ className: string[]; dataLine?: string }> {
+function collectLineMetadata(
+  codeElement: Element,
+): Array<{ className: string[]; dataLine?: string }> {
   return codeElement.children
     .filter(
       (child): child is Element =>

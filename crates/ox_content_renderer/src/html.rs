@@ -847,8 +847,12 @@ mod tests {
         });
         let html = renderer.render(&doc);
 
-        assert!(html.contains("<pre class=\"ox-code-block ox-code-block--annotated\"><code class=\"language-ts\">"));
-        assert!(html.contains("class=\"line ox-code-line ox-code-line--highlight\" data-line=\"1\""));
+        assert!(html.contains(
+            "<pre class=\"ox-code-block ox-code-block--annotated\"><code class=\"language-ts\">"
+        ));
+        assert!(
+            html.contains("class=\"line ox-code-line ox-code-line--highlight\" data-line=\"1\"")
+        );
         assert!(html.contains("class=\"line ox-code-line ox-code-line--warning\" data-line=\"2\""));
         assert!(html.contains("class=\"line ox-code-line ox-code-line--error\" data-line=\"3\""));
         assert!(!html.contains("file=main.ts"));
