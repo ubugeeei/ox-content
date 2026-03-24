@@ -22,12 +22,12 @@ Returns the cached file path if found, null otherwise.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/cache.ts#L25)**
 
 ```typescript
-export async function getCached(cacheDir: string, key: string): Promise<Buffer | null>;
+export async function getCached(cacheDir: string, key: string): Promise<Buffer | null>
 ```
 
 ### Returns
 
-`Promise<Buffer | null>` -
+`Promise<Buffer | null>` - 
 
 ---
 
@@ -40,11 +40,12 @@ Writes a PNG buffer to the cache.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/cache.ts#L38)**
 
 ```typescript
-export async function writeCache(cacheDir: string, key: string, png: Buffer): Promise<void>;
+export async function writeCache(cacheDir: string, key: string, png: Buffer): Promise<void>
 ```
 
 ### Returns
 
-`Promise<void>` -
+`Promise<void>` - 
 
 ---
+

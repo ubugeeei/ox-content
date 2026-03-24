@@ -55,23 +55,19 @@ This function uses lazy loading to defer the import of NAPI bindings
 until they're actually needed. The bindings are loaded only once and
 cached for subsequent uses. If loading fails (e.g., bindings not built),
 the failure is cached to avoid repeated load attempts.
-
 ## Performance Considerations
-
 The first call to this function may have a slight performance penalty
 due to module loading. Subsequent calls use the cached result and are
 essentially zero-cost.
-
 ## Error Handling
-
 If NAPI bindings are not available (not built, wrong architecture, etc.),
 this function returns `null`. The caller should handle this gracefully
 or provide fallback behavior.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L208)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L220)**
 
 ```typescript
-async function loadNapiBindings(): Promise<NapiBindings | null>;
+async function loadNapiBindings(): Promise<NapiBindings | null>
 ```
 
 ### Returns
@@ -84,7 +80,7 @@ async function loadNapiBindings(): Promise<NapiBindings | null>;
 // Simple check with fallback
 const napi = await loadNapiBindings();
 if (!napi) {
-  console.warn("NAPI bindings not available, using fallback");
+  console.warn('NAPI bindings not available, using fallback');
   return fallbackRender(content);
 }
 // Use Rust implementation
@@ -99,7 +95,7 @@ const result = napi.transform(content, { gfm: true });
 
 SSG-specific transform options.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L351)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L363)**
 
 ---
 
@@ -110,7 +106,7 @@ SSG-specific transform options.
 Parses YAML frontmatter from Markdown content.
 Uses proper YAML parser for full nested object support.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L434)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L448)**
 
 ```typescript
 function parseFrontmatter(source: string):
@@ -124,15 +120,15 @@ function parseFrontmatter(source: string):
 
 Builds nested TOC tree from flat list.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L467)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L481)**
 
 ```typescript
-function buildTocTree(entries: TocEntry[]): TocEntry[];
+function buildTocTree(entries: TocEntry[]): TocEntry[]
 ```
 
 ### Returns
 
-`TocEntry[]` -
+`TocEntry[]` - 
 
 ---
 
@@ -142,7 +138,7 @@ function buildTocTree(entries: TocEntry[]): TocEntry[];
 
 Generates the JavaScript module code.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L492)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L506)**
 
 ---
 
@@ -153,15 +149,15 @@ Generates the JavaScript module code.
 Extracts imports from Markdown content.
 Supports importing components for interactive islands.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L546)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L560)**
 
 ```typescript
-export function extractImports(content: string): string[];
+export function extractImports(content: string): string[]
 ```
 
 ### Returns
 
-`string[]` -
+`string[]` - 
 
 ---
 
@@ -176,24 +172,25 @@ or converted to PNG/JPEG for broader compatibility.
 In the future, custom JS templates can be provided to override
 the default Rust-based template.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L563)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L577)**
 
 ```typescript
 export async function generateOgImageSvg(
   data: OgImageData,
   config?: OgImageConfig,
-): Promise<string | null>;
+  ): Promise<string | null>
 ```
 
 ### Parameters
 
-| Name     | Type            | Description                              |
-| -------- | --------------- | ---------------------------------------- |
-| `data`   | `OgImageData`   | OG image data (title, description, etc.) |
-| `config` | `OgImageConfig` | Optional OG image configuration          |
+| Name | Type | Description |
+|------|------|-------------|
+| `data` | `OgImageData` | OG image data (title, description, etc.) |
+| `config` | `OgImageConfig` | Optional OG image configuration |
 
 ### Returns
 
 `Promise<string | null>` - SVG string or null if NAPI bindings are unavailable
 
 ---
+

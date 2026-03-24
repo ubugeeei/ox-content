@@ -15,11 +15,12 @@ Uses the native Rust NAPI transformMermaid function.
 export async function transformMermaidStatic(
   html: string,
   _options?: MermaidOptions,
-): Promise<string>;
+  ): Promise<string>
 ```
 
 ### Returns
 
-`Promise<string>` -
+`Promise<string>` - 
 
 ---
+

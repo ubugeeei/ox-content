@@ -8,7 +8,6 @@
 
 Creates the Markdown processing environment configuration.
 This environment is used for:
-
 - Server-side rendering of Markdown files
 - Static site generation
 - Pre-rendering at build time
@@ -16,12 +15,12 @@ This environment is used for:
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/environment.ts#L11)**
 
 ```typescript
-export function createMarkdownEnvironment(options: ResolvedOptions): EnvironmentOptions;
+export function createMarkdownEnvironment(options: ResolvedOptions): EnvironmentOptions
 ```
 
 ### Returns
 
-`EnvironmentOptions` -
+`EnvironmentOptions` - 
 
 ### Examples
 
@@ -30,7 +29,7 @@ export function createMarkdownEnvironment(options: ResolvedOptions): Environment
 export default defineConfig({
   environments: {
     markdown: createMarkdownEnvironment({
-      srcDir: "content",
+      srcDir: 'content',
       gfm: true,
     }),
   },
@@ -63,12 +62,12 @@ Creates environment-aware transform options.
 export function createTransformOptions(
   ctx: EnvironmentTransformContext,
   options: ResolvedOptions,
-): ResolvedOptions;
+  ): ResolvedOptions
 ```
 
 ### Returns
 
-`ResolvedOptions` -
+`ResolvedOptions` - 
 
 ---
 
@@ -85,12 +84,12 @@ This function is called during build to pre-render all Markdown files.
 export async function prerender(
   files: string[],
   _options: ResolvedOptions,
-): Promise<Map<string, string>>;
+  ): Promise<Map<string, string>>
 ```
 
 ### Returns
 
-`Promise<Map<string, string>>` -
+`Promise<Map<string, string>>` - 
 
 ---
 
@@ -104,7 +103,8 @@ Creates plugins specific to the Markdown environment.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/environment.ts#L144)**
 
 ```typescript
-export function createEnvironmentPlugins(_options: ResolvedOptions);
+export function createEnvironmentPlugins(_options: ResolvedOptions)
 ```
 
 ---
+

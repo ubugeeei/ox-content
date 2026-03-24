@@ -10,29 +10,22 @@ Extracts JSDoc documentation from source files in specified directories.
 This function recursively searches directories for source files matching
 the include/exclude patterns, then extracts all documented items (functions,
 classes, interfaces, types) from those files.
-
 ## Process
-
 1. **File Discovery**: Recursively walks directories, applying filters
 2. **File Reading**: Loads each matching file's content
 3. **JSDoc Extraction**: Parses JSDoc comments using regex patterns
 4. **Declaration Matching**: Pairs JSDoc comments with source declarations
 5. **Result Collection**: Aggregates extracted documentation by file
-
 ## Include/Exclude Patterns
-
 Patterns support:
-
 - `**` - Match any directory structure
 - `*` - Match any filename
 - Standard glob patterns (e.g., `**\/*.test.ts`)
-
 ## Performance Considerations
-
 - Uses filesystem I/O which can be slow for large codebases
 - Consider using more specific include patterns to reduce file scanning
 - Results are not cached; call once per build/dev session
-  Each ExtractedDocs object contains file path and array of DocEntry items.
+Each ExtractedDocs object contains file path and array of DocEntry items.
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L104)**
 
@@ -40,14 +33,14 @@ Patterns support:
 export async function extractDocs(
   srcDirs: string[],
   options: ResolvedDocsOptions,
-): Promise<ExtractedDocs[]>;
+  ): Promise<ExtractedDocs[]>
 ```
 
 ### Parameters
 
-| Name      | Type                  | Description                                                |
-| --------- | --------------------- | ---------------------------------------------------------- |
-| `srcDirs` | `string[]`            | Array of source directory paths to scan                    |
+| Name | Type | Description |
+|------|------|-------------|
+| `srcDirs` | `string[]` | Array of source directory paths to scan |
 | `options` | `ResolvedDocsOptions` | Documentation extraction options (filters, grouping, etc.) |
 
 ### Returns
@@ -57,18 +50,21 @@ export async function extractDocs(
 ### Examples
 
 ```ts
-const docs = await extractDocs(["./packages/vite-plugin/src"], {
-  enabled: true,
-  src: [],
-  out: "docs",
-  include: ["**\/*.ts"],
-  exclude: ["**\/*.test.ts", "**\/*.spec.ts"],
-  format: "markdown",
-  private: false,
-  toc: true,
-  groupBy: "file",
-  generateNav: true,
-});
+const docs = await extractDocs(
+  ['./packages/vite-plugin/src'],
+  {
+    enabled: true,
+    src: [],
+    out: 'docs',
+    include: ['**\/*.ts'],
+    exclude: ['**\/*.test.ts', '**\/*.spec.ts'],
+    format: 'markdown',
+    private: false,
+    toc: true,
+    groupBy: 'file',
+    generateNav: true,
+  }
+);
 // Returns:
 // [
 //   {
@@ -93,12 +89,12 @@ Recursively finds all source files matching include/exclude patterns.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L191)**
 
 ```typescript
-async function findFiles(dir: string, options: ResolvedDocsOptions): Promise<string[]>;
+async function findFiles(dir: string, options: ResolvedDocsOptions): Promise<string[]>
 ```
 
 ### Returns
 
-`Promise<string[]>` -
+`Promise<string[]>` - 
 
 ---
 
@@ -115,12 +111,12 @@ function extractFromContent(
   content: string,
   file: string,
   options: ResolvedDocsOptions,
-): DocEntry[];
+  ): DocEntry[]
 ```
 
 ### Returns
 
-`DocEntry[]` -
+`DocEntry[]` - 
 
 ---
 
@@ -135,13 +131,13 @@ or `export const name = (...): ReturnType => {}`, handling multi-line signatures
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L278)**
 
 ```typescript
-function extractFunctionSignature(signature: string): string | undefined;
+function extractFunctionSignature(signature: string): string | undefined
 ```
 
 ### Parameters
 
-| Name        | Type     | Description                          |
-| ----------- | -------- | ------------------------------------ |
+| Name | Type | Description |
+|------|------|-------------|
 | `signature` | `string` | Multi-line function declaration text |
 
 ### Returns
@@ -156,10 +152,9 @@ function extractFunctionSignature(signature: string): string | undefined;
 
 Extracts parameter and return types from a TypeScript function signature.
 Parses function signatures to extract:
-
 - Parameter names and their type annotations
 - Return type annotation
-  Handles various function declaration styles:
+Handles various function declaration styles:
 - `function name(param: type): ReturnType`
 - `const name = (param: type): ReturnType => {}`
 - `export async function name(param: type): Promise<ReturnType>`
@@ -175,10 +170,10 @@ function extractTypesFromSignature(
 
 ### Parameters
 
-| Name        | Type         | Description                                          |
-| ----------- | ------------ | ---------------------------------------------------- |
-| `signature` | `string`     | Multi-line function signature text                   |
-| `params`    | `ParamDoc[]` | Array of parameter docs with names already extracted |
+| Name | Type | Description |
+|------|------|-------------|
+| `signature` | `string` | Multi-line function signature text |
+| `params` | `ParamDoc[]` | Array of parameter docs with names already extracted |
 
 ### Returns
 
@@ -192,20 +187,19 @@ function extractTypesFromSignature(
 
 Splits function parameters while respecting nested angle brackets (generics).
 Handles cases like:
-
 - `a: string, b: number` → `["a: string", "b: number"]`
 - `a: Promise<string>, b: Record<string, any>` → `["a: Promise<string>", "b: Record<string, any>"]`
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L380)**
 
 ```typescript
-function splitParameters(paramListStr: string): string[];
+function splitParameters(paramListStr: string): string[]
 ```
 
 ### Parameters
 
-| Name           | Type     | Description                      |
-| -------------- | -------- | -------------------------------- |
+| Name | Type | Description |
+|------|------|-------------|
 | `paramListStr` | `string` | String containing all parameters |
 
 ### Returns
@@ -237,12 +231,12 @@ Generates Markdown documentation from extracted docs.
 export function generateMarkdown(
   docs: ExtractedDocs[],
   options: ResolvedDocsOptions,
-): Record<string, string>;
+  ): Record<string, string>
 ```
 
 ### Returns
 
-`Record<string, string>` -
+`Record<string, string>` - 
 
 ---
 
@@ -264,9 +258,7 @@ Converts symbol links [SymbolName] to markdown links.
 Processes description text to convert cargo-docs-style symbol references
 `[SymbolName]` into clickable markdown links pointing to the appropriate
 documentation page.
-
 ## Examples
-
 Input: "See [transformMarkdown] for usage" (same file)
 Output: "See [transformMarkdown](#transformmarkdown) for usage"
 Input: "Uses [NavItem](./types.md#navitem) interface" (different file: types.ts)
@@ -279,16 +271,16 @@ function convertSymbolLinks(
   text: string,
   currentFileName: string,
   symbolMap: Map<string, SymbolLocation>,
-): string;
+  ): string
 ```
 
 ### Parameters
 
-| Name              | Type                          | Description                                                   |
-| ----------------- | ----------------------------- | ------------------------------------------------------------- |
-| `text`            | `string`                      | Description text containing symbol references                 |
-| `currentFileName` | `string`                      | Current file name (without extension) for same-file detection |
-| `symbolMap`       | `Map<string, SymbolLocation>` | Map of symbol names to their file locations                   |
+| Name | Type | Description |
+|------|------|-------------|
+| `text` | `string` | Description text containing symbol references |
+| `currentFileName` | `string` | Current file name (without extension) for same-file detection |
+| `symbolMap` | `Map<string, SymbolLocation>` | Map of symbol names to their file locations |
 
 ### Returns
 
@@ -305,12 +297,12 @@ Builds a map of all symbols to their file locations.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L838)**
 
 ```typescript
-function buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation>;
+function buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation>
 ```
 
 ### Returns
 
-`Map<string, SymbolLocation>` -
+`Map<string, SymbolLocation>` - 
 
 ---
 
@@ -333,15 +325,15 @@ Generates a GitHub source link for a file and optional line number.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L918)**
 
 ```typescript
-function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: number): string;
+function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: number): string
 ```
 
 ### Parameters
 
-| Name         | Type     | Description                     |
-| ------------ | -------- | ------------------------------- |
-| `filePath`   | `string` | Full path to the source file    |
-| `githubUrl`  | `string` | Base GitHub repository URL      |
+| Name | Type | Description |
+|------|------|-------------|
+| `filePath` | `string` | Full path to the source file |
+| `githubUrl` | `string` | Base GitHub repository URL |
 | `lineNumber` | `number` | Optional line number to link to |
 
 ### Returns
@@ -349,3 +341,4 @@ function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: nu
 `string` - Markdown link to source code
 
 ---
+

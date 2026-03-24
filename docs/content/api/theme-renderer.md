@@ -51,14 +51,14 @@ Renders a page using the theme component.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L75)**
 
 ```typescript
-export function renderPage(page: PageData, options: ThemeRenderOptions): string;
+export function renderPage(page: PageData, options: ThemeRenderOptions): string
 ```
 
 ### Parameters
 
-| Name      | Type                 | Description          |
-| --------- | -------------------- | -------------------- |
-| `page`    | `PageData`           | Page data to render  |
+| Name | Type | Description |
+|------|------|-------------|
+| `page` | `PageData` | Page data to render |
 | `options` | `ThemeRenderOptions` | Theme render options |
 
 ### Returns
@@ -79,14 +79,14 @@ Renders all pages and generates type definitions.
 export async function renderAllPages(
   pages: PageData[],
   options: ThemeRenderOptions,
-): Promise<Map<string, string>>;
+  ): Promise<Map<string, string>>
 ```
 
 ### Parameters
 
-| Name      | Type                 | Description          |
-| --------- | -------------------- | -------------------- |
-| `pages`   | `PageData[]`         | All pages to render  |
+| Name | Type | Description |
+|------|------|-------------|
+| `pages` | `PageData[]` | All pages to render |
 | `options` | `ThemeRenderOptions` | Theme render options |
 
 ### Returns
@@ -104,19 +104,19 @@ Generates TypeScript type definitions from page frontmatter.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme-renderer.ts#L168)**
 
 ```typescript
-export async function generateTypes(pages: PageData[], outDir: string): Promise<void>;
+export async function generateTypes(pages: PageData[], outDir: string): Promise<void>
 ```
 
 ### Parameters
 
-| Name     | Type         | Description                |
-| -------- | ------------ | -------------------------- |
-| `pages`  | `PageData[]` | All pages                  |
-| `outDir` | `string`     | Output directory for types |
+| Name | Type | Description |
+|------|------|-------------|
+| `pages` | `PageData[]` | All pages |
+| `outDir` | `string` | Output directory for types |
 
 ### Returns
 
-`Promise<void>` -
+`Promise<void>` - 
 
 ---
 
@@ -131,7 +131,7 @@ A minimal theme that renders page content with basic styling.
 
 ### Returns
 
-`JSXNode` -
+`JSXNode` - 
 
 ---
 
@@ -145,14 +145,14 @@ Creates a theme with layout switching support.
 
 ### Returns
 
-`ThemeComponent` -
+`ThemeComponent` - 
 
 ### Examples
 
 ```ts
-import { createTheme } from "@ox-content/vite-plugin";
-import { DefaultLayout } from "./layouts/Default";
-import { EntryLayout } from "./layouts/Entry";
+import { createTheme } from '@ox-content/vite-plugin';
+import { DefaultLayout } from './layouts/Default';
+import { EntryLayout } from './layouts/Entry';
 export default createTheme({
   layouts: {
     default: DefaultLayout,
@@ -162,3 +162,4 @@ export default createTheme({
 ```
 
 ---
+

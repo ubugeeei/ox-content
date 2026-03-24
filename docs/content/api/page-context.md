@@ -72,12 +72,12 @@ Called internally during page rendering.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L106)**
 
 ```typescript
-export function setRenderContext(ctx: RenderContext): void;
+export function setRenderContext(ctx: RenderContext): void
 ```
 
 ### Returns
 
-`void` -
+`void` - 
 
 ---
 
@@ -91,12 +91,12 @@ Called internally after page rendering.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L115)**
 
 ```typescript
-export function clearRenderContext(): void;
+export function clearRenderContext(): void
 ```
 
 ### Returns
 
-`void` -
+`void` - 
 
 ---
 
@@ -132,7 +132,7 @@ Gets the site configuration.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L150)**
 
 ```typescript
-export function useSiteConfig(): SiteConfig;
+export function useSiteConfig(): SiteConfig
 ```
 
 ### Returns
@@ -187,12 +187,12 @@ Gets the navigation groups.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L205)**
 
 ```typescript
-export function useNav(): NavGroup[];
+export function useNav(): NavGroup[]
 ```
 
 ### Returns
 
-`NavGroup[]` -
+`NavGroup[]` - 
 
 ### Examples
 
@@ -227,12 +227,12 @@ Checks if the given path is the current page.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L233)**
 
 ```typescript
-export function useIsActive(path: string): boolean;
+export function useIsActive(path: string): boolean
 ```
 
 ### Returns
 
-`boolean` -
+`boolean` - 
 
 ### Examples
 
@@ -264,12 +264,12 @@ Infers TypeScript types from frontmatter values.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L265)**
 
 ```typescript
-export function inferType(value: unknown): string;
+export function inferType(value: unknown): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -285,11 +285,12 @@ Generates TypeScript interface from frontmatter samples.
 export function generateFrontmatterTypes(
   samples: Record<string, unknown>[],
   interfaceName = "PageFrontmatter",
-): string;
+  ): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
+
