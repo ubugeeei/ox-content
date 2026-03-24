@@ -88,7 +88,7 @@ pub struct JsTransformOptions {
 
 /// Parser options for JavaScript.
 #[napi(object)]
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct JsParserOptions {
     /// Enable GFM extensions.
     pub gfm: Option<bool>,

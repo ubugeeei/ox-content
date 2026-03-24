@@ -236,3 +236,18 @@ node benchmarks/bundle-size/parse-benchmark.mjs
 ```
 
 The benchmark includes `md4w (md4c)` by default and adds `Bun.markdown.html` automatically when `bun` is available.
+
+### mdast Transfer Micro-benchmark
+
+To benchmark the mdast export paths used by the unified bridge, run:
+
+```bash
+cargo bench -p ox_content_napi --bench mdast_transfer -- --sample-size 20 --warm-up-time 1 --measurement-time 2
+```
+
+This Criterion benchmark compares `parse_native`, `parse_json`, `parse_raw`, and `transform_html`
+across small, medium, and large GFM documents. It also prints the exported JSON and raw payload sizes
+for each fixture so you can distinguish parser cost from transfer-format cost.
+
+This benchmark measures the Rust-side pipeline only. For end-to-end unified bridge evaluation, pair it
+with a JavaScript benchmark that includes the N-API boundary and JS-side mdast materialization.
