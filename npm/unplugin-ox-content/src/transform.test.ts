@@ -108,6 +108,7 @@ function createRawMdastBuffer(): Uint8Array {
 
 require.cache[napiId] = {
   exports: {
+    parseTransferRaw: () => createRawMdastBuffer(),
     parseMdastRaw: () => createRawMdastBuffer(),
     transform: () => ({
       html: "<h1>Hello</h1>\n<p>World</p>\n",
@@ -237,10 +238,7 @@ describe("mdast js plugin", () => {
 
   it("exposes parsed frontmatter on vfile data for unified plugins", async () => {
     function remarkReadFrontmatter() {
-      return (
-        tree: typeof baseMdast,
-        file: { data?: { matter?: { title?: string } } },
-      ) => {
+      return (tree: typeof baseMdast, file: { data?: { matter?: { title?: string } } }) => {
         tree.children = [
           {
             type: "heading",

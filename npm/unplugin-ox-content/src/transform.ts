@@ -16,7 +16,13 @@ import {
   oxContentMdast,
   toUnifiedMdastPlugin,
 } from "./mdast";
-import type { MdastRoot, OxContentMdastPlugin, ResolvedOptions, TransformResult, TocEntry } from "./types";
+import type {
+  MdastRoot,
+  OxContentMdastPlugin,
+  ResolvedOptions,
+  TransformResult,
+  TocEntry,
+} from "./types";
 
 const require = createRequire(import.meta.url);
 
@@ -168,24 +174,27 @@ async function transformWithUnified(
   options: ResolvedOptions,
 ): Promise<{ html: string; toc: TocEntry[] }> {
   const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
-  const processor = unified();
   const { plugins: remarkPlugins, options: remarkRehypeOptions } = extractUnifiedPluginWithOptions(
     options.plugin.remark,
     remarkRehype,
   );
-  const { plugins: rehypePlugins, options: rehypeStringifyOptions } = extractUnifiedPluginWithOptions(
-    options.plugin.rehype,
-    rehypeStringify,
-  );
+  const { plugins: rehypePlugins, options: rehypeStringifyOptions } =
+    extractUnifiedPluginWithOptions(options.plugin.rehype, rehypeStringify);
+
+  const stagedProcessor = unified();
 
   applyUnifiedPlugins(
-    processor,
+    stagedProcessor,
     options.plugin.mdast.map((plugin) =>
       isOxContentMdastPlugin(plugin) ? toUnifiedMdastPlugin(plugin, mdastContext) : plugin,
     ),
   );
-  applyUnifiedPlugins(processor, remarkPlugins);
-  const parserStrategy = resolveUnifiedParserStrategy(processor);
+  applyUnifiedPlugins(stagedProcessor, remarkPlugins);
+
+  const frozenParserPhaseProcessor = stagedProcessor.freeze();
+  const parserStrategy = resolveUnifiedParserStrategy(frozenParserPhaseProcessor);
+  const processor = frozenParserPhaseProcessor();
+
   installUnifiedParser(processor, parserStrategy, options);
 
   let toc: TocEntry[] = [];
@@ -209,13 +218,7 @@ async function transformWithUnified(
   } as never);
 
   const file = await processor.process({
-    ...createUnifiedFileInput(
-      parserStrategy,
-      fullSource,
-      markdownContent,
-      filePath,
-      frontmatter,
-    ),
+    ...createUnifiedFileInput(parserStrategy, fullSource, markdownContent, filePath, frontmatter),
   } as never);
 
   return {
@@ -255,10 +258,7 @@ function buildTocTree(entries: Array<{ depth: number; text: string; slug: string
   return result;
 }
 
-function applyUnifiedPlugins(
-  processor: UnifiedProcessor,
-  plugins: unknown[],
-): void {
+function applyUnifiedPlugins(processor: UnifiedProcessor, plugins: unknown[]): void {
   for (const plugin of plugins) {
     if (Array.isArray(plugin)) {
       const [attacher, ...pluginOptions] = plugin;
@@ -364,8 +364,7 @@ function hasRemarkSyntaxExtensions(processor: UnifiedProcessor): boolean {
   const data = processor.data() as Record<string, unknown>;
 
   return (
-    hasOwnDataField(data, "micromarkExtensions") ||
-    hasOwnDataField(data, "fromMarkdownExtensions")
+    hasOwnDataField(data, "micromarkExtensions") || hasOwnDataField(data, "fromMarkdownExtensions")
   );
 }
 
@@ -413,7 +412,7 @@ function splitUnifiedPlugin(plugin: unknown): {
     attacher,
     options:
       firstOption && typeof firstOption === "object"
-        ? firstOption as Record<string, unknown>
+        ? (firstOption as Record<string, unknown>)
         : undefined,
   };
 }

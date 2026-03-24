@@ -109,10 +109,7 @@ export function oxContentMdast(
 /**
  * Defines an Ox Content-native mdast plugin.
  */
-export function defineMdastPlugin(
-  name: string,
-  transform: MdastTransformer,
-): OxContentMdastPlugin {
+export function defineMdastPlugin(name: string, transform: MdastTransformer): OxContentMdastPlugin {
   return { name, transform };
 }
 
@@ -133,9 +130,10 @@ export function parseMarkdownToMdast(
     strikethrough: resolvedOptions.strikethrough,
     autolinks: resolvedOptions.autolinks,
   };
-  const buffer = typeof napi.parseTransferRaw === "function"
-    ? napi.parseTransferRaw(source, "mdast", parserOptions)
-    : napi.parseMdastRaw(source, parserOptions);
+  const buffer =
+    typeof napi.parseTransferRaw === "function"
+      ? napi.parseTransferRaw(source, "mdast", parserOptions)
+      : napi.parseMdastRaw(source, parserOptions);
   return deserializeMdastFromRaw(buffer, source);
 }
 
@@ -223,9 +221,7 @@ function loadNapiBindings(): NapiBindings {
   }
 }
 
-function resolveMdastOptions(
-  options: OxContentMdastOptions,
-): Required<OxContentMdastOptions> {
+function resolveMdastOptions(options: OxContentMdastOptions): Required<OxContentMdastOptions> {
   return {
     gfm: options.gfm ?? DEFAULT_MDAST_OPTIONS.gfm,
     footnotes: options.footnotes ?? DEFAULT_MDAST_OPTIONS.footnotes,
@@ -264,10 +260,7 @@ function buildTocTree(entries: TocEntry[]): TocEntry[] {
   return result;
 }
 
-function visitMdast(
-  node: { children?: unknown },
-  visitor: (node: MdastNode) => void,
-): void {
+function visitMdast(node: { children?: unknown }, visitor: (node: MdastNode) => void): void {
   if (!node || typeof node !== "object") {
     return;
   }

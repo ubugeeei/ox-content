@@ -124,7 +124,9 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
 
   const readAlign = (start: number, len: number): Array<"left" | "center" | "right" | null> => {
     if (start + len > alignCount) {
-      throw new Error("[ox-content] mdast raw transfer buffer has an invalid table alignment range.");
+      throw new Error(
+        "[ox-content] mdast raw transfer buffer has an invalid table alignment range.",
+      );
     }
     const align: Array<"left" | "center" | "right" | null> = [];
     for (let index = 0; index < len; index += 1) {
@@ -303,10 +305,7 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
   return root;
 }
 
-function resolveMdastLayout(
-  buffer: Uint8Array,
-  view: DataView,
-): MdastBufferLayout {
+function resolveMdastLayout(buffer: Uint8Array, view: DataView): MdastBufferLayout {
   const envelope = parseTransferEnvelope(buffer);
   if (envelope) {
     if (envelope.kind !== TRANSFER_PAYLOAD_KIND_MDAST) {
@@ -425,10 +424,7 @@ function buildSourceIndex(source: string): SourceBoundaryPoint[] {
   return points;
 }
 
-function pointForByteOffset(
-  byteOffset: number,
-  points: SourceBoundaryPoint[],
-) {
+function pointForByteOffset(byteOffset: number, points: SourceBoundaryPoint[]) {
   const maxByteOffset = points[points.length - 1]?.byteOffset ?? 0;
   const clampedOffset = Math.max(0, Math.min(byteOffset, maxByteOffset));
   let low = 0;
