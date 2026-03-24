@@ -1,10 +1,21 @@
 import type { MdastNode, MdastRoot } from "./types";
+import {
+  parseTransferEnvelope,
+  requireTransferSection,
+  TRANSFER_PAYLOAD_KIND_MDAST,
+} from "./transfer";
 
-const MAGIC = 0x3152444d;
-const VERSION = 1;
-const HEADER_LEN = 28;
+const LEGACY_MAGIC = 0x3152444d;
+const LEGACY_VERSION = 1;
+const LEGACY_HEADER_LEN = 28;
 const NODE_RECORD_LEN = 60;
 const NONE_U32 = 0xffffffff;
+
+const MDAST_PAYLOAD_VERSION = 1;
+const MDAST_SECTION_NODES = 1;
+const MDAST_SECTION_CHILD_INDICES = 2;
+const MDAST_SECTION_ALIGNS = 3;
+const MDAST_SECTION_STRINGS = 4;
 
 const KIND_ROOT = 0;
 const KIND_PARAGRAPH = 1;
@@ -42,27 +53,33 @@ interface SourceBoundaryPoint {
   column: number;
 }
 
+interface MdastBufferLayout {
+  nodeCount: number;
+  childCount: number;
+  alignCount: number;
+  rootIndex: number;
+  nodesOffset: number;
+  childIndicesOffset: number;
+  alignsOffset: number;
+  stringsOffset: number;
+  stringsEnd: number;
+}
+
 export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): MdastRoot {
   const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
   const decoder = new TextDecoder("utf-8");
 
-  const magic = view.getUint32(0, true);
-  const version = view.getUint32(4, true);
-  if (magic !== MAGIC || version !== VERSION) {
-    throw new Error("[ox-content] Invalid mdast raw transfer buffer.");
-  }
-
-  const nodeCount = view.getUint32(8, true);
-  const childCount = view.getUint32(12, true);
-  const alignCount = view.getUint32(16, true);
-  const stringBytesLen = view.getUint32(20, true);
-  const rootIndex = view.getUint32(24, true);
-
-  const nodesOffset = HEADER_LEN;
-  const childIndicesOffset = nodesOffset + nodeCount * NODE_RECORD_LEN;
-  const alignsOffset = childIndicesOffset + childCount * 4;
-  const stringsOffset = alignsOffset + alignCount;
-  const stringsEnd = stringsOffset + stringBytesLen;
+  const {
+    nodeCount,
+    childCount,
+    alignCount,
+    rootIndex,
+    nodesOffset,
+    childIndicesOffset,
+    alignsOffset,
+    stringsOffset,
+    stringsEnd,
+  } = resolveMdastLayout(buffer, view);
 
   if (stringsEnd > buffer.byteLength) {
     throw new Error("[ox-content] mdast raw transfer buffer is truncated.");
@@ -284,6 +301,91 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
   }
 
   return root;
+}
+
+function resolveMdastLayout(
+  buffer: Uint8Array,
+  view: DataView,
+): MdastBufferLayout {
+  const envelope = parseTransferEnvelope(buffer);
+  if (envelope) {
+    if (envelope.kind !== TRANSFER_PAYLOAD_KIND_MDAST) {
+      throw new Error("[ox-content] Transfer buffer does not contain an mdast payload.");
+    }
+    if (envelope.payloadVersion !== MDAST_PAYLOAD_VERSION) {
+      throw new Error("[ox-content] Unsupported mdast transfer payload version.");
+    }
+
+    const nodesSection = requireTransferSection(
+      envelope,
+      MDAST_SECTION_NODES,
+      "[ox-content] mdast transfer is missing the nodes section.",
+    );
+    const childIndicesSection = requireTransferSection(
+      envelope,
+      MDAST_SECTION_CHILD_INDICES,
+      "[ox-content] mdast transfer is missing the child indices section.",
+    );
+    const alignsSection = requireTransferSection(
+      envelope,
+      MDAST_SECTION_ALIGNS,
+      "[ox-content] mdast transfer is missing the table alignments section.",
+    );
+    const stringsSection = requireTransferSection(
+      envelope,
+      MDAST_SECTION_STRINGS,
+      "[ox-content] mdast transfer is missing the string table section.",
+    );
+
+    if (nodesSection.len % NODE_RECORD_LEN !== 0) {
+      throw new Error("[ox-content] mdast transfer nodes section is misaligned.");
+    }
+    if (childIndicesSection.len % 4 !== 0) {
+      throw new Error("[ox-content] mdast transfer child indices section is misaligned.");
+    }
+
+    return {
+      nodeCount: nodesSection.len / NODE_RECORD_LEN,
+      childCount: childIndicesSection.len / 4,
+      alignCount: alignsSection.len,
+      rootIndex: envelope.rootHandle,
+      nodesOffset: nodesSection.offset,
+      childIndicesOffset: childIndicesSection.offset,
+      alignsOffset: alignsSection.offset,
+      stringsOffset: stringsSection.offset,
+      stringsEnd: stringsSection.offset + stringsSection.len,
+    };
+  }
+
+  const magic = view.getUint32(0, true);
+  const version = view.getUint32(4, true);
+  if (magic !== LEGACY_MAGIC || version !== LEGACY_VERSION) {
+    throw new Error("[ox-content] Invalid mdast raw transfer buffer.");
+  }
+
+  const nodeCount = view.getUint32(8, true);
+  const childCount = view.getUint32(12, true);
+  const alignCount = view.getUint32(16, true);
+  const stringBytesLen = view.getUint32(20, true);
+  const rootIndex = view.getUint32(24, true);
+
+  const nodesOffset = LEGACY_HEADER_LEN;
+  const childIndicesOffset = nodesOffset + nodeCount * NODE_RECORD_LEN;
+  const alignsOffset = childIndicesOffset + childCount * 4;
+  const stringsOffset = alignsOffset + alignCount;
+  const stringsEnd = stringsOffset + stringBytesLen;
+
+  return {
+    nodeCount,
+    childCount,
+    alignCount,
+    rootIndex,
+    nodesOffset,
+    childIndicesOffset,
+    alignsOffset,
+    stringsOffset,
+    stringsEnd,
+  };
 }
 
 function buildSourceIndex(source: string): SourceBoundaryPoint[] {

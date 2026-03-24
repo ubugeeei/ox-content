@@ -491,10 +491,24 @@ export declare function parse(
 ): ParseResult;
 
 /**
+ * Parses Markdown source into a transfer buffer identified by payload kind.
+ *
+ * Currently `mdast` is the primary supported payload. Future payload kinds
+ * such as markdown-it token streams will share the same transfer envelope.
+ */
+export declare function parseTransferRaw(
+  source: string,
+  kind: string,
+  options?: JsParserOptions | undefined | null,
+): Uint8Array;
+
+/**
  * Parses Markdown source into a raw mdast memory block.
  *
  * The returned `Uint8Array` is backed by Rust-owned memory and is intended to be
  * deserialized on the JavaScript side without going through JSON.
+ *
+ * This is a compatibility wrapper over `parseTransferRaw(source, "mdast", options)`.
  */
 export declare function parseMdastRaw(
   source: string,

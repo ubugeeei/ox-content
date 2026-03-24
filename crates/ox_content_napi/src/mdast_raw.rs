@@ -1,4 +1,4 @@
-use std::{mem::size_of, ptr};
+use std::mem::size_of;
 
 use napi::bindgen_prelude::Uint8Array;
 
@@ -9,9 +9,14 @@ use ox_content_ast::{
     Node, Paragraph, Span, Strong, Table, TableCell, TableRow, Text, ThematicBreak,
 };
 
-const MAGIC: u32 = u32::from_le_bytes(*b"MDR1");
-const VERSION: u32 = 1;
-const HEADER_LEN: usize = 28;
+use crate::transfer::{as_u32, TransferBufferBuilder, TransferPayloadKind};
+
+const MDAST_PAYLOAD_VERSION: u32 = 1;
+const MDAST_SECTION_NODES: u32 = 1;
+const MDAST_SECTION_CHILD_INDICES: u32 = 2;
+const MDAST_SECTION_ALIGNS: u32 = 3;
+const MDAST_SECTION_STRINGS: u32 = 4;
+
 const NODE_RECORD_LEN: usize = 60;
 const NONE_U32: u32 = u32::MAX;
 
@@ -112,38 +117,27 @@ impl MdastRawSerializer {
     fn finish(self, root_index: u32) -> napi::Result<Uint8Array> {
         let nodes_len = self.nodes.len() * NODE_RECORD_LEN;
         let child_indices_len = self.child_indices.len() * size_of::<u32>();
-        let total_len =
-            HEADER_LEN + nodes_len + child_indices_len + self.aligns.len() + self.strings.len();
-        let mut buffer = Vec::with_capacity(total_len);
-
-        push_u32(&mut buffer, MAGIC);
-        push_u32(&mut buffer, VERSION);
-        push_u32(&mut buffer, as_u32(self.nodes.len())?);
-        push_u32(&mut buffer, as_u32(self.child_indices.len())?);
-        push_u32(&mut buffer, as_u32(self.aligns.len())?);
-        push_u32(&mut buffer, as_u32(self.strings.len())?);
-        push_u32(&mut buffer, root_index);
+        let mut nodes_buffer = Vec::with_capacity(nodes_len);
+        let mut child_indices_buffer = Vec::with_capacity(child_indices_len);
 
         for node in &self.nodes {
-            write_node_record(&mut buffer, node);
+            write_node_record(&mut nodes_buffer, node);
         }
 
         for child_index in &self.child_indices {
-            push_u32(&mut buffer, *child_index);
+            push_u32(&mut child_indices_buffer, *child_index);
         }
 
-        buffer.extend_from_slice(&self.aligns);
-        buffer.extend_from_slice(&self.strings);
-
-        let len = buffer.len();
-        let ptr = Box::into_raw(buffer.into_boxed_slice()) as *mut u8;
-        let array = unsafe {
-            Uint8Array::with_external_data(ptr, len, move |ptr, len| {
-                let slice = ptr::slice_from_raw_parts_mut(ptr, len);
-                drop(Box::from_raw(slice));
-            })
-        };
-        Ok(array)
+        let mut builder = TransferBufferBuilder::new(
+            TransferPayloadKind::Mdast,
+            MDAST_PAYLOAD_VERSION,
+            root_index,
+        );
+        builder.push_section(MDAST_SECTION_NODES, nodes_buffer);
+        builder.push_section(MDAST_SECTION_CHILD_INDICES, child_indices_buffer);
+        builder.push_section(MDAST_SECTION_ALIGNS, self.aligns);
+        builder.push_section(MDAST_SECTION_STRINGS, self.strings);
+        builder.finish()
     }
 
     fn write_document(&mut self, document: &Document<'_>) -> u32 {
@@ -472,14 +466,13 @@ fn push_u32(buffer: &mut Vec<u8>, value: u32) {
     buffer.extend_from_slice(&value.to_le_bytes());
 }
 
-fn as_u32(value: usize) -> napi::Result<u32> {
-    u32::try_from(value).map_err(|_| napi::Error::from_reason("mdast raw buffer overflow"))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    use crate::transfer::{
+        TRANSFER_HEADER_LEN, TRANSFER_MAGIC, TRANSFER_SECTION_RECORD_LEN, TRANSFER_VERSION,
+    };
     use ox_content_allocator::Allocator;
     use ox_content_parser::{Parser, ParserOptions};
 
@@ -495,39 +488,68 @@ mod tests {
         bytes[offset]
     }
 
+    fn read_u16(bytes: &[u8], offset: usize) -> u16 {
+        u16::from_le_bytes(bytes[offset..offset + 2].try_into().expect("u16 slice"))
+    }
+
     fn read_u32(bytes: &[u8], offset: usize) -> u32 {
         u32::from_le_bytes(bytes[offset..offset + 4].try_into().expect("u32 slice"))
     }
 
-    fn node_base(index: usize) -> usize {
-        HEADER_LEN + index * NODE_RECORD_LEN
+    fn find_section(bytes: &[u8], id: u32) -> (usize, usize) {
+        let section_count = read_u32(bytes, 12) as usize;
+        for index in 0..section_count {
+            let base = TRANSFER_HEADER_LEN + index * TRANSFER_SECTION_RECORD_LEN;
+            if read_u32(bytes, base) == id {
+                return (
+                    read_u32(bytes, base + 4) as usize,
+                    read_u32(bytes, base + 8) as usize,
+                );
+            }
+        }
+
+        panic!("missing section {id}");
+    }
+
+    fn node_base(nodes_offset: usize, index: usize) -> usize {
+        nodes_offset + index * NODE_RECORD_LEN
     }
 
     #[test]
     fn serializes_heading_and_paragraph_tree() {
         let bytes = parse_to_raw_bytes("# Hello\n\nWorld");
 
-        assert_eq!(read_u32(&bytes, 0), MAGIC);
-        assert_eq!(read_u32(&bytes, 4), VERSION);
-        assert_eq!(read_u32(&bytes, 8), 5);
+        assert_eq!(read_u32(&bytes, 0), TRANSFER_MAGIC);
+        assert_eq!(read_u16(&bytes, 4), TRANSFER_VERSION);
+        assert_eq!(read_u16(&bytes, 6), TransferPayloadKind::Mdast.as_u16());
+        assert_eq!(read_u32(&bytes, 8), MDAST_PAYLOAD_VERSION);
         assert_eq!(read_u32(&bytes, 12), 4);
-        assert_eq!(read_u32(&bytes, 16), 0);
-        assert_eq!(read_u32(&bytes, 24), 4);
+        assert_eq!(read_u32(&bytes, 16), 4);
 
-        assert_eq!(read_u8(&bytes, node_base(0)), KIND_TEXT);
-        assert_eq!(read_u8(&bytes, node_base(1)), KIND_HEADING);
-        assert_eq!(read_u8(&bytes, node_base(2)), KIND_TEXT);
-        assert_eq!(read_u8(&bytes, node_base(3)), KIND_PARAGRAPH);
-        assert_eq!(read_u8(&bytes, node_base(4)), KIND_ROOT);
+        let (nodes_offset, nodes_len) = find_section(&bytes, MDAST_SECTION_NODES);
+        let (child_indices_offset, child_len_bytes) =
+            find_section(&bytes, MDAST_SECTION_CHILD_INDICES);
+        let (_, aligns_len) = find_section(&bytes, MDAST_SECTION_ALIGNS);
+        let (_, strings_len) = find_section(&bytes, MDAST_SECTION_STRINGS);
 
-        assert_eq!(read_u32(&bytes, node_base(1) + 12), 0);
-        assert_eq!(read_u32(&bytes, node_base(1) + 16), 1);
-        assert_eq!(read_u32(&bytes, node_base(3) + 12), 1);
-        assert_eq!(read_u32(&bytes, node_base(3) + 16), 1);
-        assert_eq!(read_u32(&bytes, node_base(4) + 12), 2);
-        assert_eq!(read_u32(&bytes, node_base(4) + 16), 2);
+        assert_eq!(nodes_len, 5 * NODE_RECORD_LEN);
+        assert_eq!(child_len_bytes, 4 * size_of::<u32>());
+        assert_eq!(aligns_len, 0);
+        assert_eq!(strings_len, "HelloWorld".len());
 
-        let child_indices_offset = HEADER_LEN + 5 * NODE_RECORD_LEN;
+        assert_eq!(read_u8(&bytes, node_base(nodes_offset, 0)), KIND_TEXT);
+        assert_eq!(read_u8(&bytes, node_base(nodes_offset, 1)), KIND_HEADING);
+        assert_eq!(read_u8(&bytes, node_base(nodes_offset, 2)), KIND_TEXT);
+        assert_eq!(read_u8(&bytes, node_base(nodes_offset, 3)), KIND_PARAGRAPH);
+        assert_eq!(read_u8(&bytes, node_base(nodes_offset, 4)), KIND_ROOT);
+
+        assert_eq!(read_u32(&bytes, node_base(nodes_offset, 1) + 12), 0);
+        assert_eq!(read_u32(&bytes, node_base(nodes_offset, 1) + 16), 1);
+        assert_eq!(read_u32(&bytes, node_base(nodes_offset, 3) + 12), 1);
+        assert_eq!(read_u32(&bytes, node_base(nodes_offset, 3) + 16), 1);
+        assert_eq!(read_u32(&bytes, node_base(nodes_offset, 4) + 12), 2);
+        assert_eq!(read_u32(&bytes, node_base(nodes_offset, 4) + 16), 2);
+
         assert_eq!(read_u32(&bytes, child_indices_offset), 0);
         assert_eq!(read_u32(&bytes, child_indices_offset + 4), 2);
         assert_eq!(read_u32(&bytes, child_indices_offset + 8), 1);
@@ -538,12 +560,14 @@ mod tests {
     fn preserves_utf8_spans_as_byte_offsets() {
         let bytes = parse_to_raw_bytes("# あ");
 
-        assert_eq!(read_u32(&bytes, 8), 3);
-        assert_eq!(read_u32(&bytes, 24), 2);
+        assert_eq!(read_u32(&bytes, 16), 2);
 
-        let text_base = node_base(0);
-        let heading_base = node_base(1);
-        let root_base = node_base(2);
+        let (nodes_offset, nodes_len) = find_section(&bytes, MDAST_SECTION_NODES);
+        assert_eq!(nodes_len, 3 * NODE_RECORD_LEN);
+
+        let text_base = node_base(nodes_offset, 0);
+        let heading_base = node_base(nodes_offset, 1);
+        let root_base = node_base(nodes_offset, 2);
 
         assert_eq!(read_u8(&bytes, text_base), KIND_TEXT);
         assert_eq!(read_u32(&bytes, text_base + 4), 2);

@@ -5,6 +5,7 @@
 
 mod mdast;
 mod mdast_raw;
+mod transfer;
 
 use napi::bindgen_prelude::*;
 use napi::Task;
@@ -16,6 +17,7 @@ use ox_content_ast::{Document, Heading, Node};
 use ox_content_parser::{Parser, ParserOptions};
 use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 use ox_content_search::{DocumentIndexer, SearchIndex, SearchIndexBuilder, SearchOptions};
+use transfer::TransferPayloadKind;
 
 /// Parse result containing the AST as JSON.
 #[napi(object)]
@@ -151,12 +153,36 @@ pub fn parse(source: String, options: Option<JsParserOptions>) -> ParseResult {
 /// Parses Markdown source into a raw mdast memory block for JavaScript-side deserialization.
 #[napi]
 pub fn parse_mdast_raw(source: String, options: Option<JsParserOptions>) -> Result<Uint8Array> {
-    let allocator = Allocator::new();
-    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
-    let parser = Parser::with_options(&allocator, &source, parser_options);
+    parse_transfer_raw(source, "mdast".to_string(), options)
+}
 
-    let document = parser.parse().map_err(|error| napi::Error::from_reason(error.to_string()))?;
-    mdast_raw::to_mdast_raw(&document)
+/// Parses Markdown source into a transfer buffer identified by payload kind.
+///
+/// Today `mdast` is the primary supported payload. Future payload kinds such as
+/// markdown-it token streams will share the same transfer envelope.
+#[napi]
+pub fn parse_transfer_raw(
+    source: String,
+    kind: String,
+    options: Option<JsParserOptions>,
+) -> Result<Uint8Array> {
+    let payload_kind = TransferPayloadKind::from_str(&kind)
+        .ok_or_else(|| napi::Error::from_reason(format!("Unsupported transfer payload kind: {kind}")))?;
+
+    match payload_kind {
+        TransferPayloadKind::Mdast => {
+            let allocator = Allocator::new();
+            let parser_options = options.map(ParserOptions::from).unwrap_or_default();
+            let parser = Parser::with_options(&allocator, &source, parser_options);
+            let document = parser
+                .parse()
+                .map_err(|error| napi::Error::from_reason(error.to_string()))?;
+            mdast_raw::to_mdast_raw(&document)
+        }
+        TransferPayloadKind::MarkdownItTokens => Err(napi::Error::from_reason(
+            "markdown-it token transfer is not implemented yet; mdast is the current baseline",
+        )),
+    }
 }
 
 /// Parses Markdown and renders to HTML.

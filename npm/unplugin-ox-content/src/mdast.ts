@@ -13,6 +13,18 @@ import type {
 const require = createRequire(import.meta.url);
 
 interface NapiBindings {
+  parseTransferRaw?: (
+    source: string,
+    kind: string,
+    options?: {
+      gfm?: boolean;
+      footnotes?: boolean;
+      taskLists?: boolean;
+      tables?: boolean;
+      strikethrough?: boolean;
+      autolinks?: boolean;
+    },
+  ) => Uint8Array;
   parseMdastRaw: (
     source: string,
     options?: {
@@ -113,14 +125,17 @@ export function parseMarkdownToMdast(
 ): MdastRoot {
   const napi = loadNapiBindings();
   const resolvedOptions = resolveMdastOptions(options);
-  const buffer = napi.parseMdastRaw(source, {
+  const parserOptions = {
     gfm: resolvedOptions.gfm,
     footnotes: resolvedOptions.footnotes,
     taskLists: resolvedOptions.taskLists,
     tables: resolvedOptions.tables,
     strikethrough: resolvedOptions.strikethrough,
     autolinks: resolvedOptions.autolinks,
-  });
+  };
+  const buffer = typeof napi.parseTransferRaw === "function"
+    ? napi.parseTransferRaw(source, "mdast", parserOptions)
+    : napi.parseMdastRaw(source, parserOptions);
   return deserializeMdastFromRaw(buffer, source);
 }
 
