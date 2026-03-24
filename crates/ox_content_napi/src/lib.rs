@@ -166,17 +166,17 @@ pub fn parse_transfer_raw(
     kind: String,
     options: Option<JsParserOptions>,
 ) -> Result<Uint8Array> {
-    let payload_kind = TransferPayloadKind::from_str(&kind)
-        .ok_or_else(|| napi::Error::from_reason(format!("Unsupported transfer payload kind: {kind}")))?;
+    let payload_kind = TransferPayloadKind::from_str(&kind).ok_or_else(|| {
+        napi::Error::from_reason(format!("Unsupported transfer payload kind: {kind}"))
+    })?;
 
     match payload_kind {
         TransferPayloadKind::Mdast => {
             let allocator = Allocator::new();
             let parser_options = options.map(ParserOptions::from).unwrap_or_default();
             let parser = Parser::with_options(&allocator, &source, parser_options);
-            let document = parser
-                .parse()
-                .map_err(|error| napi::Error::from_reason(error.to_string()))?;
+            let document =
+                parser.parse().map_err(|error| napi::Error::from_reason(error.to_string()))?;
             mdast_raw::to_mdast_raw(&document)
         }
         TransferPayloadKind::MarkdownItTokens => Err(napi::Error::from_reason(

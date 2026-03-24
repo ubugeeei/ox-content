@@ -76,13 +76,17 @@ fn bench_napi_mdast_transfer(c: &mut Criterion) {
             });
         });
 
-        group.bench_with_input(BenchmarkId::new("transform_html", name), document, |b, document| {
-            let transform_options = transform_options.clone();
-            b.iter(|| {
-                let result = transform(black_box(document.clone()), transform_options.clone());
-                black_box(result.html.len());
-            });
-        });
+        group.bench_with_input(
+            BenchmarkId::new("transform_html", name),
+            document,
+            |b, document| {
+                let transform_options = transform_options.clone();
+                b.iter(|| {
+                    let result = transform(black_box(document.clone()), transform_options.clone());
+                    black_box(result.html.len());
+                });
+            },
+        );
     }
 
     group.finish();
@@ -124,11 +128,7 @@ fn report_payload_sizes(name: &str, document: &str, parser_options: Option<JsPar
         .expect("raw mdast parsing should succeed for payload size reporting");
     let json_len = json.ast.len();
     let raw_len = raw.len();
-    let ratio = if json_len == 0 {
-        0.0
-    } else {
-        (raw_len as f64 / json_len as f64) * 100.0
-    };
+    let ratio = if json_len == 0 { 0.0 } else { (raw_len as f64 / json_len as f64) * 100.0 };
 
     println!(
         "napi_mdast_transfer/{name}: input={}B json={}B raw={}B raw/json={ratio:.2}%",

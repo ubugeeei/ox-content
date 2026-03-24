@@ -43,12 +43,7 @@ pub struct TransferBufferBuilder {
 
 impl TransferBufferBuilder {
     pub fn new(kind: TransferPayloadKind, payload_version: u32, root_handle: u32) -> Self {
-        Self {
-            kind,
-            payload_version,
-            root_handle,
-            sections: Vec::new(),
-        }
+        Self { kind, payload_version, root_handle, sections: Vec::new() }
     }
 
     pub fn push_section(&mut self, id: u32, bytes: Vec<u8>) {

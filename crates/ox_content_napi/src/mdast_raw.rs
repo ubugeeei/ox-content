@@ -501,10 +501,7 @@ mod tests {
         for index in 0..section_count {
             let base = TRANSFER_HEADER_LEN + index * TRANSFER_SECTION_RECORD_LEN;
             if read_u32(bytes, base) == id {
-                return (
-                    read_u32(bytes, base + 4) as usize,
-                    read_u32(bytes, base + 8) as usize,
-                );
+                return (read_u32(bytes, base + 4) as usize, read_u32(bytes, base + 8) as usize);
             }
         }
 
