@@ -235,6 +235,44 @@ describe("mdast js plugin", () => {
     expect(result.html).toContain("<p>From remark plugin</p>");
   });
 
+  it("exposes parsed frontmatter on vfile data for unified plugins", async () => {
+    function remarkReadFrontmatter() {
+      return (
+        tree: typeof baseMdast,
+        file: { data?: { matter?: { title?: string } } },
+      ) => {
+        tree.children = [
+          {
+            type: "heading",
+            depth: 1,
+            children: [
+              {
+                type: "text",
+                value: file.data?.matter?.title ?? "missing-frontmatter",
+              },
+            ],
+          },
+        ];
+      };
+    }
+
+    const result = await transformMarkdown(
+      "---\ntitle: Frontmatter Title\n---\n# Ignored",
+      "docs/frontmatter-data.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [],
+          remark: [remarkReadFrontmatter],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>Frontmatter Title</h1>");
+  });
+
   it("falls back to remark-parse when remark syntax extensions are registered", async () => {
     function remarkForceRemarkParse(this: { data: (key: string, value?: unknown) => unknown }) {
       this.data("micromarkExtensions", []);

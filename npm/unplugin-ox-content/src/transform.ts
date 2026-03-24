@@ -195,8 +195,13 @@ async function transformWithUnified(
   processor.use(rehypeStringify, { allowDangerousHtml: true });
 
   const file = await processor.process({
-    path: filePath,
-    value: selectUnifiedInput(parserStrategy, fullSource, markdownContent),
+    ...createUnifiedFileInput(
+      parserStrategy,
+      fullSource,
+      markdownContent,
+      filePath,
+      frontmatter,
+    ),
   } as never);
 
   return {
@@ -303,6 +308,33 @@ function selectUnifiedInput(
   markdownContent: string,
 ): string {
   return strategy === "native" ? markdownContent : fullSource;
+}
+
+function createUnifiedFileInput(
+  strategy: UnifiedParserStrategy,
+  fullSource: string,
+  markdownContent: string,
+  filePath: string,
+  frontmatter: Record<string, unknown>,
+): {
+  path: string;
+  value: string;
+  data: Record<string, unknown>;
+} {
+  return {
+    path: filePath,
+    value: selectUnifiedInput(strategy, fullSource, markdownContent),
+    data: {
+      frontmatter,
+      matter: frontmatter,
+      oxContent: {
+        parser: strategy,
+        frontmatter,
+        source: fullSource,
+        content: markdownContent,
+      },
+    },
+  };
 }
 
 function hasUnifiedCustomParser(processor: UnifiedProcessor): boolean {
