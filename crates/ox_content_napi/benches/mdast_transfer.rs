@@ -3,7 +3,7 @@ use ox_content_allocator::Allocator;
 use ox_content_napi::{parse, parse_mdast_raw, transform, JsParserOptions, JsTransformOptions};
 use ox_content_parser::{Parser, ParserOptions};
 
-const SAMPLE_BLOCK: &str = r#"# Heading
+const SAMPLE_BLOCK: &str = r"# Heading
 
 This is a paragraph with **bold**, *italic*, ~~strike~~, `inline code`, and a [link](https://example.com).
 
@@ -27,7 +27,7 @@ export function sum(a: number, b: number): number {
   return a + b;
 }
 ```
-"#;
+";
 
 fn bench_napi_mdast_transfer(c: &mut Criterion) {
     let documents = [
@@ -122,6 +122,7 @@ fn gfm_transform_options() -> JsTransformOptions {
     }
 }
 
+#[allow(clippy::cast_precision_loss, clippy::print_stdout)]
 fn report_payload_sizes(name: &str, document: &str, parser_options: Option<JsParserOptions>) {
     let json = parse(document.to_string(), parser_options.clone());
     let raw = parse_mdast_raw(document.to_string(), parser_options)

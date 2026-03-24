@@ -98,7 +98,7 @@ fn push_u32(buffer: &mut Vec<u8>, value: u32) {
 #[allow(unsafe_code)]
 fn into_external_uint8_array(buffer: Vec<u8>) -> napi::Result<Uint8Array> {
     let len = buffer.len();
-    let ptr = Box::into_raw(buffer.into_boxed_slice()) as *mut u8;
+    let ptr = Box::into_raw(buffer.into_boxed_slice()).cast::<u8>();
     let array = unsafe {
         Uint8Array::with_external_data(ptr, len, move |ptr, len| {
             let slice = ptr::slice_from_raw_parts_mut(ptr, len);
