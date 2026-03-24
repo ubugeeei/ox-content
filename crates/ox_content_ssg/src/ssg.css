@@ -13,6 +13,11 @@
   --octc-color-primary-hover: #f5602a;
   --octc-color-code-bg: #1e293b;
   --octc-color-code-text: #e2e8f0;
+  --octc-color-code-line-highlight: rgba(56, 189, 248, 0.16);
+  --octc-color-code-line-warning: rgba(245, 158, 11, 0.18);
+  --octc-color-code-line-warning-border: #f59e0b;
+  --octc-color-code-line-error: rgba(239, 68, 68, 0.18);
+  --octc-color-code-line-error-border: #ef4444;
 }
 [data-theme="dark"] {
   --octc-color-bg: #141414;
@@ -24,6 +29,11 @@
   --octc-color-primary-hover: #ff8a66;
   --octc-color-code-bg: #1a1a1a;
   --octc-color-code-text: #e5e5e5;
+  --octc-color-code-line-highlight: rgba(14, 165, 233, 0.2);
+  --octc-color-code-line-warning: rgba(245, 158, 11, 0.2);
+  --octc-color-code-line-warning-border: #f59e0b;
+  --octc-color-code-line-error: rgba(239, 68, 68, 0.22);
+  --octc-color-code-line-error-border: #f87171;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -36,6 +46,11 @@
     --octc-color-primary-hover: #ff8a66;
     --octc-color-code-bg: #1a1a1a;
     --octc-color-code-text: #e5e5e5;
+    --octc-color-code-line-highlight: rgba(14, 165, 233, 0.2);
+    --octc-color-code-line-warning: rgba(245, 158, 11, 0.2);
+    --octc-color-code-line-warning-border: #f59e0b;
+    --octc-color-code-line-error: rgba(239, 68, 68, 0.22);
+    --octc-color-code-line-error-border: #f87171;
   }
 }
 * {
@@ -572,6 +587,25 @@ a:hover {
   padding: 0;
   font-size: 0.8125rem;
 }
+.content pre.ox-code-block code {
+  display: block;
+}
+.content pre.ox-code-block .line {
+  display: block;
+  margin: 0 -1.25rem;
+  padding: 0 1.25rem;
+}
+.content pre.ox-code-block .ox-code-line--highlight {
+  background: var(--octc-color-code-line-highlight);
+}
+.content pre.ox-code-block .ox-code-line--warning {
+  background: var(--octc-color-code-line-warning);
+  box-shadow: inset 3px 0 0 var(--octc-color-code-line-warning-border);
+}
+.content pre.ox-code-block .ox-code-line--error {
+  background: var(--octc-color-code-line-error);
+  box-shadow: inset 3px 0 0 var(--octc-color-code-line-error-border);
+}
 .content table {
   width: 100%;
   border-collapse: collapse;
@@ -722,6 +756,10 @@ a:hover {
     font-size: 0.75rem;
     margin: 1rem -0.75rem;
     border-radius: 0;
+  }
+  .content pre.ox-code-block .line {
+    margin: 0 -0.75rem;
+    padding: 0 0.75rem;
   }
   .header {
     padding: 0 1rem;

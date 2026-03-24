@@ -81,16 +81,14 @@ function rehypeShikiHighlight(options: { theme: string; langs?: LanguageRegistra
 
             if (codeElement) {
               // Extract language from class
-              const className = codeElement.properties?.className;
               let lang = "text";
+              const originalPreClasses = normalizeClassName(child.properties?.className);
+              const originalCodeClasses = normalizeClassName(codeElement.properties?.className);
+              const originalLineMetadata = collectLineMetadata(codeElement);
 
-              if (Array.isArray(className)) {
-                const langClass = className.find(
-                  (c: string | number) => typeof c === "string" && c.startsWith("language-"),
-                );
-                if (langClass && typeof langClass === "string") {
-                  lang = langClass.replace("language-", "");
-                }
+              const langClass = originalCodeClasses.find((value) => value.startsWith("language-"));
+              if (langClass) {
+                lang = langClass.replace("language-", "");
               }
 
               // Get code text
@@ -107,8 +105,25 @@ function rehypeShikiHighlight(options: { theme: string; langs?: LanguageRegistra
                 const parsed = unified().use(rehypeParse, { fragment: true }).parse(highlighted);
 
                 // Replace the pre element with the highlighted one
-                if (parsed.children[0]) {
-                  node.children[i] = parsed.children[0] as Element;
+                if (parsed.children[0]?.type === "element") {
+                  const highlightedPre = parsed.children[0];
+                  highlightedPre.properties ??= {};
+                  highlightedPre.properties["data-language"] = lang;
+                  mergeClassNames(highlightedPre, originalPreClasses);
+
+                  const highlightedCode = highlightedPre.children.find(
+                    (c): c is Element => c.type === "element" && c.tagName === "code",
+                  );
+                  if (highlightedCode) {
+                    highlightedCode.properties ??= {};
+                    if (originalCodeClasses.length > 0) {
+                      highlightedCode.properties.className = originalCodeClasses;
+                    }
+                    highlightedCode.properties["data-language"] = lang;
+                    applyLineMetadata(highlightedCode, originalLineMetadata);
+                  }
+
+                  node.children[i] = highlightedPre;
                 }
               } catch {
                 // If highlighting fails, keep the original
@@ -142,6 +157,83 @@ function getTextContent(node: Element | Root): string {
   }
 
   return text;
+}
+
+function normalizeClassName(className: unknown): string[] {
+  if (Array.isArray(className)) {
+    return className.filter((value): value is string => typeof value === "string");
+  }
+
+  if (typeof className === "string" && className) {
+    return className.split(/\s+/).filter(Boolean);
+  }
+
+  return [];
+}
+
+function collectLineMetadata(codeElement: Element): Array<{ className: string[]; dataLine?: string }> {
+  return codeElement.children
+    .filter(
+      (child): child is Element =>
+        child.type === "element" &&
+        child.tagName === "span" &&
+        normalizeClassName(child.properties?.className).includes("line"),
+    )
+    .map((line) => {
+      const dataLine = line.properties?.["data-line"] ?? line.properties?.dataLine;
+      return {
+        className: normalizeClassName(line.properties?.className),
+        dataLine:
+          typeof dataLine === "string"
+            ? dataLine
+            : typeof dataLine === "number"
+              ? String(dataLine)
+              : undefined,
+      };
+    });
+}
+
+function applyLineMetadata(
+  codeElement: Element,
+  lineMetadata: Array<{ className: string[]; dataLine?: string }>,
+) {
+  if (lineMetadata.length === 0) {
+    return;
+  }
+
+  const highlightedLines = codeElement.children.filter(
+    (child): child is Element =>
+      child.type === "element" &&
+      child.tagName === "span" &&
+      normalizeClassName(child.properties?.className).includes("line"),
+  );
+
+  for (let index = 0; index < Math.min(highlightedLines.length, lineMetadata.length); index += 1) {
+    const highlightedLine = highlightedLines[index];
+    const originalLine = lineMetadata[index];
+    mergeClassNames(highlightedLine, originalLine.className);
+    if (originalLine.dataLine) {
+      highlightedLine.properties ??= {};
+      highlightedLine.properties["data-line"] = originalLine.dataLine;
+      highlightedLine.properties.dataLine = originalLine.dataLine;
+    }
+  }
+}
+
+function mergeClassNames(element: Element, classNames: string[]) {
+  if (classNames.length === 0) {
+    return;
+  }
+
+  const merged = normalizeClassName(element.properties?.className);
+  for (const className of classNames) {
+    if (!merged.includes(className)) {
+      merged.push(className);
+    }
+  }
+
+  element.properties ??= {};
+  element.properties.className = merged;
 }
 
 /**

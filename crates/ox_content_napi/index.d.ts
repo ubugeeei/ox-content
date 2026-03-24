@@ -444,6 +444,10 @@ export interface JsTransformOptions {
   baseUrl?: string;
   /** Source file path for relative link resolution. */
   sourcePath?: string;
+  /** Enable line annotations for code blocks using fence meta. */
+  codeAnnotations?: boolean;
+  /** Fence meta key used to read code annotations. */
+  codeAnnotationMetaKey?: string;
 }
 
 /**

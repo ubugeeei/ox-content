@@ -189,6 +189,18 @@ interface JsTransformOptions {
    * Used to determine if the current file is an index file.
    */
   sourcePath?: string;
+
+  /**
+   * Enable line annotations for code blocks using fence meta.
+   * @default false
+   */
+  codeAnnotations?: boolean;
+
+  /**
+   * Fence meta key used to read code annotations.
+   * @default "annotate"
+   */
+  codeAnnotationMetaKey?: string;
 }
 
 /**
@@ -388,6 +400,8 @@ export async function transformMarkdown(
     convertMdLinks: ssgOptions?.convertMdLinks,
     baseUrl: ssgOptions?.baseUrl,
     sourcePath: ssgOptions?.sourcePath ?? filePath,
+    codeAnnotations: options.codeAnnotations.enabled,
+    codeAnnotationMetaKey: options.codeAnnotations.metaKey,
   });
 
   if (result.errors.length > 0) {

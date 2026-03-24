@@ -83,6 +83,10 @@ pub struct JsTransformOptions {
     pub base_url: Option<String>,
     /// Source file path for relative link resolution.
     pub source_path: Option<String>,
+    /// Enable line annotations for code blocks using fence meta.
+    pub code_annotations: Option<bool>,
+    /// Fence meta key used to read code annotations.
+    pub code_annotation_meta_key: Option<String>,
 }
 
 /// Parser options for JavaScript.
@@ -385,6 +389,12 @@ fn transform_options_to_renderer_options(opts: &JsTransformOptions) -> HtmlRende
     }
     if let Some(ref v) = opts.source_path {
         options.source_path.clone_from(v);
+    }
+    if let Some(v) = opts.code_annotations {
+        options.code_annotations = v;
+    }
+    if let Some(ref v) = opts.code_annotation_meta_key {
+        options.code_annotation_meta_key.clone_from(v);
     }
 
     options
