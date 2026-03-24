@@ -1,9 +1,10 @@
 //! Node.js bindings for Ox Content.
 //!
 //! This crate provides NAPI bindings for using Ox Content from Node.js,
-//! enabling zero-copy AST transfer and JavaScript interoperability.
+//! including raw-buffer AST transfer for JavaScript interoperability.
 
 mod mdast;
+mod mdast_raw;
 
 use napi::bindgen_prelude::*;
 use napi::Task;
@@ -130,7 +131,7 @@ impl From<JsParserOptions> for ParserOptions {
 
 /// Parses Markdown source into an AST.
 ///
-/// Returns the AST as a JSON string for zero-copy transfer to JavaScript.
+/// Returns the AST as a JSON string for compatibility-oriented JavaScript consumers.
 #[napi]
 pub fn parse(source: String, options: Option<JsParserOptions>) -> ParseResult {
     let allocator = Allocator::new();
@@ -145,6 +146,17 @@ pub fn parse(source: String, options: Option<JsParserOptions>) -> ParseResult {
         }
         Err(e) => ParseResult { ast: String::new(), errors: vec![e.to_string()] },
     }
+}
+
+/// Parses Markdown source into a raw mdast memory block for JavaScript-side deserialization.
+#[napi]
+pub fn parse_mdast_raw(source: String, options: Option<JsParserOptions>) -> Result<Uint8Array> {
+    let allocator = Allocator::new();
+    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
+    let parser = Parser::with_options(&allocator, &source, parser_options);
+
+    let document = parser.parse().map_err(|error| napi::Error::from_reason(error.to_string()))?;
+    mdast_raw::to_mdast_raw(&document)
 }
 
 /// Parses Markdown and renders to HTML.

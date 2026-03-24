@@ -16,11 +16,116 @@ type MarkdownItPluginFn = (md: MarkdownIt, ...options: unknown[]) => void;
 export type MarkdownItPlugin = MarkdownItPluginFn | [MarkdownItPluginFn, ...unknown[]];
 
 /**
+ * mdast node aligned with the unified ecosystem.
+ *
+ * This is intentionally structural so Ox Content can expose mdast-shaped trees
+ * without forcing consumers into a separate type package.
+ */
+export interface MdastNode {
+  type: string;
+  children?: MdastNode[];
+  value?: string;
+  position?: {
+    start: {
+      line: number;
+      column: number;
+      offset: number;
+    };
+    end: {
+      line: number;
+      column: number;
+      offset: number;
+    };
+  };
+  depth?: number;
+  url?: string;
+  title?: string;
+  lang?: string;
+  meta?: string;
+  alt?: string;
+  ordered?: boolean;
+  spread?: boolean;
+  checked?: boolean;
+  start?: number;
+  align?: Array<"left" | "center" | "right" | null>;
+  identifier?: string;
+  label?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * mdast root node.
+ */
+export interface MdastRoot extends MdastNode {
+  type: "root";
+  children: MdastNode[];
+}
+
+/**
+ * Context passed to Ox Content mdast plugins.
+ */
+export interface MdastPluginContext {
+  /**
+   * Markdown file path being processed.
+   */
+  filePath: string;
+
+  /**
+   * Original markdown source passed into the unified stage.
+   */
+  source: string;
+
+  /**
+   * Parsed frontmatter data.
+   */
+  frontmatter: Record<string, unknown>;
+
+  /**
+   * Resolved plugin options.
+   */
+  options: ResolvedOptions;
+}
+
+/**
+ * Ox Content-native mdast transformer.
+ */
+export type MdastTransformer = (
+  tree: MdastRoot,
+  context: MdastPluginContext,
+) => MdastRoot | void | Promise<MdastRoot | void>;
+
+/**
+ * Ox Content mdast plugin descriptor.
+ *
+ * Existing unified/remark plugins can also be passed through `plugin.mdast`,
+ * but this object form gives a more mdast-native authoring experience.
+ */
+export interface OxContentMdastPlugin {
+  /**
+   * Optional plugin name for debugging.
+   */
+  name?: string;
+
+  /**
+   * Tree transformer.
+   */
+  transform: MdastTransformer;
+}
+
+/**
  * Remark plugin type.
  * Can be a single plugin or a tuple of [plugin, options].
  */
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type RemarkPlugin = [unknown, unknown] | unknown;
+
+/**
+ * mdast plugin type.
+ *
+ * Accepts both Ox Content-native mdast plugins and existing unified/remark
+ * plugins so existing ecosystem plugins can run unchanged.
+ */
+export type MdastPlugin = OxContentMdastPlugin | RemarkPlugin;
 
 /**
  * Rehype plugin type.
@@ -106,7 +211,14 @@ export interface PluginConfig {
   markdownIt?: MarkdownItPlugin[];
 
   /**
+   * mdast plugins.
+   * Accepts both Ox Content-native mdast plugins and existing remark plugins.
+   */
+  mdast?: MdastPlugin[];
+
+  /**
    * Remark plugins (unified ecosystem).
+   * Kept for compatibility; runs in the same mdast stage as `plugin.mdast`.
    * @see https://github.com/remarkjs/remark/blob/main/doc/plugins.md
    */
   remark?: RemarkPlugin[];

@@ -1,24 +1,28 @@
 ---
-title: ox-content native plugin example
+title: ox-content mdast js plugin example
 ---
 
-# Native Plugins
+# mdast JS Plugins
 
-This example demonstrates **ox-content native plugins**.
+This example demonstrates **ox-content mdast JS plugins**.
 
 ## How It Works
 
-Native plugins are simple functions that transform HTML after rendering.
+mdast plugins receive the parsed tree before HTML rendering.
 
 ```typescript
-const myPlugin: OxContentPlugin = (html) => {
-  return `<div class="wrapper">${html}</div>`;
-};
+const myPlugin = defineMdastPlugin("annotate-headings", (tree) => {
+  for (const node of tree.children) {
+    if (node.type === "heading") {
+      node.children?.push({ type: "text", value: " (via mdast plugin)" });
+    }
+  }
+});
 ```
 
 ## Benefits
 
-- Simple API
-- Full control over HTML output
-- No external dependencies
-- Can be async
+- mdast-shaped authoring experience
+- Existing unified/remark plugins keep working
+- Native parser speed with JS extensibility
+- TOC stays in sync with transformed headings

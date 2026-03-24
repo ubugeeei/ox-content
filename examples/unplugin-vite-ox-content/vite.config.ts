@@ -1,5 +1,22 @@
 import { defineConfig } from "vite-plus";
-import oxContent, { type OxContentPlugin } from "@ox-content/unplugin/vite";
+import oxContent, {
+  defineMdastPlugin,
+  type OxContentPlugin,
+} from "@ox-content/unplugin/vite";
+
+const annotateHeadings = defineMdastPlugin("annotate-headings", (tree) => {
+  for (const node of tree.children) {
+    if (node.type !== "heading") {
+      continue;
+    }
+
+    node.children ??= [];
+    node.children.push({
+      type: "text",
+      value: " (via mdast plugin)",
+    });
+  }
+});
 
 // Example: Custom ox-content plugin that wraps content in a div
 const wrapInArticle: OxContentPlugin = (html) => {
@@ -18,6 +35,7 @@ export default defineConfig({
     oxContent({
       toc: true,
       plugin: {
+        mdast: [annotateHeadings],
         oxContent: [addReadingTime, wrapInArticle],
       },
     }),

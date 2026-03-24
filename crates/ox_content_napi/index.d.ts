@@ -483,12 +483,23 @@ export interface Mf2ValidateResult {
 /**
  * Parses Markdown source into an AST.
  *
- * Returns the AST as a JSON string for zero-copy transfer to JavaScript.
+ * Returns the AST as a JSON string for compatibility-oriented JavaScript consumers.
  */
 export declare function parse(
   source: string,
   options?: JsParserOptions | undefined | null,
 ): ParseResult;
+
+/**
+ * Parses Markdown source into a raw mdast memory block.
+ *
+ * The returned `Uint8Array` is backed by Rust-owned memory and is intended to be
+ * deserialized on the JavaScript side without going through JSON.
+ */
+export declare function parseMdastRaw(
+  source: string,
+  options?: JsParserOptions | undefined | null,
+): Uint8Array;
 
 /** Parses Markdown and renders to HTML. */
 export declare function parseAndRender(
