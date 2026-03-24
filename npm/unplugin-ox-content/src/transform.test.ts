@@ -344,6 +344,25 @@ describe("mdast js plugin", () => {
     expect(result.html).not.toContain("<h1>Hello</h1>");
   });
 
+  it("reuses explicit remark-rehype and rehype-stringify plugins without double-applying them", async () => {
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/explicit-bridge.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [],
+          remark: [[remarkRehype, { allowDangerousHtml: true }]],
+          rehype: [[rehypeStringify, { allowDangerousHtml: true }]],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>Hello</h1>");
+    expect(result.html).toContain("<p>World</p>");
+  });
+
   it("can be used directly as a unified parser plugin", async () => {
     const file = await unified()
       .use(oxContentMdast, { gfm: true })

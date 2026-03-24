@@ -169,6 +169,14 @@ async function transformWithUnified(
 ): Promise<{ html: string; toc: TocEntry[] }> {
   const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
   const processor = unified();
+  const { plugins: remarkPlugins, options: remarkRehypeOptions } = extractUnifiedPluginWithOptions(
+    options.plugin.remark,
+    remarkRehype,
+  );
+  const { plugins: rehypePlugins, options: rehypeStringifyOptions } = extractUnifiedPluginWithOptions(
+    options.plugin.rehype,
+    rehypeStringify,
+  );
 
   applyUnifiedPlugins(
     processor,
@@ -176,7 +184,7 @@ async function transformWithUnified(
       isOxContentMdastPlugin(plugin) ? toUnifiedMdastPlugin(plugin, mdastContext) : plugin,
     ),
   );
-  applyUnifiedPlugins(processor, options.plugin.remark);
+  applyUnifiedPlugins(processor, remarkPlugins);
   const parserStrategy = resolveUnifiedParserStrategy(processor);
   installUnifiedParser(processor, parserStrategy, options);
 
@@ -190,9 +198,15 @@ async function transformWithUnified(
     };
   });
 
-  processor.use(remarkRehype, { allowDangerousHtml: true });
-  applyUnifiedPlugins(processor, options.plugin.rehype);
-  processor.use(rehypeStringify, { allowDangerousHtml: true });
+  processor.use(remarkRehype, {
+    allowDangerousHtml: true,
+    ...remarkRehypeOptions,
+  } as never);
+  applyUnifiedPlugins(processor, rehypePlugins);
+  processor.use(rehypeStringify, {
+    allowDangerousHtml: true,
+    ...rehypeStringifyOptions,
+  } as never);
 
   const file = await processor.process({
     ...createUnifiedFileInput(
@@ -357,6 +371,51 @@ function hasRemarkSyntaxExtensions(processor: UnifiedProcessor): boolean {
 
 function hasOwnDataField(data: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(data, key);
+}
+
+function extractUnifiedPluginWithOptions(
+  plugins: unknown[],
+  targetPlugin: unknown,
+): {
+  plugins: unknown[];
+  options?: Record<string, unknown>;
+} {
+  let extractedOptions: Record<string, unknown> | undefined;
+  const nextPlugins: unknown[] = [];
+
+  for (const plugin of plugins) {
+    const { attacher, options } = splitUnifiedPlugin(plugin);
+
+    if (attacher === targetPlugin) {
+      extractedOptions = options;
+      continue;
+    }
+
+    nextPlugins.push(plugin);
+  }
+
+  return {
+    plugins: nextPlugins,
+    options: extractedOptions,
+  };
+}
+
+function splitUnifiedPlugin(plugin: unknown): {
+  attacher: unknown;
+  options?: Record<string, unknown>;
+} {
+  if (!Array.isArray(plugin)) {
+    return { attacher: plugin };
+  }
+
+  const [attacher, firstOption] = plugin;
+  return {
+    attacher,
+    options:
+      firstOption && typeof firstOption === "object"
+        ? firstOption as Record<string, unknown>
+        : undefined,
+  };
 }
 
 /**
