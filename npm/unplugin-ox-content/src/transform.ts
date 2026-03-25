@@ -773,20 +773,101 @@ function extractUnifiedPluginWithOptions(
   const nextPlugins: unknown[] = [];
 
   for (const plugin of plugins) {
-    const { attacher, options } = splitUnifiedPlugin(plugin);
-
-    if (attacher === targetPlugin) {
-      extractedOptions = options;
-      continue;
+    const result = filterUnifiedPlugin(plugin, targetPlugin);
+    extractedOptions = mergeUnifiedPluginOptions(extractedOptions, result.options);
+    if (result.keep) {
+      nextPlugins.push(result.plugin);
     }
-
-    nextPlugins.push(plugin);
   }
 
   return {
     plugins: nextPlugins,
     options: extractedOptions,
   };
+}
+
+function filterUnifiedPlugin(
+  plugin: unknown,
+  targetPlugin: unknown,
+): {
+  keep: boolean;
+  plugin: unknown;
+  options?: Record<string, unknown>;
+} {
+  if (isUnifiedPreset(plugin)) {
+    const { plugins: _plugins, ...rest } = plugin;
+    let extractedOptions: Record<string, unknown> | undefined;
+    const nextPlugins: unknown[] = [];
+
+    for (const nestedPlugin of plugin.plugins ?? []) {
+      const result = filterUnifiedPlugin(nestedPlugin, targetPlugin);
+      extractedOptions = mergeUnifiedPluginOptions(extractedOptions, result.options);
+      if (result.keep) {
+        nextPlugins.push(result.plugin);
+      }
+    }
+
+    if (nextPlugins.length === 0 && plugin.settings === undefined) {
+      return {
+        keep: false,
+        plugin,
+        options: extractedOptions,
+      };
+    }
+
+    return {
+      keep: true,
+      plugin: {
+        ...rest,
+        ...(nextPlugins.length > 0 ? { plugins: nextPlugins } : {}),
+      },
+      options: extractedOptions,
+    };
+  }
+
+  const { attacher, options } = splitUnifiedPlugin(plugin);
+  if (attacher === targetPlugin) {
+    return {
+      keep: false,
+      plugin,
+      options,
+    };
+  }
+
+  return {
+    keep: true,
+    plugin,
+  };
+}
+
+function mergeUnifiedPluginOptions(
+  left?: Record<string, unknown>,
+  right?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  if (left === undefined) {
+    return right;
+  }
+
+  if (right === undefined) {
+    return left;
+  }
+
+  return {
+    ...left,
+    ...right,
+  };
+}
+
+function isUnifiedPreset(plugin: unknown): plugin is {
+  plugins?: unknown[];
+  settings?: Record<string, unknown>;
+} {
+  return (
+    Boolean(plugin) &&
+    typeof plugin === "object" &&
+    !Array.isArray(plugin) &&
+    ("plugins" in plugin || "settings" in plugin)
+  );
 }
 
 function splitUnifiedPlugin(plugin: unknown): {

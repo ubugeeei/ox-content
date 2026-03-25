@@ -393,6 +393,55 @@ describe("mdast js plugin", () => {
     expect(result.html).toContain("<p>World</p>");
   });
 
+  it("reuses explicit bridge plugins nested inside unified presets", async () => {
+    function rehypeAnnotateHeading() {
+      return (tree: {
+        children?: Array<{
+          type?: string;
+          tagName?: string;
+          properties?: Record<string, unknown>;
+        }>;
+      }) => {
+        const heading = tree.children?.find(
+          (node) => node.type === "element" && node.tagName === "h1",
+        );
+        if (!heading) {
+          return;
+        }
+
+        heading.properties = {
+          ...heading.properties,
+          dataPreset: "bridge",
+        };
+      };
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/preset-bridge.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [],
+          remark: [
+            {
+              plugins: [[remarkRehype, { allowDangerousHtml: true }]],
+            },
+          ],
+          rehype: [
+            {
+              plugins: [rehypeAnnotateHeading, [rehypeStringify, { allowDangerousHtml: true }]],
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(result.html).toContain('<h1 data-preset="bridge">Hello</h1>');
+    expect(result.html).toContain("<p>World</p>");
+  });
+
   it("honors custom unified compilers without overriding them", async () => {
     function useCustomCompiler(this: { compiler?: (tree: typeof baseMdast) => string }) {
       this.compiler = (tree) => {
