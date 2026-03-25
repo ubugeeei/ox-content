@@ -530,6 +530,9 @@ importers:
       markdown-it-anchor:
         specifier: ^9.2.0
         version: 9.2.0(@types/markdown-it@14.1.2)(markdown-it@14.1.0)
+      rehype-parse:
+        specifier: ^9.0.1
+        version: 9.0.1
       rehype-stringify:
         specifier: ^10.0.1
         version: 10.0.1

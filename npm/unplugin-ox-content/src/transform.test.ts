@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import type MarkdownIt from "markdown-it";
 import rehypeStringify from "rehype-stringify";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
@@ -359,6 +360,185 @@ describe("mdast js plugin", () => {
 
     expect(result.html).toContain("<h1>Hello</h1>");
     expect(result.html).toContain("<p>World</p>");
+  });
+
+  it("honors custom unified compilers without overriding them", async () => {
+    function useCustomCompiler(this: { compiler?: (tree: typeof baseMdast) => string }) {
+      this.compiler = (tree) => {
+        const heading = tree.children[0];
+        const text = heading.children?.[0];
+        return `<section data-compiler="remark">${typeof text?.value === "string" ? text.value : "missing"}</section>`;
+      };
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/custom-compiler.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [],
+          remark: [useCustomCompiler],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toBe('<section data-compiler="remark">Hello</section>');
+  });
+
+  it("honors custom rehype compilers without overriding them", async () => {
+    function rehypeCustomCompiler(this: { compiler?: () => string }) {
+      this.compiler = () => '<aside data-compiler="rehype">custom-output</aside>';
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/rehype-custom-compiler.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [],
+          remark: [],
+          rehype: [rehypeCustomCompiler],
+        },
+      }),
+    );
+
+    expect(result.html).toBe('<aside data-compiler="rehype">custom-output</aside>');
+  });
+
+  it("runs markdown-it plugins and builds the TOC from markdown-it tokens", async () => {
+    function markdownItHeadingPlugin(md: MarkdownIt) {
+      md.core.ruler.push("rewrite-heading", (state) => {
+        for (let index = 0; index < state.tokens.length; index += 1) {
+          const token = state.tokens[index];
+          if (token.type !== "heading_open") {
+            continue;
+          }
+
+          const inline = state.tokens[index + 1];
+          if (!inline || inline.type !== "inline") {
+            continue;
+          }
+
+          token.attrSet("id", "markdown-it-heading");
+          for (const child of inline.children ?? []) {
+            if (child.type === "text") {
+              child.content = child.content.replace("Hello", "Hello from markdown-it");
+            }
+          }
+        }
+      });
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/markdown-it-plugin.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [markdownItHeadingPlugin],
+          mdast: [],
+          remark: [],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain('<h1 id="markdown-it-heading">Hello from markdown-it</h1>');
+    expect(result.toc).toEqual([
+      {
+        depth: 1,
+        text: "Hello from markdown-it",
+        slug: "markdown-it-heading",
+        children: [],
+      },
+    ]);
+  });
+
+  it("pipes markdown-it output through rehype plugins when configured", async () => {
+    function markdownItHeadingPlugin(md: MarkdownIt) {
+      md.core.ruler.push("rewrite-heading", (state) => {
+        const inline = state.tokens[1];
+        if (!inline || inline.type !== "inline") {
+          return;
+        }
+
+        for (const child of inline.children ?? []) {
+          if (child.type === "text") {
+            child.content = "Hello from markdown-it";
+          }
+        }
+      });
+    }
+
+    function rehypeAnnotateHeading() {
+      return (tree: {
+        children?: Array<{
+          type?: string;
+          tagName?: string;
+          properties?: Record<string, unknown>;
+        }>;
+      }) => {
+        const heading = tree.children?.find(
+          (node) => node.type === "element" && node.tagName === "h1",
+        );
+        if (!heading) {
+          return;
+        }
+
+        heading.properties = {
+          ...heading.properties,
+          dataPipeline: "rehype",
+        };
+      };
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/markdown-it-rehype.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [markdownItHeadingPlugin],
+          mdast: [],
+          remark: [],
+          rehype: [rehypeAnnotateHeading],
+        },
+      }),
+    );
+
+    expect(result.html).toContain('data-pipeline="rehype"');
+    expect(result.html).toContain("Hello from markdown-it");
+  });
+
+  it("rejects mixing markdown-it plugins with mdast or remark plugins", async () => {
+    await expect(
+      transformMarkdown(
+        "# Hello",
+        "docs/mixed-pipeline.md",
+        createResolvedOptions({
+          plugin: {
+            oxContent: [],
+            markdownIt: [
+              (md: MarkdownIt) => {
+                md.core.ruler.push("noop", () => undefined);
+              },
+            ],
+            mdast: [
+              defineMdastPlugin("noop", () => {
+                return;
+              }),
+            ],
+            remark: [],
+            rehype: [],
+          },
+        }),
+      ),
+    ).rejects.toThrow("cannot yet be combined");
   });
 
   it("can be used directly as a unified parser plugin", async () => {
