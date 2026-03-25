@@ -83,6 +83,12 @@ interface MarkdownItTokenLike {
   children?: MarkdownItTokenLike[];
 }
 
+interface MarkdownItBridgeData {
+  html: string;
+  tokens: MarkdownItTokenLike[];
+  env: MarkdownItEnv;
+}
+
 /**
  * Transforms Markdown content into a JavaScript module.
  * Uses Rust-based parsing, and switches to a unified/mdast pipeline when
@@ -221,10 +227,15 @@ async function transformWithMarkdownIt(
   const env = createMarkdownItEnv(filePath, fullSource, markdownContent, frontmatter);
   const tokens = markdownIt.parse(markdownContent, env);
   const html = markdownIt.renderer.render(tokens, markdownIt.options, env);
+  const bridgeData: MarkdownItBridgeData = {
+    html,
+    tokens,
+    env,
+  };
 
   if (hasMdastOrRemarkPlugins(options)) {
     return transformMarkdownItWithUnified(
-      html,
+      bridgeData,
       fullSource,
       markdownContent,
       filePath,
@@ -243,6 +254,7 @@ async function transformWithMarkdownIt(
         frontmatter,
         options,
         "markdown-it",
+        bridgeData,
       ),
       toc: options.toc ? extractTocFromMarkdownItTokens(tokens, options.tocMaxDepth) : [],
     };
@@ -255,7 +267,7 @@ async function transformWithMarkdownIt(
 }
 
 async function transformMarkdownItWithUnified(
-  html: string,
+  markdownIt: MarkdownItBridgeData,
   fullSource: string,
   markdownContent: string,
   filePath: string,
@@ -297,7 +309,7 @@ async function transformMarkdownItWithUnified(
   if (resolveUnifiedCompilerStrategy(frozenMdastProcessor) === "custom") {
     const { processor: compiledProcessor, input } = processorFromMarkdownItProcessor(
       frozenMdastProcessor(),
-      html,
+      markdownIt,
       filePath,
       fullSource,
       markdownContent,
@@ -329,7 +341,7 @@ async function transformMarkdownItWithUnified(
 
   const { processor: compiledProcessor, input } = processorFromMarkdownItProcessor(
     finalProcessor,
-    html,
+    markdownIt,
     filePath,
     fullSource,
     markdownContent,
@@ -598,7 +610,7 @@ async function processUnifiedFile(
 
 function processorFromMarkdownItProcessor(
   processor: UnifiedProcessor,
-  html: string,
+  markdownIt: MarkdownItBridgeData,
   filePath: string,
   fullSource: string,
   markdownContent: string,
@@ -609,8 +621,14 @@ function processorFromMarkdownItProcessor(
     processor,
     input: {
       path: filePath,
-      value: html,
-      data: createUnifiedFileData(parser, fullSource, markdownContent, frontmatter, { html }),
+      value: markdownIt.html,
+      data: createUnifiedFileData(parser, fullSource, markdownContent, frontmatter, {
+        html: markdownIt.html,
+        markdownIt: {
+          env: markdownIt.env,
+          tokens: markdownIt.tokens,
+        },
+      }),
     },
   };
 }
@@ -724,6 +742,7 @@ async function transformHtmlWithRehype(
   frontmatter: Record<string, unknown>,
   options: ResolvedOptions,
   parser: TransformParserKind,
+  extra?: Record<string, unknown>,
 ): Promise<string> {
   const { plugins: rehypePlugins, options: rehypeStringifyOptions } =
     extractUnifiedPluginWithOptions(options.plugin.rehype, rehypeStringify);
@@ -746,7 +765,10 @@ async function transformHtmlWithRehype(
   return processUnifiedFile(processor, {
     path: filePath,
     value: html,
-    data: createUnifiedFileData(parser, fullSource, markdownContent, frontmatter, { html }),
+    data: createUnifiedFileData(parser, fullSource, markdownContent, frontmatter, {
+      html,
+      ...extra,
+    }),
   });
 }
 

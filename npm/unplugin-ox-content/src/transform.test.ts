@@ -654,6 +654,70 @@ describe("mdast js plugin", () => {
     ]);
   });
 
+  it("exposes markdown-it tokens on vfile data for downstream unified plugins", async () => {
+    function markdownItHeadingPlugin(md: MarkdownIt) {
+      md.core.ruler.push("rewrite-heading", (state) => {
+        const inline = state.tokens[1];
+        if (!inline || inline.type !== "inline") {
+          return;
+        }
+
+        for (const child of inline.children ?? []) {
+          if (child.type === "text") {
+            child.content = "Hello from markdown-it tokens";
+          }
+        }
+      });
+    }
+
+    function remarkReadMarkdownItTokens() {
+      return (
+        tree: typeof baseMdast,
+        file: {
+          data?: {
+            oxContent?: {
+              markdownIt?: {
+                tokens?: Array<{
+                  type?: string;
+                  children?: Array<{ type?: string; content?: string }>;
+                }>;
+              };
+            };
+          };
+        },
+      ) => {
+        const inline = file.data?.oxContent?.markdownIt?.tokens?.find(
+          (token) => token.type === "inline",
+        );
+        const text = inline?.children?.find((token) => token.type === "text")?.content;
+        if (!text) {
+          return;
+        }
+
+        tree.children.push({
+          type: "paragraph",
+          children: [{ type: "text", value: `From token stream: ${text}` }],
+        });
+      };
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/markdown-it-vfile-data.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [markdownItHeadingPlugin],
+          mdast: [],
+          remark: [remarkReadMarkdownItTokens],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<p>From token stream: Hello from markdown-it tokens</p>");
+  });
+
   it("can be used directly as a unified parser plugin", async () => {
     const file = await unified()
       .use(oxContentMdast, { gfm: true })
