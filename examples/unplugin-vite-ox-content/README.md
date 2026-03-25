@@ -109,3 +109,39 @@ This page starts as plain Markdown and is then processed by the Ox Content unifi
   <p>remark saw frontmatter title: Unified Bridge Demo and stage: mdast -> remark -> html.</p>
 </article>
 ```
+
+## Advanced: markdown-it token bridge
+
+When you configure `plugin.markdownIt`, downstream remark/unified plugins can read the token stream on `file.data.oxContent.markdownIt.tokens`.
+
+```ts
+function markdownItHeadingPlugin(md: MarkdownIt) {
+  md.core.ruler.push("rewrite-heading", (state) => {
+    const inline = state.tokens[1];
+    if (!inline || inline.type !== "inline") {
+      return;
+    }
+
+    for (const child of inline.children ?? []) {
+      if (child.type === "text") {
+        child.content = "Hello from markdown-it tokens";
+      }
+    }
+  });
+}
+
+function remarkReadMarkdownItTokens() {
+  return (tree: MdastRoot, file: { data?: { oxContent?: { markdownIt?: { tokens?: Array<{ type?: string; children?: Array<{ type?: string; content?: string }> }> } } } }) => {
+    const inline = file.data?.oxContent?.markdownIt?.tokens?.find((token) => token.type === "inline");
+    const text = inline?.children?.find((token) => token.type === "text")?.content;
+    if (!text) {
+      return;
+    }
+
+    tree.children.push({
+      type: "paragraph",
+      children: [{ type: "text", value: `From token stream: ${text}` }],
+    });
+  };
+}
+```
