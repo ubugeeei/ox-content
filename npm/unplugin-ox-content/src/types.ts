@@ -113,11 +113,28 @@ export interface OxContentMdastPlugin {
 }
 
 /**
- * Remark plugin type.
- * Can be a single plugin or a tuple of [plugin, options].
+ * Unified attacher function type.
  */
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type RemarkPlugin = [unknown, unknown] | unknown;
+type UnifiedAttacher = (this: unknown, ...args: never[]) => unknown;
+
+/**
+ * Unified preset object type.
+ */
+export interface UnifiedPreset {
+  plugins?: unknown[];
+  settings?: Record<string, unknown>;
+}
+
+/**
+ * Unified plugin tuple type.
+ */
+type UnifiedPluginTuple = [UnifiedAttacher, ...unknown[]];
+
+/**
+ * Remark plugin type.
+ * Can be a single plugin, a plugin tuple, or a unified preset.
+ */
+export type RemarkPlugin = UnifiedAttacher | UnifiedPluginTuple | UnifiedPreset;
 
 /**
  * mdast plugin type.
@@ -129,10 +146,9 @@ export type MdastPlugin = OxContentMdastPlugin | RemarkPlugin;
 
 /**
  * Rehype plugin type.
- * Can be a single plugin or a tuple of [plugin, options].
+ * Can be a single plugin, a plugin tuple, or a unified preset.
  */
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type RehypePlugin = [unknown, unknown] | unknown;
+export type RehypePlugin = UnifiedAttacher | UnifiedPluginTuple | UnifiedPreset;
 
 /**
  * Ox-content native plugin type.

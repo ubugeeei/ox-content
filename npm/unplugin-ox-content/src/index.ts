@@ -26,6 +26,7 @@ export type {
   PluginConfig,
   OxContentPlugin,
   MarkdownItPlugin,
+  UnifiedPreset,
   RemarkPlugin,
   RehypePlugin,
 } from "./types";

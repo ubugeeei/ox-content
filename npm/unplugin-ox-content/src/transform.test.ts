@@ -237,6 +237,37 @@ describe("mdast js plugin", () => {
     expect(result.html).toContain("<p>From remark plugin</p>");
   });
 
+  it("accepts unified preset objects in the remark stage", async () => {
+    function remarkAppendParagraph() {
+      return (tree: typeof baseMdast) => {
+        tree.children.push({
+          type: "paragraph",
+          children: [{ type: "text", value: "From remark preset" }],
+        });
+      };
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/remark-preset.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [],
+          remark: [
+            {
+              plugins: [remarkAppendParagraph],
+            },
+          ],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<p>From remark preset</p>");
+  });
+
   it("exposes parsed frontmatter on vfile data for unified plugins", async () => {
     function remarkReadFrontmatter() {
       return (tree: typeof baseMdast, file: { data?: { matter?: { title?: string } } }) => {
