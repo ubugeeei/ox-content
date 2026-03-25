@@ -11,12 +11,12 @@ Get element attribute value.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/github.ts#L45)**
 
 ```typescript
-function getAttribute(el: Element, name: string): string | undefined;
+function getAttribute(el: Element, name: string): string | undefined
 ```
 
 ### Returns
 
-`string | undefined` -
+`string | undefined` - 
 
 ---
 
@@ -29,12 +29,12 @@ Format number with K/M suffix.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/github.ts#L55)**
 
 ```typescript
-function formatNumber(num: number): string;
+function formatNumber(num: number): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -50,12 +50,12 @@ Fetch repository data from GitHub API.
 export async function fetchRepoData(
   repo: string,
   options: Required<GitHubOptions>,
-): Promise<GitHubRepoData | null>;
+  ): Promise<GitHubRepoData | null>
 ```
 
 ### Returns
 
-`Promise<GitHubRepoData | null>` -
+`Promise<GitHubRepoData | null>` - 
 
 ---
 
@@ -68,12 +68,12 @@ Create GitHub card element from repo data.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/github.ts#L114)**
 
 ```typescript
-function createGitHubCard(repoData: GitHubRepoData): Element;
+function createGitHubCard(repoData: GitHubRepoData): Element
 ```
 
 ### Returns
 
-`Element` -
+`Element` - 
 
 ---
 
@@ -86,12 +86,12 @@ Create fallback element when repo data is unavailable.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/github.ts#L262)**
 
 ```typescript
-function createFallbackCard(repo: string): Element;
+function createFallbackCard(repo: string): Element
 ```
 
 ### Returns
 
-`Element` -
+`Element` - 
 
 ---
 
@@ -104,12 +104,12 @@ Collect all GitHub repos from HTML for pre-fetching.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/github.ts#L312)**
 
 ```typescript
-export async function collectGitHubRepos(html: string): Promise<string[]>;
+export async function collectGitHubRepos(html: string): Promise<string[]>
 ```
 
 ### Returns
 
-`Promise<string[]>` -
+`Promise<string[]>` - 
 
 ---
 
@@ -125,12 +125,12 @@ Pre-fetch all GitHub repos data.
 export async function prefetchGitHubRepos(
   repos: string[],
   options?: GitHubOptions,
-): Promise<Map<string, GitHubRepoData | null>>;
+  ): Promise<Map<string, GitHubRepoData | null>>
 ```
 
 ### Returns
 
-`Promise<Map<string, GitHubRepoData | null>>` -
+`Promise<Map<string, GitHubRepoData | null>>` - 
 
 ---
 
@@ -143,7 +143,7 @@ Rehype plugin to transform GitHub components.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/github.ts#L347)**
 
 ```typescript
-function rehypeGitHub(repoDataMap: Map<string, GitHubRepoData | null>);
+function rehypeGitHub(repoDataMap: Map<string, GitHubRepoData | null>)
 ```
 
 ---
@@ -161,11 +161,12 @@ export async function transformGitHub(
   html: string,
   repoDataMap?: Map<string, GitHubRepoData | null>,
   options?: GitHubOptions,
-): Promise<string>;
+  ): Promise<string>
 ```
 
 ### Returns
 
-`Promise<string>` -
+`Promise<string>` - 
 
 ---
+

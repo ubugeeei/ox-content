@@ -57,6 +57,17 @@ export default defineConfig({
 
 ## Plugin Examples
 
+### [Code Annotations](./code-annotations.md)
+
+Opt-in line annotations for fenced code blocks with `highlight`, `warning`, and `error` markers.
+
+```ts
+oxContent({
+  highlight: true,
+  codeAnnotations: true,
+});
+```
+
 ### [markdown-it Plugin](./plugin-markdown-it.md)
 
 Use Ox Content as a markdown-it plugin for existing markdown-it projects.

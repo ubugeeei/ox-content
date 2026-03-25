@@ -23,6 +23,7 @@ Transform all enabled plugins in HTML content.
 
 ### Returns
 
-`Promise<string>` -
+`Promise<string>` - 
 
 ---
+

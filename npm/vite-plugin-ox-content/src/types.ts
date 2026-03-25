@@ -234,6 +234,18 @@ export interface OxContentOptions {
   highlightLangs?: LanguageRegistration[];
 
   /**
+   * Opt-in line annotations for fenced code blocks.
+   *
+   * Uses code fence meta with a configurable attribute key.
+   *
+   * Example:
+   * ` ```ts annotate="highlight:1,3-4;warning:6;error:7" `
+   *
+   * @default false
+   */
+  codeAnnotations?: boolean | CodeAnnotationsOptions;
+
+  /**
    * Enable mermaid diagram rendering.
    * @default false
    */
@@ -318,6 +330,7 @@ export interface ResolvedOptions {
   highlight: boolean;
   highlightTheme: string;
   highlightLangs: LanguageRegistration[];
+  codeAnnotations: ResolvedCodeAnnotationsOptions;
   mermaid: boolean;
   frontmatter: boolean;
   toc: boolean;
@@ -329,6 +342,33 @@ export interface ResolvedOptions {
   search: ResolvedSearchOptions;
   ogViewer: boolean;
   i18n: ResolvedI18nOptions | false;
+}
+
+/**
+ * Supported line annotation kinds for code blocks.
+ */
+export type CodeAnnotationKind = "highlight" | "warning" | "error";
+
+/**
+ * Opt-in code annotation configuration.
+ */
+export interface CodeAnnotationsOptions {
+  /**
+   * Attribute name read from the code fence meta string.
+   *
+   * Example: `annotate="highlight:1,3-4;warning:6"`
+   *
+   * @default "annotate"
+   */
+  metaKey?: string;
+}
+
+/**
+ * Resolved code annotation configuration.
+ */
+export interface ResolvedCodeAnnotationsOptions {
+  enabled: boolean;
+  metaKey: string;
 }
 
 /**

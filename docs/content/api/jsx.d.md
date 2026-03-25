@@ -51,3 +51,4 @@ Props for a specific intrinsic element.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx.d.ts#L712)**
 
 ---
+

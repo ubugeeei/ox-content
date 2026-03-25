@@ -91,6 +91,58 @@ oxContent({
 
 Enable GitHub Flavored Markdown extensions.
 
+### codeAnnotations
+
+- Type: `boolean | CodeAnnotationsOptions`
+- Default: `false`
+
+Enables opt-in line annotations for fenced code blocks. This keeps the notation abstracted behind a configurable meta attribute instead of baking in a VitePress-compatible syntax.
+
+```ts
+oxContent({
+  highlight: true,
+  codeAnnotations: true,
+});
+```
+
+With the default `metaKey`, annotate individual lines in Markdown like this:
+
+~~~~md
+```ts annotate="highlight:1,6;warning:2;error:3"
+export function loadUser(input: string) {
+  if (!input) console.warn("missing payload");
+  throw new Error("missing id");
+}
+
+const user = loadUser(payload);
+console.log(user);
+```
+~~~~
+
+Rendered example:
+
+```ts annotate="highlight:1,6;warning:2;error:3"
+export function loadUser(input: string) {
+  if (!input) console.warn("missing payload");
+  throw new Error("missing id");
+}
+
+const user = loadUser(payload);
+console.log(user);
+```
+
+You can also customize the attribute name:
+
+```ts
+oxContent({
+  codeAnnotations: {
+    metaKey: "markers",
+  },
+});
+```
+
+See the [Code Annotations example](../examples/code-annotations.md) for a rendered example.
+
 ### toc
 
 - Type: `boolean`

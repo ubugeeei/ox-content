@@ -3,6 +3,7 @@
 //! This crate provides NAPI bindings for using Ox Content from Node.js,
 //! enabling zero-copy AST transfer and JavaScript interoperability.
 
+mod highlight;
 mod mdast;
 
 use napi::bindgen_prelude::*;
@@ -83,6 +84,10 @@ pub struct JsTransformOptions {
     pub base_url: Option<String>,
     /// Source file path for relative link resolution.
     pub source_path: Option<String>,
+    /// Enable line annotations for code blocks using fence meta.
+    pub code_annotations: Option<bool>,
+    /// Fence meta key used to read code annotations.
+    pub code_annotation_meta_key: Option<String>,
 }
 
 /// Parser options for JavaScript.
@@ -184,6 +189,12 @@ pub fn render(_ast_json: String) -> RenderResult {
 #[napi]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
+}
+
+/// Restores code block metadata after JavaScript-side syntax highlighting.
+#[napi]
+pub fn merge_highlighted_code_blocks(original_html: String, highlighted_html: String) -> String {
+    highlight::merge_highlighted_code_blocks(&original_html, &highlighted_html)
 }
 
 /// Transforms Markdown source into HTML, frontmatter, and TOC.
@@ -385,6 +396,12 @@ fn transform_options_to_renderer_options(opts: &JsTransformOptions) -> HtmlRende
     }
     if let Some(ref v) = opts.source_path {
         options.source_path.clone_from(v);
+    }
+    if let Some(v) = opts.code_annotations {
+        options.code_annotations = v;
+    }
+    if let Some(ref v) = opts.code_annotation_meta_key {
+        options.code_annotation_meta_key.clone_from(v);
     }
 
     options

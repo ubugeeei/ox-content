@@ -90,7 +90,7 @@ export async function transformMarkdownWithVue(
   processedContent += markdownContent.slice(lastIndex);
 
   // Transform Markdown to HTML using ox-content
-  const transformed = await baseTransformMarkdown(processedContent, id, {
+  const baseOptions = {
     srcDir: options.srcDir,
     outDir: options.outDir,
     base: options.base,
@@ -105,6 +105,7 @@ export async function transformMarkdownWithVue(
     frontmatter: false, // Already extracted
     toc: options.toc,
     tocMaxDepth: options.tocMaxDepth,
+    codeAnnotations: options.codeAnnotations,
     footnotes: true,
     tables: true,
     taskLists: true,
@@ -132,7 +133,11 @@ export async function transformMarkdownWithVue(
       hotkey: "k",
     },
     i18n: false,
-  });
+  } as Parameters<typeof baseTransformMarkdown>[2] & {
+    codeAnnotations?: TransformOptions["codeAnnotations"];
+  };
+
+  const transformed = await baseTransformMarkdown(processedContent, id, baseOptions);
 
   // Generate Vue SFC code
   const htmlWithIslands = injectIslandMarkers(transformed.html, islands);

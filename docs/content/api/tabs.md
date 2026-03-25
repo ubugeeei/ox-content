@@ -11,12 +11,12 @@ Reset tab group counter (for testing).
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L15)**
 
 ```typescript
-export function resetTabGroupCounter(): void;
+export function resetTabGroupCounter(): void
 ```
 
 ### Returns
 
-`void` -
+`void` - 
 
 ---
 
@@ -29,12 +29,12 @@ Get element attribute value.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L22)**
 
 ```typescript
-function getAttribute(el: Element, name: string): string | undefined;
+function getAttribute(el: Element, name: string): string | undefined
 ```
 
 ### Returns
 
-`string | undefined` -
+`string | undefined` - 
 
 ---
 
@@ -47,12 +47,12 @@ Parse Tab elements from Tabs children.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L37)**
 
 ```typescript
-function parseTabChildren(children: Element["children"]): TabData[];
+function parseTabChildren(children: Element["children"]): TabData[]
 ```
 
 ### Returns
 
-`TabData[]` -
+`TabData[]` - 
 
 ---
 
@@ -65,12 +65,12 @@ Create the HTML structure for tabs.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L61)**
 
 ```typescript
-function createTabsElement(tabs: TabData[], groupId: string): Element;
+function createTabsElement(tabs: TabData[], groupId: string): Element
 ```
 
 ### Returns
 
-`Element` -
+`Element` - 
 
 ---
 
@@ -83,12 +83,12 @@ Create fallback HTML using <details> elements.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L129)**
 
 ```typescript
-function createFallbackElement(tabs: TabData[]): Element;
+function createFallbackElement(tabs: TabData[]): Element
 ```
 
 ### Returns
 
-`Element` -
+`Element` - 
 
 ---
 
@@ -101,7 +101,7 @@ Rehype plugin to transform Tabs components.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L174)**
 
 ```typescript
-function rehypeTabs();
+function rehypeTabs()
 ```
 
 ---
@@ -115,12 +115,12 @@ Transform Tabs components in HTML.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L217)**
 
 ```typescript
-export async function transformTabs(html: string): Promise<string>;
+export async function transformTabs(html: string): Promise<string>
 ```
 
 ### Returns
 
-`Promise<string>` -
+`Promise<string>` - 
 
 ---
 
@@ -134,11 +134,12 @@ This is needed because :has() selectors need unique IDs.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/tabs.ts#L230)**
 
 ```typescript
-export function generateTabsCSS(groupCount: number): string;
+export function generateTabsCSS(groupCount: number): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
+

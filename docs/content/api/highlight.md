@@ -14,12 +14,12 @@ Get or create the Shiki highlighter.
 async function getHighlighter(
   theme: string,
   customLangs: LanguageRegistration[] = [],
-): Promise<Highlighter>;
+  ): Promise<Highlighter>
 ```
 
 ### Returns
 
-`Promise<Highlighter>` -
+`Promise<Highlighter>` - 
 
 ---
 
@@ -39,15 +39,15 @@ Rehype plugin for syntax highlighting with Shiki.
 
 Extract text content from a hast node.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L128)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L143)**
 
 ```typescript
-function getTextContent(node: Element | Root): string;
+function getTextContent(node: Element | Root): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -57,18 +57,19 @@ function getTextContent(node: Element | Root): string;
 
 Apply syntax highlighting to HTML using Shiki.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L147)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L239)**
 
 ```typescript
 export async function highlightCode(
   html: string,
   theme: string = "github-dark",
   langs: LanguageRegistration[] = [],
-): Promise<string>;
+  ): Promise<string>
 ```
 
 ### Returns
 
-`Promise<string>` -
+`Promise<string>` - 
 
 ---
+

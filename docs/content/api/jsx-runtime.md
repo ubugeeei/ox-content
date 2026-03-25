@@ -11,12 +11,12 @@ Escapes HTML special characters to prevent XSS.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L75)**
 
 ```typescript
-function escapeHtml(str: string): string;
+function escapeHtml(str: string): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -25,17 +25,17 @@ function escapeHtml(str: string): string;
 `function`
 
 Converts a camelCase attribute name to kebab-case for HTML.
-Special handling for data-_ and aria-_ attributes.
+Special handling for data-* and aria-* attributes.
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L87)**
 
 ```typescript
-function toHtmlAttr(name: string): string;
+function toHtmlAttr(name: string): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -48,12 +48,12 @@ Renders an attribute value to a string.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L103)**
 
 ```typescript
-function renderAttr(name: string, value: unknown): string;
+function renderAttr(name: string, value: unknown): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -106,12 +106,12 @@ Renders children to HTML string.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L159)**
 
 ```typescript
-function renderChildren(children: JSXChild): string;
+function renderChildren(children: JSXChild): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -125,12 +125,12 @@ This is the core function called by the JSX transform.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L190)**
 
 ```typescript
-export function jsx(type: JSXElementType, props: JSXProps, _key?: string): JSXNode;
+export function jsx(type: JSXElementType, props: JSXProps, _key?: string): JSXNode
 ```
 
 ### Returns
 
-`JSXNode` -
+`JSXNode` - 
 
 ---
 
@@ -144,12 +144,12 @@ Called by the JSX transform for elements with multiple children.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L231)**
 
 ```typescript
-export function jsxs(type: JSXElementType, props: JSXProps, key?: string): JSXNode;
+export function jsxs(type: JSXElementType, props: JSXProps, key?: string): JSXNode
 ```
 
 ### Returns
 
-`JSXNode` -
+`JSXNode` - 
 
 ---
 
@@ -163,7 +163,7 @@ Fragment component - renders children without a wrapper element.
 
 ### Returns
 
-`JSXNode` -
+`JSXNode` - 
 
 ---
 
@@ -176,12 +176,12 @@ Renders a JSX node to an HTML string.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L246)**
 
 ```typescript
-export function renderToString(node: JSXNode): string;
+export function renderToString(node: JSXNode): string
 ```
 
 ### Returns
 
-`string` -
+`string` - 
 
 ---
 
@@ -195,12 +195,12 @@ Use with caution - only for trusted content.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L253)**
 
 ```typescript
-export function raw(html: string): JSXNode;
+export function raw(html: string): JSXNode
 ```
 
 ### Returns
 
-`JSXNode` -
+`JSXNode` - 
 
 ### Examples
 
@@ -219,12 +219,12 @@ Conditionally renders content.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx-runtime.ts#L266)**
 
 ```typescript
-export function when(condition: boolean, content: JSXNode): JSXNode;
+export function when(condition: boolean, content: JSXNode): JSXNode
 ```
 
 ### Returns
 
-`JSXNode` -
+`JSXNode` - 
 
 ### Examples
 
@@ -244,7 +244,7 @@ Maps over an array and renders each item.
 
 ### Returns
 
-`JSXNode` -
+`JSXNode` - 
 
 ### Examples
 
@@ -253,3 +253,4 @@ Maps over an array and renders each item.
 ```
 
 ---
+
