@@ -515,30 +515,63 @@ describe("mdast js plugin", () => {
     expect(result.html).toContain("Hello from markdown-it");
   });
 
-  it("rejects mixing markdown-it plugins with mdast or remark plugins", async () => {
-    await expect(
-      transformMarkdown(
-        "# Hello",
-        "docs/mixed-pipeline.md",
-        createResolvedOptions({
-          plugin: {
-            oxContent: [],
-            markdownIt: [
-              (md: MarkdownIt) => {
-                md.core.ruler.push("noop", () => undefined);
-              },
-            ],
-            mdast: [
-              defineMdastPlugin("noop", () => {
-                return;
-              }),
-            ],
-            remark: [],
-            rehype: [],
-          },
-        }),
-      ),
-    ).rejects.toThrow("cannot yet be combined");
+  it("bridges markdown-it output into mdast and remark plugins when both are configured", async () => {
+    function markdownItHeadingPlugin(md: MarkdownIt) {
+      md.core.ruler.push("rewrite-heading", (state) => {
+        const inline = state.tokens[1];
+        if (!inline || inline.type !== "inline") {
+          return;
+        }
+
+        for (const child of inline.children ?? []) {
+          if (child.type === "text") {
+            child.content = "Hello from markdown-it";
+          }
+        }
+      });
+    }
+
+    function remarkAppendParagraph() {
+      return (tree: typeof baseMdast) => {
+        tree.children.push({
+          type: "paragraph",
+          children: [{ type: "text", value: "From remark bridge" }],
+        });
+      };
+    }
+
+    const result = await transformMarkdown(
+      "# Hello",
+      "docs/mixed-pipeline.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [markdownItHeadingPlugin],
+          mdast: [
+            defineMdastPlugin("annotate-heading", (tree) => {
+              const heading = tree.children[0];
+              const text = heading.children?.[0];
+              if (text && typeof text.value === "string") {
+                text.value = `${text.value} + mdast`;
+              }
+            }),
+          ],
+          remark: [remarkAppendParagraph],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>Hello from markdown-it + mdast</h1>");
+    expect(result.html).toContain("<p>From remark bridge</p>");
+    expect(result.toc).toEqual([
+      {
+        depth: 1,
+        text: "Hello from markdown-it + mdast",
+        slug: "hello-from-markdown-it-mdast",
+        children: [],
+      },
+    ]);
   });
 
   it("can be used directly as a unified parser plugin", async () => {

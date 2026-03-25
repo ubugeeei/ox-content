@@ -8,6 +8,7 @@ import { createRequire } from "node:module";
 import matter from "gray-matter";
 import MarkdownIt from "markdown-it";
 import rehypeParse from "rehype-parse";
+import rehypeRemark from "rehype-remark";
 import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
@@ -214,35 +215,131 @@ async function transformWithMarkdownIt(
   frontmatter: Record<string, unknown>,
   options: ResolvedOptions,
 ): Promise<{ html: string; toc: TocEntry[] }> {
-  if (hasMdastOrRemarkPlugins(options)) {
-    throw new Error(
-      "[ox-content] `plugin.markdownIt` cannot yet be combined with `plugin.mdast` or `plugin.remark`. " +
-        "Choose either the markdown-it pipeline or the unified mdast pipeline for a single transform.",
-    );
-  }
-
   const markdownIt = createMarkdownItRenderer(options);
   applyMarkdownItPlugins(markdownIt, options.plugin.markdownIt);
 
   const env = createMarkdownItEnv(filePath, fullSource, markdownContent, frontmatter);
   const tokens = markdownIt.parse(markdownContent, env);
-  let html = markdownIt.renderer.render(tokens, markdownIt.options, env);
+  const html = markdownIt.renderer.render(tokens, markdownIt.options, env);
 
-  if (options.plugin.rehype.length > 0) {
-    html = await transformHtmlWithRehype(
+  if (hasMdastOrRemarkPlugins(options)) {
+    return transformMarkdownItWithUnified(
       html,
-      filePath,
       fullSource,
       markdownContent,
+      filePath,
       frontmatter,
       options,
-      "markdown-it",
     );
+  }
+
+  if (options.plugin.rehype.length > 0) {
+    return {
+      html: await transformHtmlWithRehype(
+        html,
+        filePath,
+        fullSource,
+        markdownContent,
+        frontmatter,
+        options,
+        "markdown-it",
+      ),
+      toc: options.toc ? extractTocFromMarkdownItTokens(tokens, options.tocMaxDepth) : [],
+    };
   }
 
   return {
     html,
     toc: options.toc ? extractTocFromMarkdownItTokens(tokens, options.tocMaxDepth) : [],
+  };
+}
+
+async function transformMarkdownItWithUnified(
+  html: string,
+  fullSource: string,
+  markdownContent: string,
+  filePath: string,
+  frontmatter: Record<string, unknown>,
+  options: ResolvedOptions,
+): Promise<{ html: string; toc: TocEntry[] }> {
+  const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
+  const { plugins: remarkPlugins, options: remarkRehypeOptions } = extractUnifiedPluginWithOptions(
+    options.plugin.remark,
+    remarkRehype,
+  );
+  const { plugins: rehypePlugins, options: rehypeStringifyOptions } =
+    extractUnifiedPluginWithOptions(options.plugin.rehype, rehypeStringify);
+  const processor = unified();
+
+  processor.use(rehypeParse, {
+    fragment: true,
+  } as never);
+  processor.use(rehypeRemark);
+  applyUnifiedPlugins(
+    processor,
+    options.plugin.mdast.map((plugin) =>
+      isOxContentMdastPlugin(plugin) ? toUnifiedMdastPlugin(plugin, mdastContext) : plugin,
+    ),
+  );
+  applyUnifiedPlugins(processor, remarkPlugins);
+
+  let toc: TocEntry[] = [];
+  processor.use(() => {
+    return (tree: MdastRoot) => {
+      if (options.toc) {
+        toc = extractTocFromMdast(tree, options.tocMaxDepth);
+      }
+      return tree;
+    };
+  });
+
+  const frozenMdastProcessor = processor.freeze();
+  if (resolveUnifiedCompilerStrategy(frozenMdastProcessor) === "custom") {
+    const { processor: compiledProcessor, input } = processorFromMarkdownItProcessor(
+      frozenMdastProcessor(),
+      html,
+      filePath,
+      fullSource,
+      markdownContent,
+      frontmatter,
+      "markdown-it",
+    );
+
+    return {
+      html: await processUnifiedFile(compiledProcessor, input),
+      toc,
+    };
+  }
+
+  const hastProcessor = frozenMdastProcessor();
+  hastProcessor.use(remarkRehype, {
+    allowDangerousHtml: true,
+    ...remarkRehypeOptions,
+  } as never);
+  applyUnifiedPlugins(hastProcessor, rehypePlugins);
+
+  const frozenHastProcessor = hastProcessor.freeze();
+  const finalProcessor = frozenHastProcessor();
+  if (resolveUnifiedCompilerStrategy(frozenHastProcessor) === "default") {
+    finalProcessor.use(rehypeStringify, {
+      allowDangerousHtml: true,
+      ...rehypeStringifyOptions,
+    } as never);
+  }
+
+  const { processor: compiledProcessor, input } = processorFromMarkdownItProcessor(
+    finalProcessor,
+    html,
+    filePath,
+    fullSource,
+    markdownContent,
+    frontmatter,
+    "markdown-it",
+  );
+
+  return {
+    html: await processUnifiedFile(compiledProcessor, input),
+    toc,
   };
 }
 
@@ -497,6 +594,25 @@ async function processUnifiedFile(
 ): Promise<string> {
   const file = await processor.process(input as never);
   return String(file);
+}
+
+function processorFromMarkdownItProcessor(
+  processor: UnifiedProcessor,
+  html: string,
+  filePath: string,
+  fullSource: string,
+  markdownContent: string,
+  frontmatter: Record<string, unknown>,
+  parser: TransformParserKind,
+): { processor: UnifiedProcessor; input: UnifiedFileInput } {
+  return {
+    processor,
+    input: {
+      path: filePath,
+      value: html,
+      data: createUnifiedFileData(parser, fullSource, markdownContent, frontmatter, { html }),
+    },
+  };
 }
 
 function createMarkdownItRenderer(options: ResolvedOptions): MarkdownIt {
