@@ -3,6 +3,7 @@
 //! This crate provides NAPI bindings for using Ox Content from Node.js,
 //! enabling zero-copy AST transfer and JavaScript interoperability.
 
+mod highlight;
 mod mdast;
 
 use napi::bindgen_prelude::*;
@@ -188,6 +189,12 @@ pub fn render(_ast_json: String) -> RenderResult {
 #[napi]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
+}
+
+/// Restores code block metadata after JavaScript-side syntax highlighting.
+#[napi]
+pub fn merge_highlighted_code_blocks(original_html: String, highlighted_html: String) -> String {
+    highlight::merge_highlighted_code_blocks(&original_html, &highlighted_html)
 }
 
 /// Transforms Markdown source into HTML, frontmatter, and TOC.

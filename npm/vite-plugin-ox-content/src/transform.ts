@@ -83,6 +83,15 @@ interface NapiBindings {
    * @returns SVG string
    */
   generateOgImageSvg: (data: OgImageData, config?: OgImageConfig) => string;
+
+  /**
+   * Restores code block metadata after JavaScript-side syntax highlighting.
+   *
+   * @param originalHtml - HTML before syntax highlighting
+   * @param highlightedHtml - HTML after Shiki highlighting
+   * @returns Highlighted HTML with original code block metadata reapplied
+   */
+  mergeHighlightedCodeBlocks: (originalHtml: string, highlightedHtml: string) => string;
 }
 
 /**
@@ -428,7 +437,13 @@ export async function transformMarkdown(
 
   // Apply syntax highlighting if enabled
   if (options.highlight) {
-    html = await highlightCode(html, options.highlightTheme, options.highlightLangs);
+    const originalHtml = html;
+    const highlightedHtml = await highlightCode(
+      html,
+      options.highlightTheme,
+      options.highlightLangs,
+    );
+    html = napi.mergeHighlightedCodeBlocks(originalHtml, highlightedHtml);
   }
 
   // Restore protected SVGs

@@ -450,6 +450,9 @@ export declare function loadDictionaries(dir: string): I18NLoadResult
  */
 export declare function loadDictionariesFlat(dir: string): Record<string, Record<string, string>>
 
+/** Restores code block metadata after JavaScript-side syntax highlighting. */
+export declare function mergeHighlightedCodeBlocks(originalHtml: string, highlightedHtml: string): string
+
 /** Mermaid transform result. */
 export interface MermaidTransformResult {
   /** The transformed HTML with mermaid code blocks replaced by rendered SVGs. */
