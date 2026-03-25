@@ -1,6 +1,8 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use ox_content_allocator::Allocator;
-use ox_content_napi::{parse, parse_mdast_raw, transform, JsParserOptions, JsTransformOptions};
+use ox_content_napi::{
+    parse, parse_mdast_raw, transform, transform_mdast_raw, JsParserOptions, JsTransformOptions,
+};
 use ox_content_parser::{Parser, ParserOptions};
 
 const SAMPLE_BLOCK: &str = r"# Heading
@@ -77,6 +79,20 @@ fn bench_napi_mdast_transfer(c: &mut Criterion) {
         });
 
         group.bench_with_input(
+            BenchmarkId::new("transform_mdast_raw", name),
+            document,
+            |b, document| {
+                let transform_options = transform_options.clone();
+                b.iter(|| {
+                    let result =
+                        transform_mdast_raw(black_box(document.clone()), transform_options.clone())
+                            .expect("raw mdast transform should succeed");
+                    black_box(result.len());
+                });
+            },
+        );
+
+        group.bench_with_input(
             BenchmarkId::new("transform_html", name),
             document,
             |b, document| {
@@ -115,6 +131,7 @@ fn gfm_transform_options() -> JsTransformOptions {
         tables: Some(true),
         strikethrough: Some(true),
         autolinks: Some(true),
+        frontmatter: Some(true),
         toc_max_depth: Some(3),
         convert_md_links: Some(false),
         base_url: None,
@@ -127,15 +144,21 @@ fn report_payload_sizes(name: &str, document: &str, parser_options: Option<JsPar
     let json = parse(document.to_string(), parser_options.clone());
     let raw = parse_mdast_raw(document.to_string(), parser_options)
         .expect("raw mdast parsing should succeed for payload size reporting");
+    let transformed = transform_mdast_raw(document.to_string(), Some(gfm_transform_options()))
+        .expect("raw mdast transform should succeed for payload size reporting");
     let json_len = json.ast.len();
     let raw_len = raw.len();
+    let transformed_len = transformed.len();
     let ratio = if json_len == 0 { 0.0 } else { (raw_len as f64 / json_len as f64) * 100.0 };
+    let transformed_ratio =
+        if json_len == 0 { 0.0 } else { (transformed_len as f64 / json_len as f64) * 100.0 };
 
     println!(
-        "napi_mdast_transfer/{name}: input={}B json={}B raw={}B raw/json={ratio:.2}%",
+        "napi_mdast_transfer/{name}: input={}B json={}B raw={}B transform_raw={}B raw/json={ratio:.2}% transform_raw/json={transformed_ratio:.2}%",
         document.len(),
         json_len,
         raw_len,
+        transformed_len,
     );
 }
 
