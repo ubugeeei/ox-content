@@ -13,6 +13,16 @@ const VERSION = 1;
 const HEADER_LEN = 28;
 const NODE_RECORD_LEN = 60;
 const NONE_U32 = 0xffffffff;
+const TRANSFER_MAGIC = 0x5254584f;
+const TRANSFER_VERSION = 1;
+const TRANSFER_HEADER_LEN = 24;
+const TRANSFER_SECTION_RECORD_LEN = 12;
+const MDAST_SECTION_NODES = 1;
+const MDAST_SECTION_CHILD_INDICES = 2;
+const MDAST_SECTION_ALIGNS = 3;
+const MDAST_SECTION_STRINGS = 4;
+const MDAST_SECTION_CONTENT = 5;
+const MDAST_SECTION_FRONTMATTER = 6;
 
 const baseMdast = {
   type: "root" as const,
@@ -107,13 +117,107 @@ function createRawMdastBuffer(): Uint8Array {
   return buffer;
 }
 
+function createMdastTransformBuffer(
+  content: string,
+  frontmatter: Record<string, unknown>,
+): Uint8Array {
+  const encoder = new TextEncoder();
+  const legacy = createRawMdastBuffer();
+  const legacyView = new DataView(legacy.buffer, legacy.byteOffset, legacy.byteLength);
+  const nodeCount = legacyView.getUint32(8, true);
+  const childCount = legacyView.getUint32(12, true);
+  const alignCount = legacyView.getUint32(16, true);
+  const stringBytesLength = legacyView.getUint32(20, true);
+  const rootIndex = legacyView.getUint32(24, true);
+
+  const nodesOffset = HEADER_LEN;
+  const childIndicesOffset = nodesOffset + nodeCount * NODE_RECORD_LEN;
+  const alignsOffset = childIndicesOffset + childCount * 4;
+  const stringsOffset = alignsOffset + alignCount;
+
+  const sections = [
+    { id: MDAST_SECTION_NODES, bytes: legacy.slice(nodesOffset, childIndicesOffset) },
+    { id: MDAST_SECTION_CHILD_INDICES, bytes: legacy.slice(childIndicesOffset, alignsOffset) },
+    { id: MDAST_SECTION_ALIGNS, bytes: legacy.slice(alignsOffset, stringsOffset) },
+    {
+      id: MDAST_SECTION_STRINGS,
+      bytes: legacy.slice(stringsOffset, stringsOffset + stringBytesLength),
+    },
+    { id: MDAST_SECTION_CONTENT, bytes: encoder.encode(content) },
+    {
+      id: MDAST_SECTION_FRONTMATTER,
+      bytes: encoder.encode(JSON.stringify(frontmatter)),
+    },
+  ];
+  const totalLen =
+    TRANSFER_HEADER_LEN +
+    sections.length * TRANSFER_SECTION_RECORD_LEN +
+    sections.reduce((sum, section) => sum + section.bytes.length, 0);
+  const buffer = new Uint8Array(totalLen);
+  const view = new DataView(buffer.buffer);
+
+  view.setUint32(0, TRANSFER_MAGIC, true);
+  view.setUint16(4, TRANSFER_VERSION, true);
+  view.setUint16(6, 1, true);
+  view.setUint32(8, 1, true);
+  view.setUint32(12, sections.length, true);
+  view.setUint32(16, rootIndex, true);
+  view.setUint32(20, 0, true);
+
+  let sectionOffset = TRANSFER_HEADER_LEN + sections.length * TRANSFER_SECTION_RECORD_LEN;
+  let recordOffset = TRANSFER_HEADER_LEN;
+  for (const section of sections) {
+    view.setUint32(recordOffset, section.id, true);
+    view.setUint32(recordOffset + 4, sectionOffset, true);
+    view.setUint32(recordOffset + 8, section.bytes.length, true);
+    buffer.set(section.bytes, sectionOffset);
+    sectionOffset += section.bytes.length;
+    recordOffset += TRANSFER_SECTION_RECORD_LEN;
+  }
+
+  return buffer;
+}
+
+function splitFrontmatterForMock(
+  source: string,
+  enabled: boolean,
+): { content: string; frontmatter: Record<string, unknown> } {
+  if (!enabled || !source.startsWith("---")) {
+    return {
+      content: source,
+      frontmatter: {},
+    };
+  }
+
+  const rest = source.slice(3);
+  const endOffset = rest.indexOf("\n---");
+  if (endOffset === -1) {
+    return {
+      content: source,
+      frontmatter: {},
+    };
+  }
+
+  return {
+    content: rest.slice(endOffset + 4).replace(/^\n/, ""),
+    frontmatter: { title: "frontmatter-from-rust" },
+  };
+}
+
 require.cache[napiId] = {
   exports: {
     parseTransferRaw: () => createRawMdastBuffer(),
     parseMdastRaw: () => createRawMdastBuffer(),
-    transform: () => ({
+    transformMdastRaw: (source: string, options?: { frontmatter?: boolean }) => {
+      const parsed = splitFrontmatterForMock(source, options?.frontmatter !== false);
+      return createMdastTransformBuffer(parsed.content, parsed.frontmatter);
+    },
+    transform: (source: string, options?: { frontmatter?: boolean }) => ({
       html: "<h1>Hello</h1>\n<p>World</p>\n",
-      frontmatter: "{}",
+      frontmatter:
+        options?.frontmatter === false || !source.startsWith("---")
+          ? "{}"
+          : JSON.stringify({ title: "frontmatter-from-rust" }),
       toc: [{ depth: 1, text: "Hello", slug: "hello" }],
       errors: [],
     }),
@@ -174,6 +278,18 @@ describe("mdast js plugin", () => {
         children: [],
       },
     ]);
+  });
+
+  it("passes frontmatter=false through to the Rust fast path", async () => {
+    const result = await transformMarkdown(
+      "---\ntitle: Ignored\n---\n# Hello",
+      "docs/frontmatter-disabled.md",
+      createResolvedOptions({
+        frontmatter: false,
+      }),
+    );
+
+    expect(result.frontmatter).toEqual({});
   });
 
   it("runs Ox Content-native mdast plugins and updates the TOC from the transformed tree", async () => {
@@ -268,7 +384,7 @@ describe("mdast js plugin", () => {
     expect(result.html).toContain("<p>From remark preset</p>");
   });
 
-  it("exposes parsed frontmatter on vfile data for unified plugins", async () => {
+  it("exposes Rust-parsed frontmatter on vfile data for native unified plugins", async () => {
     function remarkReadFrontmatter() {
       return (tree: typeof baseMdast, file: { data?: { matter?: { title?: string } } }) => {
         tree.children = [
@@ -300,7 +416,52 @@ describe("mdast js plugin", () => {
       }),
     );
 
-    expect(result.html).toContain("<h1>Frontmatter Title</h1>");
+    expect(result.html).toContain("<h1>frontmatter-from-rust</h1>");
+  });
+
+  it("falls back to JS frontmatter splitting when transformMdastRaw is unavailable", async () => {
+    const napiExports = require.cache[napiId]?.exports as {
+      transformMdastRaw?: unknown;
+    };
+    const originalTransformMdastRaw = napiExports.transformMdastRaw;
+    napiExports.transformMdastRaw = undefined;
+
+    function remarkReadFrontmatter() {
+      return (tree: typeof baseMdast, file: { data?: { matter?: { title?: string } } }) => {
+        tree.children = [
+          {
+            type: "heading",
+            depth: 1,
+            children: [
+              {
+                type: "text",
+                value: file.data?.matter?.title ?? "missing-frontmatter",
+              },
+            ],
+          },
+        ];
+      };
+    }
+
+    try {
+      const result = await transformMarkdown(
+        "---\ntitle: Frontmatter Title\n---\n# Ignored",
+        "docs/frontmatter-fallback.md",
+        createResolvedOptions({
+          plugin: {
+            oxContent: [],
+            markdownIt: [],
+            mdast: [],
+            remark: [remarkReadFrontmatter],
+            rehype: [],
+          },
+        }),
+      );
+
+      expect(result.html).toContain("<h1>Frontmatter Title</h1>");
+    } finally {
+      napiExports.transformMdastRaw = originalTransformMdastRaw;
+    }
   });
 
   it("falls back to remark-parse when remark syntax extensions are registered", async () => {

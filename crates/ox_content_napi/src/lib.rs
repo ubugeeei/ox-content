@@ -79,6 +79,8 @@ pub struct JsTransformOptions {
     pub strikethrough: Option<bool>,
     /// Enable autolinks.
     pub autolinks: Option<bool>,
+    /// Parse YAML frontmatter before transforming.
+    pub frontmatter: Option<bool>,
     /// Maximum TOC depth (1-6).
     pub toc_max_depth: Option<u8>,
     /// Convert `.md` links to `.html` links for SSG output.
@@ -232,6 +234,19 @@ pub fn version() -> String {
 pub fn transform(source: String, options: Option<JsTransformOptions>) -> TransformResult {
     let opts = options.unwrap_or_default();
     MarkdownTransformer::from_options(&opts).transform(&source)
+}
+
+/// Transforms Markdown into a raw mdast transfer buffer.
+///
+/// This keeps frontmatter parsing and mdast generation on the Rust side and
+/// transfers a single external memory block to JavaScript for deserialization.
+#[napi]
+pub fn transform_mdast_raw(
+    source: String,
+    options: Option<JsTransformOptions>,
+) -> Result<Uint8Array> {
+    let opts = options.unwrap_or_default();
+    MarkdownTransformer::from_options(&opts).transform_mdast_raw(&source)
 }
 
 // =============================================================================

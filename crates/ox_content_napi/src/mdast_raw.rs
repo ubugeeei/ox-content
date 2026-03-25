@@ -16,6 +16,8 @@ const MDAST_SECTION_NODES: u32 = 1;
 const MDAST_SECTION_CHILD_INDICES: u32 = 2;
 const MDAST_SECTION_ALIGNS: u32 = 3;
 const MDAST_SECTION_STRINGS: u32 = 4;
+pub const MDAST_SECTION_CONTENT: u32 = 5;
+pub const MDAST_SECTION_FRONTMATTER: u32 = 6;
 
 const NODE_RECORD_LEN: usize = 60;
 const NONE_U32: u32 = u32::MAX;
@@ -100,9 +102,16 @@ impl RawNodeRecord {
 }
 
 pub fn to_mdast_raw(document: &Document<'_>) -> napi::Result<Uint8Array> {
+    to_mdast_raw_with_sections(document, Vec::new())
+}
+
+pub fn to_mdast_raw_with_sections(
+    document: &Document<'_>,
+    extra_sections: Vec<(u32, Vec<u8>)>,
+) -> napi::Result<Uint8Array> {
     let mut serializer = MdastRawSerializer::default();
     let root_index = serializer.write_document(document);
-    serializer.finish(root_index)
+    serializer.finish(root_index, extra_sections)
 }
 
 #[derive(Default)]
@@ -114,7 +123,11 @@ struct MdastRawSerializer {
 }
 
 impl MdastRawSerializer {
-    fn finish(self, root_index: u32) -> napi::Result<Uint8Array> {
+    fn finish(
+        self,
+        root_index: u32,
+        extra_sections: Vec<(u32, Vec<u8>)>,
+    ) -> napi::Result<Uint8Array> {
         let nodes_len = self.nodes.len() * NODE_RECORD_LEN;
         let child_indices_len = self.child_indices.len() * size_of::<u32>();
         let mut nodes_buffer = Vec::with_capacity(nodes_len);
@@ -137,6 +150,9 @@ impl MdastRawSerializer {
         builder.push_section(MDAST_SECTION_CHILD_INDICES, child_indices_buffer);
         builder.push_section(MDAST_SECTION_ALIGNS, self.aligns);
         builder.push_section(MDAST_SECTION_STRINGS, self.strings);
+        for (id, bytes) in extra_sections {
+            builder.push_section(id, bytes);
+        }
         builder.finish()
     }
 

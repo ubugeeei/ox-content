@@ -1,21 +1,32 @@
 use std::collections::HashMap;
 
+use napi::bindgen_prelude::Uint8Array;
 use ox_content_allocator::Allocator;
 use ox_content_ast::{Document, Heading, Node};
 use ox_content_parser::{ParseError, Parser, ParserOptions};
 use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 
-use crate::{JsTransformOptions, TocEntry, TransformResult};
+use crate::{
+    mdast_raw::{self, MDAST_SECTION_CONTENT, MDAST_SECTION_FRONTMATTER},
+    JsTransformOptions, TocEntry, TransformResult,
+};
 
 pub(crate) struct MarkdownTransformer {
+    frontmatter: bool,
     toc_max_depth: u8,
     parser_options: ParserOptions,
     renderer_options: HtmlRendererOptions,
 }
 
+struct PreparedMarkdownSource {
+    content: String,
+    frontmatter: HashMap<String, serde_json::Value>,
+}
+
 impl MarkdownTransformer {
     pub(crate) fn from_options(options: &JsTransformOptions) -> Self {
         Self {
+            frontmatter: options.frontmatter.unwrap_or(true),
             toc_max_depth: options.toc_max_depth.unwrap_or(3),
             parser_options: transform_options_to_parser_options(options),
             renderer_options: transform_options_to_renderer_options(options),
@@ -23,14 +34,14 @@ impl MarkdownTransformer {
     }
 
     pub(crate) fn transform(&self, source: &str) -> TransformResult {
-        let (content, frontmatter) = parse_frontmatter(source);
+        let prepared = self.prepare_source(source);
         let allocator = Allocator::new();
-        let parse_result = self.parse_document(&allocator, &content);
+        let parse_result = self.parse_document(&allocator, &prepared.content);
 
         match parse_result {
             Ok(document) => TransformResult {
                 html: self.render_html(&document),
-                frontmatter: serde_json::to_string(&frontmatter)
+                frontmatter: serde_json::to_string(&prepared.frontmatter)
                     .unwrap_or_else(|_| "{}".to_string()),
                 toc: extract_toc(&document, self.toc_max_depth),
                 errors: vec![],
@@ -44,6 +55,25 @@ impl MarkdownTransformer {
         }
     }
 
+    pub(crate) fn transform_mdast_raw(&self, source: &str) -> napi::Result<Uint8Array> {
+        let prepared = self.prepare_source(source);
+        let content_bytes = prepared.content.as_bytes().to_vec();
+        let frontmatter_bytes = serde_json::to_vec(&prepared.frontmatter)
+            .map_err(|error| napi::Error::from_reason(error.to_string()))?;
+        let allocator = Allocator::new();
+        let document = self
+            .parse_document(&allocator, &prepared.content)
+            .map_err(|error| napi::Error::from_reason(error.to_string()))?;
+
+        mdast_raw::to_mdast_raw_with_sections(
+            &document,
+            vec![
+                (MDAST_SECTION_CONTENT, content_bytes),
+                (MDAST_SECTION_FRONTMATTER, frontmatter_bytes),
+            ],
+        )
+    }
+
     pub(crate) fn parse_document<'a>(
         &self,
         allocator: &'a Allocator,
@@ -55,6 +85,15 @@ impl MarkdownTransformer {
     pub(crate) fn render_html(&self, document: &Document<'_>) -> String {
         let mut renderer = HtmlRenderer::with_options(self.renderer_options.clone());
         renderer.render(document)
+    }
+
+    fn prepare_source(&self, source: &str) -> PreparedMarkdownSource {
+        if self.frontmatter {
+            let (content, frontmatter) = parse_frontmatter(source);
+            PreparedMarkdownSource { content, frontmatter }
+        } else {
+            PreparedMarkdownSource { content: source.to_string(), frontmatter: HashMap::new() }
+        }
     }
 }
 
@@ -236,5 +275,18 @@ mod tests {
 
         assert_eq!(content, "# Hello");
         assert!(frontmatter.is_empty());
+    }
+
+    #[test]
+    fn skips_frontmatter_extraction_when_disabled() {
+        let source = "---\ntitle: Example\n---\n# Hello";
+        let transformer = MarkdownTransformer::from_options(&JsTransformOptions {
+            frontmatter: Some(false),
+            ..Default::default()
+        });
+        let prepared = transformer.prepare_source(source);
+
+        assert_eq!(prepared.content, source);
+        assert!(prepared.frontmatter.is_empty());
     }
 }

@@ -13,12 +13,14 @@ import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
+import { deserializeMdastFromRaw } from "./mdast-raw";
 import {
   createMdastPluginContext,
   extractTocFromMdast,
   oxContentMdast,
   toUnifiedMdastPlugin,
 } from "./mdast";
+import { decodeTransferSectionUtf8, parseTransferEnvelope } from "./transfer";
 import type {
   MdastRoot,
   MarkdownItPlugin,
@@ -31,6 +33,42 @@ import type {
 const require = createRequire(import.meta.url);
 
 interface NapiBindings {
+  parseTransferRaw?: (
+    source: string,
+    kind: string,
+    options?: {
+      gfm?: boolean;
+      footnotes?: boolean;
+      taskLists?: boolean;
+      tables?: boolean;
+      strikethrough?: boolean;
+      autolinks?: boolean;
+    },
+  ) => Uint8Array;
+  parseMdastRaw?: (
+    source: string,
+    options?: {
+      gfm?: boolean;
+      footnotes?: boolean;
+      taskLists?: boolean;
+      tables?: boolean;
+      strikethrough?: boolean;
+      autolinks?: boolean;
+    },
+  ) => Uint8Array;
+  transformMdastRaw?: (
+    source: string,
+    options?: {
+      gfm?: boolean;
+      footnotes?: boolean;
+      taskLists?: boolean;
+      tables?: boolean;
+      strikethrough?: boolean;
+      autolinks?: boolean;
+      frontmatter?: boolean;
+      tocMaxDepth?: number;
+    },
+  ) => Uint8Array;
   transform: (
     source: string,
     options?: {
@@ -40,6 +78,7 @@ interface NapiBindings {
       tables?: boolean;
       strikethrough?: boolean;
       autolinks?: boolean;
+      frontmatter?: boolean;
       tocMaxDepth?: number;
     },
   ) => {
@@ -89,6 +128,21 @@ interface MarkdownItBridgeData {
   env: MarkdownItEnv;
 }
 
+interface PipelineTransformResult {
+  html: string;
+  frontmatter: Record<string, unknown>;
+  toc: TocEntry[];
+}
+
+interface NativeMdastTransformPayload {
+  tree: MdastRoot;
+  content: string;
+  frontmatter: Record<string, unknown>;
+}
+
+const MDAST_SECTION_CONTENT = 5;
+const MDAST_SECTION_FRONTMATTER = 6;
+
 /**
  * Transforms Markdown content into a JavaScript module.
  * Uses Rust-based parsing, and switches to a unified/mdast pipeline when
@@ -101,26 +155,24 @@ export async function transformMarkdown(
   filePath: string,
   options: ResolvedOptions,
 ): Promise<TransformResult> {
-  const { content, frontmatter } = splitFrontmatter(source, options.frontmatter);
-
-  const { html, toc } = hasMarkdownItPlugins(options)
-    ? await transformWithMarkdownIt(source, content, filePath, frontmatter, options)
+  const transformed = hasMarkdownItPlugins(options)
+    ? await transformWithMarkdownIt(source, filePath, options)
     : hasUnifiedPlugins(options)
-      ? await transformWithUnified(source, content, filePath, frontmatter, options)
-      : transformWithNativePipeline(loadNapiBindings(), content, options);
+      ? await transformWithUnified(source, filePath, options)
+      : transformWithNativePipeline(loadNapiBindings(), source, options);
 
-  let nextHtml = html;
+  let nextHtml = transformed.html;
   for (const plugin of options.plugin.oxContent) {
     nextHtml = await plugin(nextHtml);
   }
 
-  const code = generateModuleCode(nextHtml, frontmatter, toc, filePath);
+  const code = generateModuleCode(nextHtml, transformed.frontmatter, transformed.toc, filePath);
 
   return {
     code,
     html: nextHtml,
-    frontmatter,
-    toc,
+    frontmatter: transformed.frontmatter,
+    toc: transformed.toc,
   };
 }
 
@@ -166,6 +218,43 @@ function splitFrontmatter(
   };
 }
 
+function createNapiTransformOptions(options: ResolvedOptions): {
+  gfm: boolean;
+  footnotes: boolean;
+  taskLists: boolean;
+  tables: boolean;
+  strikethrough: boolean;
+  autolinks: boolean;
+  frontmatter: boolean;
+  tocMaxDepth: number;
+} {
+  return {
+    gfm: options.gfm,
+    footnotes: options.footnotes,
+    taskLists: options.taskLists,
+    tables: options.tables,
+    strikethrough: options.strikethrough,
+    autolinks: options.gfm,
+    frontmatter: options.frontmatter,
+    tocMaxDepth: options.tocMaxDepth,
+  };
+}
+
+function parseFrontmatterJson(json: string): Record<string, unknown> {
+  if (json.length === 0) {
+    return {};
+  }
+
+  try {
+    const value = JSON.parse(json);
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
 function hasUnifiedPlugins(options: ResolvedOptions): boolean {
   return (
     options.plugin.mdast.length > 0 ||
@@ -186,16 +275,8 @@ function transformWithNativePipeline(
   napi: NapiBindings,
   source: string,
   options: ResolvedOptions,
-): { html: string; toc: TocEntry[] } {
-  const result = napi.transform(source, {
-    gfm: options.gfm,
-    footnotes: options.footnotes,
-    taskLists: options.taskLists,
-    tables: options.tables,
-    strikethrough: options.strikethrough,
-    autolinks: options.gfm,
-    tocMaxDepth: options.tocMaxDepth,
-  });
+): PipelineTransformResult {
+  const result = napi.transform(source, createNapiTransformOptions(options));
 
   if (result.errors.length > 0) {
     console.warn("[ox-content] Transform warnings:", result.errors);
@@ -210,17 +291,94 @@ function transformWithNativePipeline(
 
   return {
     html: result.html,
+    frontmatter: parseFrontmatterJson(result.frontmatter),
     toc: options.toc ? buildTocTree(flatToc) : [],
+  };
+}
+
+function transformWithNativeMdastPipeline(
+  napi: NapiBindings,
+  source: string,
+  options: ResolvedOptions,
+): NativeMdastTransformPayload {
+  if (typeof napi.transformMdastRaw === "function") {
+    const buffer = napi.transformMdastRaw(source, createNapiTransformOptions(options));
+    return deserializeNativeMdastTransform(buffer);
+  }
+
+  const fallback = splitFrontmatter(source, options.frontmatter);
+  return {
+    tree: deserializeMdastFromRaw(
+      loadLegacyNativeMdastBuffer(napi, fallback.content, options),
+      fallback.content,
+    ),
+    content: fallback.content,
+    frontmatter: fallback.frontmatter,
+  };
+}
+
+function loadLegacyNativeMdastBuffer(
+  napi: NapiBindings,
+  source: string,
+  options: ResolvedOptions,
+): Uint8Array {
+  const parserOptions = {
+    gfm: options.gfm,
+    footnotes: options.footnotes,
+    taskLists: options.taskLists,
+    tables: options.tables,
+    strikethrough: options.strikethrough,
+    autolinks: options.gfm,
+  };
+
+  if (typeof napi.parseTransferRaw === "function") {
+    return napi.parseTransferRaw(source, "mdast", parserOptions);
+  }
+
+  if (typeof napi.parseMdastRaw === "function") {
+    return napi.parseMdastRaw(source, parserOptions);
+  }
+
+  throw new Error("[ox-content] Native mdast bindings are unavailable.");
+}
+
+function deserializeNativeMdastTransform(buffer: Uint8Array): NativeMdastTransformPayload {
+  const envelope = parseTransferEnvelope(buffer);
+  if (!envelope) {
+    throw new Error("[ox-content] Native mdast transform buffer is not a transfer envelope.");
+  }
+
+  const content = decodeTransferSectionUtf8(
+    buffer,
+    envelope,
+    MDAST_SECTION_CONTENT,
+    "[ox-content] mdast transform transfer is missing the content section.",
+  );
+  const frontmatter = parseFrontmatterJson(
+    decodeTransferSectionUtf8(
+      buffer,
+      envelope,
+      MDAST_SECTION_FRONTMATTER,
+      "[ox-content] mdast transform transfer is missing the frontmatter section.",
+    ),
+  );
+
+  return {
+    tree: deserializeMdastFromRaw(buffer, content),
+    content,
+    frontmatter,
   };
 }
 
 async function transformWithMarkdownIt(
   fullSource: string,
-  markdownContent: string,
   filePath: string,
-  frontmatter: Record<string, unknown>,
   options: ResolvedOptions,
-): Promise<{ html: string; toc: TocEntry[] }> {
+): Promise<PipelineTransformResult> {
+  const { content: markdownContent, frontmatter } = splitFrontmatter(
+    fullSource,
+    options.frontmatter,
+  );
   const markdownIt = createMarkdownItRenderer(options);
   applyMarkdownItPlugins(markdownIt, options.plugin.markdownIt);
 
@@ -256,12 +414,14 @@ async function transformWithMarkdownIt(
         "markdown-it",
         bridgeData,
       ),
+      frontmatter,
       toc: options.toc ? extractTocFromMarkdownItTokens(tokens, options.tocMaxDepth) : [],
     };
   }
 
   return {
     html,
+    frontmatter,
     toc: options.toc ? extractTocFromMarkdownItTokens(tokens, options.tocMaxDepth) : [],
   };
 }
@@ -273,7 +433,7 @@ async function transformMarkdownItWithUnified(
   filePath: string,
   frontmatter: Record<string, unknown>,
   options: ResolvedOptions,
-): Promise<{ html: string; toc: TocEntry[] }> {
+): Promise<PipelineTransformResult> {
   const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
   const { plugins: remarkPlugins, options: remarkRehypeOptions } = extractUnifiedPluginWithOptions(
     options.plugin.remark,
@@ -319,6 +479,7 @@ async function transformMarkdownItWithUnified(
 
     return {
       html: await processUnifiedFile(compiledProcessor, input),
+      frontmatter,
       toc,
     };
   }
@@ -351,40 +512,43 @@ async function transformMarkdownItWithUnified(
 
   return {
     html: await processUnifiedFile(compiledProcessor, input),
+    frontmatter,
     toc,
   };
 }
 
 async function transformWithUnified(
   fullSource: string,
-  markdownContent: string,
   filePath: string,
-  frontmatter: Record<string, unknown>,
   options: ResolvedOptions,
-): Promise<{ html: string; toc: TocEntry[] }> {
-  const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
+): Promise<PipelineTransformResult> {
   const { plugins: remarkPlugins, options: remarkRehypeOptions } = extractUnifiedPluginWithOptions(
     options.plugin.remark,
     remarkRehype,
   );
   const { plugins: rehypePlugins, options: rehypeStringifyOptions } =
     extractUnifiedPluginWithOptions(options.plugin.rehype, rehypeStringify);
+  const parserStrategy = detectUnifiedParserStrategy(fullSource, filePath, options, remarkPlugins);
 
-  const stagedProcessor = unified();
+  const nativePayload =
+    parserStrategy === "native"
+      ? transformWithNativeMdastPipeline(loadNapiBindings(), fullSource, options)
+      : null;
+  const fallbackInput =
+    parserStrategy === "native" ? null : splitFrontmatter(fullSource, options.frontmatter);
+  const markdownContent = nativePayload?.content ?? fallbackInput?.content ?? fullSource;
+  const frontmatter = nativePayload?.frontmatter ?? fallbackInput?.frontmatter ?? {};
+  const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
+  const processor = unified();
 
   applyUnifiedPlugins(
-    stagedProcessor,
+    processor,
     options.plugin.mdast.map((plugin) =>
       isOxContentMdastPlugin(plugin) ? toUnifiedMdastPlugin(plugin, mdastContext) : plugin,
     ),
   );
-  applyUnifiedPlugins(stagedProcessor, remarkPlugins);
-
-  const frozenParserPhaseProcessor = stagedProcessor.freeze();
-  const parserStrategy = resolveUnifiedParserStrategy(frozenParserPhaseProcessor);
-  const processor = frozenParserPhaseProcessor();
-
-  installUnifiedParser(processor, parserStrategy, options);
+  applyUnifiedPlugins(processor, remarkPlugins);
+  installUnifiedParser(processor, parserStrategy, options, nativePayload?.tree);
 
   let toc: TocEntry[] = [];
   processor.use(() => {
@@ -403,6 +567,7 @@ async function transformWithUnified(
         frozenMdastProcessor(),
         createUnifiedFileInput(parserStrategy, fullSource, markdownContent, filePath, frontmatter),
       ),
+      frontmatter,
       toc,
     };
   }
@@ -428,6 +593,7 @@ async function transformWithUnified(
       finalProcessor,
       createUnifiedFileInput(parserStrategy, fullSource, markdownContent, filePath, frontmatter),
     ),
+    frontmatter,
     toc,
   };
 }
@@ -501,6 +667,7 @@ function installUnifiedParser(
   processor: UnifiedProcessor,
   strategy: UnifiedParserStrategy,
   options: ResolvedOptions,
+  nativeTree?: MdastRoot,
 ): void {
   if (strategy === "custom") {
     return;
@@ -508,6 +675,13 @@ function installUnifiedParser(
 
   if (strategy === "remark") {
     processor.use(remarkParse);
+    return;
+  }
+
+  if (nativeTree) {
+    processor.use(function usePreparsedMdast(this: { parser?: (document: string) => MdastRoot }) {
+      this.parser = () => nativeTree;
+    });
     return;
   }
 
@@ -535,6 +709,26 @@ function resolveUnifiedParserStrategy(processor: UnifiedProcessor): UnifiedParse
 
 function resolveUnifiedCompilerStrategy(processor: UnifiedProcessor): UnifiedCompilerStrategy {
   return hasUnifiedCustomCompiler(processor) ? "custom" : "default";
+}
+
+function detectUnifiedParserStrategy(
+  fullSource: string,
+  filePath: string,
+  options: ResolvedOptions,
+  remarkPlugins: unknown[],
+): UnifiedParserStrategy {
+  const stagedProcessor = unified();
+  const detectionContext = createMdastPluginContext(filePath, fullSource, {}, options);
+
+  applyUnifiedPlugins(
+    stagedProcessor,
+    options.plugin.mdast.map((plugin) =>
+      isOxContentMdastPlugin(plugin) ? toUnifiedMdastPlugin(plugin, detectionContext) : plugin,
+    ),
+  );
+  applyUnifiedPlugins(stagedProcessor, remarkPlugins);
+
+  return resolveUnifiedParserStrategy(stagedProcessor.freeze());
 }
 
 function selectUnifiedInput(

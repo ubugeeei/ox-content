@@ -19,6 +19,8 @@ export interface TransferEnvelope {
   sections: Map<number, TransferSection>;
 }
 
+const utf8Decoder = new TextDecoder("utf-8");
+
 export function parseTransferEnvelope(buffer: Uint8Array): TransferEnvelope | null {
   if (buffer.byteLength < TRANSFER_HEADER_LEN) {
     return null;
@@ -77,4 +79,19 @@ export function requireTransferSection(
     throw new Error(message);
   }
   return section;
+}
+
+export function sliceTransferSection(buffer: Uint8Array, section: TransferSection): Uint8Array {
+  return buffer.subarray(section.offset, section.offset + section.len);
+}
+
+export function decodeTransferSectionUtf8(
+  buffer: Uint8Array,
+  envelope: TransferEnvelope,
+  id: number,
+  message: string,
+): string {
+  return utf8Decoder.decode(
+    sliceTransferSection(buffer, requireTransferSection(envelope, id, message)),
+  );
 }
