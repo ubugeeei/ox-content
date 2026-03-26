@@ -23,6 +23,8 @@ const MDAST_SECTION_ALIGNS = 3;
 const MDAST_SECTION_STRINGS = 4;
 const MDAST_SECTION_CONTENT = 5;
 const MDAST_SECTION_FRONTMATTER = 6;
+const PREPARED_SOURCE_SECTION_CONTENT = 1;
+const PREPARED_SOURCE_SECTION_FRONTMATTER = 2;
 
 const baseMdast = {
   type: "root" as const,
@@ -149,6 +151,29 @@ function createMdastTransformBuffer(
       bytes: encoder.encode(JSON.stringify(frontmatter)),
     },
   ];
+  return createTransferEnvelope(1, sections, rootIndex);
+}
+
+function createPreparedSourceBuffer(
+  content: string,
+  frontmatter: Record<string, unknown>,
+): Uint8Array {
+  const encoder = new TextEncoder();
+
+  return createTransferEnvelope(3, [
+    { id: PREPARED_SOURCE_SECTION_CONTENT, bytes: encoder.encode(content) },
+    {
+      id: PREPARED_SOURCE_SECTION_FRONTMATTER,
+      bytes: encoder.encode(JSON.stringify(frontmatter)),
+    },
+  ]);
+}
+
+function createTransferEnvelope(
+  kind: number,
+  sections: Array<{ id: number; bytes: Uint8Array }>,
+  rootHandle = 0,
+): Uint8Array {
   const totalLen =
     TRANSFER_HEADER_LEN +
     sections.length * TRANSFER_SECTION_RECORD_LEN +
@@ -158,10 +183,10 @@ function createMdastTransformBuffer(
 
   view.setUint32(0, TRANSFER_MAGIC, true);
   view.setUint16(4, TRANSFER_VERSION, true);
-  view.setUint16(6, 1, true);
+  view.setUint16(6, kind, true);
   view.setUint32(8, 1, true);
   view.setUint32(12, sections.length, true);
-  view.setUint32(16, rootIndex, true);
+  view.setUint32(16, rootHandle, true);
   view.setUint32(20, 0, true);
 
   let sectionOffset = TRANSFER_HEADER_LEN + sections.length * TRANSFER_SECTION_RECORD_LEN;
@@ -206,6 +231,10 @@ function splitFrontmatterForMock(
 
 require.cache[napiId] = {
   exports: {
+    prepareSourceRaw: (source: string, options?: { frontmatter?: boolean }) => {
+      const parsed = splitFrontmatterForMock(source, options?.frontmatter !== false);
+      return createPreparedSourceBuffer(parsed.content, parsed.frontmatter);
+    },
     parseTransferRaw: () => createRawMdastBuffer(),
     parseMdastRaw: () => createRawMdastBuffer(),
     transformMdastRaw: (source: string, options?: { frontmatter?: boolean }) => {
@@ -421,9 +450,12 @@ describe("mdast js plugin", () => {
 
   it("falls back to JS frontmatter splitting when transformMdastRaw is unavailable", async () => {
     const napiExports = require.cache[napiId]?.exports as {
+      prepareSourceRaw?: unknown;
       transformMdastRaw?: unknown;
     };
+    const originalPrepareSourceRaw = napiExports.prepareSourceRaw;
     const originalTransformMdastRaw = napiExports.transformMdastRaw;
+    napiExports.prepareSourceRaw = undefined;
     napiExports.transformMdastRaw = undefined;
 
     function remarkReadFrontmatter() {
@@ -460,8 +492,45 @@ describe("mdast js plugin", () => {
 
       expect(result.html).toContain("<h1>Frontmatter Title</h1>");
     } finally {
+      napiExports.prepareSourceRaw = originalPrepareSourceRaw;
       napiExports.transformMdastRaw = originalTransformMdastRaw;
     }
+  });
+
+  it("exposes Rust-prepared frontmatter to markdown-it plugins", async () => {
+    function markdownItFrontmatterPlugin(md: MarkdownIt) {
+      md.core.ruler.push("frontmatter-heading", (state) => {
+        const inline = state.tokens[1];
+        if (!inline || inline.type !== "inline") {
+          return;
+        }
+
+        for (const child of inline.children ?? []) {
+          if (child.type === "text") {
+            child.content = String(
+              (state.env as { frontmatter?: { title?: string } }).frontmatter?.title,
+            );
+          }
+        }
+      });
+    }
+
+    const result = await transformMarkdown(
+      "---\ntitle: Frontmatter Title\n---\n# Ignored",
+      "docs/markdown-it-frontmatter.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [markdownItFrontmatterPlugin],
+          mdast: [],
+          remark: [],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>frontmatter-from-rust</h1>");
+    expect(result.frontmatter).toEqual({ title: "frontmatter-from-rust" });
   });
 
   it("falls back to remark-parse when remark syntax extensions are registered", async () => {

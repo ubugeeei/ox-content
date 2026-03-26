@@ -11,6 +11,7 @@ pub const TRANSFER_SECTION_RECORD_LEN: usize = 12;
 pub enum TransferPayloadKind {
     Mdast = 1,
     MarkdownItTokens = 2,
+    PreparedSource = 3,
 }
 
 impl TransferPayloadKind {
@@ -24,6 +25,7 @@ impl TransferPayloadKind {
             "markdown-it-tokens" | "markdown_it_tokens" | "markdown-it" => {
                 Some(Self::MarkdownItTokens)
             }
+            "prepared-source" | "prepared_source" | "source" => Some(Self::PreparedSource),
             _ => None,
         }
     }

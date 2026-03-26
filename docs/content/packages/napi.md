@@ -259,4 +259,10 @@ Raw transfers now use a payload-kind-aware envelope via `parseTransferRaw(source
 future payloads such as markdown-it token streams can reuse the same zero-copy memory block shape
 instead of introducing a second ad-hoc binary format.
 
+The native unified bridge now also uses `transformMdastRaw(source, options)` so Rust can parse
+frontmatter, strip content, and serialize mdast into one external `Uint8Array` before JavaScript
+deserializes it. For markdown-it and custom parser fallback paths, `prepareSourceRaw(source, {frontmatter})`
+provides a lighter `prepared-source` envelope that carries only stripped content plus frontmatter JSON,
+which keeps `gray-matter`-style preprocessing off the JavaScript hot path.
+
 `parseMdastRaw(source, options)` is kept as the mdast-specific compatibility wrapper.

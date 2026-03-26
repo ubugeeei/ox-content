@@ -91,6 +91,14 @@ pub struct JsTransformOptions {
     pub source_path: Option<String>,
 }
 
+/// Source preparation options for JavaScript.
+#[napi(object)]
+#[derive(Default, Clone)]
+pub struct JsSourceOptions {
+    /// Parse YAML frontmatter before returning the content payload.
+    pub frontmatter: Option<bool>,
+}
+
 /// Parser options for JavaScript.
 #[napi(object)]
 #[derive(Default, Clone)]
@@ -185,6 +193,9 @@ pub fn parse_transfer_raw(
         TransferPayloadKind::MarkdownItTokens => Err(napi::Error::from_reason(
             "markdown-it token transfer is not implemented yet; mdast is the current baseline",
         )),
+        TransferPayloadKind::PreparedSource => Err(napi::Error::from_reason(
+            "prepared-source transfer is exposed through prepareSourceRaw, not parseTransferRaw",
+        )),
     }
 }
 
@@ -247,6 +258,16 @@ pub fn transform_mdast_raw(
 ) -> Result<Uint8Array> {
     let opts = options.unwrap_or_default();
     MarkdownTransformer::from_options(&opts).transform_mdast_raw(&source)
+}
+
+/// Splits Markdown source into content and frontmatter in a raw transfer buffer.
+///
+/// This is used by JavaScript-side markdown-it and custom unified parser paths so
+/// frontmatter stripping can stay on the Rust side even when parsing continues in JS.
+#[napi]
+pub fn prepare_source_raw(source: String, options: Option<JsSourceOptions>) -> Result<Uint8Array> {
+    let frontmatter = options.unwrap_or_default().frontmatter.unwrap_or(true);
+    MarkdownTransformer::with_frontmatter(frontmatter).prepare_source_raw(&source)
 }
 
 // =============================================================================

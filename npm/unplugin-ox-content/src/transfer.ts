@@ -5,6 +5,7 @@ export const TRANSFER_SECTION_RECORD_LEN = 12;
 
 export const TRANSFER_PAYLOAD_KIND_MDAST = 1;
 export const TRANSFER_PAYLOAD_KIND_MARKDOWN_IT_TOKENS = 2;
+export const TRANSFER_PAYLOAD_KIND_PREPARED_SOURCE = 3;
 
 export interface TransferSection {
   id: number;

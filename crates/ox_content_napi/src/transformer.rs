@@ -8,8 +8,13 @@ use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 
 use crate::{
     mdast_raw::{self, MDAST_SECTION_CONTENT, MDAST_SECTION_FRONTMATTER},
+    transfer::{TransferBufferBuilder, TransferPayloadKind},
     JsTransformOptions, TocEntry, TransformResult,
 };
+
+const PREPARED_SOURCE_PAYLOAD_VERSION: u32 = 1;
+const PREPARED_SOURCE_SECTION_CONTENT: u32 = 1;
+const PREPARED_SOURCE_SECTION_FRONTMATTER: u32 = 2;
 
 pub(crate) struct MarkdownTransformer {
     frontmatter: bool,
@@ -24,6 +29,15 @@ struct PreparedMarkdownSource {
 }
 
 impl MarkdownTransformer {
+    pub(crate) fn with_frontmatter(frontmatter: bool) -> Self {
+        Self {
+            frontmatter,
+            toc_max_depth: 3,
+            parser_options: ParserOptions::default(),
+            renderer_options: HtmlRendererOptions::new(),
+        }
+    }
+
     pub(crate) fn from_options(options: &JsTransformOptions) -> Self {
         Self {
             frontmatter: options.frontmatter.unwrap_or(true),
@@ -72,6 +86,20 @@ impl MarkdownTransformer {
                 (MDAST_SECTION_FRONTMATTER, frontmatter_bytes),
             ],
         )
+    }
+
+    pub(crate) fn prepare_source_raw(&self, source: &str) -> napi::Result<Uint8Array> {
+        let prepared = self.prepare_source(source);
+        let frontmatter_bytes = serde_json::to_vec(&prepared.frontmatter)
+            .map_err(|error| napi::Error::from_reason(error.to_string()))?;
+        let mut builder = TransferBufferBuilder::new(
+            TransferPayloadKind::PreparedSource,
+            PREPARED_SOURCE_PAYLOAD_VERSION,
+            0,
+        );
+        builder.push_section(PREPARED_SOURCE_SECTION_CONTENT, prepared.content.into_bytes());
+        builder.push_section(PREPARED_SOURCE_SECTION_FRONTMATTER, frontmatter_bytes);
+        builder.finish()
     }
 
     pub(crate) fn parse_document<'a>(

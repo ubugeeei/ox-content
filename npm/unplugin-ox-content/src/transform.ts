@@ -20,7 +20,11 @@ import {
   oxContentMdast,
   toUnifiedMdastPlugin,
 } from "./mdast";
-import { decodeTransferSectionUtf8, parseTransferEnvelope } from "./transfer";
+import {
+  decodeTransferSectionUtf8,
+  parseTransferEnvelope,
+  TRANSFER_PAYLOAD_KIND_PREPARED_SOURCE,
+} from "./transfer";
 import type {
   MdastRoot,
   MarkdownItPlugin,
@@ -33,6 +37,12 @@ import type {
 const require = createRequire(import.meta.url);
 
 interface NapiBindings {
+  prepareSourceRaw?: (
+    source: string,
+    options?: {
+      frontmatter?: boolean;
+    },
+  ) => Uint8Array;
   parseTransferRaw?: (
     source: string,
     kind: string,
@@ -140,8 +150,15 @@ interface NativeMdastTransformPayload {
   frontmatter: Record<string, unknown>;
 }
 
+interface PreparedSourcePayload {
+  content: string;
+  frontmatter: Record<string, unknown>;
+}
+
 const MDAST_SECTION_CONTENT = 5;
 const MDAST_SECTION_FRONTMATTER = 6;
+const PREPARED_SOURCE_SECTION_CONTENT = 1;
+const PREPARED_SOURCE_SECTION_FRONTMATTER = 2;
 
 /**
  * Transforms Markdown content into a JavaScript module.
@@ -255,6 +272,22 @@ function parseFrontmatterJson(json: string): Record<string, unknown> {
   }
 }
 
+function prepareSourceWithRust(
+  napi: NapiBindings,
+  source: string,
+  options: ResolvedOptions,
+): PreparedSourcePayload {
+  if (typeof napi.prepareSourceRaw !== "function") {
+    return splitFrontmatter(source, options.frontmatter);
+  }
+
+  return deserializePreparedSource(
+    napi.prepareSourceRaw(source, {
+      frontmatter: options.frontmatter,
+    }),
+  );
+}
+
 function hasUnifiedPlugins(options: ResolvedOptions): boolean {
   return (
     options.plugin.mdast.length > 0 ||
@@ -306,7 +339,7 @@ function transformWithNativeMdastPipeline(
     return deserializeNativeMdastTransform(buffer);
   }
 
-  const fallback = splitFrontmatter(source, options.frontmatter);
+  const fallback = prepareSourceWithRust(napi, source, options);
   return {
     tree: deserializeMdastFromRaw(
       loadLegacyNativeMdastBuffer(napi, fallback.content, options),
@@ -370,14 +403,39 @@ function deserializeNativeMdastTransform(buffer: Uint8Array): NativeMdastTransfo
   };
 }
 
+function deserializePreparedSource(buffer: Uint8Array): PreparedSourcePayload {
+  const envelope = parseTransferEnvelope(buffer);
+  if (!envelope || envelope.kind !== TRANSFER_PAYLOAD_KIND_PREPARED_SOURCE) {
+    throw new Error("[ox-content] Prepared source buffer is not a transfer envelope.");
+  }
+
+  return {
+    content: decodeTransferSectionUtf8(
+      buffer,
+      envelope,
+      PREPARED_SOURCE_SECTION_CONTENT,
+      "[ox-content] prepared source transfer is missing the content section.",
+    ),
+    frontmatter: parseFrontmatterJson(
+      decodeTransferSectionUtf8(
+        buffer,
+        envelope,
+        PREPARED_SOURCE_SECTION_FRONTMATTER,
+        "[ox-content] prepared source transfer is missing the frontmatter section.",
+      ),
+    ),
+  };
+}
+
 async function transformWithMarkdownIt(
   fullSource: string,
   filePath: string,
   options: ResolvedOptions,
 ): Promise<PipelineTransformResult> {
-  const { content: markdownContent, frontmatter } = splitFrontmatter(
+  const { content: markdownContent, frontmatter } = prepareSourceWithRust(
+    loadNapiBindings(),
     fullSource,
-    options.frontmatter,
+    options,
   );
   const markdownIt = createMarkdownItRenderer(options);
   applyMarkdownItPlugins(markdownIt, options.plugin.markdownIt);
@@ -535,7 +593,9 @@ async function transformWithUnified(
       ? transformWithNativeMdastPipeline(loadNapiBindings(), fullSource, options)
       : null;
   const fallbackInput =
-    parserStrategy === "native" ? null : splitFrontmatter(fullSource, options.frontmatter);
+    parserStrategy === "native"
+      ? null
+      : prepareSourceWithRust(loadNapiBindings(), fullSource, options);
   const markdownContent = nativePayload?.content ?? fallbackInput?.content ?? fullSource;
   const frontmatter = nativePayload?.frontmatter ?? fallbackInput?.frontmatter ?? {};
   const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
