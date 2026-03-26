@@ -16,6 +16,14 @@ const MDAST_SECTION_NODES = 1;
 const MDAST_SECTION_CHILD_INDICES = 2;
 const MDAST_SECTION_ALIGNS = 3;
 const MDAST_SECTION_STRINGS = 4;
+const MDAST_SECTION_SOURCE_ORIGIN = 7;
+
+interface SourceOriginPoint {
+  byteOffset: number;
+  offset: number;
+  line: number;
+  column: number;
+}
 
 const KIND_ROOT = 0;
 const KIND_PARAGRAPH = 1;
@@ -86,6 +94,7 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
   }
 
   const sourceIndex = buildSourceIndex(source);
+  const sourceOrigin = readSourceOrigin(buffer, view);
 
   const readString = (offset: number, len: number): string | undefined => {
     if (offset === NONE_U32) {
@@ -99,10 +108,19 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
     return decoder.decode(buffer.subarray(start, end));
   };
 
-  const readPosition = (startOffset: number, endOffset: number) => ({
-    start: pointForByteOffset(startOffset, sourceIndex),
-    end: pointForByteOffset(endOffset, sourceIndex),
-  });
+  const readPosition = (startOffset: number, endOffset: number) => {
+    const start = pointForByteOffset(startOffset, sourceIndex);
+    const end = pointForByteOffset(endOffset, sourceIndex);
+
+    if (!sourceOrigin) {
+      return { start, end };
+    }
+
+    return {
+      start: applySourceOrigin(start, sourceOrigin),
+      end: applySourceOrigin(end, sourceOrigin),
+    };
+  };
 
   const readChildIndex = (index: number): number => {
     if (index >= childCount) {
@@ -305,6 +323,25 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
   return root;
 }
 
+function readSourceOrigin(buffer: Uint8Array, view: DataView): SourceOriginPoint | undefined {
+  const envelope = parseTransferEnvelope(buffer);
+  const section = envelope?.sections.get(MDAST_SECTION_SOURCE_ORIGIN);
+  if (!section) {
+    return undefined;
+  }
+
+  if (section.len !== 16) {
+    throw new Error("[ox-content] mdast transfer source origin section is misaligned.");
+  }
+
+  return {
+    byteOffset: view.getUint32(section.offset, true),
+    offset: view.getUint32(section.offset + 4, true),
+    line: view.getUint32(section.offset + 8, true),
+    column: view.getUint32(section.offset + 12, true),
+  };
+}
+
 function resolveMdastLayout(buffer: Uint8Array, view: DataView): MdastBufferLayout {
   const envelope = parseTransferEnvelope(buffer);
   if (envelope) {
@@ -458,6 +495,17 @@ function pointForByteOffset(byteOffset: number, points: SourceBoundaryPoint[]) {
     line: point.line,
     column: point.column,
     offset: point.offset,
+  };
+}
+
+function applySourceOrigin(
+  point: Pick<SourceBoundaryPoint, "line" | "column" | "offset">,
+  origin: SourceOriginPoint,
+) {
+  return {
+    line: point.line + origin.line - 1,
+    column: point.line === 1 ? point.column + origin.column - 1 : point.column,
+    offset: point.offset + origin.offset,
   };
 }
 

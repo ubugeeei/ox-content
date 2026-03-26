@@ -120,6 +120,7 @@ interface MarkdownItEnv extends Record<string, unknown> {
     frontmatter: Record<string, unknown>;
     source: string;
     content: string;
+    sourceOffset?: SourceOriginPoint;
     html?: string;
   };
 }
@@ -148,17 +149,28 @@ interface NativeMdastTransformPayload {
   tree: MdastRoot;
   content: string;
   frontmatter: Record<string, unknown>;
+  sourceOffset?: SourceOriginPoint;
 }
 
 interface PreparedSourcePayload {
   content: string;
   frontmatter: Record<string, unknown>;
+  sourceOffset?: SourceOriginPoint;
+}
+
+interface SourceOriginPoint {
+  byteOffset: number;
+  offset: number;
+  line: number;
+  column: number;
 }
 
 const MDAST_SECTION_CONTENT = 5;
 const MDAST_SECTION_FRONTMATTER = 6;
+const MDAST_SECTION_SOURCE_ORIGIN = 7;
 const PREPARED_SOURCE_SECTION_CONTENT = 1;
 const PREPARED_SOURCE_SECTION_FRONTMATTER = 2;
+const PREPARED_SOURCE_SECTION_SOURCE_ORIGIN = 3;
 
 /**
  * Transforms Markdown content into a JavaScript module.
@@ -217,14 +229,17 @@ function loadNapiBindings(): NapiBindings {
   }
 }
 
-function splitFrontmatter(
-  source: string,
-  enabled: boolean,
-): { content: string; frontmatter: Record<string, unknown> } {
+function splitFrontmatter(source: string, enabled: boolean): PreparedSourcePayload {
   if (!enabled) {
     return {
       content: source,
       frontmatter: {},
+      sourceOffset: {
+        byteOffset: 0,
+        offset: 0,
+        line: 1,
+        column: 1,
+      },
     };
   }
 
@@ -232,6 +247,7 @@ function splitFrontmatter(
   return {
     content: parsed.content,
     frontmatter: parsed.data as Record<string, unknown>,
+    sourceOffset: computeSourceOrigin(source, parsed.content),
   };
 }
 
@@ -270,6 +286,28 @@ function parseFrontmatterJson(json: string): Record<string, unknown> {
   } catch {
     return {};
   }
+}
+
+function computeSourceOrigin(source: string, content: string): SourceOriginPoint {
+  const prefix = source.slice(0, Math.max(0, source.length - content.length));
+  let byteOffset = 0;
+  let offset = 0;
+  let line = 1;
+  let column = 1;
+
+  for (const character of prefix) {
+    byteOffset += utf8ByteLength(character);
+    offset += character.length;
+
+    if (character === "\n") {
+      line += 1;
+      column = 1;
+    } else {
+      column += 1;
+    }
+  }
+
+  return { byteOffset, offset, line, column };
 }
 
 function prepareSourceWithRust(
@@ -400,6 +438,7 @@ function deserializeNativeMdastTransform(buffer: Uint8Array): NativeMdastTransfo
     tree: deserializeMdastFromRaw(buffer, content),
     content,
     frontmatter,
+    sourceOffset: readSourceOriginFromEnvelope(buffer, envelope, MDAST_SECTION_SOURCE_ORIGIN),
   };
 }
 
@@ -424,6 +463,11 @@ function deserializePreparedSource(buffer: Uint8Array): PreparedSourcePayload {
         "[ox-content] prepared source transfer is missing the frontmatter section.",
       ),
     ),
+    sourceOffset: readSourceOriginFromEnvelope(
+      buffer,
+      envelope,
+      PREPARED_SOURCE_SECTION_SOURCE_ORIGIN,
+    ),
   };
 }
 
@@ -432,15 +476,15 @@ async function transformWithMarkdownIt(
   filePath: string,
   options: ResolvedOptions,
 ): Promise<PipelineTransformResult> {
-  const { content: markdownContent, frontmatter } = prepareSourceWithRust(
-    loadNapiBindings(),
-    fullSource,
-    options,
-  );
+  const {
+    content: markdownContent,
+    frontmatter,
+    sourceOffset,
+  } = prepareSourceWithRust(loadNapiBindings(), fullSource, options);
   const markdownIt = createMarkdownItRenderer(options);
   applyMarkdownItPlugins(markdownIt, options.plugin.markdownIt);
 
-  const env = createMarkdownItEnv(filePath, fullSource, markdownContent, frontmatter);
+  const env = createMarkdownItEnv(filePath, fullSource, markdownContent, frontmatter, sourceOffset);
   const tokens = markdownIt.parse(markdownContent, env);
   const html = markdownIt.renderer.render(tokens, markdownIt.options, env);
   const bridgeData: MarkdownItBridgeData = {
@@ -598,6 +642,7 @@ async function transformWithUnified(
       : prepareSourceWithRust(loadNapiBindings(), fullSource, options);
   const markdownContent = nativePayload?.content ?? fallbackInput?.content ?? fullSource;
   const frontmatter = nativePayload?.frontmatter ?? fallbackInput?.frontmatter ?? {};
+  const sourceOffset = nativePayload?.sourceOffset ?? fallbackInput?.sourceOffset;
   const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
   const processor = unified();
 
@@ -625,7 +670,14 @@ async function transformWithUnified(
     return {
       html: await processUnifiedFile(
         frozenMdastProcessor(),
-        createUnifiedFileInput(parserStrategy, fullSource, markdownContent, filePath, frontmatter),
+        createUnifiedFileInput(
+          parserStrategy,
+          fullSource,
+          markdownContent,
+          filePath,
+          frontmatter,
+          sourceOffset,
+        ),
       ),
       frontmatter,
       toc,
@@ -651,7 +703,14 @@ async function transformWithUnified(
   return {
     html: await processUnifiedFile(
       finalProcessor,
-      createUnifiedFileInput(parserStrategy, fullSource, markdownContent, filePath, frontmatter),
+      createUnifiedFileInput(
+        parserStrategy,
+        fullSource,
+        markdownContent,
+        filePath,
+        frontmatter,
+        sourceOffset,
+      ),
     ),
     frontmatter,
     toc,
@@ -805,6 +864,7 @@ function createUnifiedFileInput(
   markdownContent: string,
   filePath: string,
   frontmatter: Record<string, unknown>,
+  sourceOffset?: SourceOriginPoint,
 ): UnifiedFileInput {
   return {
     path: filePath,
@@ -812,7 +872,9 @@ function createUnifiedFileInput(
       strategy === "markdown-it"
         ? markdownContent
         : selectUnifiedInput(strategy, fullSource, markdownContent),
-    data: createUnifiedFileData(strategy, fullSource, markdownContent, frontmatter),
+    data: createUnifiedFileData(strategy, fullSource, markdownContent, frontmatter, {
+      sourceOffset,
+    }),
   };
 }
 
@@ -831,6 +893,7 @@ function createUnifiedFileData(
       frontmatter,
       source: fullSource,
       content: markdownContent,
+      ...(extra?.sourceOffset ? { sourceOffset: extra.sourceOffset } : {}),
       ...extra,
     },
   };
@@ -909,6 +972,7 @@ function createMarkdownItEnv(
   fullSource: string,
   markdownContent: string,
   frontmatter: Record<string, unknown>,
+  sourceOffset?: SourceOriginPoint,
 ): MarkdownItEnv {
   return {
     filePath,
@@ -919,6 +983,7 @@ function createMarkdownItEnv(
       frontmatter,
       source: fullSource,
       content: markdownContent,
+      ...(sourceOffset ? { sourceOffset } : {}),
     },
   };
 }
@@ -978,6 +1043,29 @@ function getMarkdownItTokenAttr(token: MarkdownItTokenLike, name: string): strin
   return entry?.[1];
 }
 
+function readSourceOriginFromEnvelope(
+  buffer: Uint8Array,
+  envelope: NonNullable<ReturnType<typeof parseTransferEnvelope>>,
+  sectionId: number,
+): SourceOriginPoint | undefined {
+  const section = envelope.sections.get(sectionId);
+  if (!section) {
+    return undefined;
+  }
+
+  if (section.len !== 16) {
+    throw new Error("[ox-content] source origin transfer section is misaligned.");
+  }
+
+  const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  return {
+    byteOffset: view.getUint32(section.offset, true),
+    offset: view.getUint32(section.offset + 4, true),
+    line: view.getUint32(section.offset + 8, true),
+    column: view.getUint32(section.offset + 12, true),
+  };
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -986,6 +1074,23 @@ function slugify(text: string): string {
     .split(/\s+/)
     .filter(Boolean)
     .join("-");
+}
+
+function utf8ByteLength(character: string): number {
+  const codePoint = character.codePointAt(0);
+  if (codePoint === undefined) {
+    return 0;
+  }
+  if (codePoint <= 0x7f) {
+    return 1;
+  }
+  if (codePoint <= 0x7ff) {
+    return 2;
+  }
+  if (codePoint <= 0xffff) {
+    return 3;
+  }
+  return 4;
 }
 
 async function transformHtmlWithRehype(

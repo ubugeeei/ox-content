@@ -23,8 +23,10 @@ const MDAST_SECTION_ALIGNS = 3;
 const MDAST_SECTION_STRINGS = 4;
 const MDAST_SECTION_CONTENT = 5;
 const MDAST_SECTION_FRONTMATTER = 6;
+const MDAST_SECTION_SOURCE_ORIGIN = 7;
 const PREPARED_SOURCE_SECTION_CONTENT = 1;
 const PREPARED_SOURCE_SECTION_FRONTMATTER = 2;
+const PREPARED_SOURCE_SECTION_SOURCE_ORIGIN = 3;
 
 const baseMdast = {
   type: "root" as const,
@@ -122,6 +124,7 @@ function createRawMdastBuffer(): Uint8Array {
 function createMdastTransformBuffer(
   content: string,
   frontmatter: Record<string, unknown>,
+  sourceOffset = { byteOffset: 0, offset: 0, line: 1, column: 1 },
 ): Uint8Array {
   const encoder = new TextEncoder();
   const legacy = createRawMdastBuffer();
@@ -150,6 +153,7 @@ function createMdastTransformBuffer(
       id: MDAST_SECTION_FRONTMATTER,
       bytes: encoder.encode(JSON.stringify(frontmatter)),
     },
+    { id: MDAST_SECTION_SOURCE_ORIGIN, bytes: createSourceOriginBytes(sourceOffset) },
   ];
   return createTransferEnvelope(1, sections, rootIndex);
 }
@@ -157,6 +161,7 @@ function createMdastTransformBuffer(
 function createPreparedSourceBuffer(
   content: string,
   frontmatter: Record<string, unknown>,
+  sourceOffset = { byteOffset: 0, offset: 0, line: 1, column: 1 },
 ): Uint8Array {
   const encoder = new TextEncoder();
 
@@ -166,7 +171,23 @@ function createPreparedSourceBuffer(
       id: PREPARED_SOURCE_SECTION_FRONTMATTER,
       bytes: encoder.encode(JSON.stringify(frontmatter)),
     },
+    { id: PREPARED_SOURCE_SECTION_SOURCE_ORIGIN, bytes: createSourceOriginBytes(sourceOffset) },
   ]);
+}
+
+function createSourceOriginBytes(sourceOffset: {
+  byteOffset: number;
+  offset: number;
+  line: number;
+  column: number;
+}): Uint8Array {
+  const buffer = new Uint8Array(16);
+  const view = new DataView(buffer.buffer);
+  view.setUint32(0, sourceOffset.byteOffset, true);
+  view.setUint32(4, sourceOffset.offset, true);
+  view.setUint32(8, sourceOffset.line, true);
+  view.setUint32(12, sourceOffset.column, true);
+  return buffer;
 }
 
 function createTransferEnvelope(
@@ -206,11 +227,16 @@ function createTransferEnvelope(
 function splitFrontmatterForMock(
   source: string,
   enabled: boolean,
-): { content: string; frontmatter: Record<string, unknown> } {
+): {
+  content: string;
+  frontmatter: Record<string, unknown>;
+  sourceOffset: { byteOffset: number; offset: number; line: number; column: number };
+} {
   if (!enabled || !source.startsWith("---")) {
     return {
       content: source,
       frontmatter: {},
+      sourceOffset: { byteOffset: 0, offset: 0, line: 1, column: 1 },
     };
   }
 
@@ -220,26 +246,52 @@ function splitFrontmatterForMock(
     return {
       content: source,
       frontmatter: {},
+      sourceOffset: { byteOffset: 0, offset: 0, line: 1, column: 1 },
     };
   }
 
+  const content = rest.slice(endOffset + 4).replace(/^\n/, "");
   return {
-    content: rest.slice(endOffset + 4).replace(/^\n/, ""),
+    content,
     frontmatter: { title: "frontmatter-from-rust" },
+    sourceOffset: computeSourceOffsetForMock(source, content),
   };
+}
+
+function computeSourceOffsetForMock(source: string, content: string) {
+  const prefix = source.slice(0, Math.max(0, source.length - content.length));
+  let byteOffset = 0;
+  let offset = 0;
+  let line = 1;
+  let column = 1;
+
+  for (const character of prefix) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    byteOffset += codePoint <= 0x7f ? 1 : codePoint <= 0x7ff ? 2 : codePoint <= 0xffff ? 3 : 4;
+    offset += character.length;
+
+    if (character === "\n") {
+      line += 1;
+      column = 1;
+    } else {
+      column += 1;
+    }
+  }
+
+  return { byteOffset, offset, line, column };
 }
 
 require.cache[napiId] = {
   exports: {
     prepareSourceRaw: (source: string, options?: { frontmatter?: boolean }) => {
       const parsed = splitFrontmatterForMock(source, options?.frontmatter !== false);
-      return createPreparedSourceBuffer(parsed.content, parsed.frontmatter);
+      return createPreparedSourceBuffer(parsed.content, parsed.frontmatter, parsed.sourceOffset);
     },
     parseTransferRaw: () => createRawMdastBuffer(),
     parseMdastRaw: () => createRawMdastBuffer(),
     transformMdastRaw: (source: string, options?: { frontmatter?: boolean }) => {
       const parsed = splitFrontmatterForMock(source, options?.frontmatter !== false);
-      return createMdastTransformBuffer(parsed.content, parsed.frontmatter);
+      return createMdastTransformBuffer(parsed.content, parsed.frontmatter, parsed.sourceOffset);
     },
     transform: (source: string, options?: { frontmatter?: boolean }) => ({
       html: "<h1>Hello</h1>\n<p>World</p>\n",
@@ -319,6 +371,61 @@ describe("mdast js plugin", () => {
     );
 
     expect(result.frontmatter).toEqual({});
+  });
+
+  it("rebases native mdast positions to the original source after frontmatter", async () => {
+    const result = await transformMarkdown(
+      "---\ntitle: Example\n---\n# Hello",
+      "docs/frontmatter-positions.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [
+            defineMdastPlugin("annotate-position", (tree) => {
+              const heading = tree.children[0];
+              const text = heading.children?.[0];
+              if (text && typeof text.value === "string") {
+                const start = heading.position?.start;
+                text.value = `${start?.line}:${start?.column}:${start?.offset}`;
+              }
+            }),
+          ],
+          remark: [],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>4:1:23</h1>");
+  });
+
+  it("exposes source offsets from Rust-prepared source to markdown-it plugins", async () => {
+    const result = await transformMarkdown(
+      "---\ntitle: Example\n---\n# Hello",
+      "docs/markdown-it-source-offset.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [
+            (markdownIt) => {
+              markdownIt.core.ruler.push("annotate-source-offset", (state) => {
+                const inline = state.tokens[1];
+                const origin = state.env.oxContent?.sourceOffset;
+                if (inline?.children?.[0] && origin) {
+                  inline.children[0].content = `${origin.line}:${origin.column}:${origin.offset}`;
+                }
+              });
+            },
+          ],
+          mdast: [],
+          remark: [],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>4:1:23</h1>");
   });
 
   it("runs Ox Content-native mdast plugins and updates the TOC from the transformed tree", async () => {

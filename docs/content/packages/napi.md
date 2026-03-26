@@ -265,4 +265,9 @@ deserializes it. For markdown-it and custom parser fallback paths, `prepareSourc
 provides a lighter `prepared-source` envelope that carries only stripped content plus frontmatter JSON,
 which keeps `gray-matter`-style preprocessing off the JavaScript hot path.
 
+Both envelopes now also carry a compact `source origin` section when frontmatter is stripped. JavaScript
+uses that metadata to rebase mdast `position` fields and expose `file.data.oxContent.sourceOffset`, so
+unified diagnostics and downstream plugin messages stay aligned with the original full source file instead
+of the post-frontmatter content slice.
+
 `parseMdastRaw(source, options)` is kept as the mdast-specific compatibility wrapper.

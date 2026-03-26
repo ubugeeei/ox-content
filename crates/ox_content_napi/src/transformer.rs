@@ -7,7 +7,9 @@ use ox_content_parser::{ParseError, Parser, ParserOptions};
 use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 
 use crate::{
-    mdast_raw::{self, MDAST_SECTION_CONTENT, MDAST_SECTION_FRONTMATTER},
+    mdast_raw::{
+        self, MDAST_SECTION_CONTENT, MDAST_SECTION_FRONTMATTER, MDAST_SECTION_SOURCE_ORIGIN,
+    },
     transfer::{TransferBufferBuilder, TransferPayloadKind},
     JsTransformOptions, TocEntry, TransformResult,
 };
@@ -15,6 +17,7 @@ use crate::{
 const PREPARED_SOURCE_PAYLOAD_VERSION: u32 = 1;
 const PREPARED_SOURCE_SECTION_CONTENT: u32 = 1;
 const PREPARED_SOURCE_SECTION_FRONTMATTER: u32 = 2;
+const PREPARED_SOURCE_SECTION_SOURCE_ORIGIN: u32 = 3;
 
 pub(crate) struct MarkdownTransformer {
     frontmatter: bool,
@@ -26,6 +29,26 @@ pub(crate) struct MarkdownTransformer {
 struct PreparedMarkdownSource {
     content: String,
     frontmatter: HashMap<String, serde_json::Value>,
+    source_origin: SourceOrigin,
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+struct SourceOrigin {
+    byte_offset: u32,
+    offset: u32,
+    line: u32,
+    column: u32,
+}
+
+impl SourceOrigin {
+    fn to_bytes(self) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(16);
+        bytes.extend_from_slice(&self.byte_offset.to_le_bytes());
+        bytes.extend_from_slice(&self.offset.to_le_bytes());
+        bytes.extend_from_slice(&self.line.to_le_bytes());
+        bytes.extend_from_slice(&self.column.to_le_bytes());
+        bytes
+    }
 }
 
 impl MarkdownTransformer {
@@ -84,6 +107,7 @@ impl MarkdownTransformer {
             vec![
                 (MDAST_SECTION_CONTENT, content_bytes),
                 (MDAST_SECTION_FRONTMATTER, frontmatter_bytes),
+                (MDAST_SECTION_SOURCE_ORIGIN, prepared.source_origin.to_bytes()),
             ],
         )
     }
@@ -99,6 +123,8 @@ impl MarkdownTransformer {
         );
         builder.push_section(PREPARED_SOURCE_SECTION_CONTENT, prepared.content.into_bytes());
         builder.push_section(PREPARED_SOURCE_SECTION_FRONTMATTER, frontmatter_bytes);
+        builder
+            .push_section(PREPARED_SOURCE_SECTION_SOURCE_ORIGIN, prepared.source_origin.to_bytes());
         builder.finish()
     }
 
@@ -117,24 +143,40 @@ impl MarkdownTransformer {
 
     fn prepare_source(&self, source: &str) -> PreparedMarkdownSource {
         if self.frontmatter {
-            let (content, frontmatter) = parse_frontmatter(source);
-            PreparedMarkdownSource { content, frontmatter }
+            parse_frontmatter_with_origin(source)
         } else {
-            PreparedMarkdownSource { content: source.to_string(), frontmatter: HashMap::new() }
+            PreparedMarkdownSource {
+                content: source.to_string(),
+                frontmatter: HashMap::new(),
+                source_origin: SourceOrigin { line: 1, column: 1, ..SourceOrigin::default() },
+            }
         }
     }
 }
 
 pub(crate) fn parse_frontmatter(source: &str) -> (String, HashMap<String, serde_json::Value>) {
+    let prepared = parse_frontmatter_with_origin(source);
+    (prepared.content, prepared.frontmatter)
+}
+
+fn parse_frontmatter_with_origin(source: &str) -> PreparedMarkdownSource {
     let mut frontmatter = HashMap::new();
 
     if !source.starts_with("---") {
-        return (source.to_string(), frontmatter);
+        return PreparedMarkdownSource {
+            content: source.to_string(),
+            frontmatter,
+            source_origin: SourceOrigin { line: 1, column: 1, ..SourceOrigin::default() },
+        };
     }
 
     let rest = &source[3..];
     let Some(end_pos) = rest.find("\n---") else {
-        return (source.to_string(), frontmatter);
+        return PreparedMarkdownSource {
+            content: source.to_string(),
+            frontmatter,
+            source_origin: SourceOrigin { line: 1, column: 1, ..SourceOrigin::default() },
+        };
     };
 
     let frontmatter_str = &rest[..end_pos].trim_start_matches('\n');
@@ -170,7 +212,29 @@ pub(crate) fn parse_frontmatter(source: &str) -> (String, HashMap<String, serde_
         }
     }
 
-    (content.to_string(), frontmatter)
+    let source_origin = source_origin_for_content(source, content);
+
+    PreparedMarkdownSource { content: content.to_string(), frontmatter, source_origin }
+}
+
+fn source_origin_for_content(source: &str, content: &str) -> SourceOrigin {
+    let prefix_len = source.len().saturating_sub(content.len());
+    let prefix = &source[..prefix_len];
+    let mut origin = SourceOrigin { line: 1, column: 1, ..SourceOrigin::default() };
+
+    for character in prefix.chars() {
+        origin.byte_offset += character.len_utf8() as u32;
+        origin.offset += character.len_utf16() as u32;
+
+        if character == '\n' {
+            origin.line += 1;
+            origin.column = 1;
+        } else {
+            origin.column += 1;
+        }
+    }
+
+    origin
 }
 
 fn extract_toc(doc: &Document, max_depth: u8) -> Vec<TocEntry> {
@@ -316,5 +380,17 @@ mod tests {
 
         assert_eq!(prepared.content, source);
         assert!(prepared.frontmatter.is_empty());
+    }
+
+    #[test]
+    fn tracks_source_origin_after_frontmatter() {
+        let prepared =
+            parse_frontmatter_with_origin("---\ntitle: こんにちは\nemoji: 😀\n---\n# Hello");
+
+        assert_eq!(prepared.content, "# Hello");
+        assert_eq!(
+            prepared.source_origin,
+            SourceOrigin { byte_offset: 43, offset: 31, line: 5, column: 1 }
+        );
     }
 }
