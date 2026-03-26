@@ -261,9 +261,9 @@ instead of introducing a second ad-hoc binary format.
 
 The native unified bridge now also uses `transformMdastRaw(source, options)` so Rust can parse
 frontmatter, strip content, and serialize mdast into one external `Uint8Array` before JavaScript
-deserializes it. For markdown-it and custom parser fallback paths, `prepareSourceRaw(source, {frontmatter})`
+deserializes it. For markdown-it and custom parser interop paths, `prepareSourceRaw(source, {frontmatter})`
 provides a lighter `prepared-source` envelope that carries only stripped content plus frontmatter JSON,
-which keeps `gray-matter`-style preprocessing off the JavaScript hot path.
+so source preparation stays in Rust instead of falling back to JavaScript preprocessing.
 
 Both envelopes now also carry a compact `source origin` section when frontmatter is stripped. JavaScript
 uses that metadata to rebase mdast `position` fields and expose `sourceOffset` on `file.data`,

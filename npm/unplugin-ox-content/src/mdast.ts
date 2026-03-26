@@ -13,20 +13,9 @@ import type {
 const require = createRequire(import.meta.url);
 
 interface NapiBindings {
-  parseTransferRaw?: (
+  parseTransferRaw: (
     source: string,
     kind: string,
-    options?: {
-      gfm?: boolean;
-      footnotes?: boolean;
-      taskLists?: boolean;
-      tables?: boolean;
-      strikethrough?: boolean;
-      autolinks?: boolean;
-    },
-  ) => Uint8Array;
-  parseMdastRaw: (
-    source: string,
     options?: {
       gfm?: boolean;
       footnotes?: boolean;
@@ -130,10 +119,11 @@ export function parseMarkdownToMdast(
     strikethrough: resolvedOptions.strikethrough,
     autolinks: resolvedOptions.autolinks,
   };
-  const buffer =
-    typeof napi.parseTransferRaw === "function"
-      ? napi.parseTransferRaw(source, "mdast", parserOptions)
-      : napi.parseMdastRaw(source, parserOptions);
+  const buffer = requireNapiMethod(napi.parseTransferRaw, "parseTransferRaw")(
+    source,
+    "mdast",
+    parserOptions,
+  );
   return deserializeMdastFromRaw(buffer, source);
 }
 
@@ -221,6 +211,20 @@ function loadNapiBindings(): NapiBindings {
         "Run: mise run build:napi",
     );
   }
+}
+
+function requireNapiMethod<T extends (...args: never[]) => unknown>(
+  method: T | undefined,
+  name: string,
+): T {
+  if (typeof method === "function") {
+    return method;
+  }
+
+  throw new Error(
+    `[ox-content] @ox-content/napi is too old for mdast interop: missing ${name}(). ` +
+      "Rebuild the NAPI module with `vp run build:napi`.",
+  );
 }
 
 function resolveMdastOptions(options: OxContentMdastOptions): Required<OxContentMdastOptions> {

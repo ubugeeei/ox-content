@@ -623,7 +623,7 @@ describe("mdast js plugin", () => {
     expect(result.html).toContain("<h1>frontmatter-from-rust</h1>");
   });
 
-  it("falls back to JS frontmatter splitting when transformMdastRaw is unavailable", async () => {
+  it("fails fast when modern Rust transfer bindings are unavailable", async () => {
     const napiExports = require.cache[napiId]?.exports as {
       prepareSourceRaw?: unknown;
       transformMdastRaw?: unknown;
@@ -632,6 +632,11 @@ describe("mdast js plugin", () => {
     const originalTransformMdastRaw = napiExports.transformMdastRaw;
     napiExports.prepareSourceRaw = undefined;
     napiExports.transformMdastRaw = undefined;
+
+    function remarkForceRemarkParse(this: { data: (key: string, value?: unknown) => unknown }) {
+      this.data("micromarkExtensions", []);
+      this.data("fromMarkdownExtensions", []);
+    }
 
     function remarkReadFrontmatter() {
       return (tree: typeof baseMdast, file: { data?: { matter?: { title?: string } } }) => {
@@ -651,23 +656,55 @@ describe("mdast js plugin", () => {
     }
 
     try {
-      const result = await transformMarkdown(
-        "---\ntitle: Frontmatter Title\n---\n# Ignored",
-        "docs/frontmatter-fallback.md",
-        createResolvedOptions({
-          plugin: {
-            oxContent: [],
-            markdownIt: [],
-            mdast: [],
-            remark: [remarkReadFrontmatter],
-            rehype: [],
-          },
-        }),
-      );
-
-      expect(result.html).toContain("<h1>Frontmatter Title</h1>");
+      await expect(
+        transformMarkdown(
+          "---\ntitle: Frontmatter Title\n---\n# Ignored",
+          "docs/frontmatter-fallback.md",
+          createResolvedOptions({
+            plugin: {
+              oxContent: [],
+              markdownIt: [],
+              mdast: [],
+              remark: [remarkForceRemarkParse, remarkReadFrontmatter],
+              rehype: [],
+            },
+          }),
+        ),
+      ).rejects.toThrow(/missing prepareSourceRaw/);
     } finally {
       napiExports.prepareSourceRaw = originalPrepareSourceRaw;
+      napiExports.transformMdastRaw = originalTransformMdastRaw;
+    }
+  });
+
+  it("fails fast when native mdast transfer bindings are unavailable", async () => {
+    const napiExports = require.cache[napiId]?.exports as {
+      transformMdastRaw?: unknown;
+    };
+    const originalTransformMdastRaw = napiExports.transformMdastRaw;
+    napiExports.transformMdastRaw = undefined;
+
+    try {
+      await expect(
+        transformMarkdown(
+          "# Hello",
+          "docs/native-mdast-missing.md",
+          createResolvedOptions({
+            plugin: {
+              oxContent: [],
+              markdownIt: [],
+              mdast: [
+                defineMdastPlugin("noop", () => {
+                  return;
+                }),
+              ],
+              remark: [],
+              rehype: [],
+            },
+          }),
+        ),
+      ).rejects.toThrow(/missing transformMdastRaw/);
+    } finally {
       napiExports.transformMdastRaw = originalTransformMdastRaw;
     }
   });

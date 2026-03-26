@@ -5,7 +5,6 @@
  */
 
 import { createRequire } from "node:module";
-import matter from "gray-matter";
 import MarkdownIt from "markdown-it";
 import rehypeParse from "rehype-parse";
 import rehypeRemark from "rehype-remark";
@@ -37,13 +36,13 @@ import type {
 const require = createRequire(import.meta.url);
 
 interface NapiBindings {
-  prepareSourceRaw?: (
+  prepareSourceRaw: (
     source: string,
     options?: {
       frontmatter?: boolean;
     },
   ) => Uint8Array;
-  parseTransferRaw?: (
+  parseTransferRaw: (
     source: string,
     kind: string,
     options?: {
@@ -55,18 +54,7 @@ interface NapiBindings {
       autolinks?: boolean;
     },
   ) => Uint8Array;
-  parseMdastRaw?: (
-    source: string,
-    options?: {
-      gfm?: boolean;
-      footnotes?: boolean;
-      taskLists?: boolean;
-      tables?: boolean;
-      strikethrough?: boolean;
-      autolinks?: boolean;
-    },
-  ) => Uint8Array;
-  transformMdastRaw?: (
+  transformMdastRaw: (
     source: string,
     options?: {
       gfm?: boolean;
@@ -230,28 +218,6 @@ function loadNapiBindings(): NapiBindings {
   }
 }
 
-function splitFrontmatter(source: string, enabled: boolean): PreparedSourcePayload {
-  if (!enabled) {
-    return {
-      content: source,
-      frontmatter: {},
-      sourceOffset: {
-        byteOffset: 0,
-        offset: 0,
-        line: 1,
-        column: 1,
-      },
-    };
-  }
-
-  const parsed = matter(source);
-  return {
-    content: parsed.content,
-    frontmatter: parsed.data as Record<string, unknown>,
-    sourceOffset: computeSourceOrigin(source, parsed.content),
-  };
-}
-
 function createNapiTransformOptions(options: ResolvedOptions): {
   gfm: boolean;
   footnotes: boolean;
@@ -289,39 +255,13 @@ function parseFrontmatterJson(json: string): Record<string, unknown> {
   }
 }
 
-function computeSourceOrigin(source: string, content: string): SourceOriginPoint {
-  const prefix = source.slice(0, Math.max(0, source.length - content.length));
-  let byteOffset = 0;
-  let offset = 0;
-  let line = 1;
-  let column = 1;
-
-  for (const character of prefix) {
-    byteOffset += utf8ByteLength(character);
-    offset += character.length;
-
-    if (character === "\n") {
-      line += 1;
-      column = 1;
-    } else {
-      column += 1;
-    }
-  }
-
-  return { byteOffset, offset, line, column };
-}
-
 function prepareSourceWithRust(
   napi: NapiBindings,
   source: string,
   options: ResolvedOptions,
 ): PreparedSourcePayload {
-  if (typeof napi.prepareSourceRaw !== "function") {
-    return splitFrontmatter(source, options.frontmatter);
-  }
-
   return deserializePreparedSource(
-    napi.prepareSourceRaw(source, {
+    requireNapiMethod(napi.prepareSourceRaw, "prepareSourceRaw")(source, {
       frontmatter: options.frontmatter,
     }),
   );
@@ -373,45 +313,12 @@ function transformWithNativeMdastPipeline(
   source: string,
   options: ResolvedOptions,
 ): NativeMdastTransformPayload {
-  if (typeof napi.transformMdastRaw === "function") {
-    const buffer = napi.transformMdastRaw(source, createNapiTransformOptions(options));
-    return deserializeNativeMdastTransform(buffer);
-  }
-
-  const fallback = prepareSourceWithRust(napi, source, options);
-  return {
-    tree: deserializeMdastFromRaw(
-      loadLegacyNativeMdastBuffer(napi, fallback.content, options),
-      fallback.content,
+  return deserializeNativeMdastTransform(
+    requireNapiMethod(napi.transformMdastRaw, "transformMdastRaw")(
+      source,
+      createNapiTransformOptions(options),
     ),
-    content: fallback.content,
-    frontmatter: fallback.frontmatter,
-  };
-}
-
-function loadLegacyNativeMdastBuffer(
-  napi: NapiBindings,
-  source: string,
-  options: ResolvedOptions,
-): Uint8Array {
-  const parserOptions = {
-    gfm: options.gfm,
-    footnotes: options.footnotes,
-    taskLists: options.taskLists,
-    tables: options.tables,
-    strikethrough: options.strikethrough,
-    autolinks: options.gfm,
-  };
-
-  if (typeof napi.parseTransferRaw === "function") {
-    return napi.parseTransferRaw(source, "mdast", parserOptions);
-  }
-
-  if (typeof napi.parseMdastRaw === "function") {
-    return napi.parseMdastRaw(source, parserOptions);
-  }
-
-  throw new Error("[ox-content] Native mdast bindings are unavailable.");
+  );
 }
 
 function deserializeNativeMdastTransform(buffer: Uint8Array): NativeMdastTransformPayload {
@@ -643,13 +550,13 @@ async function transformWithUnified(
     parserStrategy === "native"
       ? transformWithNativeMdastPipeline(loadNapiBindings(), fullSource, options)
       : null;
-  const fallbackInput =
+  const preparedInput =
     parserStrategy === "native"
       ? null
       : prepareSourceWithRust(loadNapiBindings(), fullSource, options);
-  const markdownContent = nativePayload?.content ?? fallbackInput?.content ?? fullSource;
-  const frontmatter = nativePayload?.frontmatter ?? fallbackInput?.frontmatter ?? {};
-  const sourceOffset = nativePayload?.sourceOffset ?? fallbackInput?.sourceOffset;
+  const markdownContent = nativePayload?.content ?? preparedInput?.content ?? fullSource;
+  const frontmatter = nativePayload?.frontmatter ?? preparedInput?.frontmatter ?? {};
+  const sourceOffset = nativePayload?.sourceOffset ?? preparedInput?.sourceOffset;
   const mdastContext = createMdastPluginContext(
     filePath,
     fullSource,
@@ -1091,21 +998,18 @@ function slugify(text: string): string {
     .join("-");
 }
 
-function utf8ByteLength(character: string): number {
-  const codePoint = character.codePointAt(0);
-  if (codePoint === undefined) {
-    return 0;
+function requireNapiMethod<T extends (...args: never[]) => unknown>(
+  method: T | undefined,
+  name: string,
+): T {
+  if (typeof method === "function") {
+    return method;
   }
-  if (codePoint <= 0x7f) {
-    return 1;
-  }
-  if (codePoint <= 0x7ff) {
-    return 2;
-  }
-  if (codePoint <= 0xffff) {
-    return 3;
-  }
-  return 4;
+
+  throw new Error(
+    `[ox-content] @ox-content/napi is too old for unified interop: missing ${name}(). ` +
+      "Rebuild the NAPI module with `vp run build:napi`.",
+  );
 }
 
 async function transformHtmlWithRehype(
