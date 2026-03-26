@@ -62,9 +62,10 @@
   "dependencies": {
     "@ox-content/napi": "workspace:*",
     "@rollup/pluginutils": "^5.1.4",
-    "gray-matter": "^4.0.3",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
+    "rehype-parse": "^9.0.1",
+    "rehype-remark": "^10.0.1",
     "rehype-stringify": "^10.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.1",

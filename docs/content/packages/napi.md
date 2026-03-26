@@ -236,3 +236,39 @@ node benchmarks/bundle-size/parse-benchmark.mjs
 ```
 
 The benchmark includes `md4w (md4c)` by default and adds `Bun.markdown.html` automatically when `bun` is available.
+
+### mdast Transfer Micro-benchmark
+
+To benchmark the mdast export paths used by the unified bridge, run:
+
+```bash
+cargo bench -p ox_content_napi --bench mdast_transfer -- --sample-size 20 --warm-up-time 1 --measurement-time 2
+```
+
+This Criterion benchmark compares `parse_native`, `parse_json`, `parse_raw`, and `transform_html`
+across small, medium, and large GFM documents. It also prints the exported JSON and raw payload sizes
+for each fixture so you can distinguish parser cost from transfer-format cost.
+
+This benchmark measures the Rust-side pipeline only. For end-to-end unified bridge evaluation, pair it
+with a JavaScript benchmark that includes the N-API boundary and JS-side mdast materialization.
+
+### Transfer Envelope
+
+Raw transfers now use a payload-kind-aware envelope via `parseTransferRaw(source, kind, options)`.
+`mdast` is the baseline payload and remains the highest-priority path, but the envelope is designed so
+future payloads such as markdown-it token streams can reuse the same zero-copy memory block shape
+instead of introducing a second ad-hoc binary format.
+
+The native unified bridge now also uses `transformMdastRaw(source, options)` so Rust can parse
+frontmatter, strip content, and serialize mdast into one external `Uint8Array` before JavaScript
+deserializes it. For markdown-it and custom parser interop paths, `prepareSourceRaw(source, {frontmatter})`
+provides a lighter `prepared-source` envelope that carries only stripped content plus frontmatter JSON,
+so source preparation stays in Rust instead of falling back to JavaScript preprocessing.
+
+Both envelopes now also carry a compact `source origin` section when frontmatter is stripped. JavaScript
+uses that metadata to rebase mdast `position` fields and expose `sourceOffset` on `file.data`,
+`file.data.oxContent`, and the Ox Content mdast plugin context, so unified diagnostics and downstream
+plugin messages stay aligned with the original full source file instead of the post-frontmatter content
+slice.
+
+`parseMdastRaw(source, options)` is kept as the mdast-specific compatibility wrapper.
