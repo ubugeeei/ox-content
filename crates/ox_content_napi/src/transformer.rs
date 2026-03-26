@@ -19,7 +19,7 @@ const PREPARED_SOURCE_SECTION_CONTENT: u32 = 1;
 const PREPARED_SOURCE_SECTION_FRONTMATTER: u32 = 2;
 const PREPARED_SOURCE_SECTION_SOURCE_ORIGIN: u32 = 3;
 
-pub(crate) struct MarkdownTransformer {
+pub struct MarkdownTransformer {
     frontmatter: bool,
     toc_max_depth: u8,
     parser_options: ParserOptions,
@@ -154,7 +154,7 @@ impl MarkdownTransformer {
     }
 }
 
-pub(crate) fn parse_frontmatter(source: &str) -> (String, HashMap<String, serde_json::Value>) {
+pub fn parse_frontmatter(source: &str) -> (String, HashMap<String, serde_json::Value>) {
     let prepared = parse_frontmatter_with_origin(source);
     (prepared.content, prepared.frontmatter)
 }
