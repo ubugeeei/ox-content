@@ -81,6 +81,19 @@ export interface MdastPluginContext {
   frontmatter: Record<string, unknown>;
 
   /**
+   * Position of the markdown content slice within the original source.
+   *
+   * This is present when frontmatter or other pre-processing strips bytes
+   * before the mdast stage runs.
+   */
+  sourceOffset?: {
+    byteOffset: number;
+    offset: number;
+    line: number;
+    column: number;
+  };
+
+  /**
    * Resolved plugin options.
    */
   options: ResolvedOptions;

@@ -400,6 +400,33 @@ describe("mdast js plugin", () => {
     expect(result.html).toContain("<h1>4:1:23</h1>");
   });
 
+  it("exposes source offsets on the mdast plugin context", async () => {
+    const result = await transformMarkdown(
+      "---\ntitle: Example\n---\n# Hello",
+      "docs/mdast-context-source-offset.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [
+            defineMdastPlugin("annotate-context-offset", (tree, context) => {
+              const heading = tree.children[0];
+              const text = heading.children?.[0];
+              if (text && typeof text.value === "string") {
+                const origin = context.sourceOffset;
+                text.value = `${origin?.line}:${origin?.column}:${origin?.offset}`;
+              }
+            }),
+          ],
+          remark: [],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>4:1:23</h1>");
+  });
+
   it("exposes source offsets from Rust-prepared source to markdown-it plugins", async () => {
     const result = await transformMarkdown(
       "---\ntitle: Example\n---\n# Hello",
@@ -420,6 +447,47 @@ describe("mdast js plugin", () => {
           ],
           mdast: [],
           remark: [],
+          rehype: [],
+        },
+      }),
+    );
+
+    expect(result.html).toContain("<h1>4:1:23</h1>");
+  });
+
+  it("exposes source offsets on top-level file.data for unified plugins", async () => {
+    function remarkReadSourceOffset() {
+      return (
+        tree: { children?: Array<{ children?: Array<{ value?: string }> }> },
+        file: never,
+      ) => {
+        const sourceOffset = (
+          file as {
+            data?: {
+              sourceOffset?: {
+                line: number;
+                column: number;
+                offset: number;
+              };
+            };
+          }
+        ).data?.sourceOffset;
+        const text = tree.children?.[0]?.children?.[0];
+        if (text && typeof text.value === "string" && sourceOffset) {
+          text.value = `${sourceOffset.line}:${sourceOffset.column}:${sourceOffset.offset}`;
+        }
+      };
+    }
+
+    const result = await transformMarkdown(
+      "---\ntitle: Example\n---\n# Hello",
+      "docs/file-data-source-offset.md",
+      createResolvedOptions({
+        plugin: {
+          oxContent: [],
+          markdownIt: [],
+          mdast: [],
+          remark: [remarkReadSourceOffset],
           rehype: [],
         },
       }),

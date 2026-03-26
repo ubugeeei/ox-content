@@ -115,6 +115,7 @@ interface MarkdownItEnv extends Record<string, unknown> {
   filePath: string;
   frontmatter: Record<string, unknown>;
   matter: Record<string, unknown>;
+  sourceOffset?: SourceOriginPoint;
   oxContent: {
     parser: "markdown-it";
     frontmatter: Record<string, unknown>;
@@ -536,7 +537,13 @@ async function transformMarkdownItWithUnified(
   frontmatter: Record<string, unknown>,
   options: ResolvedOptions,
 ): Promise<PipelineTransformResult> {
-  const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
+  const mdastContext = createMdastPluginContext(
+    filePath,
+    fullSource,
+    frontmatter,
+    options,
+    markdownIt.env.oxContent.sourceOffset,
+  );
   const { plugins: remarkPlugins, options: remarkRehypeOptions } = extractUnifiedPluginWithOptions(
     options.plugin.remark,
     remarkRehype,
@@ -643,7 +650,13 @@ async function transformWithUnified(
   const markdownContent = nativePayload?.content ?? fallbackInput?.content ?? fullSource;
   const frontmatter = nativePayload?.frontmatter ?? fallbackInput?.frontmatter ?? {};
   const sourceOffset = nativePayload?.sourceOffset ?? fallbackInput?.sourceOffset;
-  const mdastContext = createMdastPluginContext(filePath, fullSource, frontmatter, options);
+  const mdastContext = createMdastPluginContext(
+    filePath,
+    fullSource,
+    frontmatter,
+    options,
+    sourceOffset,
+  );
   const processor = unified();
 
   applyUnifiedPlugins(
@@ -888,6 +901,7 @@ function createUnifiedFileData(
   return {
     frontmatter,
     matter: frontmatter,
+    ...(extra?.sourceOffset ? { sourceOffset: extra.sourceOffset } : {}),
     oxContent: {
       parser,
       frontmatter,
@@ -978,6 +992,7 @@ function createMarkdownItEnv(
     filePath,
     frontmatter,
     matter: frontmatter,
+    ...(sourceOffset ? { sourceOffset } : {}),
     oxContent: {
       parser: "markdown-it",
       frontmatter,

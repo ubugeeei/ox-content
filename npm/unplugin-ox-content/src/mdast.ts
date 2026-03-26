@@ -188,11 +188,13 @@ export function createMdastPluginContext(
   source: string,
   frontmatter: Record<string, unknown>,
   options: ResolvedOptions,
+  sourceOffset?: MdastPluginContext["sourceOffset"],
 ): MdastPluginContext {
   return {
     filePath,
     source,
     frontmatter,
+    sourceOffset,
     options,
   };
 }
