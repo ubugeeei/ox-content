@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0] - 2026-04-21
+
+### Features
+
+- generated docs UX and scoped search (#44)
+- code highlighting (#42)
+
 ## [1.0.0-alpha.0] - 2026-03-12
 
 ### Performance
