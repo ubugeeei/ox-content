@@ -53,4 +53,3 @@
 <p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/jsx.d.ts#L712">View source</a></p>
   </div>
 </details>
-

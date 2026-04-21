@@ -42,9 +42,7 @@ export function createDocsFixture(): ExtractedDocs[] {
             type: "number",
             description: "Rounded numeric value",
           },
-          examples: [
-            '```ts\nround(3.14159, 2, "half-up");\nround(1.005, 2, "bankers");\n```',
-          ],
+          examples: ['```ts\nround(3.14159, 2, "half-up");\nround(1.005, 2, "bankers");\n```'],
           tags: {
             since: "2.0.0",
             deprecated: "Prefer `formatNumber` when returning UI strings.",

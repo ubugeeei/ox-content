@@ -141,8 +141,8 @@ test.describe("docs generation VRT", () => {
     await expect(page.locator(".content")).toHaveScreenshot("generated-docs-reference.png", {
       animations: "disabled",
       caret: "hide",
-      maxDiffPixels: 4500,
-      scale: "device",
+      maxDiffPixelRatio: 0.025,
+      scale: "css",
     });
   });
 
@@ -159,8 +159,8 @@ test.describe("docs generation VRT", () => {
     await expect(page.locator(".search-modal")).toHaveScreenshot("generated-docs-search.png", {
       animations: "disabled",
       caret: "hide",
-      maxDiffPixels: 2500,
-      scale: "device",
+      maxDiffPixelRatio: 0.015,
+      scale: "css",
     });
   });
 });

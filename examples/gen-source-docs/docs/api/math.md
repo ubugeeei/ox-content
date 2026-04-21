@@ -11,6 +11,7 @@
 ## Reference
 
 <a id="clamp"></a>
+
 <details class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">clamp</code><code class="ox-api-entry__signature">clamp(value: number, min: number, max: number): number</code><span class="ox-api-entry__description">Clamps a number between a minimum and maximum value.</span></summary>
   <div class="ox-api-entry__body">
@@ -58,6 +59,7 @@ clamp(15, 0, 10) // =&gt; 10</code></pre>
 </details>
 
 <a id="lerp"></a>
+
 <details class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">lerp</code><code class="ox-api-entry__signature">lerp(start: number, end: number, t: number): number</code><span class="ox-api-entry__description">Linearly interpolates between two values.</span></summary>
   <div class="ox-api-entry__body">
@@ -104,6 +106,7 @@ lerp(0, 100, 0.25) // =&gt; 25</code></pre>
 </details>
 
 <a id="round"></a>
+
 <details class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">round</code><code class="ox-api-entry__signature">round(value: number, decimals: number): number</code><span class="ox-api-entry__description">Rounds a number to a specified number of decimal places.</span></summary>
   <div class="ox-api-entry__body">
@@ -143,4 +146,3 @@ round(3.14159, 4) // =&gt; 3.1416</code></pre>
 </div>
   </div>
 </details>
-

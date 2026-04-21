@@ -40,11 +40,13 @@ function parseScopedQuery(value: string) {
 }
 
 function moduleSlug(file: string): string {
-  return file
-    .split("/")
-    .pop()
-    ?.replace(/\.[^.]+$/, "")
-    .toLowerCase() ?? file.toLowerCase();
+  return (
+    file
+      .split("/")
+      .pop()
+      ?.replace(/\.[^.]+$/, "")
+      .toLowerCase() ?? file.toLowerCase()
+  );
 }
 
 function moduleLabel(file: string): string {
@@ -133,7 +135,11 @@ function toggleScope(scope: string) {
 
 function shouldAutoOpen(module: VisibleModule, entry: DocEntry): boolean {
   const parsed = parseScopedQuery(query.value);
-  return Boolean(parsed.text) || filteredModules.value.length === 1 || selectedModule.value === module.slug;
+  return (
+    Boolean(parsed.text) ||
+    filteredModules.value.length === 1 ||
+    selectedModule.value === module.slug
+  );
 }
 
 const parsedQuery = computed(() => parseScopedQuery(query.value));
@@ -174,7 +180,8 @@ const filteredModules = computed<VisibleModule[]>(() => {
 
   return modules.value
     .map((module) => {
-      const scopeMatched = scopes.length === 0 || scopes.some((scope) => module.scopes.includes(scope));
+      const scopeMatched =
+        scopes.length === 0 || scopes.some((scope) => module.scopes.includes(scope));
 
       if (!scopeMatched) {
         return null;
@@ -184,7 +191,11 @@ const filteredModules = computed<VisibleModule[]>(() => {
         ? module.entries.filter((entry) => matchesText(entry, normalizedText))
         : module.entries;
 
-      if (visibleEntries.length === 0 && text && !module.label.toLowerCase().includes(normalizedText)) {
+      if (
+        visibleEntries.length === 0 &&
+        text &&
+        !module.label.toLowerCase().includes(normalizedText)
+      ) {
         return null;
       }
 
@@ -371,8 +382,12 @@ onMounted(async () => {
                     </thead>
                     <tbody>
                       <tr v-for="param in entry.params" :key="`${entry.name}:${param.name}`">
-                        <td><code>{{ param.name }}</code></td>
-                        <td><code>{{ param.type }}</code></td>
+                        <td>
+                          <code>{{ param.name }}</code>
+                        </td>
+                        <td>
+                          <code>{{ param.type }}</code>
+                        </td>
                         <td>{{ param.description }}</td>
                       </tr>
                     </tbody>
@@ -389,7 +404,10 @@ onMounted(async () => {
 
                 <section v-if="entry.examples?.length" class="entry-section">
                   <h3>Examples</h3>
-                  <pre v-for="(example, index) in entry.examples" :key="`${entry.name}:example:${index}`">
+                  <pre
+                    v-for="(example, index) in entry.examples"
+                    :key="`${entry.name}:example:${index}`"
+                  >
 <code>{{ example.replace(/^```\w*\n?/, "").replace(/\n?```$/, "") }}</code>
                   </pre>
                 </section>
@@ -397,7 +415,11 @@ onMounted(async () => {
                 <section v-if="entry.tags && Object.keys(entry.tags).length" class="entry-section">
                   <h3>Tags</h3>
                   <div class="tag-grid">
-                    <span v-for="(value, name) in entry.tags" :key="`${entry.name}:${name}`" class="tag-pill">
+                    <span
+                      v-for="(value, name) in entry.tags"
+                      :key="`${entry.name}:${name}`"
+                      class="tag-pill"
+                    >
                       @{{ name }} {{ value }}
                     </span>
                   </div>

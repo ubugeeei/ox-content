@@ -743,7 +743,11 @@ a:hover {
   border: 1px solid var(--octc-color-border);
   border-radius: 18px;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--octc-color-bg-alt) 88%, transparent), transparent),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--octc-color-bg-alt) 88%, transparent),
+      transparent
+    ),
     var(--octc-color-bg);
   overflow: hidden;
 }

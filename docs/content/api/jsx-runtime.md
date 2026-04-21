@@ -7,7 +7,7 @@
 ## Overview
 
 - [`escapeHtml`](#escapehtml) `function` `escapeHtml(str: string): string` - Escapes HTML special characters to prevent XSS.
-- [`toHtmlAttr`](#tohtmlattr) `function` `toHtmlAttr(name: string): string` - Converts a camelCase attribute name to kebab-case for HTML. Special handling for data-*…
+- [`toHtmlAttr`](#tohtmlattr) `function` `toHtmlAttr(name: string): string` - Converts a camelCase attribute name to kebab-case for HTML. Special handling for data-\*…
 - [`renderAttr`](#renderattr) `function` `renderAttr(name: string, value: unknown): string` - Renders an attribute value to a string.
 - [`JSXElementType`](#jsxelementtype) `type` - JSX element type - either a string (intrinsic) or a function component.
 - [`JSXChild`](#jsxchild) `type` - Valid JSX child types.
@@ -235,4 +235,3 @@
 </div>
   </div>
 </details>
-

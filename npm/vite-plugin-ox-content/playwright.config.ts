@@ -14,6 +14,10 @@ export default defineConfig({
   use: {
     headless: true,
     viewport: { width: 1280, height: 1600 },
+    deviceScaleFactor: 1,
     colorScheme: "dark",
+    launchOptions: {
+      args: ["--font-render-hinting=none", "--disable-lcd-text", "--force-color-profile=srgb"],
+    },
   },
 });

@@ -11,6 +11,7 @@
 ## Reference
 
 <a id="capitalize"></a>
+
 <details class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">capitalize</code><code class="ox-api-entry__signature">capitalize(str: string): string</code><span class="ox-api-entry__description">Capitalizes the first letter of a string.</span></summary>
   <div class="ox-api-entry__body">
@@ -47,6 +48,7 @@ capitalize(&#39;WORLD&#39;) // =&gt; &#39;WORLD&#39;</code></pre>
 </details>
 
 <a id="truncate"></a>
+
 <details class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">truncate</code><code class="ox-api-entry__signature">truncate(str: string, maxLength: number, suffix: string = &quot;...&quot;): string</code><span class="ox-api-entry__description">Truncates a string to a specified length.</span></summary>
   <div class="ox-api-entry__body">
@@ -93,6 +95,7 @@ truncate(&#39;Hi&#39;, 10) // =&gt; &#39;Hi&#39;</code></pre>
 </details>
 
 <a id="tokebabcase"></a>
+
 <details class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">toKebabCase</code><code class="ox-api-entry__signature">toKebabCase(str: string): string</code><span class="ox-api-entry__description">Converts a string to kebab-case.</span></summary>
   <div class="ox-api-entry__body">
@@ -127,4 +130,3 @@ toKebabCase(&#39;HelloWorld&#39;) // =&gt; &#39;hello-world&#39;</code></pre>
 </div>
   </div>
 </details>
-

@@ -906,9 +906,7 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": [
-            "```tsx\n<div>{raw('<strong>Bold</strong>')}</div>\n```"
-          ],
+          "examples": ["```tsx\n<div>{raw('<strong>Bold</strong>')}</div>\n```"],
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 253,
@@ -922,9 +920,7 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": [
-            "```tsx\n{when(isLoggedIn, <UserMenu />)}\n```"
-          ],
+          "examples": ["```tsx\n{when(isLoggedIn, <UserMenu />)}\n```"],
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 266,
@@ -938,9 +934,7 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": [
-            "```tsx\n{each(items, (item) => <li>{item.name}</li>)}\n```"
-          ],
+          "examples": ["```tsx\n{each(items, (item) => <li>{item.name}</li>)}\n```"],
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 278
