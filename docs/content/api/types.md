@@ -332,4 +332,3 @@ Resolved i18n options with all defaults applied.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/types.ts#L830)**
 
 ---
-

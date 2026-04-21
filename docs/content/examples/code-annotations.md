@@ -1,6 +1,6 @@
 # Code Annotations
 
-This example shows the opt-in code annotation model for fenced code blocks. The syntax is intentionally abstracted behind a configurable meta attribute, so we can support highlighted, warning, and error lines without committing to a VitePress-specific notation.
+This example shows the opt-in code annotation model for fenced code blocks. Ox Content supports both the configurable attribute syntax and VitePress-compatible notation.
 
 ## Enable the feature
 
@@ -12,7 +12,9 @@ export default defineConfig({
   plugins: [
     oxContent({
       highlight: true,
-      codeAnnotations: true,
+      codeAnnotations: {
+        notation: "both",
+      },
     }),
   ],
 });
@@ -20,7 +22,7 @@ export default defineConfig({
 
 ## Markdown source
 
-~~~~md
+````md
 ```ts annotate="highlight:1,6;warning:2;error:3"
 export function loadUser(input: string) {
   if (!input) console.warn("missing payload");
@@ -30,9 +32,25 @@ export function loadUser(input: string) {
 const user = loadUser(payload);
 console.log(user);
 ```
-~~~~
+````
 
 Supported annotation kinds are `highlight`, `warning`, and `error`.
+
+## VitePress-compatible syntax
+
+````md
+```ts:line-numbers=7 {1,3} [config.ts]
+const token = readToken();
+console.warn("Token expires soon") // [!code warning]
+throw new Error("Token is invalid") // [!code error]
+```
+````
+
+```ts:line-numbers=7 {1,3} [config.ts]
+const token = readToken();
+console.warn("Token expires soon") // [!code warning]
+throw new Error("Token is invalid") // [!code error]
+```
 
 ## Rendered example
 
@@ -58,10 +76,10 @@ oxContent({
 });
 ```
 
-~~~~md
+````md
 ```ts markers="highlight:2;warning:3"
 const token = readToken();
 refreshToken(token);
 console.warn("Token expires soon");
 ```
-~~~~
+````

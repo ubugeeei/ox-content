@@ -11,12 +11,12 @@ Wraps template HTML in a minimal document with viewport locked to given dimensio
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/renderer.ts#L8)**
 
 ```typescript
-function wrapHtml(bodyHtml: string, width: number, height: number, useBaseUrl: boolean): string
+function wrapHtml(bodyHtml: string, width: number, height: number, useBaseUrl: boolean): string;
 ```
 
 ### Returns
 
-`string` - 
+`string` -
 
 ---
 
@@ -30,12 +30,12 @@ Renders an HTML string to a PNG buffer using Chromium.
 
 ### Parameters
 
-| Name | Type | Description |
-|------|------|-------------|
-| `page` | `unknown` | Playwright page instance |
-| `html` | `unknown` | HTML string from template function |
-| `width` | `unknown` | Image width |
-| `height` | `unknown` | Image height |
+| Name        | Type      | Description                                                              |
+| ----------- | --------- | ------------------------------------------------------------------------ |
+| `page`      | `unknown` | Playwright page instance                                                 |
+| `html`      | `unknown` | HTML string from template function                                       |
+| `width`     | `unknown` | Image width                                                              |
+| `height`    | `unknown` | Image height                                                             |
 | `publicDir` | `unknown` | Optional public directory for serving local assets (images, fonts, etc.) |
 
 ### Returns
@@ -43,4 +43,3 @@ Renders an HTML string to a PNG buffer using Chromium.
 `unknown` - PNG buffer
 
 ---
-

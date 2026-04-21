@@ -18,7 +18,9 @@ export default defineConfig({
     oxContent({
       srcDir: "src/content",
       highlight: true,
-      codeAnnotations: true,
+      codeAnnotations: {
+        notation: "both",
+      },
     }),
   ],
 });
@@ -26,7 +28,7 @@ export default defineConfig({
 
 ## Markdown source
 
-~~~~md
+````md
 ```ts annotate="highlight:1,6;warning:2;error:3"
 export function loadUser(input: string) {
   if (!input) console.warn("missing payload");
@@ -36,7 +38,7 @@ export function loadUser(input: string) {
 const user = loadUser(payload);
 console.log(user);
 ```
-~~~~
+````
 
 ## Rendered example
 
@@ -50,6 +52,22 @@ const user = loadUser(payload);
 console.log(user);
 ```
 
+## VitePress-compatible syntax
+
+````md
+```ts:line-numbers=7 {1,3} [config.ts]
+const token = readToken();
+console.warn("Token expires soon") // [!code warning]
+throw new Error("Token is invalid") // [!code error]
+```
+````
+
+```ts:line-numbers=7 {1,3} [config.ts]
+const token = readToken();
+console.warn("Token expires soon") // [!code warning]
+throw new Error("Token is invalid") // [!code error]
+```
+
 ## Custom meta key
 
 ```ts
@@ -60,10 +78,10 @@ oxContent({
 });
 ```
 
-~~~~md
+````md
 ```ts markers="highlight:2;warning:3"
 const token = readToken();
 refreshToken(token);
 console.warn("Token expires soon");
 ```
-~~~~
+````

@@ -17,14 +17,17 @@ throw new Error("boom");
       createResolvedOptions(),
     );
 
+    expect(result.html).toContain("ox-code-block--annotated");
+    expect(result.html).toContain("has-highlighted");
     expect(result.html).toContain(
-      'class="shiki github-dark ox-code-block ox-code-block--annotated"',
+      'class="line ox-code-line ox-code-line--highlight highlighted" data-line="1"',
     );
     expect(result.html).toContain(
-      'class="line ox-code-line ox-code-line--highlight" data-line="1"',
+      'class="line ox-code-line ox-code-line--warning highlighted warning" data-line="2"',
     );
-    expect(result.html).toContain('class="line ox-code-line ox-code-line--warning" data-line="2"');
-    expect(result.html).toContain('class="line ox-code-line ox-code-line--error" data-line="3"');
+    expect(result.html).toContain(
+      'class="line ox-code-line ox-code-line--error highlighted error" data-line="3"',
+    );
     expect(result.html).toContain('class="language-ts" data-language="ts"');
   });
 
@@ -41,9 +44,73 @@ const next = 2;
     expect(result.html).not.toContain("ox-code-block--annotated");
     expect(result.html).toContain('class="language-ts" data-language="ts"');
   });
+
+  it("supports VitePress-style fence metadata", async () => {
+    const markdown = `\`\`\`ts:line-numbers=7 {1,3} [config.ts]
+const first = true;
+const second = false;
+const third = true;
+\`\`\`
+`;
+
+    const result = await transformMarkdown(
+      markdown,
+      "docs/vitepress-meta.md",
+      createResolvedOptions({
+        codeAnnotations: {
+          enabled: true,
+          notation: "vitepress",
+          metaKey: "annotate",
+          defaultLineNumbers: false,
+        },
+      }),
+    );
+
+    expect(result.html).toContain('data-code-title="config.ts"');
+    expect(result.html).toContain('data-line-number-start="7"');
+    expect(result.html).toContain('data-line-number="7"');
+    expect(result.html).toContain('data-line-number="9"');
+    expect(result.html).toContain("ox-code-line--highlight");
+    expect(result.html).toContain('class="language-ts" data-language="ts"');
+  });
+
+  it("supports VitePress-style inline directives", async () => {
+    const markdown = `\`\`\`ts
+// [!code focus:2]
+const first = true;
+const second = false;
+console.log("before") // [!code --]
+console.log("after") // [!code ++]
+console.warn("careful") // [!code warning]
+throw new Error("boom") // [!code error]
+\`\`\`
+`;
+
+    const result = await transformMarkdown(
+      markdown,
+      "docs/vitepress-inline.md",
+      createResolvedOptions({
+        codeAnnotations: {
+          enabled: true,
+          notation: "vitepress",
+          metaKey: "annotate",
+          defaultLineNumbers: false,
+        },
+      }),
+    );
+
+    expect(result.html).not.toContain("[!code");
+    expect(result.html).toContain("has-focused");
+    expect(result.html).toContain("has-diff");
+    expect(result.html).toContain("ox-code-line--focus");
+    expect(result.html).toContain("ox-code-line--remove");
+    expect(result.html).toContain("ox-code-line--add");
+    expect(result.html).toContain("ox-code-line--warning");
+    expect(result.html).toContain("ox-code-line--error");
+  });
 });
 
-function createResolvedOptions(): ResolvedOptions {
+function createResolvedOptions(overrides: Partial<ResolvedOptions> = {}): ResolvedOptions {
   return {
     srcDir: "content",
     outDir: "dist",
@@ -65,7 +132,9 @@ function createResolvedOptions(): ResolvedOptions {
     highlightLangs: [],
     codeAnnotations: {
       enabled: true,
+      notation: "attribute",
       metaKey: "annotate",
+      defaultLineNumbers: false,
     },
     mermaid: false,
     frontmatter: true,
@@ -90,5 +159,6 @@ function createResolvedOptions(): ResolvedOptions {
     },
     ogViewer: false,
     i18n: false,
+    ...overrides,
   };
 }

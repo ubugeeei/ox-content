@@ -31,6 +31,7 @@ import type { OxContentOptions, ResolvedOptions } from "./types";
 export type { OxContentOptions } from "./types";
 export type { LanguageRegistration } from "shiki";
 export type {
+  CodeAnnotationSyntax,
   CodeAnnotationsOptions,
   ResolvedCodeAnnotationsOptions,
   DocsOptions,
@@ -426,20 +427,26 @@ function resolveCodeAnnotationsOptions(
   if (!options) {
     return {
       enabled: false,
+      notation: "attribute",
       metaKey: "annotate",
+      defaultLineNumbers: false,
     };
   }
 
   if (options === true) {
     return {
       enabled: true,
+      notation: "attribute",
       metaKey: "annotate",
+      defaultLineNumbers: false,
     };
   }
 
   return {
     enabled: true,
+    notation: options.notation ?? "attribute",
     metaKey: options.metaKey ?? "annotate",
+    defaultLineNumbers: options.defaultLineNumbers ?? false,
   };
 }
 

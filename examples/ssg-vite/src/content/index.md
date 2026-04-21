@@ -18,7 +18,7 @@ This example showcases:
 - **Table of Contents** - Auto-generated navigation
 - **Hot Module Replacement** - Live updates during development
 - **GFM Support** - GitHub Flavored Markdown features
-- **Code Annotations** - Opt-in line markers for highlighted, warning, and error states
+- **Code Annotations** - Opt-in line markers with custom attributes and VitePress-compatible notation
 
 ## Code Example
 

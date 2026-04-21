@@ -170,18 +170,41 @@ impl ParsedStartTag {
         let value = class_names.join(" ");
         self.set_attribute("class", &value);
     }
+
+    fn data_attributes(&self) -> Vec<ParsedAttribute> {
+        self.attributes
+            .iter()
+            .filter(|attribute| attribute.name.starts_with("data-"))
+            .cloned()
+            .collect()
+    }
+
+    fn merge_data_attributes(&mut self, attributes: &[ParsedAttribute]) {
+        for attribute in attributes {
+            match &attribute.value {
+                Some(value) => self.set_attribute(&attribute.name, value),
+                None => {
+                    if self.attributes.iter().all(|existing| existing.name != attribute.name) {
+                        self.attributes.push(attribute.clone());
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct LineMetadata {
     class_names: Vec<String>,
-    data_line: Option<String>,
+    data_attributes: Vec<ParsedAttribute>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct CodeBlockMetadata {
     pre_classes: Vec<String>,
+    pre_data_attributes: Vec<ParsedAttribute>,
     code_classes: Vec<String>,
+    code_data_attributes: Vec<ParsedAttribute>,
     language: Option<String>,
     lines: Vec<LineMetadata>,
 }
@@ -266,7 +289,9 @@ fn collect_pre_blocks(html: &str) -> Vec<(usize, usize)> {
 fn extract_code_block_metadata(original_block: &str) -> CodeBlockMetadata {
     let mut index = 0;
     let mut pre_classes = Vec::new();
+    let mut pre_data_attributes = Vec::new();
     let mut code_classes = Vec::new();
+    let mut code_data_attributes = Vec::new();
     let mut language = None;
     let mut lines = Vec::new();
 
@@ -274,9 +299,11 @@ fn extract_code_block_metadata(original_block: &str) -> CodeBlockMetadata {
         match tag_match.tag.name.as_str() {
             "pre" if pre_classes.is_empty() => {
                 pre_classes = tag_match.tag.class_names();
+                pre_data_attributes = tag_match.tag.data_attributes();
             }
             "code" if code_classes.is_empty() => {
                 code_classes = tag_match.tag.class_names();
+                code_data_attributes = tag_match.tag.data_attributes();
                 language = code_classes
                     .iter()
                     .find_map(|class_name| class_name.strip_prefix("language-"))
@@ -285,9 +312,10 @@ fn extract_code_block_metadata(original_block: &str) -> CodeBlockMetadata {
             "span" => {
                 let class_names = tag_match.tag.class_names();
                 if class_names.iter().any(|class_name| class_name == "line") {
-                    let data_line =
-                        tag_match.tag.attribute_value("data-line").map(ToString::to_string);
-                    lines.push(LineMetadata { class_names, data_line });
+                    lines.push(LineMetadata {
+                        class_names,
+                        data_attributes: tag_match.tag.data_attributes(),
+                    });
                 }
             }
             _ => {}
@@ -296,7 +324,14 @@ fn extract_code_block_metadata(original_block: &str) -> CodeBlockMetadata {
         index = tag_match.end;
     }
 
-    CodeBlockMetadata { pre_classes, code_classes, language, lines }
+    CodeBlockMetadata {
+        pre_classes,
+        pre_data_attributes,
+        code_classes,
+        code_data_attributes,
+        language,
+        lines,
+    }
 }
 
 fn merge_highlighted_code_block(original_block: &str, highlighted_block: &str) -> String {
@@ -314,6 +349,7 @@ fn merge_highlighted_code_block(original_block: &str, highlighted_block: &str) -
         match tag.name.as_str() {
             "pre" if !pre_updated => {
                 tag.merge_class_names(&metadata.pre_classes);
+                tag.merge_data_attributes(&metadata.pre_data_attributes);
                 if let Some(language) = metadata.language.as_deref() {
                     tag.set_attribute("data-language", language);
                 }
@@ -324,6 +360,7 @@ fn merge_highlighted_code_block(original_block: &str, highlighted_block: &str) -
                 if !metadata.code_classes.is_empty() {
                     tag.set_class_names(&metadata.code_classes);
                 }
+                tag.merge_data_attributes(&metadata.code_data_attributes);
                 if let Some(language) = metadata.language.as_deref() {
                     tag.set_attribute("data-language", language);
                 }
@@ -335,9 +372,7 @@ fn merge_highlighted_code_block(original_block: &str, highlighted_block: &str) -
                 if is_line {
                     if let Some(line_metadata) = metadata.lines.get(line_index) {
                         tag.merge_class_names(&line_metadata.class_names);
-                        if let Some(data_line) = line_metadata.data_line.as_deref() {
-                            tag.set_attribute("data-line", data_line);
-                        }
+                        tag.merge_data_attributes(&line_metadata.data_attributes);
                     }
                     line_index += 1;
                     merged.push_str(&tag.to_html());

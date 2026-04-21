@@ -34,6 +34,7 @@
 import YAML from "yaml";
 import type { ResolvedOptions, TransformResult, TocEntry } from "./types";
 import { highlightCode } from "./highlight";
+import { importNapiModule } from "./napi";
 import { transformMermaidStatic } from "./plugins/mermaid";
 import { protectMermaidSvgs, restoreMermaidSvgs } from "./plugins/mermaid-protect";
 
@@ -210,6 +211,18 @@ interface JsTransformOptions {
    * @default "annotate"
    */
   codeAnnotationMetaKey?: string;
+
+  /**
+   * Code annotation syntax mode.
+   * @default "attribute"
+   */
+  codeAnnotationSyntax?: "attribute" | "vitepress" | "both";
+
+  /**
+   * Enable line numbers for all code blocks by default.
+   * @default false
+   */
+  codeAnnotationDefaultLineNumbers?: boolean;
 }
 
 /**
@@ -274,7 +287,7 @@ async function loadNapiBindings(): Promise<NapiBindings | null> {
 
   try {
     // Dynamic import to handle cases where NAPI isn't built
-    const mod = await import("@ox-content/napi");
+    const mod = await importNapiModule();
     napiBindings = mod;
     return mod;
   } catch (error) {
@@ -411,6 +424,8 @@ export async function transformMarkdown(
     sourcePath: ssgOptions?.sourcePath ?? filePath,
     codeAnnotations: options.codeAnnotations.enabled,
     codeAnnotationMetaKey: options.codeAnnotations.metaKey,
+    codeAnnotationSyntax: options.codeAnnotations.notation,
+    codeAnnotationDefaultLineNumbers: options.codeAnnotations.defaultLineNumbers,
   });
 
   if (result.errors.length > 0) {

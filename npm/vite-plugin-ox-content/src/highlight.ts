@@ -40,8 +40,8 @@ const BUILTIN_LANGS = [
   "toml",
 ] as const;
 
-// Cached highlighter instance
-let highlighterPromise: Promise<Highlighter> | null = null;
+// Cache highlighters by theme + language registration set.
+const highlighterCache = new Map<string, Promise<Highlighter>>();
 
 /**
  * Get or create the Shiki highlighter.
@@ -50,11 +50,18 @@ async function getHighlighter(
   theme: string,
   customLangs: LanguageRegistration[] = [],
 ): Promise<Highlighter> {
+  const cacheKey = JSON.stringify({
+    theme,
+    langs: customLangs,
+  });
+
+  let highlighterPromise = highlighterCache.get(cacheKey);
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: [theme as BundledTheme],
       langs: [...BUILTIN_LANGS, ...customLangs],
     });
+    highlighterCache.set(cacheKey, highlighterPromise);
   }
   return highlighterPromise;
 }

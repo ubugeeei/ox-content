@@ -28,7 +28,9 @@ export default defineConfig({
       // Enable syntax highlighting
       highlight: true,
       highlightTheme: "github-dark",
-      codeAnnotations: true,
+      codeAnnotations: {
+        notation: "both",
+      },
 
       // Generate table of contents
       toc: true,

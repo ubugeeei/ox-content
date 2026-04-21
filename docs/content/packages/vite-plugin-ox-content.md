@@ -96,18 +96,22 @@ Enable GitHub Flavored Markdown extensions.
 - Type: `boolean | CodeAnnotationsOptions`
 - Default: `false`
 
-Enables opt-in line annotations for fenced code blocks. This keeps the notation abstracted behind a configurable meta attribute instead of baking in a VitePress-compatible syntax.
+Enables opt-in code block annotations for fenced code blocks.
+
+By default, Ox Content uses the configurable attribute syntax. You can also opt into VitePress-compatible fence metadata and inline notation, or enable both at the same time.
 
 ```ts
 oxContent({
   highlight: true,
-  codeAnnotations: true,
+  codeAnnotations: {
+    notation: "both",
+  },
 });
 ```
 
-With the default `metaKey`, annotate individual lines in Markdown like this:
+Attribute syntax with the default `metaKey`:
 
-~~~~md
+````md
 ```ts annotate="highlight:1,6;warning:2;error:3"
 export function loadUser(input: string) {
   if (!input) console.warn("missing payload");
@@ -117,7 +121,17 @@ export function loadUser(input: string) {
 const user = loadUser(payload);
 console.log(user);
 ```
-~~~~
+````
+
+VitePress-compatible syntax:
+
+````md
+```ts:line-numbers=10 {1,4} [config.ts]
+const user = loadUser(payload);
+console.warn("Deprecated") // [!code warning]
+throw new Error("boom") // [!code error]
+```
+````
 
 Rendered example:
 

@@ -102,7 +102,7 @@ Deep merge two objects.
 
 ### Returns
 
-`T` - 
+`T` -
 
 ---
 
@@ -115,12 +115,12 @@ Defines a theme configuration with type checking.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L241)**
 
 ```typescript
-export function defineTheme(config: ThemeConfig): ThemeConfig
+export function defineTheme(config: ThemeConfig): ThemeConfig;
 ```
 
 ### Returns
 
-`ThemeConfig` - 
+`ThemeConfig` -
 
 ### Examples
 
@@ -128,10 +128,10 @@ export function defineTheme(config: ThemeConfig): ThemeConfig
 const myTheme = defineTheme({
   extends: defaultTheme,
   colors: {
-    primary: '#3498db',
+    primary: "#3498db",
   },
   footer: {
-    copyright: '2025 My Company',
+    copyright: "2025 My Company",
   },
 });
 ```
@@ -148,12 +148,12 @@ Later themes override earlier ones.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L261)**
 
 ```typescript
-export function mergeThemes(...themes: ThemeConfig[]): ThemeConfig
+export function mergeThemes(...themes: ThemeConfig[]): ThemeConfig;
 ```
 
 ### Returns
 
-`ThemeConfig` - 
+`ThemeConfig` -
 
 ### Examples
 
@@ -172,12 +172,12 @@ Resolves a theme configuration by merging with its extends chain and defaults.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L287)**
 
 ```typescript
-export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig
+export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig;
 ```
 
 ### Returns
 
-`ResolvedThemeConfig` - 
+`ResolvedThemeConfig` -
 
 ---
 
@@ -190,12 +190,12 @@ Converts resolved theme to the format expected by Rust NAPI.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L328)**
 
 ```typescript
-export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig
+export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig;
 ```
 
 ### Returns
 
-`NapiThemeConfig` - 
+`NapiThemeConfig` -
 
 ---
 
@@ -278,4 +278,3 @@ NAPI-compatible theme configuration type.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L473)**
 
 ---
-

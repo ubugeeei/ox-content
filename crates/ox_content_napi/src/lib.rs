@@ -88,6 +88,10 @@ pub struct JsTransformOptions {
     pub code_annotations: Option<bool>,
     /// Fence meta key used to read code annotations.
     pub code_annotation_meta_key: Option<String>,
+    /// Code annotation syntax mode.
+    pub code_annotation_syntax: Option<String>,
+    /// Enable line numbers for all code blocks by default.
+    pub code_annotation_default_line_numbers: Option<bool>,
 }
 
 /// Parser options for JavaScript.
@@ -402,6 +406,16 @@ fn transform_options_to_renderer_options(opts: &JsTransformOptions) -> HtmlRende
     }
     if let Some(ref v) = opts.code_annotation_meta_key {
         options.code_annotation_meta_key.clone_from(v);
+    }
+    if let Some(ref v) = opts.code_annotation_syntax {
+        options.code_annotation_syntax = match v.as_str() {
+            "vitepress" => ox_content_renderer::CodeAnnotationSyntax::VitePress,
+            "both" => ox_content_renderer::CodeAnnotationSyntax::Both,
+            _ => ox_content_renderer::CodeAnnotationSyntax::Attribute,
+        };
+    }
+    if let Some(v) = opts.code_annotation_default_line_numbers {
+        options.code_annotation_default_line_numbers = v;
     }
 
     options

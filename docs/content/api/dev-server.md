@@ -11,12 +11,12 @@ Check if a request URL should be skipped by the dev server middleware.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L57)**
 
 ```typescript
-function shouldSkip(url: string): boolean
+function shouldSkip(url: string): boolean;
 ```
 
 ### Returns
 
-`boolean` - 
+`boolean` -
 
 ---
 
@@ -30,12 +30,12 @@ Returns null if no matching file exists.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L79)**
 
 ```typescript
-async function resolveMarkdownFile(url: string, srcDir: string): Promise<string | null>
+async function resolveMarkdownFile(url: string, srcDir: string): Promise<string | null>;
 ```
 
 ### Returns
 
-`Promise<string | null>` - 
+`Promise<string | null>` -
 
 ---
 
@@ -48,12 +48,12 @@ Inject Vite HMR client script into the HTML.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L123)**
 
 ```typescript
-function injectViteHmrClient(html: string): string
+function injectViteHmrClient(html: string): string;
 ```
 
 ### Returns
 
-`string` - 
+`string` -
 
 ---
 
@@ -76,12 +76,12 @@ Create a dev server cache instance.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L207)**
 
 ```typescript
-export function createDevServerCache(): DevServerCache
+export function createDevServerCache(): DevServerCache;
 ```
 
 ### Returns
 
-`DevServerCache` - 
+`DevServerCache` -
 
 ---
 
@@ -94,12 +94,12 @@ Invalidate navigation cache (called on file add/unlink).
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L218)**
 
 ```typescript
-export function invalidateNavCache(cache: DevServerCache): void
+export function invalidateNavCache(cache: DevServerCache): void;
 ```
 
 ### Returns
 
-`void` - 
+`void` -
 
 ---
 
@@ -112,12 +112,12 @@ Invalidate page cache for a specific file (called on file change).
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L227)**
 
 ```typescript
-export function invalidatePageCache(cache: DevServerCache, filePath: string): void
+export function invalidatePageCache(cache: DevServerCache, filePath: string): void;
 ```
 
 ### Returns
 
-`void` - 
+`void` -
 
 ---
 
@@ -130,12 +130,12 @@ Resolve site name from options or package.json.
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L234)**
 
 ```typescript
-async function resolveSiteName(options: ResolvedOptions, root: string): Promise<string>
+async function resolveSiteName(options: ResolvedOptions, root: string): Promise<string>;
 ```
 
 ### Returns
 
-`Promise<string>` - 
+`Promise<string>` -
 
 ---
 
@@ -162,12 +162,11 @@ export function createDevServerMiddleware(
   options: ResolvedOptions,
   root: string,
   cache: DevServerCache,
-  ): Connect.NextHandleFunction
+): Connect.NextHandleFunction;
 ```
 
 ### Returns
 
-`Connect.NextHandleFunction` - 
+`Connect.NextHandleFunction` -
 
 ---
-

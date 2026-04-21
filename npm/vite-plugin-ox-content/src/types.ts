@@ -234,9 +234,10 @@ export interface OxContentOptions {
   highlightLangs?: LanguageRegistration[];
 
   /**
-   * Opt-in line annotations for fenced code blocks.
+   * Opt-in code block annotations for fenced code blocks.
    *
-   * Uses code fence meta with a configurable attribute key.
+   * Supports the configurable attribute syntax by default, and can also opt
+   * into VitePress-compatible fence metadata and inline notation.
    *
    * Example:
    * ` ```ts annotate="highlight:1,3-4;warning:6;error:7" `
@@ -350,9 +351,25 @@ export interface ResolvedOptions {
 export type CodeAnnotationKind = "highlight" | "warning" | "error";
 
 /**
+ * Supported code annotation syntaxes.
+ */
+export type CodeAnnotationSyntax = "attribute" | "vitepress" | "both";
+
+/**
  * Opt-in code annotation configuration.
  */
 export interface CodeAnnotationsOptions {
+  /**
+   * Annotation syntax to enable.
+   *
+   * - `attribute`: custom attribute syntax like `annotate="highlight:1,3-4"`
+   * - `vitepress`: VitePress-compatible syntax like `{1,3-4}` and `[!code warning]`
+   * - `both`: enables both syntaxes
+   *
+   * @default "attribute"
+   */
+  notation?: CodeAnnotationSyntax;
+
   /**
    * Attribute name read from the code fence meta string.
    *
@@ -361,6 +378,16 @@ export interface CodeAnnotationsOptions {
    * @default "annotate"
    */
   metaKey?: string;
+
+  /**
+   * Enable line numbers for all code blocks by default.
+   *
+   * In `vitepress` or `both` mode, fenced code blocks can override this with
+   * `:line-numbers`, `:line-numbers=<start>`, or `:no-line-numbers`.
+   *
+   * @default false
+   */
+  defaultLineNumbers?: boolean;
 }
 
 /**
@@ -368,7 +395,9 @@ export interface CodeAnnotationsOptions {
  */
 export interface ResolvedCodeAnnotationsOptions {
   enabled: boolean;
+  notation: CodeAnnotationSyntax;
   metaKey: string;
+  defaultLineNumbers: boolean;
 }
 
 /**

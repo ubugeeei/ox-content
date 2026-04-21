@@ -13,6 +13,7 @@ import { transformAllPlugins } from "./plugins";
 import type { TransformAllOptions } from "./plugins";
 import { protectMermaidSvgs, restoreMermaidSvgs } from "./plugins/mermaid-protect";
 import { transformIslands, hasIslands } from "./island";
+import { importNapiModule } from "./napi";
 import type {
   ResolvedOptions,
   ResolvedSsgOptions,
@@ -988,7 +989,7 @@ export async function generateHtmlPage(
   ogImage?: string,
   theme?: ResolvedThemeConfig,
 ): Promise<string> {
-  const mod = await import("@ox-content/napi");
+  const mod = await importNapiModule();
 
   // Convert TocEntry to the format expected by Rust
   const tocForRust = pageData.toc.map((entry) => ({

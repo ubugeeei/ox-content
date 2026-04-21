@@ -59,12 +59,14 @@ export default defineConfig({
 
 ### [Code Annotations](./code-annotations.md)
 
-Opt-in line annotations for fenced code blocks with `highlight`, `warning`, and `error` markers.
+Opt-in code block annotations with both custom attributes and VitePress-compatible notation.
 
 ```ts
 oxContent({
   highlight: true,
-  codeAnnotations: true,
+  codeAnnotations: {
+    notation: "both",
+  },
 });
 ```
 
