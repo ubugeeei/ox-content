@@ -6,11 +6,11 @@ This guide will help you set up Ox Content and start using it in your projects.
 
 Before you begin, ensure you have the following installed:
 
-| Requirement | Version | Installation                                                            |
-| ----------- | ------- | ----------------------------------------------------------------------- |
-| **Rust**    | 1.83+   | [rustup.rs](https://rustup.rs/)                                         |
-| **Node.js** | 24+     | Managed via `.node-version` / `vp` or [nodejs.org](https://nodejs.org/) |
-| **Vite+**   | Latest  | [vite.plus](https://vite.plus/)                                         |
+| Requirement | Version | Installation                                                                     |
+| ----------- | ------- | -------------------------------------------------------------------------------- |
+| **Rust**    | 1.83+   | Provided by `nix develop` (pinned in `flake.nix`) or [rustup.rs](https://rustup.rs/) |
+| **Node.js** | 24+     | Provided by `nix develop` or managed via `.node-version`                         |
+| **Vite+**   | Latest  | Available as `vp` inside the dev shell                                           |
 
 ## Installation
 
@@ -21,9 +21,8 @@ Before you begin, ensure you have the following installed:
 git clone https://github.com/ubugeeei/ox-content.git
 cd ox-content
 
-# Optional: install Rust via mise
-mise trust
-mise install
+# Enter the pinned development shell
+nix develop
 
 # Install JS dependencies
 vp install
@@ -253,7 +252,8 @@ export default defineConfig({
 
 ### Available Workspace Tasks
 
-The canonical workspace tasks are defined in `vite.config.ts` and are invoked with `vp run <task>`.
+Enter the pinned shell with `nix develop`, then run the workspace tasks via `vp run <task>`.
+The canonical workspace tasks are defined in `vite.config.ts`.
 For JS/TS quality checks, `check:ts`, `lint:ts`, and `fmt:ts-check` all delegate to `vp check`.
 
 ```bash
@@ -309,8 +309,9 @@ vp run bench:bundle         # Run bundle size benchmarks
 ```
 ox-content/
 ├── Cargo.toml              # Workspace configuration
+├── flake.nix               # Nix dev shell (Node.js, pnpm, Rust, Vite+ wrapper)
+├── .node-version           # Node.js version for CI / setup-node compatibility
 ├── vite.config.ts          # Vite+ workspace task graph
-├── mise.toml               # Optional Rust toolchain config for mise
 ├── crates/                 # Rust crates
 │   ├── ox_content_allocator/   # Arena allocator
 │   ├── ox_content_ast/         # AST node definitions
@@ -428,17 +429,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 ```
 
-#### mise Not Recognized
+#### `nix: command not found`
 
-Install mise:
+Install Nix with the official installer, restart your shell, then re-enter the repo:
 
 ```bash
-curl https://mise.run | sh
-
-# Add to your shell config
-echo 'eval "$(mise activate bash)"' >> ~/.bashrc
-# or for zsh
-echo 'eval "$(mise activate zsh)"' >> ~/.zshrc
+nix develop
 ```
 
 #### Build Fails with Linking Errors
@@ -464,10 +460,12 @@ xcode-select --install
 Ensure you have the correct Node.js version:
 
 ```bash
-mise use node@24
-# or
-nvm use 24
+nix develop
+node -v
+vp run build:napi
 ```
+
+If you manage Node.js outside Nix, match the version in `.node-version`.
 
 ### Getting Help
 

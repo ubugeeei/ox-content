@@ -61,7 +61,7 @@ function loadBinding() {
 
   throw new Error(
     `@ox-content/napi: No compatible binary found for ${platform}-${arch}. ` +
-      `Please run 'mise run build:napi' from the repository root.`,
+      `If you're working from the repository, run 'nix develop -c vp run build:napi' from the repository root.`,
   );
 }
 

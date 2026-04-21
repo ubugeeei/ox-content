@@ -27,7 +27,7 @@ export async function transformMarkdown(
   } catch {
     throw new Error(
       "[ox-content] Failed to load @ox-content/napi. Please ensure the NAPI module is built. " +
-        "Run: mise run build:napi",
+        "Run: nix develop -c vp run build:napi",
     );
   }
 
