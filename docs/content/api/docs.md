@@ -22,8 +22,7 @@
 
 ## Reference
 
-<a id="extractdocs"></a>
-<details class="ox-api-entry">
+<details id="extractdocs" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractDocs</code><code class="ox-api-entry__signature">extractDocs( srcDirs: string[], options: ResolvedDocsOptions, ): Promise&lt;ExtractedDocs[]&gt;</code><span class="ox-api-entry__description">Extracts JSDoc documentation from source files in specified directories. This f…</span></summary>
   <div class="ox-api-entry__body">
 <p>Extracts JSDoc documentation from source files in specified directories.<br>This function recursively searches directories for source files matching<br>the include/exclude patterns, then extracts all documented items (functions,<br>classes, interfaces, types) from those files.<br>## Process<br>1. **File Discovery**: Recursively walks directories, applying filters<br>2. **File Reading**: Loads each matching file&#39;s content<br>3. **JSDoc Extraction**: Parses JSDoc comments using regex patterns<br>4. **Declaration Matching**: Pairs JSDoc comments with source declarations<br>5. **Result Collection**: Aggregates extracted documentation by file<br>## Include/Exclude Patterns<br>Patterns support:<br>- <code>**</code> - Match any directory structure<br>- <code>*</code> - Match any filename<br>- Standard glob patterns (e.g., <code>**\/*.test.ts</code>)<br>## Performance Considerations<br>- Uses filesystem I/O which can be slow for large codebases<br>- Consider using more specific include patterns to reduce file scanning<br>- Results are not cached; call once per build/dev session<br>Each ExtractedDocs object contains file path and array of DocEntry items.</p>
@@ -91,8 +90,7 @@
   </div>
 </details>
 
-<a id="findfiles"></a>
-<details class="ox-api-entry">
+<details id="findfiles" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">findFiles</code><code class="ox-api-entry__signature">findFiles(dir: string, options: ResolvedDocsOptions): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Recursively finds all source files matching include/exclude patterns.</span></summary>
   <div class="ox-api-entry__body">
 <p>Recursively finds all source files matching include/exclude patterns.</p>
@@ -112,8 +110,7 @@
   </div>
 </details>
 
-<a id="extractfromcontent"></a>
-<details class="ox-api-entry">
+<details id="extractfromcontent" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractFromContent</code><code class="ox-api-entry__signature">extractFromContent( content: string, file: string, options: ResolvedDocsOptions, ): DocEntry[]</code><span class="ox-api-entry__description">Extracts documentation entries from file content.</span></summary>
   <div class="ox-api-entry__body">
 <p>Extracts documentation entries from file content.</p>
@@ -133,8 +130,7 @@
   </div>
 </details>
 
-<a id="extractfunctionsignature"></a>
-<details class="ox-api-entry">
+<details id="extractfunctionsignature" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractFunctionSignature</code><code class="ox-api-entry__signature">extractFunctionSignature(signature: string): string | undefined</code><span class="ox-api-entry__description">Extracts the complete function signature for display. Captures the full functio…</span></summary>
   <div class="ox-api-entry__body">
 <p>Extracts the complete function signature for display.<br>Captures the full function declaration from <code>export/async/function name(...): ReturnType</code><br>or <code>export const name = (...): ReturnType =&gt; {}</code>, handling multi-line signatures.</p>
@@ -169,8 +165,7 @@
   </div>
 </details>
 
-<a id="extracttypesfromsignature"></a>
-<details class="ox-api-entry">
+<details id="extracttypesfromsignature" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractTypesFromSignature</code><code class="ox-api-entry__signature">extractTypesFromSignature( signature: string, _params: ParamDoc[], ):</code><span class="ox-api-entry__description">Extracts parameter and return types from a TypeScript function signature. Parse…</span></summary>
   <div class="ox-api-entry__body">
 <p>Extracts parameter and return types from a TypeScript function signature.<br>Parses function signatures to extract:<br>- Parameter names and their type annotations<br>- Return type annotation<br>Handles various function declaration styles:<br>- <code>function name(param: type): ReturnType</code><br>- <code>const name = (param: type): ReturnType =&gt; {}</code><br>- <code>export async function name(param: type): Promise&lt;ReturnType&gt;</code></p>
@@ -213,8 +208,7 @@
   </div>
 </details>
 
-<a id="splitparameters"></a>
-<details class="ox-api-entry">
+<details id="splitparameters" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">splitParameters</code><code class="ox-api-entry__signature">splitParameters(paramListStr: string): string[]</code><span class="ox-api-entry__description">Splits function parameters while respecting nested angle brackets (generics). H…</span></summary>
   <div class="ox-api-entry__body">
 <p>Splits function parameters while respecting nested angle brackets (generics).<br>Handles cases like:<br>- <code>a: string, b: number</code> → <code>[&quot;a: string&quot;, &quot;b: number&quot;]</code><br>- <code>a: Promise&lt;string&gt;, b: Record&lt;string, any&gt;</code> → <code>[&quot;a: Promise&lt;string&gt;&quot;, &quot;b: Record&lt;string, any&gt;&quot;]</code></p>
@@ -249,8 +243,7 @@
   </div>
 </details>
 
-<a id="parsejsdocblock"></a>
-<details class="ox-api-entry">
+<details id="parsejsdocblock" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">parseJsdocBlock</code><span class="ox-api-entry__description">Parses a JSDoc block and the following declaration. Only matches if the declaration is immediately after the JSDoc (wit…</span></summary>
   <div class="ox-api-entry__body">
 <p>Parses a JSDoc block and the following declaration.<br>Only matches if the declaration is immediately after the JSDoc (with only whitespace/keywords between).</p>
@@ -258,8 +251,7 @@
   </div>
 </details>
 
-<a id="generatemarkdown"></a>
-<details class="ox-api-entry">
+<details id="generatemarkdown" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateMarkdown</code><code class="ox-api-entry__signature">generateMarkdown( docs: ExtractedDocs[], options: ResolvedDocsOptions, ): Record&lt;string, string&gt;</code><span class="ox-api-entry__description">Generates Markdown documentation from extracted docs.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates Markdown documentation from extracted docs.</p>
@@ -278,21 +270,19 @@
   </div>
 </details>
 
-<a id="symbollocation"></a>
-<details class="ox-api-entry">
+<details id="symbollocation" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SymbolLocation</code><span class="ox-api-entry__description">Symbol location info for cross-file linking.</span></summary>
   <div class="ox-api-entry__body">
 <p>Symbol location info for cross-file linking.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L999">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1000">View source</a></p>
   </div>
 </details>
 
-<a id="convertsymbollinks"></a>
-<details class="ox-api-entry">
+<details id="convertsymbollinks" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">convertSymbolLinks</code><code class="ox-api-entry__signature">convertSymbolLinks( text: string, currentFileName: string, symbolMap: Map&lt;string, SymbolLocation&gt;, ): string</code><span class="ox-api-entry__description">Converts symbol links [SymbolName] to markdown links. Processes description tex…</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts symbol links [SymbolName] to markdown links.<br>Processes description text to convert cargo-docs-style symbol references<br><code>[SymbolName]</code> into clickable markdown links pointing to the appropriate<br>documentation page.<br>## Examples<br>Input: &quot;See [transformMarkdown] for usage&quot; (same file)<br>Output: &quot;See <a href="#transformmarkdown">transformMarkdown</a> for usage&quot;<br>Input: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot; (different file: types.ts)<br>Output: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot;</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1008">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1009">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function convertSymbolLinks(
@@ -337,12 +327,11 @@
   </div>
 </details>
 
-<a id="buildsymbolmap"></a>
-<details class="ox-api-entry">
+<details id="buildsymbolmap" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildSymbolMap</code><code class="ox-api-entry__signature">buildSymbolMap(docs: ExtractedDocs[]): Map&lt;string, SymbolLocation&gt;</code><span class="ox-api-entry__description">Builds a map of all symbols to their file locations.</span></summary>
   <div class="ox-api-entry__body">
 <p>Builds a map of all symbols to their file locations.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1054">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1055">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function buildSymbolMap(docs: ExtractedDocs[]): Map&lt;string, SymbolLocation&gt;</code></pre>
@@ -354,21 +343,19 @@
   </div>
 </details>
 
-<a id="writedocs"></a>
-<details class="ox-api-entry">
+<details id="writedocs" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">writeDocs</code><span class="ox-api-entry__description">Writes generated documentation to the output directory.</span></summary>
   <div class="ox-api-entry__body">
 <p>Writes generated documentation to the output directory.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1078">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1079">View source</a></p>
   </div>
 </details>
 
-<a id="generatesourcehref"></a>
-<details class="ox-api-entry">
+<details id="generatesourcehref" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateSourceHref</code><code class="ox-api-entry__signature">generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number): string</code><span class="ox-api-entry__description">Generates a GitHub source link for a file and optional line number.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates a GitHub source link for a file and optional line number.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1145">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1146">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number): string</code></pre>

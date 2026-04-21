@@ -118,7 +118,7 @@ describe("generateMarkdown", () => {
     const markdown = generateMarkdown(docs, resolveDocsOptions({})!);
 
     expect(markdown["utils.md"]).toContain("## Overview");
-    expect(markdown["utils.md"]).toContain("<details class=\"ox-api-entry\">");
+    expect(markdown["utils.md"]).toContain('<details id="capitalize" class="ox-api-entry">');
     expect(markdown["utils.md"]).toContain("Skim the one-line surface first");
     expect(markdown["index.md"]).toContain("`@api transform`");
   });

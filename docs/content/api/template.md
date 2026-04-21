@@ -11,8 +11,7 @@
 
 ## Reference
 
-<a id="escapehtml"></a>
-<details class="ox-api-entry">
+<details id="escapehtml" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">escapeHtml</code><code class="ox-api-entry__signature">escapeHtml(str: string): string</code><span class="ox-api-entry__description">Escapes HTML special characters.</span></summary>
   <div class="ox-api-entry__body">
 <p>Escapes HTML special characters.</p>
@@ -28,8 +27,7 @@
   </div>
 </details>
 
-<a id="getdefaulttemplate"></a>
-<details class="ox-api-entry">
+<details id="getdefaulttemplate" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getDefaultTemplate</code><code class="ox-api-entry__signature">getDefaultTemplate(): OgImageTemplateFn</code><span class="ox-api-entry__description">Returns the built-in default template function.</span></summary>
   <div class="ox-api-entry__body">
 <p>Returns the built-in default template function.</p>

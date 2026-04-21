@@ -14,8 +14,7 @@
 
 ## Reference
 
-<a id="element"></a>
-<details class="ox-api-entry">
+<details id="element" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">Element</code><span class="ox-api-entry__description">The type returned by JSX expressions.</span></summary>
   <div class="ox-api-entry__body">
 <p>The type returned by JSX expressions.</p>
@@ -23,8 +22,7 @@
   </div>
 </details>
 
-<a id="intrinsicelements"></a>
-<details class="ox-api-entry">
+<details id="intrinsicelements" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">IntrinsicElements</code><span class="ox-api-entry__description">Props for intrinsic elements (HTML tags).</span></summary>
   <div class="ox-api-entry__body">
 <p>Props for intrinsic elements (HTML tags).</p>
@@ -32,8 +30,7 @@
   </div>
 </details>
 
-<a id="htmlattributes"></a>
-<details class="ox-api-entry">
+<details id="htmlattributes" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">HTMLAttributes</code><span class="ox-api-entry__description">Base HTML attributes shared by all elements.</span></summary>
   <div class="ox-api-entry__body">
 <p>Base HTML attributes shared by all elements.</p>
@@ -41,8 +38,7 @@
   </div>
 </details>
 
-<a id="intrinsicelementtype"></a>
-<details class="ox-api-entry">
+<details id="intrinsicelementtype" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">IntrinsicElementType</code><span class="ox-api-entry__description">Type for intrinsic element constructors.</span></summary>
   <div class="ox-api-entry__body">
 <p>Type for intrinsic element constructors.</p>
@@ -50,8 +46,7 @@
   </div>
 </details>
 
-<a id="intrinsicelementprops"></a>
-<details class="ox-api-entry">
+<details id="intrinsicelementprops" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">IntrinsicElementProps</code><span class="ox-api-entry__description">Props for a specific intrinsic element.</span></summary>
   <div class="ox-api-entry__body">
 <p>Props for a specific intrinsic element.</p>

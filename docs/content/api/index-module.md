@@ -11,8 +11,7 @@
 
 ## Reference
 
-<a id="transformalloptions"></a>
-<details class="ox-api-entry">
+<details id="transformalloptions" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">TransformAllOptions</code><span class="ox-api-entry__description">Transform all plugin components in HTML. Call this during SSG build to process all plugins at once.</span></summary>
   <div class="ox-api-entry__body">
 <p>Transform all plugin components in HTML.<br>Call this during SSG build to process all plugins at once.</p>
@@ -20,8 +19,7 @@
   </div>
 </details>
 
-<a id="transformallplugins"></a>
-<details class="ox-api-entry">
+<details id="transformallplugins" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">transformAllPlugins</code><span class="ox-api-entry__description">Transform all enabled plugins in HTML content.</span></summary>
   <div class="ox-api-entry__body">
 <p>Transform all enabled plugins in HTML content.</p>

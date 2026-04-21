@@ -2,8 +2,8 @@
 
 use ox_content_allocator::{Allocator, Vec};
 use ox_content_ast::{
-    AlignKind, BlockQuote, Document, Image, Link, List, ListItem, Node, Paragraph, Span, Table,
-    TableCell, TableRow, Text,
+    AlignKind, BlockQuote, Document, Html, Image, Link, List, ListItem, Node, Paragraph, Span,
+    Table, TableCell, TableRow, Text,
 };
 
 use crate::error::{ParseError, ParseResult};
@@ -174,6 +174,10 @@ impl<'a> Parser<'a> {
             return self.parse_fenced_code(start);
         }
 
+        if self.try_parse_html_block() {
+            return self.parse_html_block(start);
+        }
+
         if self.options.tables && self.try_parse_table() {
             return self.parse_table(start);
         }
@@ -184,6 +188,111 @@ impl<'a> Parser<'a> {
 
         // Default: parse as paragraph
         self.parse_paragraph(start)
+    }
+
+    fn try_parse_html_block(&self) -> bool {
+        let line = self.remaining().lines().next().unwrap_or("");
+        Self::parse_html_block_tag_name(line).is_some() || line.trim_start().starts_with("<!--")
+    }
+
+    fn parse_html_block(&mut self, start: usize) -> ParseResult<Option<Node<'a>>> {
+        let line = self.remaining().lines().next().unwrap_or("");
+
+        if line.trim_start().starts_with("<!--") {
+            loop {
+                let consumed = self.consume_line();
+                if consumed.contains("-->") || self.is_at_end() {
+                    break;
+                }
+            }
+
+            let span = Span::new(start as u32, self.position as u32);
+            let value = &self.source[start..self.position];
+            return Ok(Some(Node::Html(Html { value, span })));
+        }
+
+        let Some(tag_name) = Self::parse_html_block_tag_name(line) else {
+            return Ok(None);
+        };
+
+        let closing_tag = format!("</{tag_name}");
+
+        loop {
+            let consumed = self.consume_line();
+            if consumed.to_ascii_lowercase().contains(&closing_tag) || self.is_at_end() {
+                break;
+            }
+        }
+
+        let span = Span::new(start as u32, self.position as u32);
+        let value = &self.source[start..self.position];
+        Ok(Some(Node::Html(Html { value, span })))
+    }
+
+    fn parse_html_block_tag_name(line: &str) -> Option<String> {
+        let trimmed = line.trim_start();
+        let after_open = trimmed.strip_prefix('<')?;
+        let after_slash = after_open.strip_prefix('/').unwrap_or(after_open);
+        let mut tag_len = 0;
+
+        for byte in after_slash.as_bytes() {
+            if byte.is_ascii_alphanumeric() || *byte == b'-' {
+                tag_len += 1;
+            } else {
+                break;
+            }
+        }
+
+        if tag_len == 0 {
+            return None;
+        }
+
+        let tag_name = &after_slash[..tag_len];
+        let next = after_slash.as_bytes().get(tag_len).copied();
+
+        if let Some(byte) = next {
+            if !matches!(byte, b' ' | b'\t' | b'>' | b'/') {
+                return None;
+            }
+        }
+
+        if !Self::is_supported_html_block_tag(tag_name) {
+            return None;
+        }
+
+        Some(tag_name.to_ascii_lowercase())
+    }
+
+    fn is_supported_html_block_tag(tag_name: &str) -> bool {
+        [
+            "article",
+            "aside",
+            "blockquote",
+            "details",
+            "dialog",
+            "div",
+            "figcaption",
+            "figure",
+            "footer",
+            "header",
+            "main",
+            "nav",
+            "ol",
+            "p",
+            "pre",
+            "section",
+            "summary",
+            "table",
+            "tbody",
+            "td",
+            "tfoot",
+            "th",
+            "thead",
+            "tr",
+            "ul",
+        ]
+        .iter()
+        .any(|candidate| tag_name.eq_ignore_ascii_case(candidate))
     }
 
     /// Checks if the current position starts a block quote.
@@ -808,6 +917,7 @@ impl<'a> Parser<'a> {
                 || self.try_parse_thematic_break()
                 || self.try_parse_block_quote()
                 || self.try_parse_fenced_code()
+                || self.try_parse_html_block()
                 || (self.options.tables && self.try_parse_table())
                 || self.try_parse_list()
             {

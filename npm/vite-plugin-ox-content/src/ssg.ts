@@ -675,7 +675,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     const parseScopedQuery = (query) => {
       const scopes = [];
       const terms = [];
-      for (const part of query.trim().split(/\s+/).filter(Boolean)) {
+      for (const part of query.trim().split(/\\s+/).filter(Boolean)) {
         if (part.startsWith('@') && part.length > 1) {
           scopes.push(part.slice(1).toLowerCase());
         } else {
@@ -686,7 +686,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
     };
 
     const getScopesForDoc = (doc) => {
-      const source = (doc.id || doc.url || '').replace(/^\/+/, '').toLowerCase();
+      const source = (doc.id || doc.url || '').replace(/^\\/+/, '').toLowerCase();
       const segments = source.split('/').filter(Boolean);
       if (segments.length <= 1) return [];
 

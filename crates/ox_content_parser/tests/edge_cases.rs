@@ -200,6 +200,31 @@ fn blockquote_supports_multiple_paragraphs_when_blank_quote_line_is_used() {
 }
 
 #[test]
+fn html_details_block_is_preserved_as_raw_html() {
+    let allocator = Allocator::new();
+    let doc = parse_with_options(
+        &allocator,
+        "<details id=\"symbol\">\n<summary>Symbol</summary>\n<p>Expanded docs</p>\n</details>\n\nAfter",
+        ParserOptions::default(),
+    );
+
+    match &doc.children[0] {
+        Node::Html(html) => {
+            assert!(html.value.contains("<details id=\"symbol\">"));
+            assert!(html.value.contains("</details>"));
+        }
+        other => panic!("expected html block, got {other:?}"),
+    }
+
+    match &doc.children[1] {
+        Node::Paragraph(paragraph) => {
+            assert_eq!(first_text_in_nodes(paragraph.children.iter()), Some("After"));
+        }
+        other => panic!("expected paragraph after html block, got {other:?}"),
+    }
+}
+
+#[test]
 fn table_alignment_variants_are_parsed() {
     let allocator = Allocator::new();
     let doc = parse_with_options(

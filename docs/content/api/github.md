@@ -18,8 +18,7 @@
 
 ## Reference
 
-<a id="getattribute"></a>
-<details class="ox-api-entry">
+<details id="getattribute" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getAttribute</code><code class="ox-api-entry__signature">getAttribute(el: Element, name: string): string | undefined</code><span class="ox-api-entry__description">Get element attribute value.</span></summary>
   <div class="ox-api-entry__body">
 <p>Get element attribute value.</p>
@@ -35,8 +34,7 @@
   </div>
 </details>
 
-<a id="formatnumber"></a>
-<details class="ox-api-entry">
+<details id="formatnumber" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">formatNumber</code><code class="ox-api-entry__signature">formatNumber(num: number): string</code><span class="ox-api-entry__description">Format number with K/M suffix.</span></summary>
   <div class="ox-api-entry__body">
 <p>Format number with K/M suffix.</p>
@@ -52,8 +50,7 @@
   </div>
 </details>
 
-<a id="fetchrepodata"></a>
-<details class="ox-api-entry">
+<details id="fetchrepodata" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">fetchRepoData</code><code class="ox-api-entry__signature">fetchRepoData( repo: string, options: Required&lt;GitHubOptions&gt;, ): Promise&lt;GitHubRepoData | null&gt;</code><span class="ox-api-entry__description">Fetch repository data from GitHub API.</span></summary>
   <div class="ox-api-entry__body">
 <p>Fetch repository data from GitHub API.</p>
@@ -72,8 +69,7 @@
   </div>
 </details>
 
-<a id="creategithubcard"></a>
-<details class="ox-api-entry">
+<details id="creategithubcard" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createGitHubCard</code><code class="ox-api-entry__signature">createGitHubCard(repoData: GitHubRepoData): Element</code><span class="ox-api-entry__description">Create GitHub card element from repo data.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create GitHub card element from repo data.</p>
@@ -89,8 +85,7 @@
   </div>
 </details>
 
-<a id="createfallbackcard"></a>
-<details class="ox-api-entry">
+<details id="createfallbackcard" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createFallbackCard</code><code class="ox-api-entry__signature">createFallbackCard(repo: string): Element</code><span class="ox-api-entry__description">Create fallback element when repo data is unavailable.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create fallback element when repo data is unavailable.</p>
@@ -106,8 +101,7 @@
   </div>
 </details>
 
-<a id="collectgithubrepos"></a>
-<details class="ox-api-entry">
+<details id="collectgithubrepos" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">collectGitHubRepos</code><code class="ox-api-entry__signature">collectGitHubRepos(html: string): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Collect all GitHub repos from HTML for pre-fetching.</span></summary>
   <div class="ox-api-entry__body">
 <p>Collect all GitHub repos from HTML for pre-fetching.</p>
@@ -123,8 +117,7 @@
   </div>
 </details>
 
-<a id="prefetchgithubrepos"></a>
-<details class="ox-api-entry">
+<details id="prefetchgithubrepos" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">prefetchGitHubRepos</code><code class="ox-api-entry__signature">prefetchGitHubRepos( repos: string[], options?: GitHubOptions, ): Promise&lt;Map&lt;string, GitHubRepoData | null&gt;&gt;</code><span class="ox-api-entry__description">Pre-fetch all GitHub repos data.</span></summary>
   <div class="ox-api-entry__body">
 <p>Pre-fetch all GitHub repos data.</p>
@@ -143,8 +136,7 @@
   </div>
 </details>
 
-<a id="rehypegithub"></a>
-<details class="ox-api-entry">
+<details id="rehypegithub" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">rehypeGitHub</code><code class="ox-api-entry__signature">rehypeGitHub(repoDataMap: Map&lt;string, GitHubRepoData | null&gt;)</code><span class="ox-api-entry__description">Rehype plugin to transform GitHub components.</span></summary>
   <div class="ox-api-entry__body">
 <p>Rehype plugin to transform GitHub components.</p>
@@ -156,8 +148,7 @@
   </div>
 </details>
 
-<a id="transformgithub"></a>
-<details class="ox-api-entry">
+<details id="transformgithub" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">transformGitHub</code><code class="ox-api-entry__signature">transformGitHub( html: string, repoDataMap?: Map&lt;string, GitHubRepoData | null&gt;, options?: GitHubOptions, ): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Transform GitHub components in HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Transform GitHub components in HTML.</p>

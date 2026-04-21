@@ -12,8 +12,7 @@
 
 ## Reference
 
-<a id="computecachekey"></a>
-<details class="ox-api-entry">
+<details id="computecachekey" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">computeCacheKey</code><span class="ox-api-entry__description">Computes a cache key from template + props + options.</span></summary>
   <div class="ox-api-entry__body">
 <p>Computes a cache key from template + props + options.</p>
@@ -21,8 +20,7 @@
   </div>
 </details>
 
-<a id="getcached"></a>
-<details class="ox-api-entry">
+<details id="getcached" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getCached</code><code class="ox-api-entry__signature">getCached(cacheDir: string, key: string): Promise&lt;Buffer | null&gt;</code><span class="ox-api-entry__description">Checks if a cached PNG exists for the given key. Returns the cached file path i…</span></summary>
   <div class="ox-api-entry__body">
 <p>Checks if a cached PNG exists for the given key.<br>Returns the cached file path if found, null otherwise.</p>
@@ -38,8 +36,7 @@
   </div>
 </details>
 
-<a id="writecache"></a>
-<details class="ox-api-entry">
+<details id="writecache" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">writeCache</code><code class="ox-api-entry__signature">writeCache(cacheDir: string, key: string, png: Buffer): Promise&lt;void&gt;</code><span class="ox-api-entry__description">Writes a PNG buffer to the cache.</span></summary>
   <div class="ox-api-entry__body">
 <p>Writes a PNG buffer to the cache.</p>

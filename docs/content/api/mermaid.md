@@ -10,8 +10,7 @@
 
 ## Reference
 
-<a id="transformmermaidstatic"></a>
-<details class="ox-api-entry">
+<details id="transformmermaidstatic" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">transformMermaidStatic</code><code class="ox-api-entry__signature">transformMermaidStatic( html: string, _options?: MermaidOptions, ): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Transforms mermaid code blocks in HTML to rendered SVG diagrams. Uses the nativ…</span></summary>
   <div class="ox-api-entry__body">
 <p>Transforms mermaid code blocks in HTML to rendered SVG diagrams.<br>Uses the native Rust NAPI transformMermaid function.</p>

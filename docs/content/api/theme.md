@@ -31,8 +31,7 @@
 
 ## Reference
 
-<a id="themecolors"></a>
-<details class="ox-api-entry">
+<details id="themecolors" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeColors</code><span class="ox-api-entry__description">Theme color configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Theme color configuration.</p>
@@ -40,8 +39,7 @@
   </div>
 </details>
 
-<a id="themelayout"></a>
-<details class="ox-api-entry">
+<details id="themelayout" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeLayout</code><span class="ox-api-entry__description">Theme layout configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Theme layout configuration.</p>
@@ -49,8 +47,7 @@
   </div>
 </details>
 
-<a id="themefonts"></a>
-<details class="ox-api-entry">
+<details id="themefonts" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeFonts</code><span class="ox-api-entry__description">Theme font configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Theme font configuration.</p>
@@ -58,8 +55,7 @@
   </div>
 </details>
 
-<a id="themeheader"></a>
-<details class="ox-api-entry">
+<details id="themeheader" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeHeader</code><span class="ox-api-entry__description">Theme header configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Theme header configuration.</p>
@@ -67,8 +63,7 @@
   </div>
 </details>
 
-<a id="themefooter"></a>
-<details class="ox-api-entry">
+<details id="themefooter" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeFooter</code><span class="ox-api-entry__description">Theme footer configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Theme footer configuration.</p>
@@ -76,8 +71,7 @@
   </div>
 </details>
 
-<a id="sociallinks"></a>
-<details class="ox-api-entry">
+<details id="sociallinks" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SocialLinks</code><span class="ox-api-entry__description">Social links configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Social links configuration.</p>
@@ -85,8 +79,7 @@
   </div>
 </details>
 
-<a id="themeembed"></a>
-<details class="ox-api-entry">
+<details id="themeembed" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeEmbed</code><span class="ox-api-entry__description">Embedded HTML content for specific positions in the page layout.</span></summary>
   <div class="ox-api-entry__body">
 <p>Embedded HTML content for specific positions in the page layout.</p>
@@ -94,8 +87,7 @@
   </div>
 </details>
 
-<a id="themeconfig"></a>
-<details class="ox-api-entry">
+<details id="themeconfig" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeConfig</code><span class="ox-api-entry__description">Complete theme configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Complete theme configuration.</p>
@@ -103,8 +95,7 @@
   </div>
 </details>
 
-<a id="resolvedthemeconfig"></a>
-<details class="ox-api-entry">
+<details id="resolvedthemeconfig" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ResolvedThemeConfig</code><span class="ox-api-entry__description">Resolved theme configuration (after merging with defaults).</span></summary>
   <div class="ox-api-entry__body">
 <p>Resolved theme configuration (after merging with defaults).</p>
@@ -112,8 +103,7 @@
   </div>
 </details>
 
-<a id="deepmerge"></a>
-<details class="ox-api-entry">
+<details id="deepmerge" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">deepMerge</code><span class="ox-api-entry__description">Deep merge two objects.</span></summary>
   <div class="ox-api-entry__body">
 <p>Deep merge two objects.</p>
@@ -125,8 +115,7 @@
   </div>
 </details>
 
-<a id="definetheme"></a>
-<details class="ox-api-entry">
+<details id="definetheme" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">defineTheme</code><code class="ox-api-entry__signature">defineTheme(config: ThemeConfig): ThemeConfig</code><span class="ox-api-entry__description">Defines a theme configuration with type checking.</span></summary>
   <div class="ox-api-entry__body">
 <p>Defines a theme configuration with type checking.</p>
@@ -154,8 +143,7 @@
   </div>
 </details>
 
-<a id="mergethemes"></a>
-<details class="ox-api-entry">
+<details id="mergethemes" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">mergeThemes</code><code class="ox-api-entry__signature">mergeThemes(...themes: ThemeConfig[]): ThemeConfig</code><span class="ox-api-entry__description">Merges multiple theme configurations. Later themes override earlier ones.</span></summary>
   <div class="ox-api-entry__body">
 <p>Merges multiple theme configurations.<br>Later themes override earlier ones.</p>
@@ -175,8 +163,7 @@
   </div>
 </details>
 
-<a id="resolvetheme"></a>
-<details class="ox-api-entry">
+<details id="resolvetheme" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveTheme</code><code class="ox-api-entry__signature">resolveTheme(config?: ThemeConfig): ResolvedThemeConfig</code><span class="ox-api-entry__description">Resolves a theme configuration by merging with its extends chain and defaults.</span></summary>
   <div class="ox-api-entry__body">
 <p>Resolves a theme configuration by merging with its extends chain and defaults.</p>
@@ -192,8 +179,7 @@
   </div>
 </details>
 
-<a id="themetonapi"></a>
-<details class="ox-api-entry">
+<details id="themetonapi" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">themeToNapi</code><code class="ox-api-entry__signature">themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig</code><span class="ox-api-entry__description">Converts resolved theme to the format expected by Rust NAPI.</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts resolved theme to the format expected by Rust NAPI.</p>
@@ -209,8 +195,7 @@
   </div>
 </details>
 
-<a id="napithemecolors"></a>
-<details class="ox-api-entry">
+<details id="napithemecolors" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeColors</code><span class="ox-api-entry__description">NAPI-compatible theme colors type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible theme colors type.</p>
@@ -218,8 +203,7 @@
   </div>
 </details>
 
-<a id="napithemefonts"></a>
-<details class="ox-api-entry">
+<details id="napithemefonts" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeFonts</code><span class="ox-api-entry__description">NAPI-compatible theme fonts type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible theme fonts type.</p>
@@ -227,8 +211,7 @@
   </div>
 </details>
 
-<a id="napithemelayout"></a>
-<details class="ox-api-entry">
+<details id="napithemelayout" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeLayout</code><span class="ox-api-entry__description">NAPI-compatible theme layout type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible theme layout type.</p>
@@ -236,8 +219,7 @@
   </div>
 </details>
 
-<a id="napithemeheader"></a>
-<details class="ox-api-entry">
+<details id="napithemeheader" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeHeader</code><span class="ox-api-entry__description">NAPI-compatible theme header type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible theme header type.</p>
@@ -245,8 +227,7 @@
   </div>
 </details>
 
-<a id="napithemefooter"></a>
-<details class="ox-api-entry">
+<details id="napithemefooter" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeFooter</code><span class="ox-api-entry__description">NAPI-compatible theme footer type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible theme footer type.</p>
@@ -254,8 +235,7 @@
   </div>
 </details>
 
-<a id="napisociallinks"></a>
-<details class="ox-api-entry">
+<details id="napisociallinks" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiSocialLinks</code><span class="ox-api-entry__description">NAPI-compatible social links type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible social links type.</p>
@@ -263,8 +243,7 @@
   </div>
 </details>
 
-<a id="napithemeembed"></a>
-<details class="ox-api-entry">
+<details id="napithemeembed" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeEmbed</code><span class="ox-api-entry__description">NAPI-compatible theme embed type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible theme embed type.</p>
@@ -272,8 +251,7 @@
   </div>
 </details>
 
-<a id="napithemeconfig"></a>
-<details class="ox-api-entry">
+<details id="napithemeconfig" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeConfig</code><span class="ox-api-entry__description">NAPI-compatible theme configuration type.</span></summary>
   <div class="ox-api-entry__body">
 <p>NAPI-compatible theme configuration type.</p>

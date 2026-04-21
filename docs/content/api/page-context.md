@@ -25,8 +25,7 @@
 
 ## Reference
 
-<a id="basepageprops"></a>
-<details class="ox-api-entry">
+<details id="basepageprops" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">BasePageProps</code><span class="ox-api-entry__description">Base page props available for all pages.</span></summary>
   <div class="ox-api-entry__body">
 <p>Base page props available for all pages.</p>
@@ -34,8 +33,7 @@
   </div>
 </details>
 
-<a id="pageprops"></a>
-<details class="ox-api-entry">
+<details id="pageprops" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">PageProps</code><span class="ox-api-entry__description">Extended page props with custom frontmatter.</span></summary>
   <div class="ox-api-entry__body">
 <p>Extended page props with custom frontmatter.</p>
@@ -43,8 +41,7 @@
   </div>
 </details>
 
-<a id="siteconfig"></a>
-<details class="ox-api-entry">
+<details id="siteconfig" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SiteConfig</code><span class="ox-api-entry__description">Site-wide configuration available in context.</span></summary>
   <div class="ox-api-entry__body">
 <p>Site-wide configuration available in context.</p>
@@ -52,8 +49,7 @@
   </div>
 </details>
 
-<a id="navgroup"></a>
-<details class="ox-api-entry">
+<details id="navgroup" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NavGroup</code><span class="ox-api-entry__description">Navigation group.</span></summary>
   <div class="ox-api-entry__body">
 <p>Navigation group.</p>
@@ -61,8 +57,7 @@
   </div>
 </details>
 
-<a id="navitem"></a>
-<details class="ox-api-entry">
+<details id="navitem" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NavItem</code><span class="ox-api-entry__description">Navigation item.</span></summary>
   <div class="ox-api-entry__body">
 <p>Navigation item.</p>
@@ -70,8 +65,7 @@
   </div>
 </details>
 
-<a id="rendercontext"></a>
-<details class="ox-api-entry">
+<details id="rendercontext" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">RenderContext</code><span class="ox-api-entry__description">Complete render context.</span></summary>
   <div class="ox-api-entry__body">
 <p>Complete render context.</p>
@@ -79,8 +73,7 @@
   </div>
 </details>
 
-<a id="setrendercontext"></a>
-<details class="ox-api-entry">
+<details id="setrendercontext" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">setRenderContext</code><code class="ox-api-entry__signature">setRenderContext(ctx: RenderContext): void</code><span class="ox-api-entry__description">Sets the current render context. Called internally during page rendering.</span></summary>
   <div class="ox-api-entry__body">
 <p>Sets the current render context.<br>Called internally during page rendering.</p>
@@ -100,8 +93,7 @@
   </div>
 </details>
 
-<a id="clearrendercontext"></a>
-<details class="ox-api-entry">
+<details id="clearrendercontext" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">clearRenderContext</code><code class="ox-api-entry__signature">clearRenderContext(): void</code><span class="ox-api-entry__description">Clears the current render context. Called internally after page rendering.</span></summary>
   <div class="ox-api-entry__body">
 <p>Clears the current render context.<br>Called internally after page rendering.</p>
@@ -121,8 +113,7 @@
   </div>
 </details>
 
-<a id="usepageprops"></a>
-<details class="ox-api-entry">
+<details id="usepageprops" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">usePageProps</code><span class="ox-api-entry__description">Gets the current page props.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the current page props.</p>
@@ -145,8 +136,7 @@
   </div>
 </details>
 
-<a id="usesiteconfig"></a>
-<details class="ox-api-entry">
+<details id="usesiteconfig" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useSiteConfig</code><code class="ox-api-entry__signature">useSiteConfig(): SiteConfig</code><span class="ox-api-entry__description">Gets the site configuration.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the site configuration.</p>
@@ -173,8 +163,7 @@
   </div>
 </details>
 
-<a id="userendercontext"></a>
-<details class="ox-api-entry">
+<details id="userendercontext" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useRenderContext</code><span class="ox-api-entry__description">Gets the full render context.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the full render context.</p>
@@ -202,8 +191,7 @@
   </div>
 </details>
 
-<a id="usenav"></a>
-<details class="ox-api-entry">
+<details id="usenav" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useNav</code><code class="ox-api-entry__signature">useNav(): NavGroup[]</code><span class="ox-api-entry__description">Gets the navigation groups.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the navigation groups.</p>
@@ -239,8 +227,7 @@
   </div>
 </details>
 
-<a id="useisactive"></a>
-<details class="ox-api-entry">
+<details id="useisactive" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useIsActive</code><code class="ox-api-entry__signature">useIsActive(path: string): boolean</code><span class="ox-api-entry__description">Checks if the given path is the current page.</span></summary>
   <div class="ox-api-entry__body">
 <p>Checks if the given path is the current page.</p>
@@ -263,8 +250,7 @@
   </div>
 </details>
 
-<a id="frontmatterschema"></a>
-<details class="ox-api-entry">
+<details id="frontmatterschema" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">FrontmatterSchema</code><span class="ox-api-entry__description">Schema for frontmatter type generation.</span></summary>
   <div class="ox-api-entry__body">
 <p>Schema for frontmatter type generation.</p>
@@ -272,8 +258,7 @@
   </div>
 </details>
 
-<a id="infertype"></a>
-<details class="ox-api-entry">
+<details id="infertype" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">inferType</code><code class="ox-api-entry__signature">inferType(value: unknown): string</code><span class="ox-api-entry__description">Infers TypeScript types from frontmatter values.</span></summary>
   <div class="ox-api-entry__body">
 <p>Infers TypeScript types from frontmatter values.</p>
@@ -289,8 +274,7 @@
   </div>
 </details>
 
-<a id="generatefrontmattertypes"></a>
-<details class="ox-api-entry">
+<details id="generatefrontmattertypes" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateFrontmatterTypes</code><code class="ox-api-entry__signature">generateFrontmatterTypes( samples: Record&lt;string, unknown&gt;[], interfaceName = &quot;PageFrontmatter&quot;, ): string</code><span class="ox-api-entry__description">Generates TypeScript interface from frontmatter samples.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates TypeScript interface from frontmatter samples.</p>

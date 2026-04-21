@@ -15,8 +15,7 @@
 
 ## Reference
 
-<a id="getattribute"></a>
-<details class="ox-api-entry">
+<details id="getattribute" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getAttribute</code><code class="ox-api-entry__signature">getAttribute(el: Element, name: string): string | undefined</code><span class="ox-api-entry__description">Get element attribute value.</span></summary>
   <div class="ox-api-entry__body">
 <p>Get element attribute value.</p>
@@ -32,8 +31,7 @@
   </div>
 </details>
 
-<a id="extractvideoid"></a>
-<details class="ox-api-entry">
+<details id="extractvideoid" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractVideoId</code><code class="ox-api-entry__signature">extractVideoId(input: string): string | null</code><span class="ox-api-entry__description">Extract YouTube video ID from various URL formats.</span></summary>
   <div class="ox-api-entry__body">
 <p>Extract YouTube video ID from various URL formats.</p>
@@ -49,8 +47,7 @@
   </div>
 </details>
 
-<a id="buildembedurl"></a>
-<details class="ox-api-entry">
+<details id="buildembedurl" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildEmbedUrl</code><code class="ox-api-entry__signature">buildEmbedUrl( videoId: string, options: Required&lt;YouTubeOptions&gt;, params?: Record&lt;string, string&gt;, ): string</code><span class="ox-api-entry__description">Build YouTube embed URL with parameters.</span></summary>
   <div class="ox-api-entry__body">
 <p>Build YouTube embed URL with parameters.</p>
@@ -70,8 +67,7 @@
   </div>
 </details>
 
-<a id="createyoutubeelement"></a>
-<details class="ox-api-entry">
+<details id="createyoutubeelement" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createYouTubeElement</code><span class="ox-api-entry__description">Create YouTube embed element.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create YouTube embed element.</p>
@@ -79,8 +75,7 @@
   </div>
 </details>
 
-<a id="rehypeyoutube"></a>
-<details class="ox-api-entry">
+<details id="rehypeyoutube" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">rehypeYouTube</code><code class="ox-api-entry__signature">rehypeYouTube(options: Required&lt;YouTubeOptions&gt;)</code><span class="ox-api-entry__description">Rehype plugin to transform YouTube components.</span></summary>
   <div class="ox-api-entry__body">
 <p>Rehype plugin to transform YouTube components.</p>
@@ -92,8 +87,7 @@
   </div>
 </details>
 
-<a id="transformyoutube"></a>
-<details class="ox-api-entry">
+<details id="transformyoutube" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">transformYouTube</code><code class="ox-api-entry__signature">transformYouTube(html: string, options?: YouTubeOptions): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Transform YouTube components in HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Transform YouTube components in HTML.</p>

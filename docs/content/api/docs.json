@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-04-21T09:21:28.230Z",
+  "generatedAt": "2026-04-21T09:43:16.487Z",
   "modules": [
     {
       "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/dev-server.ts",
@@ -288,7 +288,7 @@
           "description": "Symbol location info for cross-file linking.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 999
+          "line": 1000
         },
         {
           "name": "convertSymbolLinks",
@@ -320,7 +320,7 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1008,
+          "line": 1009,
           "signature": "function convertSymbolLinks(\n  text: string,\n  currentFileName: string,\n  symbolMap: Map<string, SymbolLocation>,\n  ): string"
         },
         {
@@ -333,7 +333,7 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1054,
+          "line": 1055,
           "signature": "function buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation>"
         },
         {
@@ -342,7 +342,7 @@
           "description": "Writes generated documentation to the output directory.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1078
+          "line": 1079
         },
         {
           "name": "generateSourceHref",
@@ -371,7 +371,7 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content--2/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1145,
+          "line": 1146,
           "signature": "function generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number): string"
         }
       ]

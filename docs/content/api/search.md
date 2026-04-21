@@ -17,8 +17,7 @@
 
 ## Reference
 
-<a id="parsescopedsearchquery"></a>
-<details class="ox-api-entry">
+<details id="parsescopedsearchquery" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">parseScopedSearchQuery</code><code class="ox-api-entry__signature">parseScopedSearchQuery(query: string): ScopedSearchQuery</code><span class="ox-api-entry__description">Splits a raw query into free-text terms and <code>@scope</code> prefixes.</span></summary>
   <div class="ox-api-entry__body">
 <p>Splits a raw query into free-text terms and <code>@scope</code> prefixes.</p>
@@ -34,8 +33,7 @@
   </div>
 </details>
 
-<a id="getsearchdocumentscopes"></a>
-<details class="ox-api-entry">
+<details id="getsearchdocumentscopes" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getSearchDocumentScopes</code><code class="ox-api-entry__signature">getSearchDocumentScopes(doc: Pick&lt;SearchDocument, &quot;id&quot; | &quot;url&quot;&gt;): string[]</code><span class="ox-api-entry__description">Derives hierarchical search scopes from a document id or URL. For example, `api…</span></summary>
   <div class="ox-api-entry__body">
 <p>Derives hierarchical search scopes from a document id or URL.<br>For example, <code>api/math/index</code> yields <code>[&quot;api&quot;, &quot;api/math&quot;]</code>.</p>
@@ -51,8 +49,7 @@
   </div>
 </details>
 
-<a id="matchessearchscopes"></a>
-<details class="ox-api-entry">
+<details id="matchessearchscopes" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">matchesSearchScopes</code><code class="ox-api-entry__signature">matchesSearchScopes( doc: Pick&lt;SearchDocument, &quot;id&quot; | &quot;url&quot;&gt;, scopes: string[], ): boolean</code><span class="ox-api-entry__description">Returns true when a search document belongs to at least one requested scope.</span></summary>
   <div class="ox-api-entry__body">
 <p>Returns true when a search document belongs to at least one requested scope.</p>
@@ -71,8 +68,7 @@
   </div>
 </details>
 
-<a id="resolvesearchoptions"></a>
-<details class="ox-api-entry">
+<details id="resolvesearchoptions" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveSearchOptions</code><code class="ox-api-entry__signature">resolveSearchOptions( options: SearchOptions | boolean | undefined, ): ResolvedSearchOptions</code><span class="ox-api-entry__description">Resolves search options with defaults.</span></summary>
   <div class="ox-api-entry__body">
 <p>Resolves search options with defaults.</p>
@@ -90,8 +86,7 @@
   </div>
 </details>
 
-<a id="collectmarkdownfiles"></a>
-<details class="ox-api-entry">
+<details id="collectmarkdownfiles" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">collectMarkdownFiles</code><code class="ox-api-entry__signature">collectMarkdownFiles(dir: string): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Collects all Markdown files from a directory.</span></summary>
   <div class="ox-api-entry__body">
 <p>Collects all Markdown files from a directory.</p>
@@ -107,8 +102,7 @@
   </div>
 </details>
 
-<a id="buildsearchindex"></a>
-<details class="ox-api-entry">
+<details id="buildsearchindex" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildSearchIndex</code><code class="ox-api-entry__signature">buildSearchIndex(srcDir: string, base: string): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Builds the search index from Markdown files.</span></summary>
   <div class="ox-api-entry__body">
 <p>Builds the search index from Markdown files.</p>
@@ -124,8 +118,7 @@
   </div>
 </details>
 
-<a id="writesearchindex"></a>
-<details class="ox-api-entry">
+<details id="writesearchindex" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">writeSearchIndex</code><code class="ox-api-entry__signature">writeSearchIndex(indexJson: string, outDir: string): Promise&lt;void&gt;</code><span class="ox-api-entry__description">Writes the search index to a file.</span></summary>
   <div class="ox-api-entry__body">
 <p>Writes the search index to a file.</p>
@@ -141,8 +134,7 @@
   </div>
 </details>
 
-<a id="generatesearchmodule"></a>
-<details class="ox-api-entry">
+<details id="generatesearchmodule" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateSearchModule</code><code class="ox-api-entry__signature">generateSearchModule(options: ResolvedSearchOptions, indexPath: string): string</code><span class="ox-api-entry__description">Client-side search module code. This is injected into the bundle as a virtual m…</span></summary>
   <div class="ox-api-entry__body">
 <p>Client-side search module code.<br>This is injected into the bundle as a virtual module.</p>

@@ -30,8 +30,7 @@
 
 ## Reference
 
-<a id="ssgnavitem"></a>
-<details class="ox-api-entry">
+<details id="ssgnavitem" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SsgNavItem</code><span class="ox-api-entry__description">Navigation item for SSG.</span></summary>
   <div class="ox-api-entry__body">
 <p>Navigation item for SSG.</p>
@@ -39,8 +38,7 @@
   </div>
 </details>
 
-<a id="ssgentrypageconfig"></a>
-<details class="ox-api-entry">
+<details id="ssgentrypageconfig" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SsgEntryPageConfig</code><span class="ox-api-entry__description">Entry page configuration for SSG (passed to Rust).</span></summary>
   <div class="ox-api-entry__body">
 <p>Entry page configuration for SSG (passed to Rust).</p>
@@ -48,8 +46,7 @@
   </div>
 </details>
 
-<a id="ssgpagedata"></a>
-<details class="ox-api-entry">
+<details id="ssgpagedata" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SsgPageData</code><span class="ox-api-entry__description">Page data for SSG.</span></summary>
   <div class="ox-api-entry__body">
 <p>Page data for SSG.</p>
@@ -57,8 +54,7 @@
   </div>
 </details>
 
-<a id="resolvessgoptions"></a>
-<details class="ox-api-entry">
+<details id="resolvessgoptions" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveSsgOptions</code><code class="ox-api-entry__signature">resolveSsgOptions(ssg: SsgOptions | boolean | undefined): ResolvedSsgOptions</code><span class="ox-api-entry__description">Resolves SSG options with defaults.</span></summary>
   <div class="ox-api-entry__body">
 <p>Resolves SSG options with defaults.</p>
@@ -74,8 +70,7 @@
   </div>
 </details>
 
-<a id="rendertemplate"></a>
-<details class="ox-api-entry">
+<details id="rendertemplate" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderTemplate</code><code class="ox-api-entry__signature">renderTemplate(template: string, data: Record&lt;string, unknown&gt;): string</code><span class="ox-api-entry__description">Simple mustache-like template rendering.</span></summary>
   <div class="ox-api-entry__body">
 <p>Simple mustache-like template rendering.</p>
@@ -91,8 +86,7 @@
   </div>
 </details>
 
-<a id="extracttitle"></a>
-<details class="ox-api-entry">
+<details id="extracttitle" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractTitle</code><code class="ox-api-entry__signature">extractTitle(content: string, frontmatter: Record&lt;string, unknown&gt;): string</code><span class="ox-api-entry__description">Extracts title from content or frontmatter.</span></summary>
   <div class="ox-api-entry__body">
 <p>Extracts title from content or frontmatter.</p>
@@ -108,8 +102,7 @@
   </div>
 </details>
 
-<a id="_generatenavhtml"></a>
-<details class="ox-api-entry">
+<details id="_generatenavhtml" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">_generateNavHtml</code><code class="ox-api-entry__signature">_generateNavHtml(navGroups: NavGroup[], currentPath: string): string</code><span class="ox-api-entry__description">Generates navigation HTML from nav groups.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates navigation HTML from nav groups.</p>
@@ -125,8 +118,7 @@
   </div>
 </details>
 
-<a id="_generatetochtml"></a>
-<details class="ox-api-entry">
+<details id="_generatetochtml" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">_generateTocHtml</code><code class="ox-api-entry__signature">_generateTocHtml(toc: TocEntry[]): string</code><span class="ox-api-entry__description">Generates TOC HTML from toc entries.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates TOC HTML from toc entries.</p>
@@ -142,8 +134,7 @@
   </div>
 </details>
 
-<a id="generatebarehtmlpage"></a>
-<details class="ox-api-entry">
+<details id="generatebarehtmlpage" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateBareHtmlPage</code><code class="ox-api-entry__signature">generateBareHtmlPage(content: string, title: string): string</code><span class="ox-api-entry__description">Generates bare HTML page (no navigation, no styles).</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates bare HTML page (no navigation, no styles).</p>
@@ -159,8 +150,7 @@
   </div>
 </details>
 
-<a id="generatehtmlpage"></a>
-<details class="ox-api-entry">
+<details id="generatehtmlpage" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateHtmlPage</code><span class="ox-api-entry__description">Generates HTML page with navigation using Rust NAPI bindings.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates HTML page with navigation using Rust NAPI bindings.</p>
@@ -168,8 +158,7 @@
   </div>
 </details>
 
-<a id="getoutputpath"></a>
-<details class="ox-api-entry">
+<details id="getoutputpath" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getOutputPath</code><span class="ox-api-entry__description">Converts a markdown file path to its corresponding HTML output path.</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts a markdown file path to its corresponding HTML output path.</p>
@@ -177,8 +166,7 @@
   </div>
 </details>
 
-<a id="geturlpath"></a>
-<details class="ox-api-entry">
+<details id="geturlpath" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getUrlPath</code><code class="ox-api-entry__signature">getUrlPath(inputPath: string, srcDir: string): string</code><span class="ox-api-entry__description">Converts a markdown file path to a relative URL path.</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts a markdown file path to a relative URL path.</p>
@@ -194,8 +182,7 @@
   </div>
 </details>
 
-<a id="gethref"></a>
-<details class="ox-api-entry">
+<details id="gethref" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getHref</code><span class="ox-api-entry__description">Converts a markdown file path to an href.</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts a markdown file path to an href.</p>
@@ -203,8 +190,7 @@
   </div>
 </details>
 
-<a id="getogimagepath"></a>
-<details class="ox-api-entry">
+<details id="getogimagepath" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getOgImagePath</code><code class="ox-api-entry__signature">getOgImagePath(inputPath: string, srcDir: string, outDir: string): string</code><span class="ox-api-entry__description">Gets the OG image output path for a given markdown file.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the OG image output path for a given markdown file.</p>
@@ -220,8 +206,7 @@
   </div>
 </details>
 
-<a id="getogimageurl"></a>
-<details class="ox-api-entry">
+<details id="getogimageurl" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getOgImageUrl</code><code class="ox-api-entry__signature">getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?: string): string</code><span class="ox-api-entry__description">Gets the OG image URL for use in meta tags. If siteUrl is provided, returns an…</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the OG image URL for use in meta tags.<br>If siteUrl is provided, returns an absolute URL (required for SNS sharing).</p>
@@ -237,8 +222,7 @@
   </div>
 </details>
 
-<a id="getdisplaytitle"></a>
-<details class="ox-api-entry">
+<details id="getdisplaytitle" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getDisplayTitle</code><code class="ox-api-entry__signature">getDisplayTitle(filePath: string): string</code><span class="ox-api-entry__description">Gets display title from file path.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets display title from file path.</p>
@@ -254,8 +238,7 @@
   </div>
 </details>
 
-<a id="formattitle"></a>
-<details class="ox-api-entry">
+<details id="formattitle" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">formatTitle</code><code class="ox-api-entry__signature">formatTitle(name: string): string</code><span class="ox-api-entry__description">Formats a file/dir name as a title.</span></summary>
   <div class="ox-api-entry__body">
 <p>Formats a file/dir name as a title.</p>
@@ -271,8 +254,7 @@
   </div>
 </details>
 
-<a id="collectmarkdownfiles"></a>
-<details class="ox-api-entry">
+<details id="collectmarkdownfiles" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">collectMarkdownFiles</code><code class="ox-api-entry__signature">collectMarkdownFiles(srcDir: string): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Collects all markdown files from the source directory.</span></summary>
   <div class="ox-api-entry__body">
 <p>Collects all markdown files from the source directory.</p>
@@ -288,8 +270,7 @@
   </div>
 </details>
 
-<a id="navgroup"></a>
-<details class="ox-api-entry">
+<details id="navgroup" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NavGroup</code><span class="ox-api-entry__description">Navigation group for hierarchical navigation.</span></summary>
   <div class="ox-api-entry__body">
 <p>Navigation group for hierarchical navigation.</p>
@@ -297,8 +278,7 @@
   </div>
 </details>
 
-<a id="buildnavitems"></a>
-<details class="ox-api-entry">
+<details id="buildnavitems" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildNavItems</code><span class="ox-api-entry__description">Builds navigation items from markdown files, grouped by directory.</span></summary>
   <div class="ox-api-entry__body">
 <p>Builds navigation items from markdown files, grouped by directory.</p>
@@ -306,8 +286,7 @@
   </div>
 </details>
 
-<a id="buildssg"></a>
-<details class="ox-api-entry">
+<details id="buildssg" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildSsg</code><code class="ox-api-entry__signature">buildSsg( options: ResolvedOptions, root: string, ): Promise&lt;</code><span class="ox-api-entry__description">Builds all markdown files to static HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Builds all markdown files to static HTML.</p>

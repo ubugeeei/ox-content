@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import {
-  getSearchDocumentScopes,
-  matchesSearchScopes,
-  parseScopedSearchQuery,
-} from "./search";
+import { getSearchDocumentScopes, matchesSearchScopes, parseScopedSearchQuery } from "./search";
 
 describe("parseScopedSearchQuery", () => {
   it("separates scope prefixes from free-text terms", () => {

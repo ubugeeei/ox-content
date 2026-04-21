@@ -13,8 +13,7 @@
 
 ## Reference
 
-<a id="gethighlighter"></a>
-<details class="ox-api-entry">
+<details id="gethighlighter" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getHighlighter</code><code class="ox-api-entry__signature">getHighlighter( theme: string, customLangs: LanguageRegistration[] = [], ): Promise&lt;Highlighter&gt;</code><span class="ox-api-entry__description">Get or create the Shiki highlighter.</span></summary>
   <div class="ox-api-entry__body">
 <p>Get or create the Shiki highlighter.</p>
@@ -33,8 +32,7 @@
   </div>
 </details>
 
-<a id="rehypeshikihighlight"></a>
-<details class="ox-api-entry">
+<details id="rehypeshikihighlight" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">rehypeShikiHighlight</code><span class="ox-api-entry__description">Rehype plugin for syntax highlighting with Shiki.</span></summary>
   <div class="ox-api-entry__body">
 <p>Rehype plugin for syntax highlighting with Shiki.</p>
@@ -42,8 +40,7 @@
   </div>
 </details>
 
-<a id="gettextcontent"></a>
-<details class="ox-api-entry">
+<details id="gettextcontent" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getTextContent</code><code class="ox-api-entry__signature">getTextContent(node: Element | Root): string</code><span class="ox-api-entry__description">Extract text content from a hast node.</span></summary>
   <div class="ox-api-entry__body">
 <p>Extract text content from a hast node.</p>
@@ -59,8 +56,7 @@
   </div>
 </details>
 
-<a id="highlightcode"></a>
-<details class="ox-api-entry">
+<details id="highlightcode" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">highlightCode</code><code class="ox-api-entry__signature">highlightCode( html: string, theme: string = &quot;github-dark&quot;, langs: LanguageRegistration[] = [], ): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Apply syntax highlighting to HTML using Shiki.</span></summary>
   <div class="ox-api-entry__body">
 <p>Apply syntax highlighting to HTML using Shiki.</p>

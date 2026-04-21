@@ -20,8 +20,7 @@
 
 ## Reference
 
-<a id="getattribute"></a>
-<details class="ox-api-entry">
+<details id="getattribute" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getAttribute</code><code class="ox-api-entry__signature">getAttribute(el: Element, name: string): string | undefined</code><span class="ox-api-entry__description">Get element attribute value.</span></summary>
   <div class="ox-api-entry__body">
 <p>Get element attribute value.</p>
@@ -37,8 +36,7 @@
   </div>
 </details>
 
-<a id="extractdomain"></a>
-<details class="ox-api-entry">
+<details id="extractdomain" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractDomain</code><code class="ox-api-entry__signature">extractDomain(url: string): string</code><span class="ox-api-entry__description">Extract domain from URL.</span></summary>
   <div class="ox-api-entry__body">
 <p>Extract domain from URL.</p>
@@ -54,8 +52,7 @@
   </div>
 </details>
 
-<a id="getfaviconurl"></a>
-<details class="ox-api-entry">
+<details id="getfaviconurl" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getFaviconUrl</code><code class="ox-api-entry__signature">getFaviconUrl(url: string): string</code><span class="ox-api-entry__description">Get favicon URL for a domain.</span></summary>
   <div class="ox-api-entry__body">
 <p>Get favicon URL for a domain.</p>
@@ -71,8 +68,7 @@
   </div>
 </details>
 
-<a id="parseogpfromhtml"></a>
-<details class="ox-api-entry">
+<details id="parseogpfromhtml" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">parseOgpFromHtml</code><code class="ox-api-entry__signature">parseOgpFromHtml(html: string, url: string): OgpData</code><span class="ox-api-entry__description">Parse OGP metadata from HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Parse OGP metadata from HTML.</p>
@@ -88,8 +84,7 @@
   </div>
 </details>
 
-<a id="fetchogpdata"></a>
-<details class="ox-api-entry">
+<details id="fetchogpdata" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">fetchOgpData</code><code class="ox-api-entry__signature">fetchOgpData( url: string, options: Required&lt;OgpOptions&gt;, ): Promise&lt;OgpData | null&gt;</code><span class="ox-api-entry__description">Fetch OGP data for a URL.</span></summary>
   <div class="ox-api-entry__body">
 <p>Fetch OGP data for a URL.</p>
@@ -108,8 +103,7 @@
   </div>
 </details>
 
-<a id="createogpcard"></a>
-<details class="ox-api-entry">
+<details id="createogpcard" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createOgpCard</code><code class="ox-api-entry__signature">createOgpCard(data: OgpData): Element</code><span class="ox-api-entry__description">Create OGP card element.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create OGP card element.</p>
@@ -125,8 +119,7 @@
   </div>
 </details>
 
-<a id="createfallbackcard"></a>
-<details class="ox-api-entry">
+<details id="createfallbackcard" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createFallbackCard</code><code class="ox-api-entry__signature">createFallbackCard(url: string): Element</code><span class="ox-api-entry__description">Create fallback element when OGP data is unavailable.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create fallback element when OGP data is unavailable.</p>
@@ -142,8 +135,7 @@
   </div>
 </details>
 
-<a id="collectogpurls"></a>
-<details class="ox-api-entry">
+<details id="collectogpurls" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">collectOgpUrls</code><code class="ox-api-entry__signature">collectOgpUrls(html: string): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Collect all OGP URLs from HTML for pre-fetching.</span></summary>
   <div class="ox-api-entry__body">
 <p>Collect all OGP URLs from HTML for pre-fetching.</p>
@@ -159,8 +151,7 @@
   </div>
 </details>
 
-<a id="prefetchogpdata"></a>
-<details class="ox-api-entry">
+<details id="prefetchogpdata" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">prefetchOgpData</code><code class="ox-api-entry__signature">prefetchOgpData( urls: string[], options?: OgpOptions, ): Promise&lt;Map&lt;string, OgpData | null&gt;&gt;</code><span class="ox-api-entry__description">Pre-fetch all OGP data.</span></summary>
   <div class="ox-api-entry__body">
 <p>Pre-fetch all OGP data.</p>
@@ -179,8 +170,7 @@
   </div>
 </details>
 
-<a id="rehypeogp"></a>
-<details class="ox-api-entry">
+<details id="rehypeogp" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">rehypeOgp</code><code class="ox-api-entry__signature">rehypeOgp(ogpDataMap: Map&lt;string, OgpData | null&gt;)</code><span class="ox-api-entry__description">Rehype plugin to transform OgCard components.</span></summary>
   <div class="ox-api-entry__body">
 <p>Rehype plugin to transform OgCard components.</p>
@@ -192,8 +182,7 @@
   </div>
 </details>
 
-<a id="transformogp"></a>
-<details class="ox-api-entry">
+<details id="transformogp" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">transformOgp</code><code class="ox-api-entry__signature">transformOgp( html: string, ogpDataMap?: Map&lt;string, OgpData | null&gt;, options?: OgpOptions, ): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Transform OgCard components in HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Transform OgCard components in HTML.</p>

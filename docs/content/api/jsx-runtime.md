@@ -24,8 +24,7 @@
 
 ## Reference
 
-<a id="escapehtml"></a>
-<details class="ox-api-entry">
+<details id="escapehtml" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">escapeHtml</code><code class="ox-api-entry__signature">escapeHtml(str: string): string</code><span class="ox-api-entry__description">Escapes HTML special characters to prevent XSS.</span></summary>
   <div class="ox-api-entry__body">
 <p>Escapes HTML special characters to prevent XSS.</p>
@@ -41,8 +40,7 @@
   </div>
 </details>
 
-<a id="tohtmlattr"></a>
-<details class="ox-api-entry">
+<details id="tohtmlattr" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">toHtmlAttr</code><code class="ox-api-entry__signature">toHtmlAttr(name: string): string</code><span class="ox-api-entry__description">Converts a camelCase attribute name to kebab-case for HTML. Special handling fo…</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts a camelCase attribute name to kebab-case for HTML.<br>Special handling for data-* and aria-* attributes.</p>
@@ -58,8 +56,7 @@
   </div>
 </details>
 
-<a id="renderattr"></a>
-<details class="ox-api-entry">
+<details id="renderattr" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderAttr</code><code class="ox-api-entry__signature">renderAttr(name: string, value: unknown): string</code><span class="ox-api-entry__description">Renders an attribute value to a string.</span></summary>
   <div class="ox-api-entry__body">
 <p>Renders an attribute value to a string.</p>
@@ -75,8 +72,7 @@
   </div>
 </details>
 
-<a id="jsxelementtype"></a>
-<details class="ox-api-entry">
+<details id="jsxelementtype" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">JSXElementType</code><span class="ox-api-entry__description">JSX element type - either a string (intrinsic) or a function component.</span></summary>
   <div class="ox-api-entry__body">
 <p>JSX element type - either a string (intrinsic) or a function component.</p>
@@ -84,8 +80,7 @@
   </div>
 </details>
 
-<a id="jsxchild"></a>
-<details class="ox-api-entry">
+<details id="jsxchild" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">JSXChild</code><span class="ox-api-entry__description">Valid JSX child types.</span></summary>
   <div class="ox-api-entry__body">
 <p>Valid JSX child types.</p>
@@ -93,8 +88,7 @@
   </div>
 </details>
 
-<a id="jsxnode"></a>
-<details class="ox-api-entry">
+<details id="jsxnode" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">JSXNode</code><span class="ox-api-entry__description">JSX node - the result of JSX expressions.</span></summary>
   <div class="ox-api-entry__body">
 <p>JSX node - the result of JSX expressions.</p>
@@ -102,8 +96,7 @@
   </div>
 </details>
 
-<a id="jsxprops"></a>
-<details class="ox-api-entry">
+<details id="jsxprops" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">JSXProps</code><span class="ox-api-entry__description">Props with children.</span></summary>
   <div class="ox-api-entry__body">
 <p>Props with children.</p>
@@ -111,8 +104,7 @@
   </div>
 </details>
 
-<a id="renderchildren"></a>
-<details class="ox-api-entry">
+<details id="renderchildren" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderChildren</code><code class="ox-api-entry__signature">renderChildren(children: JSXChild): string</code><span class="ox-api-entry__description">Renders children to HTML string.</span></summary>
   <div class="ox-api-entry__body">
 <p>Renders children to HTML string.</p>
@@ -128,8 +120,7 @@
   </div>
 </details>
 
-<a id="jsx"></a>
-<details class="ox-api-entry">
+<details id="jsx" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">jsx</code><code class="ox-api-entry__signature">jsx(type: JSXElementType, props: JSXProps, _key?: string): JSXNode</code><span class="ox-api-entry__description">Creates a JSX element. This is the core function called by the JSX transform.</span></summary>
   <div class="ox-api-entry__body">
 <p>Creates a JSX element.<br>This is the core function called by the JSX transform.</p>
@@ -145,8 +136,7 @@
   </div>
 </details>
 
-<a id="jsxs"></a>
-<details class="ox-api-entry">
+<details id="jsxs" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">jsxs</code><code class="ox-api-entry__signature">jsxs(type: JSXElementType, props: JSXProps, key?: string): JSXNode</code><span class="ox-api-entry__description">Creates a JSX element with static children. Called by the JSX transform for ele…</span></summary>
   <div class="ox-api-entry__body">
 <p>Creates a JSX element with static children.<br>Called by the JSX transform for elements with multiple children.</p>
@@ -162,8 +152,7 @@
   </div>
 </details>
 
-<a id="fragment"></a>
-<details class="ox-api-entry">
+<details id="fragment" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">Fragment</code><span class="ox-api-entry__description">Fragment component - renders children without a wrapper element.</span></summary>
   <div class="ox-api-entry__body">
 <p>Fragment component - renders children without a wrapper element.</p>
@@ -175,8 +164,7 @@
   </div>
 </details>
 
-<a id="rendertostring"></a>
-<details class="ox-api-entry">
+<details id="rendertostring" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderToString</code><code class="ox-api-entry__signature">renderToString(node: JSXNode): string</code><span class="ox-api-entry__description">Renders a JSX node to an HTML string.</span></summary>
   <div class="ox-api-entry__body">
 <p>Renders a JSX node to an HTML string.</p>
@@ -192,8 +180,7 @@
   </div>
 </details>
 
-<a id="raw"></a>
-<details class="ox-api-entry">
+<details id="raw" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">raw</code><code class="ox-api-entry__signature">raw(html: string): JSXNode</code><span class="ox-api-entry__description">Creates raw HTML without escaping. Use with caution - only for trusted content.</span></summary>
   <div class="ox-api-entry__body">
 <p>Creates raw HTML without escaping.<br>Use with caution - only for trusted content.</p>
@@ -213,8 +200,7 @@
   </div>
 </details>
 
-<a id="when"></a>
-<details class="ox-api-entry">
+<details id="when" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">when</code><code class="ox-api-entry__signature">when(condition: boolean, content: JSXNode): JSXNode</code><span class="ox-api-entry__description">Conditionally renders content.</span></summary>
   <div class="ox-api-entry__body">
 <p>Conditionally renders content.</p>
@@ -234,8 +220,7 @@
   </div>
 </details>
 
-<a id="each"></a>
-<details class="ox-api-entry">
+<details id="each" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">each</code><span class="ox-api-entry__description">Maps over an array and renders each item.</span></summary>
   <div class="ox-api-entry__body">
 <p>Maps over an array and renders each item.</p>

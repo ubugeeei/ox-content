@@ -17,8 +17,7 @@
 
 ## Reference
 
-<a id="resettabgroupcounter"></a>
-<details class="ox-api-entry">
+<details id="resettabgroupcounter" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resetTabGroupCounter</code><code class="ox-api-entry__signature">resetTabGroupCounter(): void</code><span class="ox-api-entry__description">Reset tab group counter (for testing).</span></summary>
   <div class="ox-api-entry__body">
 <p>Reset tab group counter (for testing).</p>
@@ -34,8 +33,7 @@
   </div>
 </details>
 
-<a id="getattribute"></a>
-<details class="ox-api-entry">
+<details id="getattribute" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getAttribute</code><code class="ox-api-entry__signature">getAttribute(el: Element, name: string): string | undefined</code><span class="ox-api-entry__description">Get element attribute value.</span></summary>
   <div class="ox-api-entry__body">
 <p>Get element attribute value.</p>
@@ -51,8 +49,7 @@
   </div>
 </details>
 
-<a id="parsetabchildren"></a>
-<details class="ox-api-entry">
+<details id="parsetabchildren" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">parseTabChildren</code><code class="ox-api-entry__signature">parseTabChildren(children: Element[&quot;children&quot;]): TabData[]</code><span class="ox-api-entry__description">Parse Tab elements from Tabs children.</span></summary>
   <div class="ox-api-entry__body">
 <p>Parse Tab elements from Tabs children.</p>
@@ -68,8 +65,7 @@
   </div>
 </details>
 
-<a id="createtabselement"></a>
-<details class="ox-api-entry">
+<details id="createtabselement" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createTabsElement</code><code class="ox-api-entry__signature">createTabsElement(tabs: TabData[], groupId: string): Element</code><span class="ox-api-entry__description">Create the HTML structure for tabs.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create the HTML structure for tabs.</p>
@@ -85,8 +81,7 @@
   </div>
 </details>
 
-<a id="createfallbackelement"></a>
-<details class="ox-api-entry">
+<details id="createfallbackelement" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createFallbackElement</code><code class="ox-api-entry__signature">createFallbackElement(tabs: TabData[]): Element</code><span class="ox-api-entry__description">Create fallback HTML using &lt;details&gt; elements.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create fallback HTML using &lt;details&gt; elements.</p>
@@ -102,8 +97,7 @@
   </div>
 </details>
 
-<a id="rehypetabs"></a>
-<details class="ox-api-entry">
+<details id="rehypetabs" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">rehypeTabs</code><code class="ox-api-entry__signature">rehypeTabs()</code><span class="ox-api-entry__description">Rehype plugin to transform Tabs components.</span></summary>
   <div class="ox-api-entry__body">
 <p>Rehype plugin to transform Tabs components.</p>
@@ -115,8 +109,7 @@
   </div>
 </details>
 
-<a id="transformtabs"></a>
-<details class="ox-api-entry">
+<details id="transformtabs" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">transformTabs</code><code class="ox-api-entry__signature">transformTabs(html: string): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Transform Tabs components in HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Transform Tabs components in HTML.</p>
@@ -132,8 +125,7 @@
   </div>
 </details>
 
-<a id="generatetabscss"></a>
-<details class="ox-api-entry">
+<details id="generatetabscss" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateTabsCSS</code><code class="ox-api-entry__signature">generateTabsCSS(groupCount: number): string</code><span class="ox-api-entry__description">Generate dynamic CSS for :has() based tab switching. This is needed because :ha…</span></summary>
   <div class="ox-api-entry__body">
 <p>Generate dynamic CSS for :has() based tab switching.<br>This is needed because :has() selectors need unique IDs.</p>

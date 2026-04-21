@@ -14,8 +14,7 @@
 
 ## Reference
 
-<a id="createmarkdownenvironment"></a>
-<details class="ox-api-entry">
+<details id="createmarkdownenvironment" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createMarkdownEnvironment</code><code class="ox-api-entry__signature">createMarkdownEnvironment(options: ResolvedOptions): EnvironmentOptions</code><span class="ox-api-entry__description">Creates the Markdown processing environment configuration. This environment is…</span></summary>
   <div class="ox-api-entry__body">
 <p>Creates the Markdown processing environment configuration.<br>This environment is used for:<br>- Server-side rendering of Markdown files<br>- Static site generation<br>- Pre-rendering at build time</p>
@@ -43,8 +42,7 @@ export default defineConfig({
   </div>
 </details>
 
-<a id="environmenttransformcontext"></a>
-<details class="ox-api-entry">
+<details id="environmenttransformcontext" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">EnvironmentTransformContext</code><span class="ox-api-entry__description">Environment-specific module transformer. This is called during the transform phase to process Markdown files within the…</span></summary>
   <div class="ox-api-entry__body">
 <p>Environment-specific module transformer.<br>This is called during the transform phase to process<br>Markdown files within the environment context.</p>
@@ -52,8 +50,7 @@ export default defineConfig({
   </div>
 </details>
 
-<a id="createtransformoptions"></a>
-<details class="ox-api-entry">
+<details id="createtransformoptions" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createTransformOptions</code><code class="ox-api-entry__signature">createTransformOptions( ctx: EnvironmentTransformContext, options: ResolvedOptions, ): ResolvedOptions</code><span class="ox-api-entry__description">Creates environment-aware transform options.</span></summary>
   <div class="ox-api-entry__body">
 <p>Creates environment-aware transform options.</p>
@@ -72,8 +69,7 @@ export default defineConfig({
   </div>
 </details>
 
-<a id="prerender"></a>
-<details class="ox-api-entry">
+<details id="prerender" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">prerender</code><code class="ox-api-entry__signature">prerender( files: string[], _options: ResolvedOptions, ): Promise&lt;Map&lt;string, string&gt;&gt;</code><span class="ox-api-entry__description">Runs pre-render for SSG. This function is called during build to pre-render all…</span></summary>
   <div class="ox-api-entry__body">
 <p>Runs pre-render for SSG.<br>This function is called during build to pre-render all Markdown files.</p>
@@ -92,8 +88,7 @@ export default defineConfig({
   </div>
 </details>
 
-<a id="createenvironmentplugins"></a>
-<details class="ox-api-entry">
+<details id="createenvironmentplugins" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createEnvironmentPlugins</code><code class="ox-api-entry__signature">createEnvironmentPlugins(_options: ResolvedOptions)</code><span class="ox-api-entry__description">Environment plugin factory. Creates plugins specific to the Markdown environmen…</span></summary>
   <div class="ox-api-entry__body">
 <p>Environment plugin factory.<br>Creates plugins specific to the Markdown environment.</p>

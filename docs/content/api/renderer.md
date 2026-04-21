@@ -11,8 +11,7 @@
 
 ## Reference
 
-<a id="wraphtml"></a>
-<details class="ox-api-entry">
+<details id="wraphtml" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">wrapHtml</code><code class="ox-api-entry__signature">wrapHtml(bodyHtml: string, width: number, height: number, useBaseUrl: boolean): string</code><span class="ox-api-entry__description">Wraps template HTML in a minimal document with viewport locked to given dimensi…</span></summary>
   <div class="ox-api-entry__body">
 <p>Wraps template HTML in a minimal document with viewport locked to given dimensions.</p>
@@ -28,8 +27,7 @@
   </div>
 </details>
 
-<a id="renderhtmltopng"></a>
-<details class="ox-api-entry">
+<details id="renderhtmltopng" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderHtmlToPng</code><span class="ox-api-entry__description">Renders an HTML string to a PNG buffer using Chromium.</span></summary>
   <div class="ox-api-entry__body">
 <p>Renders an HTML string to a PNG buffer using Chromium.</p>

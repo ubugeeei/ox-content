@@ -18,8 +18,7 @@
 
 ## Reference
 
-<a id="themecomponent"></a>
-<details class="ox-api-entry">
+<details id="themecomponent" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">ThemeComponent</code><span class="ox-api-entry__description">Theme component type.</span></summary>
   <div class="ox-api-entry__body">
 <p>Theme component type.</p>
@@ -27,8 +26,7 @@
   </div>
 </details>
 
-<a id="themeprops"></a>
-<details class="ox-api-entry">
+<details id="themeprops" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeProps</code><span class="ox-api-entry__description">Props passed to the theme component.</span></summary>
   <div class="ox-api-entry__body">
 <p>Props passed to the theme component.</p>
@@ -36,8 +34,7 @@
   </div>
 </details>
 
-<a id="pagedata"></a>
-<details class="ox-api-entry">
+<details id="pagedata" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">PageData</code><span class="ox-api-entry__description">Page data for rendering.</span></summary>
   <div class="ox-api-entry__body">
 <p>Page data for rendering.</p>
@@ -45,8 +42,7 @@
   </div>
 </details>
 
-<a id="themerenderoptions"></a>
-<details class="ox-api-entry">
+<details id="themerenderoptions" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeRenderOptions</code><span class="ox-api-entry__description">Theme render options.</span></summary>
   <div class="ox-api-entry__body">
 <p>Theme render options.</p>
@@ -54,8 +50,7 @@
   </div>
 </details>
 
-<a id="renderpage"></a>
-<details class="ox-api-entry">
+<details id="renderpage" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderPage</code><code class="ox-api-entry__signature">renderPage(page: PageData, options: ThemeRenderOptions): string</code><span class="ox-api-entry__description">Renders a page using the theme component.</span></summary>
   <div class="ox-api-entry__body">
 <p>Renders a page using the theme component.</p>
@@ -91,8 +86,7 @@
   </div>
 </details>
 
-<a id="renderallpages"></a>
-<details class="ox-api-entry">
+<details id="renderallpages" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderAllPages</code><code class="ox-api-entry__signature">renderAllPages( pages: PageData[], options: ThemeRenderOptions, ): Promise&lt;Map&lt;string, string&gt;&gt;</code><span class="ox-api-entry__description">Renders all pages and generates type definitions.</span></summary>
   <div class="ox-api-entry__body">
 <p>Renders all pages and generates type definitions.</p>
@@ -131,8 +125,7 @@
   </div>
 </details>
 
-<a id="generatetypes"></a>
-<details class="ox-api-entry">
+<details id="generatetypes" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateTypes</code><code class="ox-api-entry__signature">generateTypes(pages: PageData[], outDir: string): Promise&lt;void&gt;</code><span class="ox-api-entry__description">Generates TypeScript type definitions from page frontmatter.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates TypeScript type definitions from page frontmatter.</p>
@@ -168,8 +161,7 @@
   </div>
 </details>
 
-<a id="defaulttheme"></a>
-<details class="ox-api-entry">
+<details id="defaulttheme" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">DefaultTheme</code><span class="ox-api-entry__description">Default theme component. A minimal theme that renders page content with basic styling.</span></summary>
   <div class="ox-api-entry__body">
 <p>Default theme component.<br>A minimal theme that renders page content with basic styling.</p>
@@ -181,8 +173,7 @@
   </div>
 </details>
 
-<a id="createtheme"></a>
-<details class="ox-api-entry">
+<details id="createtheme" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createTheme</code><span class="ox-api-entry__description">Creates a theme with layout switching support.</span></summary>
   <div class="ox-api-entry__body">
 <p>Creates a theme with layout switching support.</p>

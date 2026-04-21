@@ -12,8 +12,7 @@
 
 ## Reference
 
-<a id="mermaidsvgprotection"></a>
-<details class="ox-api-entry">
+<details id="mermaidsvgprotection" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">MermaidSvgProtection</code><span class="ox-api-entry__description">Protects mermaid SVG content from rehype HTML5 parser corruption. rehypeParse + rehypeStringify converts <code>&lt;br /&gt;</code> in SV…</span></summary>
   <div class="ox-api-entry__body">
 <p>Protects mermaid SVG content from rehype HTML5 parser corruption.<br>rehypeParse + rehypeStringify converts <code>&lt;br /&gt;</code> in SVG foreignObject<br>to <code>&lt;br&gt;&lt;/br&gt;</code>, which HTML5 interprets as 2 &lt;br&gt; elements.<br>Each rehype pass doubles them: 1 → 2 → 4 → 8 → 16.<br>This module extracts ox-mermaid SVG blocks into placeholders before<br>rehype processing and restores them after.</p>
@@ -21,8 +20,7 @@
   </div>
 </details>
 
-<a id="protectmermaidsvgs"></a>
-<details class="ox-api-entry">
+<details id="protectmermaidsvgs" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">protectMermaidSvgs</code><code class="ox-api-entry__signature">protectMermaidSvgs(html: string): MermaidSvgProtection</code><span class="ox-api-entry__description">Extract <code>&lt;div class=&quot;ox-mermaid&quot;&gt;...&lt;/div&gt;</code> blocks and replace with HTML commen…</span></summary>
   <div class="ox-api-entry__body">
 <p>Extract <code>&lt;div class=&quot;ox-mermaid&quot;&gt;...&lt;/div&gt;</code> blocks and replace<br>with HTML comment placeholders that rehype will preserve.</p>
@@ -38,8 +36,7 @@
   </div>
 </details>
 
-<a id="restoremermaidsvgs"></a>
-<details class="ox-api-entry">
+<details id="restoremermaidsvgs" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">restoreMermaidSvgs</code><code class="ox-api-entry__signature">restoreMermaidSvgs(html: string, svgs: Map&lt;string, string&gt;): string</code><span class="ox-api-entry__description">Restore protected mermaid SVG blocks from placeholders.</span></summary>
   <div class="ox-api-entry__body">
 <p>Restore protected mermaid SVG blocks from placeholders.</p>

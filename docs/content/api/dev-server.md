@@ -19,8 +19,7 @@
 
 ## Reference
 
-<a id="shouldskip"></a>
-<details class="ox-api-entry">
+<details id="shouldskip" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">shouldSkip</code><code class="ox-api-entry__signature">shouldSkip(url: string): boolean</code><span class="ox-api-entry__description">Check if a request URL should be skipped by the dev server middleware.</span></summary>
   <div class="ox-api-entry__body">
 <p>Check if a request URL should be skipped by the dev server middleware.</p>
@@ -36,8 +35,7 @@
   </div>
 </details>
 
-<a id="resolvemarkdownfile"></a>
-<details class="ox-api-entry">
+<details id="resolvemarkdownfile" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveMarkdownFile</code><code class="ox-api-entry__signature">resolveMarkdownFile(url: string, srcDir: string): Promise&lt;string | null&gt;</code><span class="ox-api-entry__description">Resolve a request URL to a markdown file path. Returns null if no matching file…</span></summary>
   <div class="ox-api-entry__body">
 <p>Resolve a request URL to a markdown file path.<br>Returns null if no matching file exists.</p>
@@ -53,8 +51,7 @@
   </div>
 </details>
 
-<a id="injectvitehmrclient"></a>
-<details class="ox-api-entry">
+<details id="injectvitehmrclient" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">injectViteHmrClient</code><code class="ox-api-entry__signature">injectViteHmrClient(html: string): string</code><span class="ox-api-entry__description">Inject Vite HMR client script into the HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Inject Vite HMR client script into the HTML.</p>
@@ -70,8 +67,7 @@
   </div>
 </details>
 
-<a id="devservercache"></a>
-<details class="ox-api-entry">
+<details id="devservercache" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">DevServerCache</code><span class="ox-api-entry__description">Dev server state for caching.</span></summary>
   <div class="ox-api-entry__body">
 <p>Dev server state for caching.</p>
@@ -79,8 +75,7 @@
   </div>
 </details>
 
-<a id="createdevservercache"></a>
-<details class="ox-api-entry">
+<details id="createdevservercache" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createDevServerCache</code><code class="ox-api-entry__signature">createDevServerCache(): DevServerCache</code><span class="ox-api-entry__description">Create a dev server cache instance.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create a dev server cache instance.</p>
@@ -96,8 +91,7 @@
   </div>
 </details>
 
-<a id="invalidatenavcache"></a>
-<details class="ox-api-entry">
+<details id="invalidatenavcache" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">invalidateNavCache</code><code class="ox-api-entry__signature">invalidateNavCache(cache: DevServerCache): void</code><span class="ox-api-entry__description">Invalidate navigation cache (called on file add/unlink).</span></summary>
   <div class="ox-api-entry__body">
 <p>Invalidate navigation cache (called on file add/unlink).</p>
@@ -113,8 +107,7 @@
   </div>
 </details>
 
-<a id="invalidatepagecache"></a>
-<details class="ox-api-entry">
+<details id="invalidatepagecache" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">invalidatePageCache</code><code class="ox-api-entry__signature">invalidatePageCache(cache: DevServerCache, filePath: string): void</code><span class="ox-api-entry__description">Invalidate page cache for a specific file (called on file change).</span></summary>
   <div class="ox-api-entry__body">
 <p>Invalidate page cache for a specific file (called on file change).</p>
@@ -130,8 +123,7 @@
   </div>
 </details>
 
-<a id="resolvesitename"></a>
-<details class="ox-api-entry">
+<details id="resolvesitename" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveSiteName</code><code class="ox-api-entry__signature">resolveSiteName(options: ResolvedOptions, root: string): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Resolve site name from options or package.json.</span></summary>
   <div class="ox-api-entry__body">
 <p>Resolve site name from options or package.json.</p>
@@ -147,8 +139,7 @@
   </div>
 </details>
 
-<a id="renderpage"></a>
-<details class="ox-api-entry">
+<details id="renderpage" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderPage</code><span class="ox-api-entry__description">Render a single markdown page to full HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Render a single markdown page to full HTML.</p>
@@ -156,8 +147,7 @@
   </div>
 </details>
 
-<a id="createdevservermiddleware"></a>
-<details class="ox-api-entry">
+<details id="createdevservermiddleware" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createDevServerMiddleware</code><code class="ox-api-entry__signature">createDevServerMiddleware( options: ResolvedOptions, root: string, cache: DevServerCache, ): Connect.NextHandleFunction</code><span class="ox-api-entry__description">Create the dev server middleware for SSG page serving.</span></summary>
   <div class="ox-api-entry__body">
 <p>Create the dev server middleware for SSG page serving.</p>

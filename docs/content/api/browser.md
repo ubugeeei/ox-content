@@ -11,8 +11,7 @@
 
 ## Reference
 
-<a id="ogbrowsersession"></a>
-<details class="ox-api-entry">
+<details id="ogbrowsersession" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">OgBrowserSession</code><span class="ox-api-entry__description">A browser session that can render HTML pages to PNG. Implements AsyncDisposable for automatic cleanup via <code>await using</code>.</span></summary>
   <div class="ox-api-entry__body">
 <p>A browser session that can render HTML pages to PNG.<br>Implements AsyncDisposable for automatic cleanup via <code>await using</code>.</p>
@@ -20,8 +19,7 @@
   </div>
 </details>
 
-<a id="openbrowser"></a>
-<details class="ox-api-entry">
+<details id="openbrowser" class="ox-api-entry">
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">openBrowser</code><code class="ox-api-entry__signature">openBrowser(): Promise&lt;OgBrowserSession | null&gt;</code><span class="ox-api-entry__description">Opens a Chromium browser and returns a session for rendering OG images. Returns…</span></summary>
   <div class="ox-api-entry__body">
 <p>Opens a Chromium browser and returns a session for rendering OG images.<br>Returns null if Playwright/Chromium is not available.<br>The session implements AsyncDisposable — use <code>await using</code> for automatic cleanup:<br>``<code>ts<br>await using session = await openBrowser();<br>if (!session) return;<br>const png = await session.renderPage(html, 1200, 630);<br></code>``</p>
