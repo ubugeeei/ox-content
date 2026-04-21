@@ -61,14 +61,14 @@ export default defineConfig({
       "test:rust": task("cargo test --workspace"),
       "test:rust-verbose": uncachedTask("cargo test --workspace -- --nocapture"),
       "test:ts": noopTask(["test:ts-unit", "test:vrt"]),
-      "test:ts-unit": task("pnpm --dir npm/vite-plugin-ox-content exec vp test src", {
+      "test:ts-unit": task("vp exec --filter @ox-content/vite-plugin -- vp test src", {
         dependsOn: ["build:napi"],
       }),
-      "test:vrt": uncachedTask("pnpm --dir npm/vite-plugin-ox-content exec playwright test", {
+      "test:vrt": uncachedTask("vp exec --filter @ox-content/vite-plugin -- playwright test", {
         dependsOn: ["build:napi"],
       }),
       "test:vrt:update": uncachedTask(
-        "pnpm --dir npm/vite-plugin-ox-content exec playwright test --update-snapshots",
+        "vp exec --filter @ox-content/vite-plugin -- playwright test --update-snapshots",
         {
           dependsOn: ["build:napi"],
         },
