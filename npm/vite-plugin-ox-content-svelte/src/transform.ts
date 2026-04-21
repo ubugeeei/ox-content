@@ -72,7 +72,7 @@ export async function transformMarkdownWithSvelte(
   }
   processedContent += markdownContent.slice(lastIndex);
 
-  const transformed = await baseTransformMarkdown(processedContent, id, {
+  const baseOptions = {
     srcDir: options.srcDir,
     outDir: options.outDir,
     base: options.base,
@@ -87,6 +87,7 @@ export async function transformMarkdownWithSvelte(
     frontmatter: false,
     toc: options.toc,
     tocMaxDepth: options.tocMaxDepth,
+    codeAnnotations: options.codeAnnotations,
     footnotes: true,
     tables: true,
     taskLists: true,
@@ -114,7 +115,11 @@ export async function transformMarkdownWithSvelte(
       hotkey: "k",
     },
     i18n: false,
-  });
+  } as Parameters<typeof baseTransformMarkdown>[2] & {
+    codeAnnotations?: ResolvedSvelteOptions["codeAnnotations"];
+  };
+
+  const transformed = await baseTransformMarkdown(processedContent, id, baseOptions);
 
   const htmlWithIslands = injectIslandMarkers(transformed.html, islands);
   const svelteCode = generateSvelteModule(

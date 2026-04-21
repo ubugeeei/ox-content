@@ -71,7 +71,7 @@ export async function transformMarkdownWithReact(
   }
   processedContent += markdownContent.slice(lastIndex);
 
-  const transformed = await baseTransformMarkdown(processedContent, id, {
+  const baseOptions = {
     srcDir: options.srcDir,
     outDir: options.outDir,
     base: options.base,
@@ -86,6 +86,7 @@ export async function transformMarkdownWithReact(
     frontmatter: false,
     toc: options.toc,
     tocMaxDepth: options.tocMaxDepth,
+    codeAnnotations: options.codeAnnotations,
     footnotes: true,
     tables: true,
     taskLists: true,
@@ -113,7 +114,11 @@ export async function transformMarkdownWithReact(
       hotkey: "k",
     },
     i18n: false,
-  });
+  } as Parameters<typeof baseTransformMarkdown>[2] & {
+    codeAnnotations?: ResolvedReactOptions["codeAnnotations"];
+  };
+
+  const transformed = await baseTransformMarkdown(processedContent, id, baseOptions);
 
   const htmlWithIslands = injectIslandMarkers(transformed.html, islands);
   const jsxCode = generateReactModule(

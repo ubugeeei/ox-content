@@ -6,6 +6,7 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
+import { importNapiModule } from "./napi";
 import type {
   SearchOptions,
   ResolvedSearchOptions,
@@ -19,7 +20,7 @@ let oxContent: typeof import("@ox-content/napi") | null = null;
 async function getOxContent() {
   if (!oxContent) {
     try {
-      oxContent = await import("@ox-content/napi");
+      oxContent = await importNapiModule();
     } catch {
       console.warn("[ox-content] Native bindings not available, search disabled");
       return null;

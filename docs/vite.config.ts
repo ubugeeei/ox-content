@@ -43,6 +43,9 @@ export default defineConfig(({ mode }) => {
         // Enable syntax highlighting with Shiki
         highlight: true,
         highlightTheme: "vitesse-dark",
+        codeAnnotations: {
+          notation: "both",
+        },
 
         // Mermaid diagrams (native mmdc via NAPI)
         mermaid: true,

@@ -35,7 +35,7 @@
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SsgNavItem</code><span class="ox-api-entry__description">Navigation item for SSG.</span></summary>
   <div class="ox-api-entry__body">
 <p>Navigation item for SSG.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L27">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L28">View source</a></p>
   </div>
 </details>
 
@@ -44,7 +44,7 @@
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SsgEntryPageConfig</code><span class="ox-api-entry__description">Entry page configuration for SSG (passed to Rust).</span></summary>
   <div class="ox-api-entry__body">
 <p>Entry page configuration for SSG (passed to Rust).</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L37">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L38">View source</a></p>
   </div>
 </details>
 
@@ -53,7 +53,7 @@
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SsgPageData</code><span class="ox-api-entry__description">Page data for SSG.</span></summary>
   <div class="ox-api-entry__body">
 <p>Page data for SSG.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L45">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L46">View source</a></p>
   </div>
 </details>
 
@@ -62,7 +62,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveSsgOptions</code><code class="ox-api-entry__signature">resolveSsgOptions(ssg: SsgOptions | boolean | undefined): ResolvedSsgOptions</code><span class="ox-api-entry__description">Resolves SSG options with defaults.</span></summary>
   <div class="ox-api-entry__body">
 <p>Resolves SSG options with defaults.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L843">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L882">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): ResolvedSsgOptions</code></pre>
@@ -79,7 +79,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderTemplate</code><code class="ox-api-entry__signature">renderTemplate(template: string, data: Record&lt;string, unknown&gt;): string</code><span class="ox-api-entry__description">Simple mustache-like template rendering.</span></summary>
   <div class="ox-api-entry__body">
 <p>Simple mustache-like template rendering.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L881">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L920">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function renderTemplate(template: string, data: Record&lt;string, unknown&gt;): string</code></pre>
@@ -96,7 +96,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractTitle</code><code class="ox-api-entry__signature">extractTitle(content: string, frontmatter: Record&lt;string, unknown&gt;): string</code><span class="ox-api-entry__description">Extracts title from content or frontmatter.</span></summary>
   <div class="ox-api-entry__body">
 <p>Extracts title from content or frontmatter.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L912">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L951">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">export function extractTitle(content: string, frontmatter: Record&lt;string, unknown&gt;): string</code></pre>
@@ -113,7 +113,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">_generateNavHtml</code><code class="ox-api-entry__signature">_generateNavHtml(navGroups: NavGroup[], currentPath: string): string</code><span class="ox-api-entry__description">Generates navigation HTML from nav groups.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates navigation HTML from nav groups.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L928">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L967">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function _generateNavHtml(navGroups: NavGroup[], currentPath: string): string</code></pre>
@@ -130,7 +130,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">_generateTocHtml</code><code class="ox-api-entry__signature">_generateTocHtml(toc: TocEntry[]): string</code><span class="ox-api-entry__description">Generates TOC HTML from toc entries.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates TOC HTML from toc entries.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L952">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L991">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function _generateTocHtml(toc: TocEntry[]): string</code></pre>
@@ -147,7 +147,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateBareHtmlPage</code><code class="ox-api-entry__signature">generateBareHtmlPage(content: string, title: string): string</code><span class="ox-api-entry__description">Generates bare HTML page (no navigation, no styles).</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates bare HTML page (no navigation, no styles).</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L971">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1010">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">export function generateBareHtmlPage(content: string, title: string): string</code></pre>
@@ -164,7 +164,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateHtmlPage</code><span class="ox-api-entry__description">Generates HTML page with navigation using Rust NAPI bindings.</span></summary>
   <div class="ox-api-entry__body">
 <p>Generates HTML page with navigation using Rust NAPI bindings.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L981">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1020">View source</a></p>
   </div>
 </details>
 
@@ -173,7 +173,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getOutputPath</code><span class="ox-api-entry__description">Converts a markdown file path to its corresponding HTML output path.</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts a markdown file path to its corresponding HTML output path.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1367">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1406">View source</a></p>
   </div>
 </details>
 
@@ -182,7 +182,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getUrlPath</code><code class="ox-api-entry__signature">getUrlPath(inputPath: string, srcDir: string): string</code><span class="ox-api-entry__description">Converts a markdown file path to a relative URL path.</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts a markdown file path to a relative URL path.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1387">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1426">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">export function getUrlPath(inputPath: string, srcDir: string): string</code></pre>
@@ -199,7 +199,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getHref</code><span class="ox-api-entry__description">Converts a markdown file path to an href.</span></summary>
   <div class="ox-api-entry__body">
 <p>Converts a markdown file path to an href.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1401">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1440">View source</a></p>
   </div>
 </details>
 
@@ -208,7 +208,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getOgImagePath</code><code class="ox-api-entry__signature">getOgImagePath(inputPath: string, srcDir: string, outDir: string): string</code><span class="ox-api-entry__description">Gets the OG image output path for a given markdown file.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the OG image output path for a given markdown file.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1417">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1456">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function getOgImagePath(inputPath: string, srcDir: string, outDir: string): string</code></pre>
@@ -225,7 +225,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getOgImageUrl</code><code class="ox-api-entry__signature">getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?: string): string</code><span class="ox-api-entry__description">Gets the OG image URL for use in meta tags. If siteUrl is provided, returns an…</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets the OG image URL for use in meta tags.<br>If siteUrl is provided, returns an absolute URL (required for SNS sharing).</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1432">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1471">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function getOgImageUrl(inputPath: string, srcDir: string, base: string, siteUrl?: string): string</code></pre>
@@ -242,7 +242,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getDisplayTitle</code><code class="ox-api-entry__signature">getDisplayTitle(filePath: string): string</code><span class="ox-api-entry__description">Gets display title from file path.</span></summary>
   <div class="ox-api-entry__body">
 <p>Gets display title from file path.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1454">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1493">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">function getDisplayTitle(filePath: string): string</code></pre>
@@ -259,7 +259,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">formatTitle</code><code class="ox-api-entry__signature">formatTitle(name: string): string</code><span class="ox-api-entry__description">Formats a file/dir name as a title.</span></summary>
   <div class="ox-api-entry__body">
 <p>Formats a file/dir name as a title.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1471">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1510">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">export function formatTitle(name: string): string</code></pre>
@@ -276,7 +276,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">collectMarkdownFiles</code><code class="ox-api-entry__signature">collectMarkdownFiles(srcDir: string): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Collects all markdown files from the source directory.</span></summary>
   <div class="ox-api-entry__body">
 <p>Collects all markdown files from the source directory.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1480">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1519">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">export async function collectMarkdownFiles(srcDir: string): Promise&lt;string[]&gt;</code></pre>
@@ -293,7 +293,7 @@
   <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NavGroup</code><span class="ox-api-entry__description">Navigation group for hierarchical navigation.</span></summary>
   <div class="ox-api-entry__body">
 <p>Navigation group for hierarchical navigation.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1492">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1531">View source</a></p>
   </div>
 </details>
 
@@ -302,7 +302,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildNavItems</code><span class="ox-api-entry__description">Builds navigation items from markdown files, grouped by directory.</span></summary>
   <div class="ox-api-entry__body">
 <p>Builds navigation items from markdown files, grouped by directory.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1500">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1539">View source</a></p>
   </div>
 </details>
 
@@ -311,7 +311,7 @@
   <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildSsg</code><code class="ox-api-entry__signature">buildSsg( options: ResolvedOptions, root: string, ): Promise&lt;</code><span class="ox-api-entry__description">Builds all markdown files to static HTML.</span></summary>
   <div class="ox-api-entry__body">
 <p>Builds all markdown files to static HTML.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1585">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L1624">View source</a></p>
 <div class="ox-api-entry__section">
 <h4>Signature</h4>
 <pre><code class="language-typescript">export async function buildSsg(

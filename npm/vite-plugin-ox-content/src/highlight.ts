@@ -40,8 +40,8 @@ const BUILTIN_LANGS = [
   "toml",
 ] as const;
 
-// Cached highlighter instance
-let highlighterPromise: Promise<Highlighter> | null = null;
+// Cache highlighters by theme + language registration set.
+const highlighterCache = new Map<string, Promise<Highlighter>>();
 
 /**
  * Get or create the Shiki highlighter.
@@ -50,11 +50,18 @@ async function getHighlighter(
   theme: string,
   customLangs: LanguageRegistration[] = [],
 ): Promise<Highlighter> {
+  const cacheKey = JSON.stringify({
+    theme,
+    langs: customLangs,
+  });
+
+  let highlighterPromise = highlighterCache.get(cacheKey);
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: [theme as BundledTheme],
       langs: [...BUILTIN_LANGS, ...customLangs],
     });
+    highlighterCache.set(cacheKey, highlighterPromise);
   }
   return highlighterPromise;
 }
@@ -81,16 +88,12 @@ function rehypeShikiHighlight(options: { theme: string; langs?: LanguageRegistra
 
             if (codeElement) {
               // Extract language from class
-              const className = codeElement.properties?.className;
               let lang = "text";
+              const originalCodeClasses = normalizeClassName(codeElement.properties?.className);
 
-              if (Array.isArray(className)) {
-                const langClass = className.find(
-                  (c: string | number) => typeof c === "string" && c.startsWith("language-"),
-                );
-                if (langClass && typeof langClass === "string") {
-                  lang = langClass.replace("language-", "");
-                }
+              const langClass = originalCodeClasses.find((value) => value.startsWith("language-"));
+              if (langClass) {
+                lang = langClass.replace("language-", "");
               }
 
               // Get code text
@@ -107,8 +110,12 @@ function rehypeShikiHighlight(options: { theme: string; langs?: LanguageRegistra
                 const parsed = unified().use(rehypeParse, { fragment: true }).parse(highlighted);
 
                 // Replace the pre element with the highlighted one
-                if (parsed.children[0]) {
-                  node.children[i] = parsed.children[0] as Element;
+                if (parsed.children[0]?.type === "element") {
+                  const highlightedPre = parsed.children[0];
+                  highlightedPre.properties ??= {};
+                  highlightedPre.properties["data-language"] = lang;
+
+                  node.children[i] = highlightedPre;
                 }
               } catch {
                 // If highlighting fails, keep the original
@@ -142,6 +149,18 @@ function getTextContent(node: Element | Root): string {
   }
 
   return text;
+}
+
+function normalizeClassName(className: unknown): string[] {
+  if (Array.isArray(className)) {
+    return className.filter((value): value is string => typeof value === "string");
+  }
+
+  if (typeof className === "string" && className) {
+    return className.split(/\s+/).filter(Boolean);
+  }
+
+  return [];
 }
 
 /**

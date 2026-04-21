@@ -13,6 +13,7 @@ import { transformAllPlugins } from "./plugins";
 import type { TransformAllOptions } from "./plugins";
 import { protectMermaidSvgs, restoreMermaidSvgs } from "./plugins/mermaid-protect";
 import { transformIslands, hasIslands } from "./island";
+import { importNapiModule } from "./napi";
 import type {
   ResolvedOptions,
   ResolvedSsgOptions,
@@ -94,6 +95,11 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       --color-primary-hover: #ce5937;
       --color-code-bg: #1e293b;
       --color-code-text: #e2e8f0;
+      --color-code-line-highlight: rgba(56, 189, 248, 0.16);
+      --color-code-line-warning: rgba(245, 158, 11, 0.18);
+      --color-code-line-warning-border: #f59e0b;
+      --color-code-line-error: rgba(239, 68, 68, 0.18);
+      --color-code-line-error-border: #ef4444;
     }
     [data-theme="dark"] {
       --color-bg: #141414;
@@ -105,6 +111,11 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       --color-primary-hover: #d4845f;
       --color-code-bg: #1a1a1a;
       --color-code-text: #e5e5e5;
+      --color-code-line-highlight: rgba(14, 165, 233, 0.2);
+      --color-code-line-warning: rgba(245, 158, 11, 0.2);
+      --color-code-line-warning-border: #f59e0b;
+      --color-code-line-error: rgba(239, 68, 68, 0.22);
+      --color-code-line-error-border: #f87171;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
@@ -117,6 +128,11 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
         --color-primary-hover: #d4845f;
         --color-code-bg: #1a1a1a;
         --color-code-text: #e5e5e5;
+        --color-code-line-highlight: rgba(14, 165, 233, 0.2);
+        --color-code-line-warning: rgba(245, 158, 11, 0.2);
+        --color-code-line-warning-border: #f59e0b;
+        --color-code-line-error: rgba(239, 68, 68, 0.22);
+        --color-code-line-error-border: #f87171;
       }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -417,6 +433,25 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       padding: 0;
       font-size: 0.8125rem;
     }
+    .content pre.ox-code-block code {
+      display: block;
+    }
+    .content pre.ox-code-block .line {
+      display: block;
+      margin: 0 -1.25rem;
+      padding: 0 1.25rem;
+    }
+    .content pre.ox-code-block .ox-code-line--highlight {
+      background: var(--color-code-line-highlight);
+    }
+    .content pre.ox-code-block .ox-code-line--warning {
+      background: var(--color-code-line-warning);
+      box-shadow: inset 3px 0 0 var(--color-code-line-warning-border);
+    }
+    .content pre.ox-code-block .ox-code-line--error {
+      background: var(--color-code-line-error);
+      box-shadow: inset 3px 0 0 var(--color-code-line-error-border);
+    }
     .content table {
       width: 100%;
       border-collapse: collapse;
@@ -459,6 +494,10 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
         border-radius: 0;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+      }
+      .content pre.ox-code-block .line {
+        margin: 0 -0.75rem;
+        padding: 0 0.75rem;
       }
       .content code { font-size: 0.8125em; }
       .content table {
@@ -989,7 +1028,7 @@ export async function generateHtmlPage(
   ogImage?: string,
   theme?: ResolvedThemeConfig,
 ): Promise<string> {
-  const mod = await import("@ox-content/napi");
+  const mod = await importNapiModule();
 
   // Convert TocEntry to the format expected by Rust
   const tocForRust = pageData.toc.map((entry) => ({

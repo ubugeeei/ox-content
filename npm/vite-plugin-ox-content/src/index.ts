@@ -31,6 +31,9 @@ import type { OxContentOptions, ResolvedOptions } from "./types";
 export type { OxContentOptions } from "./types";
 export type { LanguageRegistration } from "shiki";
 export type {
+  CodeAnnotationSyntax,
+  CodeAnnotationsOptions,
+  ResolvedCodeAnnotationsOptions,
   DocsOptions,
   ResolvedDocsOptions,
   DocEntry,
@@ -403,6 +406,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     highlight: options.highlight ?? false,
     highlightTheme: options.highlightTheme ?? "github-dark",
     highlightLangs: options.highlightLangs ?? [],
+    codeAnnotations: resolveCodeAnnotationsOptions(options.codeAnnotations),
     mermaid: options.mermaid ?? false,
     frontmatter: options.frontmatter ?? true,
     toc: options.toc ?? true,
@@ -414,6 +418,35 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     search: resolveSearchOptions(options.search),
     ogViewer: options.ogViewer ?? true,
     i18n: resolveI18nOptions(options.i18n),
+  };
+}
+
+function resolveCodeAnnotationsOptions(
+  options: OxContentOptions["codeAnnotations"],
+): ResolvedOptions["codeAnnotations"] {
+  if (!options) {
+    return {
+      enabled: false,
+      notation: "attribute",
+      metaKey: "annotate",
+      defaultLineNumbers: false,
+    };
+  }
+
+  if (options === true) {
+    return {
+      enabled: true,
+      notation: "attribute",
+      metaKey: "annotate",
+      defaultLineNumbers: false,
+    };
+  }
+
+  return {
+    enabled: true,
+    notation: options.notation ?? "attribute",
+    metaKey: options.metaKey ?? "annotate",
+    defaultLineNumbers: options.defaultLineNumbers ?? false,
   };
 }
 

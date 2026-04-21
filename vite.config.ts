@@ -38,6 +38,7 @@ export default defineConfig({
   },
   test: {
     passWithNoTests: true,
+    exclude: ["**/test/vrt/**"],
   },
   run: {
     cache: {
@@ -59,7 +60,19 @@ export default defineConfig({
       test: noopTask(["test:rust", "test:ts"]),
       "test:rust": task("cargo test --workspace"),
       "test:rust-verbose": uncachedTask("cargo test --workspace -- --nocapture"),
-      "test:ts": task("vp test"),
+      "test:ts": noopTask(["test:ts-unit", "test:vrt"]),
+      "test:ts-unit": task("vp exec --filter @ox-content/vite-plugin -- vp test src", {
+        dependsOn: ["build:napi"],
+      }),
+      "test:vrt": uncachedTask("vp exec --filter @ox-content/vite-plugin -- playwright test", {
+        dependsOn: ["build:napi"],
+      }),
+      "test:vrt:update": uncachedTask(
+        "vp exec --filter @ox-content/vite-plugin -- playwright test --update-snapshots",
+        {
+          dependsOn: ["build:napi"],
+        },
+      ),
 
       check: noopTask(["check:rust", "check:ts"]),
       "check:rust": task("cargo check --workspace"),
