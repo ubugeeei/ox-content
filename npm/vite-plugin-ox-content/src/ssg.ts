@@ -633,6 +633,39 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       }
     };
 
+    const parseScopedQuery = (query) => {
+      const scopes = [];
+      const terms = [];
+      for (const part of query.trim().split(/\s+/).filter(Boolean)) {
+        if (part.startsWith('@') && part.length > 1) {
+          scopes.push(part.slice(1).toLowerCase());
+        } else {
+          terms.push(part);
+        }
+      }
+      return { text: terms.join(' ').trim(), scopes: [...new Set(scopes)] };
+    };
+
+    const getScopesForDoc = (doc) => {
+      const source = (doc.id || doc.url || '').replace(/^\/+/, '').toLowerCase();
+      const segments = source.split('/').filter(Boolean);
+      if (segments.length <= 1) return [];
+
+      const scopes = [];
+      let current = '';
+      for (const segment of segments.slice(0, -1)) {
+        current = current ? current + '/' + segment : segment;
+        scopes.push(current);
+      }
+      return scopes;
+    };
+
+    const matchesScopes = (doc, scopes) => {
+      if (!scopes.length) return true;
+      const docScopes = new Set(getScopesForDoc(doc));
+      return scopes.some((scope) => docScopes.has(scope));
+    };
+
     // Tokenize query
     const tokenize = (text) => {
       const tokens = [];
@@ -655,26 +688,30 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
 
     // Perform search
     const performSearch = async (query) => {
-      if (!query.trim()) {
-        searchResults.innerHTML = '';
-        results = [];
-        return;
-      }
       await loadSearchIndex();
       if (!searchIndex) {
         searchResults.innerHTML = '<div class="search-empty">Search index not available</div>';
         return;
       }
 
-      const tokens = tokenize(query);
-      if (!tokens.length) {
+      const parsedQuery = parseScopedQuery(query);
+      if (!parsedQuery.text && parsedQuery.scopes.length === 0) {
         searchResults.innerHTML = '';
         results = [];
         return;
       }
 
+      const tokens = tokenize(parsedQuery.text);
       const k1 = 1.2, b = 0.75;
       const docScores = new Map();
+
+      if (!tokens.length) {
+        searchIndex.documents.forEach((doc, docIdx) => {
+          if (matchesScopes(doc, parsedQuery.scopes)) {
+            docScores.set(docIdx, { score: 0, matches: new Set() });
+          }
+        });
+      }
 
       for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
@@ -694,6 +731,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
           for (const posting of postings) {
             const doc = searchIndex.documents[posting.doc_idx];
             if (!doc) continue;
+            if (!matchesScopes(doc, parsedQuery.scopes)) continue;
             const boost = posting.field === 'Title' ? 10 : posting.field === 'Heading' ? 5 : 1;
             const tf = posting.tf;
             const docLen = doc.body.length;
@@ -712,6 +750,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       results = Array.from(docScores.entries())
         .map(([docIdx, data]) => {
           const doc = searchIndex.documents[docIdx];
+          const scopes = getScopesForDoc(doc);
           let snippet = '';
           if (doc.body) {
             const bodyLower = doc.body.toLowerCase();
@@ -720,15 +759,15 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
               const pos = bodyLower.indexOf(match);
               if (pos !== -1 && (firstPos === -1 || pos < firstPos)) firstPos = pos;
             }
-            const start = Math.max(0, firstPos - 50);
+            const start = firstPos === -1 ? 0 : Math.max(0, firstPos - 50);
             const end = Math.min(doc.body.length, start + 150);
             snippet = doc.body.slice(start, end);
             if (start > 0) snippet = '...' + snippet;
             if (end < doc.body.length) snippet += '...';
           }
-          return { ...doc, score: data.score, snippet };
+          return { ...doc, score: data.score, scopes, snippet };
         })
-        .sort((a, b) => b.score - a.score)
+        .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
         .slice(0, 10);
 
       selectedIndex = 0;
@@ -742,7 +781,7 @@ export const DEFAULT_HTML_TEMPLATE = `<!DOCTYPE html>
       }
       searchResults.innerHTML = results.map((r, i) =>
         '<a href="' + r.url + '" class="search-result' + (i === selectedIndex ? ' selected' : '') + '">' +
-        '<div class="search-result-title">' + r.title + '</div>' +
+        '<div class="search-result-title">' + r.title + (r.scopes?.length ? '<span class="search-result-scope">@' + r.scopes[0] + '</span>' : '') + '</div>' +
         (r.snippet ? '<div class="search-result-snippet">' + r.snippet + '</div>' : '') +
         '</a>'
       ).join('');

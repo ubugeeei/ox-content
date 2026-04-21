@@ -105,6 +105,8 @@ Generate table of contents.
 
 Source documentation generation options. Set to `false` to disable.
 
+Generated API pages now include a one-line overview for each symbol and expandable detail sections. A machine-readable `docs.json` payload is also emitted next to the Markdown files so custom viewers can build richer experiences without re-parsing source.
+
 ```ts
 oxContent({
   docs: {
@@ -183,6 +185,7 @@ oxContent({
 - **Multi-field Search**: Title, headings, body, and code are indexed with different weights
 - **Japanese/CJK Support**: Proper tokenization for CJK characters
 - **Prefix Matching**: Type-ahead suggestions for autocomplete
+- **Scoped Queries**: Prefix queries like `@api transform` to limit results by section
 - **Zero Dependencies**: No external search service required
 
 ### Disabling Search
@@ -202,6 +205,9 @@ import { search, searchOptions } from "virtual:ox-content/search";
 
 // Search the index
 const results = await search("query text", { limit: 5 });
+
+// Scope search to the API reference
+const apiResults = await search("@api transform", { limit: 5 });
 
 // Results include:
 // - id: document ID
