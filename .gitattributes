@@ -1,0 +1,2 @@
+# Exclude runnable examples from GitHub language statistics.
+/examples/** linguist-generated=true
