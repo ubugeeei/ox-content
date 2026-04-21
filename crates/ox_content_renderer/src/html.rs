@@ -454,12 +454,11 @@ fn split_code_block_language_token(raw: &str) -> (&str, &str) {
     for (index, ch) in raw.char_indices() {
         match ch {
             '{' | '[' => return (&raw[..index], &raw[index..]),
-            ':' => {
+            ':'
                 if raw[index..].starts_with(":line-numbers")
-                    || raw[index..].starts_with(":no-line-numbers")
-                {
-                    return (&raw[..index], &raw[index..]);
-                }
+                    || raw[index..].starts_with(":no-line-numbers") =>
+            {
+                return (&raw[..index], &raw[index..]);
             }
             _ => {}
         }

@@ -83,6 +83,9 @@ jobs:
       - name: Build NAPI
         run: vp run build:napi
 
+      - name: Install Playwright browsers
+        run: pnpm --dir npm/vite-plugin-ox-content exec playwright install --with-deps chromium
+
       - name: Run tests
         run: vp run test:ts
 
