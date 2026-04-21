@@ -43,7 +43,7 @@ crates/ox_content_wasm/pkg/
 
 # Documentation
 /docs/api
-/docs/content/api/.ox-content-docs-manifest.json
+**/.ox-content-docs-manifest.json
 
 # Environment
 .env

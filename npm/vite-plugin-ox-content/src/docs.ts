@@ -51,10 +51,86 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import type { ResolvedDocsOptions, ExtractedDocs, DocEntry, ParamDoc } from "./types";
+import type {
+  ResolvedDocsOptions,
+  ExtractedDocs,
+  DocEntry,
+  ParamDoc,
+  GeneratedDocsData,
+} from "./types";
 import { generateNavMetadata, generateNavCode } from "./nav-generator";
 
 const DOCS_MANIFEST_FILE = ".ox-content-docs-manifest.json";
+const DOCS_DATA_FILE = "docs.json";
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function entryAnchor(name: string): string {
+  return name.toLowerCase();
+}
+
+function cleanSummaryText(text: string | undefined, maxLength: number = 120): string {
+  if (!text) {
+    return "";
+  }
+
+  const collapsed = text.replace(/\s+/g, " ").trim();
+  if (collapsed.length <= maxLength) {
+    return collapsed;
+  }
+
+  return `${collapsed.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
+function renderInlineHtml(text: string): string {
+  let html = "";
+  let lastIndex = 0;
+  const tokenPattern = /`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenPattern.exec(text)) !== null) {
+    html += escapeHtml(text.slice(lastIndex, match.index));
+
+    if (match[1]) {
+      html += `<code>${escapeHtml(match[1])}</code>`;
+    } else if (match[2] && match[3]) {
+      html += `<a href="${escapeHtml(match[3])}">${escapeHtml(match[2])}</a>`;
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  html += escapeHtml(text.slice(lastIndex));
+  return html.replace(/\n/g, "<br>");
+}
+
+function renderParagraphsHtml(text: string): string {
+  return text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${renderInlineHtml(paragraph)}</p>`)
+    .join("\n");
+}
+
+function renderCodeBlockHtml(code: string, language: string = "typescript"): string {
+  return `<pre><code class="language-${language}">${escapeHtml(code)}</code></pre>`;
+}
+
+function buildDocsData(docs: ExtractedDocs[]): GeneratedDocsData {
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    modules: docs,
+  };
+}
 /**
  * Regex pattern for matching JSDoc comment blocks.
  *
@@ -646,12 +722,113 @@ function generateFileMarkdown(
     }
   }
 
-  // Pass symbol map for cross-file link resolution
+  md += `> ${doc.entries.length} documented symbol${doc.entries.length === 1 ? "" : "s"}. `;
+  md += "Skim the one-line surface first, then expand the accordions for details.\n\n";
+
+  md += "## Overview\n\n";
+  for (const entry of doc.entries) {
+    md += renderOverviewLine(entry, `#${entryAnchor(entry.name)}`);
+  }
+  md += "\n## Reference\n\n";
+
   for (const entry of doc.entries) {
     md += generateEntryMarkdown(entry, options, currentFileName, symbolMap);
   }
 
   return md;
+}
+
+function normalizeSignature(signature: string | undefined): string | undefined {
+  if (!signature) {
+    return undefined;
+  }
+
+  return signature
+    .replace(/\s+/g, " ")
+    .replace(/^export\s+/, "")
+    .replace(/^async\s+function\s+/, "")
+    .replace(/^function\s+/, "")
+    .replace(/^class\s+/, "")
+    .trim();
+}
+
+function renderOverviewLine(entry: DocEntry, href: string): string {
+  const signature = normalizeSignature(entry.signature);
+  const summary = cleanSummaryText(entry.description, 88);
+  const parts = [`- [\`${entry.name}\`](${href})`, `\`${entry.kind}\``];
+
+  if (signature) {
+    parts.push(`\`${signature}\``);
+  }
+
+  if (summary) {
+    parts.push(`- ${summary}`);
+  }
+
+  return `${parts.join(" ")}\n`;
+}
+
+function renderOverviewHtmlItem(entry: DocEntry, href: string): string {
+  const signature = normalizeSignature(entry.signature);
+  const summary = cleanSummaryText(entry.description, 88);
+  const fragments = [
+    `<a href="${escapeHtml(href)}"><code>${escapeHtml(entry.name)}</code></a>`,
+    `<span class="ox-api-module__kind">${escapeHtml(entry.kind)}</span>`,
+  ];
+
+  if (signature) {
+    fragments.push(`<code>${escapeHtml(signature)}</code>`);
+  }
+
+  if (summary) {
+    fragments.push(`<span>${renderInlineHtml(summary)}</span>`);
+  }
+
+  return `<li>${fragments.join("")}</li>`;
+}
+
+function renderParamsTableHtml(params: ParamDoc[]): string {
+  const rows = params
+    .map((param) => {
+      const flags = [
+        param.optional ? "optional" : "",
+        param.default ? `default: ${param.default}` : "",
+      ].filter(Boolean);
+      const description = [param.description, flags.join(" · ")].filter(Boolean).join(" — ");
+
+      return `<tr>
+  <td><code>${escapeHtml(param.name)}</code></td>
+  <td><code>${escapeHtml(param.type)}</code></td>
+  <td>${renderInlineHtml(description)}</td>
+</tr>`;
+    })
+    .join("\n");
+
+  return `<div class="ox-api-entry__section">
+<h4>Parameters</h4>
+<table>
+  <thead>
+    <tr><th>Name</th><th>Type</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+${rows}
+  </tbody>
+</table>
+</div>`;
+}
+
+function renderTagListHtml(tags: Record<string, string>): string {
+  const items = Object.entries(tags)
+    .map(
+      ([tag, value]) =>
+        `<li><span class="ox-api-entry__tag-name">@${escapeHtml(tag)}</span><span>${renderInlineHtml(value)}</span></li>`,
+    )
+    .join("");
+
+  return `<div class="ox-api-entry__section">
+<h4>Tags</h4>
+<ul class="ox-api-entry__tags">${items}</ul>
+</div>`;
 }
 
 function generateEntryMarkdown(
@@ -660,66 +837,88 @@ function generateEntryMarkdown(
   currentFileName?: string,
   symbolMap?: Map<string, SymbolLocation>,
 ): string {
-  let md = `## ${entry.name}\n\n`;
+  const processedDescription =
+    entry.description && currentFileName && symbolMap
+      ? convertSymbolLinks(entry.description, currentFileName, symbolMap)
+      : entry.description;
+  const summarySignature = normalizeSignature(entry.signature);
+  const sourceHref = options?.githubUrl
+    ? generateSourceHref(entry.file, options.githubUrl, entry.line)
+    : undefined;
 
-  md += `\`${entry.kind}\`\n\n`;
+  let body = "";
 
-  if (entry.description) {
-    // Convert symbol links [SymbolName] to markdown links
-    const processedDescription =
-      currentFileName && symbolMap
-        ? convertSymbolLinks(entry.description, currentFileName, symbolMap)
-        : entry.description;
-    md += `${processedDescription}\n\n`;
+  if (processedDescription) {
+    body += renderParagraphsHtml(processedDescription) + "\n";
   }
 
-  // Add source link if githubUrl is provided
-  if (options?.githubUrl) {
-    const sourceLink = generateSourceLink(entry.file, options.githubUrl, entry.line);
-    if (sourceLink) {
-      md += sourceLink + "\n\n";
-    }
+  if (sourceHref) {
+    body += `<p class="ox-api-entry__source"><a href="${escapeHtml(sourceHref)}">View source</a></p>\n`;
   }
 
-  // Add function signature if available
-  if (entry.signature && entry.kind === "function") {
-    md += "```typescript\n";
-    md += entry.signature + "\n";
-    md += "```\n\n";
+  if (entry.signature) {
+    body += `<div class="ox-api-entry__section">\n<h4>Signature</h4>\n${renderCodeBlockHtml(
+      entry.signature,
+    )}\n</div>\n`;
   }
 
   if (entry.params && entry.params.length > 0) {
-    md += "### Parameters\n\n";
-    md += "| Name | Type | Description |\n";
-    md += "|------|------|-------------|\n";
-    for (const param of entry.params) {
-      md += `| \`${param.name}\` | \`${param.type}\` | ${param.description} |\n`;
-    }
-    md += "\n";
+    body += renderParamsTableHtml(entry.params) + "\n";
   }
 
   if (entry.returns) {
-    md += "### Returns\n\n";
-    md += `\`${entry.returns.type}\` - ${entry.returns.description}\n\n`;
+    body += `<div class="ox-api-entry__section">
+<h4>Returns</h4>
+<p><code>${escapeHtml(entry.returns.type)}</code>${entry.returns.description ? ` — ${renderInlineHtml(entry.returns.description)}` : ""}</p>
+</div>\n`;
   }
 
   if (entry.examples && entry.examples.length > 0) {
-    md += "### Examples\n\n";
-    for (const example of entry.examples) {
-      md += "```ts\n";
-      md += example.replace(/^```\w*\n?/, "").replace(/\n?```$/, "");
-      md += "\n```\n\n";
-    }
+    const examplesHtml = entry.examples
+      .map((example) => example.replace(/^```\w*\n?/, "").replace(/\n?```$/, ""))
+      .map((example) => renderCodeBlockHtml(example, "ts"))
+      .join("\n");
+
+    body += `<div class="ox-api-entry__section">\n<h4>Examples</h4>\n${examplesHtml}\n</div>\n`;
   }
 
-  md += "---\n\n";
+  if (entry.tags && Object.keys(entry.tags).length > 0) {
+    body += renderTagListHtml(entry.tags) + "\n";
+  }
 
-  return md;
+  const summaryDescription = cleanSummaryText(processedDescription, summarySignature ? 80 : 120);
+  const summaryParts = [
+    `<span class="ox-api-entry__kind">${escapeHtml(entry.kind)}</span>`,
+    `<code class="ox-api-entry__name">${escapeHtml(entry.name)}</code>`,
+  ];
+
+  if (summarySignature) {
+    summaryParts.push(
+      `<code class="ox-api-entry__signature">${escapeHtml(summarySignature)}</code>`,
+    );
+  }
+
+  if (summaryDescription) {
+    summaryParts.push(
+      `<span class="ox-api-entry__description">${renderInlineHtml(summaryDescription)}</span>`,
+    );
+  }
+
+  return `<details id="${entryAnchor(entry.name)}" class="ox-api-entry">
+  <summary>${summaryParts.join("")}</summary>
+  <div class="ox-api-entry__body">
+${body.trim()}
+  </div>
+</details>
+
+`;
 }
 
 function generateIndex(docs: ExtractedDocs[], docToFile?: Map<ExtractedDocs, string>): string {
   let md = "# API Documentation\n\n";
   md += "Generated by [Ox Content](https://github.com/ubugeeei/ox-content)\n\n";
+  md +=
+    "> Use search scopes like `@api transform` to limit results to the generated API reference.\n\n";
 
   md += "## Modules\n\n";
 
@@ -733,14 +932,25 @@ function generateIndex(docs: ExtractedDocs[], docToFile?: Map<ExtractedDocs, str
       fileName = "index-module";
     }
 
-    md += `### [${displayName}](./${fileName}.md)\n\n`;
+    const countLabel = `${doc.entries.length} symbol${doc.entries.length === 1 ? "" : "s"}`;
+    md += `<details class="ox-api-module">
+  <summary>
+    <span class="ox-api-module__title"><a href="./${fileName}.md">${escapeHtml(displayName)}</a></span>
+    <span class="ox-api-module__count">${countLabel}</span>
+  </summary>
+  <div class="ox-api-module__body">
+    <ul class="ox-api-module__list">
+`;
 
     for (const entry of doc.entries) {
-      const desc = entry.description?.slice(0, 80) || "";
-      const ellipsis = entry.description && entry.description.length > 80 ? "..." : "";
-      md += `- \`${entry.kind}\` **${entry.name}** - ${desc}${ellipsis}\n`;
+      md += `      ${renderOverviewHtmlItem(entry, `./${fileName}.md#${entryAnchor(entry.name)}`)}\n`;
     }
-    md += "\n";
+
+    md += `    </ul>
+  </div>
+</details>
+
+`;
   }
 
   return md;
@@ -754,6 +964,13 @@ function generateCategoryMarkdown(
 ): string {
   const categoryFileName = `${kind}s`;
   let md = `# ${kind.charAt(0).toUpperCase() + kind.slice(1)}s\n\n`;
+  md += `> ${entries.length} documented ${kind}${entries.length === 1 ? "" : "s"} collected across modules.\n\n`;
+
+  md += "## Overview\n\n";
+  for (const entry of entries) {
+    md += renderOverviewLine(entry, `#${entryAnchor(entry.name)}`);
+  }
+  md += "\n## Reference\n\n";
 
   for (const entry of entries) {
     md += generateEntryMarkdown(entry, options, categoryFileName, symbolMap);
@@ -769,10 +986,10 @@ function generateCategoryIndex(byKind: Map<string, DocEntry[]>): string {
   for (const [kind, entries] of byKind) {
     const kindTitle = kind.charAt(0).toUpperCase() + kind.slice(1) + "s";
     md += `## [${kindTitle}](./${kind}s.md)\n\n`;
+    md += `> ${entries.length} item${entries.length === 1 ? "" : "s"}.\n\n`;
 
     for (const entry of entries) {
-      const desc = entry.description?.slice(0, 60) || "";
-      md += `- **${entry.name}** - ${desc}...\n`;
+      md += renderOverviewLine(entry, `./${kind}s.md#${entryAnchor(entry.name)}`);
     }
     md += "\n";
   }
@@ -874,6 +1091,9 @@ export async function writeDocs(
   if (extractedDocs && options?.generateNav && options.groupBy === "file") {
     generatedFiles.add("nav.ts");
   }
+  if (extractedDocs) {
+    generatedFiles.add(DOCS_DATA_FILE);
+  }
 
   const manifestPath = path.join(outDir, DOCS_MANIFEST_FILE);
   let previousFiles: string[] = [];
@@ -905,6 +1125,14 @@ export async function writeDocs(
     await fs.promises.writeFile(navFilePath, navCode, "utf-8");
   }
 
+  if (extractedDocs) {
+    await fs.promises.writeFile(
+      path.join(outDir, DOCS_DATA_FILE),
+      JSON.stringify(buildDocsData(extractedDocs), null, 2),
+      "utf-8",
+    );
+  }
+
   await fs.promises.writeFile(
     manifestPath,
     JSON.stringify([...generatedFiles].sort(), null, 2),
@@ -921,17 +1149,19 @@ export async function writeDocs(
  * @param filePath - Full path to the source file
  * @param githubUrl - Base GitHub repository URL
  * @param lineNumber - Optional line number to link to
- * @returns Markdown link to source code
+ * @returns Absolute GitHub URL to source code
  */
-function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: number): string {
+function generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number): string {
   // Convert absolute path to relative path from repository root
   // Match common project directory patterns: npm/, packages/, crates/, src/
   const relativePath = filePath.replace(/^.*?\/(npm|packages|crates|src)\//, "$1/");
 
   const fragment = lineNumber ? `#L${lineNumber}` : "";
-  const link = `${githubUrl}/blob/main/${relativePath}${fragment}`;
+  return `${githubUrl}/blob/main/${relativePath}${fragment}`;
+}
 
-  return `**[Source](${link})**`;
+function generateSourceLink(filePath: string, githubUrl: string, lineNumber?: number): string {
+  return `**[Source](${generateSourceHref(filePath, githubUrl, lineNumber)})**`;
 }
 
 export function resolveDocsOptions(

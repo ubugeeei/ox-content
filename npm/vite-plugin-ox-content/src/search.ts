@@ -7,7 +7,12 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { importNapiModule } from "./napi";
-import type { SearchOptions, ResolvedSearchOptions, SearchDocument } from "./types";
+import type {
+  SearchOptions,
+  ResolvedSearchOptions,
+  SearchDocument,
+  ScopedSearchQuery,
+} from "./types";
 
 // Import Rust bindings
 let oxContent: typeof import("@ox-content/napi") | null = null;
@@ -22,6 +27,66 @@ async function getOxContent() {
     }
   }
   return oxContent;
+}
+
+/**
+ * Splits a raw query into free-text terms and `@scope` prefixes.
+ */
+export function parseScopedSearchQuery(query: string): ScopedSearchQuery {
+  const scopes: string[] = [];
+  const terms: string[] = [];
+
+  for (const part of query.trim().split(/\s+/).filter(Boolean)) {
+    if (part.startsWith("@") && part.length > 1) {
+      scopes.push(part.slice(1).toLowerCase());
+    } else {
+      terms.push(part);
+    }
+  }
+
+  return {
+    text: terms.join(" ").trim(),
+    scopes: [...new Set(scopes)],
+  };
+}
+
+/**
+ * Derives hierarchical search scopes from a document id or URL.
+ *
+ * For example, `api/math/index` yields `["api", "api/math"]`.
+ */
+export function getSearchDocumentScopes(doc: Pick<SearchDocument, "id" | "url">): string[] {
+  const source = (doc.id || doc.url || "").replace(/^\/+/, "").toLowerCase();
+  const segments = source.split("/").filter(Boolean);
+
+  if (segments.length <= 1) {
+    return [];
+  }
+
+  const scopes: string[] = [];
+  let current = "";
+
+  for (const segment of segments.slice(0, -1)) {
+    current = current ? `${current}/${segment}` : segment;
+    scopes.push(current);
+  }
+
+  return scopes;
+}
+
+/**
+ * Returns true when a search document belongs to at least one requested scope.
+ */
+export function matchesSearchScopes(
+  doc: Pick<SearchDocument, "id" | "url">,
+  scopes: string[],
+): boolean {
+  if (scopes.length === 0) {
+    return true;
+  }
+
+  const docScopes = new Set(getSearchDocumentScopes(doc));
+  return scopes.some((scope) => docScopes.has(scope.toLowerCase()));
 }
 
 /**
@@ -160,6 +225,51 @@ const searchOptions = ${JSON.stringify(options)};
 let searchIndex = null;
 let indexPromise = null;
 
+function parseScopedQuery(query) {
+  const scopes = [];
+  const terms = [];
+
+  for (const part of query.trim().split(/\\s+/).filter(Boolean)) {
+    if (part.startsWith('@') && part.length > 1) {
+      scopes.push(part.slice(1).toLowerCase());
+    } else {
+      terms.push(part);
+    }
+  }
+
+  return {
+    text: terms.join(' ').trim(),
+    scopes: [...new Set(scopes)],
+  };
+}
+
+function getScopesForDoc(doc) {
+  const source = (doc.id || doc.url || '').replace(/^\\/+/, '').toLowerCase();
+  const segments = source.split('/').filter(Boolean);
+
+  if (segments.length <= 1) {
+    return [];
+  }
+
+  const scopes = [];
+  let current = '';
+  for (const segment of segments.slice(0, -1)) {
+    current = current ? current + '/' + segment : segment;
+    scopes.push(current);
+  }
+
+  return scopes;
+}
+
+function matchesScopes(doc, scopes) {
+  if (!scopes.length) {
+    return true;
+  }
+
+  const docScopes = new Set(getScopesForDoc(doc));
+  return scopes.some(scope => docScopes.has(scope));
+}
+
 // Tokenizer for queries
 function tokenizeQuery(text) {
   const tokens = [];
@@ -227,21 +337,31 @@ async function loadIndex() {
 export async function search(query, options = {}) {
   const index = await loadIndex();
 
-  if (!index || !query.trim()) {
+  if (!index) {
+    return [];
+  }
+
+  const parsedQuery = parseScopedQuery(query);
+
+  if (!parsedQuery.text && parsedQuery.scopes.length === 0) {
     return [];
   }
 
   const limit = options.limit ?? searchOptions.limit;
   const prefix = options.prefix ?? searchOptions.prefix;
-  const tokens = tokenizeQuery(query);
-
-  if (tokens.length === 0) {
-    return [];
-  }
+  const tokens = tokenizeQuery(parsedQuery.text);
 
   const k1 = 1.2;
   const b = 0.75;
   const docScores = new Map();
+
+  if (tokens.length === 0) {
+    index.documents.forEach((doc, docIdx) => {
+      if (matchesScopes(doc, parsedQuery.scopes)) {
+        docScores.set(docIdx, { score: 0, matches: new Set() });
+      }
+    });
+  }
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
@@ -263,6 +383,7 @@ export async function search(query, options = {}) {
       for (const posting of postings) {
         const doc = index.documents[posting.doc_idx];
         if (!doc) continue;
+        if (!matchesScopes(doc, parsedQuery.scopes)) continue;
 
         const docLen = doc.body.length;
         const tf = posting.tf;
@@ -285,6 +406,7 @@ export async function search(query, options = {}) {
     .map(([docIdx, data]) => {
       const doc = index.documents[docIdx];
       const matches = Array.from(data.matches);
+      const scopes = getScopesForDoc(doc);
 
       // Generate snippet
       let snippet = '';
@@ -298,7 +420,7 @@ export async function search(query, options = {}) {
           }
         }
 
-        const start = Math.max(0, firstPos - 50);
+        const start = firstPos === -1 ? 0 : Math.max(0, firstPos - 50);
         const end = Math.min(doc.body.length, start + 150);
         snippet = doc.body.slice(start, end);
         if (start > 0) snippet = '...' + snippet;
@@ -312,9 +434,10 @@ export async function search(query, options = {}) {
         score: data.score,
         matches,
         snippet,
+        scopes,
       };
     })
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
     .slice(0, limit);
 
   return results;

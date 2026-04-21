@@ -699,6 +699,15 @@ export interface ExtractedDocs {
 }
 
 /**
+ * Machine-readable payload emitted alongside generated docs.
+ */
+export interface GeneratedDocsData {
+  version: 1;
+  generatedAt: string;
+  modules: ExtractedDocs[];
+}
+
+/**
  * Navigation item for sidebar navigation.
  */
 export interface NavItem {
@@ -790,6 +799,15 @@ export interface SearchResult {
   score: number;
   matches: string[];
   snippet: string;
+  scopes?: string[];
+}
+
+/**
+ * Parsed search query with optional scope prefixes.
+ */
+export interface ScopedSearchQuery {
+  text: string;
+  scopes: string[];
 }
 
 // ============================================
