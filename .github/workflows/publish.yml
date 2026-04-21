@@ -142,16 +142,36 @@ jobs:
 
       - name: Publish binding sub-packages
         run: |
+          publish_if_needed() {
+            local pkg_name pkg_version
+            pkg_name=$(node -p "require('./package.json').name")
+            pkg_version=$(node -p "require('./package.json').version")
+
+            if npm view "${pkg_name}@${pkg_version}" version >/dev/null 2>&1; then
+              echo "Skipping ${pkg_name}@${pkg_version} (already published)"
+              return 0
+            fi
+
+            npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+          }
+
           for pkg in binding-packages/*/; do
             if [ -f "$pkg/package.json" ]; then
               echo "Publishing $(basename $pkg)..."
-              (cd "$pkg" && npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }})
+              (cd "$pkg" && publish_if_needed)
             fi
           done
 
       - name: Publish @ox-content/napi
         working-directory: crates/ox_content_napi
-        run: npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
   publish-packages:
     name: Publish npm packages
@@ -205,37 +225,73 @@ jobs:
       - name: Publish @ox-content/islands
         working-directory: npm/ox-content-islands
         run: |
-          TARBALL=$(pnpm pack --pack-destination /tmp | tail -1)
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          TARBALL=$(vp exec -- pnpm pack --pack-destination /tmp | tail -1)
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin
         working-directory: npm/vite-plugin-ox-content
         run: |
-          TARBALL=$(pnpm pack --pack-destination /tmp | tail -1)
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          TARBALL=$(vp exec -- pnpm pack --pack-destination /tmp | tail -1)
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/unplugin
         working-directory: npm/unplugin-ox-content
         run: |
-          TARBALL=$(pnpm pack --pack-destination /tmp | tail -1)
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          TARBALL=$(vp exec -- pnpm pack --pack-destination /tmp | tail -1)
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin-vue
         working-directory: npm/vite-plugin-ox-content-vue
         run: |
-          TARBALL=$(pnpm pack --pack-destination /tmp | tail -1)
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          TARBALL=$(vp exec -- pnpm pack --pack-destination /tmp | tail -1)
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin-react
         working-directory: npm/vite-plugin-ox-content-react
         run: |
-          TARBALL=$(pnpm pack --pack-destination /tmp | tail -1)
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          TARBALL=$(vp exec -- pnpm pack --pack-destination /tmp | tail -1)
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/vite-plugin-svelte
         working-directory: npm/vite-plugin-ox-content-svelte
         run: |
-          TARBALL=$(pnpm pack --pack-destination /tmp | tail -1)
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          TARBALL=$(vp exec -- pnpm pack --pack-destination /tmp | tail -1)
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
   publish-crates:
