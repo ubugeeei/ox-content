@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { generateHtmlPage } from "../../src/ssg";
 import { transformMarkdown } from "../../src/transform";
@@ -56,7 +57,16 @@ function createResolvedOptions(): ResolvedOptions {
   };
 }
 
+async function readFontDataUrl(fileName: string): Promise<string> {
+  const font = await readFile(new URL(`./assets/${fileName}`, import.meta.url));
+  return `data:font/woff2;base64,${font.toString("base64")}`;
+}
+
 test("renders VitePress-style code highlighting", async ({ page }) => {
+  const [sansFont, monoFont] = await Promise.all([
+    readFontDataUrl("KaTeX_SansSerif-Regular.woff2"),
+    readFontDataUrl("KaTeX_Typewriter-Regular.woff2"),
+  ]);
   const markdown = `# VitePress Style
 
 ## Fence Metadata
@@ -100,9 +110,32 @@ throw new Error("boom") // [!code error]
   );
 
   await page.setContent(html, { waitUntil: "load" });
+  await page.addStyleTag({
+    content: `
+      @font-face {
+        font-family: "OxContentVrtSans";
+        src: url("${sansFont}") format("woff2");
+        font-style: normal;
+        font-weight: 400;
+      }
+
+      @font-face {
+        font-family: "OxContentVrtMono";
+        src: url("${monoFont}") format("woff2");
+        font-style: normal;
+        font-weight: 400;
+      }
+
+      :root {
+        --octc-font-sans: "OxContentVrtSans", sans-serif;
+        --octc-font-mono: "OxContentVrtMono", monospace;
+      }
+    `,
+  });
   await page.evaluate(() => {
     document.documentElement.setAttribute("data-theme", "dark");
   });
+  await page.waitForFunction(() => document.fonts.status === "loaded");
   await page.locator(".content pre").last().waitFor();
 
   await expect(page.locator(".content")).toHaveScreenshot("vitepress-code-highlighting.png", {
