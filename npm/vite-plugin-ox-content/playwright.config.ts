@@ -6,6 +6,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: "line",
+  expect: {
+    toHaveScreenshot: {
+      pathTemplate: "{testDir}/{testFileName}-snapshots/{arg}{ext}",
+    },
+  },
   use: {
     headless: true,
     viewport: { width: 1280, height: 1600 },
