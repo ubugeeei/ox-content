@@ -128,13 +128,14 @@ The script now compares against `md4w (md4c)` by default and will include `Bun.m
 ## Development
 
 ```bash
+nix develop           # Enter the pinned dev shell
 vp install             # Install JS dependencies through Vite+
 vp run build:napi      # Build NAPI bindings
 vp run build:npm       # Build npm packages
 vp run test            # Run tests
 ```
 
-The workspace task graph is defined in `vite.config.ts`, and Node.js is pinned in `.node-version`.
+The dev shell is pinned in `flake.nix`, the workspace task graph lives in `vite.config.ts`, and `.node-version` is kept for CI / non-Nix Node setup.
 
 See the [documentation](https://ubugeeei.github.io/ox-content/) for more details.
 
