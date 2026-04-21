@@ -39,6 +39,8 @@ export async function transformMarkdown(
     tables: options.tables,
     strikethrough: options.strikethrough,
     toc_max_depth: options.tocMaxDepth,
+    code_annotations: options.codeAnnotations.enabled,
+    code_annotation_meta_key: options.codeAnnotations.metaKey,
   });
 
   if (result.errors.length > 0) {

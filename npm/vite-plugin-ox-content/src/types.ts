@@ -234,6 +234,19 @@ export interface OxContentOptions {
   highlightLangs?: LanguageRegistration[];
 
   /**
+   * Opt-in code block annotations for fenced code blocks.
+   *
+   * Supports the configurable attribute syntax by default, and can also opt
+   * into VitePress-compatible fence metadata and inline notation.
+   *
+   * Example:
+   * ` ```ts annotate="highlight:1,3-4;warning:6;error:7" `
+   *
+   * @default false
+   */
+  codeAnnotations?: boolean | CodeAnnotationsOptions;
+
+  /**
    * Enable mermaid diagram rendering.
    * @default false
    */
@@ -318,6 +331,7 @@ export interface ResolvedOptions {
   highlight: boolean;
   highlightTheme: string;
   highlightLangs: LanguageRegistration[];
+  codeAnnotations: ResolvedCodeAnnotationsOptions;
   mermaid: boolean;
   frontmatter: boolean;
   toc: boolean;
@@ -329,6 +343,61 @@ export interface ResolvedOptions {
   search: ResolvedSearchOptions;
   ogViewer: boolean;
   i18n: ResolvedI18nOptions | false;
+}
+
+/**
+ * Supported line annotation kinds for code blocks.
+ */
+export type CodeAnnotationKind = "highlight" | "warning" | "error";
+
+/**
+ * Supported code annotation syntaxes.
+ */
+export type CodeAnnotationSyntax = "attribute" | "vitepress" | "both";
+
+/**
+ * Opt-in code annotation configuration.
+ */
+export interface CodeAnnotationsOptions {
+  /**
+   * Annotation syntax to enable.
+   *
+   * - `attribute`: custom attribute syntax like `annotate="highlight:1,3-4"`
+   * - `vitepress`: VitePress-compatible syntax like `{1,3-4}` and `[!code warning]`
+   * - `both`: enables both syntaxes
+   *
+   * @default "attribute"
+   */
+  notation?: CodeAnnotationSyntax;
+
+  /**
+   * Attribute name read from the code fence meta string.
+   *
+   * Example: `annotate="highlight:1,3-4;warning:6"`
+   *
+   * @default "annotate"
+   */
+  metaKey?: string;
+
+  /**
+   * Enable line numbers for all code blocks by default.
+   *
+   * In `vitepress` or `both` mode, fenced code blocks can override this with
+   * `:line-numbers`, `:line-numbers=<start>`, or `:no-line-numbers`.
+   *
+   * @default false
+   */
+  defaultLineNumbers?: boolean;
+}
+
+/**
+ * Resolved code annotation configuration.
+ */
+export interface ResolvedCodeAnnotationsOptions {
+  enabled: boolean;
+  notation: CodeAnnotationSyntax;
+  metaKey: string;
+  defaultLineNumbers: boolean;
 }
 
 /**

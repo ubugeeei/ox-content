@@ -91,6 +91,72 @@ oxContent({
 
 Enable GitHub Flavored Markdown extensions.
 
+### codeAnnotations
+
+- Type: `boolean | CodeAnnotationsOptions`
+- Default: `false`
+
+Enables opt-in code block annotations for fenced code blocks.
+
+By default, Ox Content uses the configurable attribute syntax. You can also opt into VitePress-compatible fence metadata and inline notation, or enable both at the same time.
+
+```ts
+oxContent({
+  highlight: true,
+  codeAnnotations: {
+    notation: "both",
+  },
+});
+```
+
+Attribute syntax with the default `metaKey`:
+
+````md
+```ts annotate="highlight:1,6;warning:2;error:3"
+export function loadUser(input: string) {
+  if (!input) console.warn("missing payload");
+  throw new Error("missing id");
+}
+
+const user = loadUser(payload);
+console.log(user);
+```
+````
+
+VitePress-compatible syntax:
+
+````md
+```ts:line-numbers=10 {1,4} [config.ts]
+const user = loadUser(payload);
+console.warn("Deprecated") // [!code warning]
+throw new Error("boom") // [!code error]
+```
+````
+
+Rendered example:
+
+```ts annotate="highlight:1,6;warning:2;error:3"
+export function loadUser(input: string) {
+  if (!input) console.warn("missing payload");
+  throw new Error("missing id");
+}
+
+const user = loadUser(payload);
+console.log(user);
+```
+
+You can also customize the attribute name:
+
+```ts
+oxContent({
+  codeAnnotations: {
+    metaKey: "markers",
+  },
+});
+```
+
+See the [Code Annotations example](../examples/code-annotations.md) for a rendered example.
+
 ### toc
 
 - Type: `boolean`

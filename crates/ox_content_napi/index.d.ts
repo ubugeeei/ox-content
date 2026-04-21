@@ -444,6 +444,14 @@ export interface JsTransformOptions {
   baseUrl?: string;
   /** Source file path for relative link resolution. */
   sourcePath?: string;
+  /** Enable line annotations for code blocks using fence meta. */
+  codeAnnotations?: boolean;
+  /** Fence meta key used to read code annotations. */
+  codeAnnotationMetaKey?: string;
+  /** Code annotation syntax mode. */
+  codeAnnotationSyntax?: string;
+  /** Enable line numbers for all code blocks by default. */
+  codeAnnotationDefaultLineNumbers?: boolean;
 }
 
 /**
@@ -461,6 +469,12 @@ export declare function loadDictionaries(dir: string): I18NLoadResult;
  * Supports both JSON and YAML dictionary files.
  */
 export declare function loadDictionariesFlat(dir: string): Record<string, Record<string, string>>;
+
+/** Restores code block metadata after JavaScript-side syntax highlighting. */
+export declare function mergeHighlightedCodeBlocks(
+  originalHtml: string,
+  highlightedHtml: string,
+): string;
 
 /** Mermaid transform result. */
 export interface MermaidTransformResult {

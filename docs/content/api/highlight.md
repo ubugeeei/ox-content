@@ -39,7 +39,7 @@ Rehype plugin for syntax highlighting with Shiki.
 
 Extract text content from a hast node.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L128)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L143)**
 
 ```typescript
 function getTextContent(node: Element | Root): string;
@@ -57,7 +57,7 @@ function getTextContent(node: Element | Root): string;
 
 Apply syntax highlighting to HTML using Shiki.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L147)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/highlight.ts#L239)**
 
 ```typescript
 export async function highlightCode(

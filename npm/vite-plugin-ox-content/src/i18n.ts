@@ -11,6 +11,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import type { Plugin, ViteDevServer } from "vite";
+import { importNapiModule } from "./napi";
 import type { I18nOptions, ResolvedI18nOptions, LocaleConfig, ResolvedOptions } from "./types";
 
 /**
@@ -85,8 +86,7 @@ export function createI18nPlugin(resolvedOptions: ResolvedOptions): Plugin {
       }
 
       try {
-        const { loadDictionaries, checkI18n, extractTranslationKeys } =
-          await import("@ox-content/napi");
+        const { loadDictionaries, checkI18n, extractTranslationKeys } = await importNapiModule();
 
         // Load and validate dictionaries
         const loadResult = loadDictionaries(dictDir);

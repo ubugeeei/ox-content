@@ -68,7 +68,7 @@ If NAPI bindings are not available (not built, wrong architecture, etc.),
 this function returns `null`. The caller should handle this gracefully
 or provide fallback behavior.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L208)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L220)**
 
 ```typescript
 async function loadNapiBindings(): Promise<NapiBindings | null>;
@@ -99,7 +99,7 @@ const result = napi.transform(content, { gfm: true });
 
 SSG-specific transform options.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L351)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L363)**
 
 ---
 
@@ -110,7 +110,7 @@ SSG-specific transform options.
 Parses YAML frontmatter from Markdown content.
 Uses proper YAML parser for full nested object support.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L434)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L448)**
 
 ```typescript
 function parseFrontmatter(source: string):
@@ -124,7 +124,7 @@ function parseFrontmatter(source: string):
 
 Builds nested TOC tree from flat list.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L467)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L481)**
 
 ```typescript
 function buildTocTree(entries: TocEntry[]): TocEntry[];
@@ -142,7 +142,7 @@ function buildTocTree(entries: TocEntry[]): TocEntry[];
 
 Generates the JavaScript module code.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L492)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L506)**
 
 ---
 
@@ -153,7 +153,7 @@ Generates the JavaScript module code.
 Extracts imports from Markdown content.
 Supports importing components for interactive islands.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L546)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L560)**
 
 ```typescript
 export function extractImports(content: string): string[];
@@ -176,7 +176,7 @@ or converted to PNG/JPEG for broader compatibility.
 In the future, custom JS templates can be provided to override
 the default Rust-based template.
 
-**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L563)**
+**[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L577)**
 
 ```typescript
 export async function generateOgImageSvg(
