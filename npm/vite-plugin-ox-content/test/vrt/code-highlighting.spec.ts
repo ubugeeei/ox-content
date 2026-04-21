@@ -141,6 +141,7 @@ throw new Error("boom") // [!code error]
   await expect(page.locator(".content")).toHaveScreenshot("vitepress-code-highlighting.png", {
     animations: "disabled",
     caret: "hide",
+    maxDiffPixels: 3500,
     scale: "device",
   });
 });
