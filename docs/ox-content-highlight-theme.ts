@@ -17,12 +17,7 @@ export const oxContentHighlightTheme: ThemeRegistration = {
       },
     },
     {
-      scope: [
-        "comment",
-        "comment.block",
-        "comment.line",
-        "punctuation.definition.comment",
-      ],
+      scope: ["comment", "comment.block", "comment.line", "punctuation.definition.comment"],
       settings: {
         foreground: "#667a9d",
         fontStyle: "italic",
@@ -81,12 +76,7 @@ export const oxContentHighlightTheme: ThemeRegistration = {
       },
     },
     {
-      scope: [
-        "string",
-        "string.quoted",
-        "punctuation.definition.string",
-        "constant.other.symbol",
-      ],
+      scope: ["string", "string.quoted", "punctuation.definition.string", "constant.other.symbol"],
       settings: {
         foreground: "#88bfdc",
       },
@@ -116,19 +106,14 @@ export const oxContentHighlightTheme: ThemeRegistration = {
       },
     },
     {
-      scope: [
-        "markup.heading",
-        "markup.bold",
-      ],
+      scope: ["markup.heading", "markup.bold"],
       settings: {
         foreground: "#b9c9ff",
         fontStyle: "bold",
       },
     },
     {
-      scope: [
-        "markup.italic",
-      ],
+      scope: ["markup.italic"],
       settings: {
         foreground: "#b9c9ff",
         fontStyle: "italic",

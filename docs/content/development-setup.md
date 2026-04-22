@@ -8,11 +8,11 @@ If you just want to use the plugin or APIs, go back to [Getting Started](./getti
 
 Before you begin, ensure you have the following installed:
 
-| Requirement | Version | Installation |
-| ----------- | ------- | ------------ |
-| **Rust** | 1.83+ | Provided by `nix develop` (pinned in `flake.nix`) or [rustup.rs](https://rustup.rs/) |
-| **Node.js** | 24+ | Provided by `nix develop` or managed via `.node-version` |
-| **Vite+** | Latest | Available as `vp` inside the dev shell |
+| Requirement | Version | Installation                                                                         |
+| ----------- | ------- | ------------------------------------------------------------------------------------ |
+| **Rust**    | 1.83+   | Provided by `nix develop` (pinned in `flake.nix`) or [rustup.rs](https://rustup.rs/) |
+| **Node.js** | 24+     | Provided by `nix develop` or managed via `.node-version`                             |
+| **Vite+**   | Latest  | Available as `vp` inside the dev shell                                               |
 
 ## Clone and Bootstrap
 

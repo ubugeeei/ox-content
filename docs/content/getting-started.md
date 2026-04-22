@@ -11,22 +11,22 @@ Contributor setup and source builds live on a separate page: [Development Setup]
 
 ## Choose Your Entry Point
 
-| You want to... | Start here |
-| -------------- | ---------- |
-| Build a docs site or content pipeline | [Vite Plugin](#1-vite-plugin-first) |
-| Call the parser and renderer from Node.js | [N-API](#2-nodejs-api-via-n-api) |
+| You want to...                                            | Start here                                         |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| Build a docs site or content pipeline                     | [Vite Plugin](#1-vite-plugin-first)                |
+| Call the parser and renderer from Node.js                 | [N-API](#2-nodejs-api-via-n-api)                   |
 | Run Ox Content in the browser or another WebAssembly host | [WASM Bindings (WIP)](#3-webassembly-bindings-wip) |
-| Embed Ox Content directly in a Rust project | [Rust Crates](#4-rust-crates) |
-| Work on Ox Content itself | [Development Setup](./development-setup.md) |
+| Embed Ox Content directly in a Rust project               | [Rust Crates](#4-rust-crates)                      |
+| Work on Ox Content itself                                 | [Development Setup](./development-setup.md)        |
 
 ## Requirements
 
-| Path | Requirement |
-| ---- | ----------- |
-| Vite Plugin | Node.js `24+` and a Vite or Vite+ project |
-| N-API | Node.js `24+` |
+| Path                | Requirement                                                                    |
+| ------------------- | ------------------------------------------------------------------------------ |
+| Vite Plugin         | Node.js `24+` and a Vite or Vite+ project                                      |
+| N-API               | Node.js `24+`                                                                  |
 | WASM Bindings (WIP) | A WebAssembly toolchain such as `wasm-pack`, plus a browser or other WASM host |
-| Rust Crates | Rust `1.83+` |
+| Rust Crates         | Rust `1.83+`                                                                   |
 
 ## 1. Vite Plugin First
 
@@ -69,6 +69,7 @@ Create a Markdown entry page:
 
 ```md
 <!-- content/index.md -->
+
 # Hello Ox Content
 
 This site is generated from Markdown.

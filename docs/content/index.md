@@ -104,15 +104,15 @@ Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro.
 
 ### Parse + Render (48.7 KB)
 
-| Library              | ops/sec | avg time |  throughput |
-| -------------------- | ------: | -------: | ----------: |
-| `Bun.markdown.html`  |    4261 |  0.23 ms | 202.77 MB/s |
-| `md4w (md4c)`        |    2605 |  0.38 ms | 123.95 MB/s |
-| `markdown-it`        |     739 |  1.35 ms |  35.17 MB/s |
-| `marked`             |     462 |  2.16 ms |  22.00 MB/s |
-| `@ox-content/napi`   |     202 |  4.95 ms |   9.61 MB/s |
-| `micromark`          |      44 | 22.97 ms |   2.07 MB/s |
-| `remark`             |      35 | 28.37 ms |   1.68 MB/s |
+| Library             | ops/sec | avg time |  throughput |
+| ------------------- | ------: | -------: | ----------: |
+| `Bun.markdown.html` |    4261 |  0.23 ms | 202.77 MB/s |
+| `md4w (md4c)`       |    2605 |  0.38 ms | 123.95 MB/s |
+| `markdown-it`       |     739 |  1.35 ms |  35.17 MB/s |
+| `marked`            |     462 |  2.16 ms |  22.00 MB/s |
+| `@ox-content/napi`  |     202 |  4.95 ms |   9.61 MB/s |
+| `micromark`         |      44 | 22.97 ms |   2.07 MB/s |
+| `remark`            |      35 | 28.37 ms |   1.68 MB/s |
 
 Ox Content is not the absolute fastest parser in this synthetic benchmark, but it stays far ahead of heavier AST-oriented JavaScript stacks like `remark` while also serving as the native core for the full documentation pipeline.
 
