@@ -161,7 +161,7 @@ function renderMarkdownBlocksHtml(text: string): string {
       const codeLines: string[] = [];
       index++;
 
-      while (index < lines.length && !/^```/.test(lines[index].trim())) {
+      while (index < lines.length && !lines[index].trim().startsWith("```")) {
         codeLines.push(lines[index]);
         index++;
       }
@@ -409,8 +409,9 @@ export async function extractDocs(
   options: ResolvedDocsOptions,
 ): Promise<ExtractedDocs[]> {
   const napi = await importNapiModule();
-  const extractFileDocs = (napi as { extractFileDocs?: (filePath: string, includePrivate?: boolean) => NapiDocItem[] })
-    .extractFileDocs;
+  const extractFileDocs = (
+    napi as { extractFileDocs?: (filePath: string, includePrivate?: boolean) => NapiDocItem[] }
+  ).extractFileDocs;
 
   if (!extractFileDocs) {
     throw new Error("[ox-content] extractFileDocs is not available from @ox-content/napi.");
@@ -622,7 +623,12 @@ function parseNapiDocItem(item: NapiDocItem): DocEntry | null {
   }
 
   for (const tag of item.tags) {
-    if (tag.tag === "param" || tag.tag === "returns" || tag.tag === "return" || tag.tag === "example") {
+    if (
+      tag.tag === "param" ||
+      tag.tag === "returns" ||
+      tag.tag === "return" ||
+      tag.tag === "example"
+    ) {
       continue;
     }
     if (tag.tag === "private") {
@@ -756,7 +762,8 @@ function generateFileMarkdown(
   }
 
   md += `> ${doc.entries.length} documented symbol${doc.entries.length === 1 ? "" : "s"}. `;
-  md += "Read the signatures first, then expand each item for parameters, return types, and examples.\n\n";
+  md +=
+    "Read the signatures first, then expand each item for parameters, return types, and examples.\n\n";
 
   md += "## Reference\n\n";
   if (doc.entries.length > 1) {

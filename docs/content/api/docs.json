@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-04-22T09:20:09.337Z",
+  "generatedAt": "2026-04-22T10:06:13.542Z",
   "modules": [
     {
       "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/dev-server.ts",
@@ -278,7 +278,7 @@
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
           "line": 407,
-          "endLine": 436,
+          "endLine": 437,
           "signature": "export async function extractDocs(srcDirs: string[], options: ResolvedDocsOptions): Promise<ExtractedDocs[]>"
         },
         {
@@ -306,8 +306,8 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 443,
-          "endLine": 471,
+          "line": 444,
+          "endLine": 472,
           "signature": "async function findFiles(dir: string, options: ResolvedDocsOptions): Promise<string[]>"
         },
         {
@@ -332,8 +332,8 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 672,
-          "endLine": 719,
+          "line": 678,
+          "endLine": 725,
           "signature": "export function generateMarkdown(docs: ExtractedDocs[], options: ResolvedDocsOptions): Record<string, string>"
         },
         {
@@ -342,8 +342,8 @@
           "description": "Symbol location info for cross-file linking.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1041,
-          "endLine": 1045,
+          "line": 1048,
+          "endLine": 1052,
           "signature": "interface SymbolLocation"
         },
         {
@@ -376,8 +376,8 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1069,
-          "endLine": 1091,
+          "line": 1076,
+          "endLine": 1098,
           "signature": "function convertSymbolLinks(text: string, currentFileName: string, symbolMap: Map<string, SymbolLocation>): string"
         },
         {
@@ -397,8 +397,8 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1096,
-          "endLine": 1115,
+          "line": 1103,
+          "endLine": 1122,
           "signature": "function buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation>"
         },
         {
@@ -435,8 +435,8 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1120,
-          "endLine": 1179,
+          "line": 1127,
+          "endLine": 1186,
           "signature": "export async function writeDocs(docs: Record<string, string>, outDir: string, extractedDocs?: ExtractedDocs[], options?: ResolvedDocsOptions): Promise<void>"
         },
         {
@@ -473,8 +473,8 @@
           },
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/docs.ts",
-          "line": 1193,
-          "endLine": 1209,
+          "line": 1200,
+          "endLine": 1216,
           "signature": "function generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number, endLineNumber?: number): string"
         }
       ]
@@ -1417,7 +1417,9 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": ["```tsx\n<div>{raw('<strong>Bold</strong>')}</div>\n```"],
+          "examples": [
+            "```tsx\n<div>{raw('<strong>Bold</strong>')}</div>\n```"
+          ],
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 262,
@@ -1444,7 +1446,9 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": ["```tsx\n{when(isLoggedIn, <UserMenu />)}\n```"],
+          "examples": [
+            "```tsx\n{when(isLoggedIn, <UserMenu />)}\n```"
+          ],
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 274,
@@ -1471,7 +1475,9 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": ["```tsx\n{each(items, (item) => <li>{item.name}</li>)}\n```"],
+          "examples": [
+            "```tsx\n{each(items, (item) => <li>{item.name}</li>)}\n```"
+          ],
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 286,
@@ -2215,7 +2221,7 @@
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/og-image/template.ts",
           "line": 76,
-          "endLine": 104,
+          "endLine": 103,
           "signature": "export function getDefaultTemplate(): OgImageTemplateFn"
         }
       ]
@@ -4579,7 +4585,7 @@
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
           "line": 355,
-          "endLine": 430,
+          "endLine": 431,
           "signature": "export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig"
         },
         {
@@ -4588,8 +4594,8 @@
           "description": "NAPI-compatible theme colors type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 435,
-          "endLine": 445,
+          "line": 436,
+          "endLine": 446,
           "signature": "export interface NapiThemeColors"
         },
         {
@@ -4598,8 +4604,8 @@
           "description": "NAPI-compatible theme fonts type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 450,
-          "endLine": 453,
+          "line": 451,
+          "endLine": 454,
           "signature": "export interface NapiThemeFonts"
         },
         {
@@ -4608,8 +4614,8 @@
           "description": "NAPI-compatible entry page theme type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 458,
-          "endLine": 460,
+          "line": 459,
+          "endLine": 461,
           "signature": "export interface NapiThemeEntryPage"
         },
         {
@@ -4618,8 +4624,8 @@
           "description": "NAPI-compatible theme layout type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 465,
-          "endLine": 469,
+          "line": 466,
+          "endLine": 470,
           "signature": "export interface NapiThemeLayout"
         },
         {
@@ -4628,8 +4634,8 @@
           "description": "NAPI-compatible theme header type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 474,
-          "endLine": 481,
+          "line": 475,
+          "endLine": 482,
           "signature": "export interface NapiThemeHeader"
         },
         {
@@ -4638,8 +4644,8 @@
           "description": "NAPI-compatible theme footer type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 486,
-          "endLine": 489,
+          "line": 487,
+          "endLine": 490,
           "signature": "export interface NapiThemeFooter"
         },
         {
@@ -4648,8 +4654,8 @@
           "description": "NAPI-compatible social links type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 494,
-          "endLine": 498,
+          "line": 495,
+          "endLine": 499,
           "signature": "export interface NapiSocialLinks"
         },
         {
@@ -4658,8 +4664,8 @@
           "description": "NAPI-compatible theme embed type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 503,
-          "endLine": 513,
+          "line": 504,
+          "endLine": 514,
           "signature": "export interface NapiThemeEmbed"
         },
         {
@@ -4668,8 +4674,8 @@
           "description": "NAPI-compatible theme configuration type.",
           "private": false,
           "file": "/Users/nishimura/Code/github.com/ubugeeei/ox-content/npm/vite-plugin-ox-content/src/theme.ts",
-          "line": 518,
-          "endLine": 530,
+          "line": 519,
+          "endLine": 531,
           "signature": "export interface NapiThemeConfig"
         }
       ]

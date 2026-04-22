@@ -507,15 +507,17 @@ The Vite plugin supports HMR for Markdown files:
 
 ### Parse and Render Speed
 
-Latest local `parse-benchmark` run on 2026-03-07 with Node `v24.14.0` on Apple M2 Max:
+Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro. The tables below show median results from 7 local runs of the benchmark harness for the large 48.7 KB case.
 
-| Library            | Parse Only (48.7 KB) | Parse + Render (48.7 KB) |
-| ------------------ | -------------------: | -----------------------: |
-| `@ox-content/napi` |         2463 ops/sec |             2122 ops/sec |
-| `md4w (md4c)`      |          735 ops/sec |             1903 ops/sec |
-| `markdown-it`      |          639 ops/sec |              532 ops/sec |
-| `marked`           |          362 ops/sec |              345 ops/sec |
-| `remark`           |           32 ops/sec |               28 ops/sec |
+| Library             | Parse Only (48.7 KB) | Parse + Render (48.7 KB) |
+| ------------------- | -------------------: | -----------------------: |
+| `Bun.markdown.html` |                    - |             4261 ops/sec |
+| `md4w (md4c)`       |         1092 ops/sec |             2605 ops/sec |
+| `markdown-it`       |         1018 ops/sec |              739 ops/sec |
+| `marked`            |          534 ops/sec |              462 ops/sec |
+| `@ox-content/napi`  |          209 ops/sec |              202 ops/sec |
+| `micromark`         |                    - |               44 ops/sec |
+| `remark`            |           39 ops/sec |               35 ops/sec |
 
 This benchmark uses `node benchmarks/bundle-size/parse-benchmark.mjs`. The comparison set now includes `md4w (md4c)` by default, and `Bun.markdown.html` is measured automatically when `bun` is available on the host.
 

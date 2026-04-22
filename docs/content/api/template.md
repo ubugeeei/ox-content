@@ -46,7 +46,7 @@
 <div class="ox-api-entry__prose">
 <p>Returns the built-in default template function.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/template.ts#L76-L104">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/template.ts#L76-L103">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
 <div class="ox-api-entry__return">
@@ -56,3 +56,4 @@
 </div>
   </div>
 </details>
+

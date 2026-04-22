@@ -257,11 +257,10 @@ impl<'a> DocVisitor<'a> {
     }
 
     fn extract_jsdoc(&self, attached_to: u32) -> Option<(String, String, Vec<DocTag>)> {
-        let comment = self
-            .comments
-            .iter()
-            .rev()
-            .find(|comment| comment.attached_to == attached_to && comment.is_jsdoc(self.source))?;
+        let comment =
+            self.comments.iter().rev().find(|comment| {
+                comment.attached_to == attached_to && comment.is_jsdoc(self.source)
+            })?;
 
         let mut raw = comment.content_span().source_text(self.source).to_string();
         if raw.starts_with('*') {
@@ -289,16 +288,12 @@ impl<'a> DocVisitor<'a> {
 
         for line in lines {
             let trimmed = line.trim_start();
-            if trimmed.starts_with('@') {
+            if let Some(without_at) = trimmed.strip_prefix('@') {
                 // Save previous tag if any
                 if let Some((tag, value_lines)) = current_tag.take() {
-                    tags.push(DocTag {
-                        tag,
-                        value: value_lines.join("\n").trim().to_string(),
-                    });
+                    tags.push(DocTag { tag, value: value_lines.join("\n").trim().to_string() });
                 }
 
-                let without_at = &trimmed[1..];
                 let split_at = without_at
                     .char_indices()
                     .find_map(|(index, ch)| ch.is_whitespace().then_some(index))
@@ -315,19 +310,16 @@ impl<'a> DocVisitor<'a> {
 
         // Save last tag if any
         if let Some((tag, value_lines)) = current_tag {
-            tags.push(DocTag {
-                tag,
-                value: value_lines.join("\n").trim().to_string(),
-            });
+            tags.push(DocTag { tag, value: value_lines.join("\n").trim().to_string() });
         }
 
-        (
-            description_lines.join("\n").trim().to_string(),
-            tags,
-        )
+        (description_lines.join("\n").trim().to_string(), tags)
     }
 
-    fn format_type_parameter_declaration<T>(&self, type_params: Option<&oxc_allocator::Box<'a, T>>) -> String
+    fn format_type_parameter_declaration<T>(
+        &self,
+        type_params: Option<&oxc_allocator::Box<'a, T>>,
+    ) -> String
     where
         T: oxc_span::GetSpan,
     {
@@ -336,10 +328,7 @@ impl<'a> DocVisitor<'a> {
             .unwrap_or_default()
     }
 
-    fn format_formal_parameters(
-        &self,
-        params: &oxc_ast::ast::FormalParameters<'a>,
-    ) -> String {
+    fn format_formal_parameters(&self, params: &oxc_ast::ast::FormalParameters<'a>) -> String {
         let mut items = params
             .items
             .iter()
@@ -356,41 +345,34 @@ impl<'a> DocVisitor<'a> {
         items.join(", ")
     }
 
-    fn format_function_signature(
-        &self,
-        name: &str,
-        exported: bool,
-        declare: bool,
-        r#async: bool,
-        generator: bool,
-        type_parameters: Option<&oxc_allocator::Box<'a, oxc_ast::ast::TSTypeParameterDeclaration<'a>>>,
-        params: &oxc_ast::ast::FormalParameters<'a>,
-        return_type: Option<&oxc_allocator::Box<'a, oxc_ast::ast::TSTypeAnnotation<'a>>>,
-    ) -> String {
+    fn format_function_signature(&self, func: &Function<'a>, name: &str, exported: bool) -> String {
         let mut sig = String::new();
 
         if exported {
             sig.push_str("export ");
         }
-        if declare {
+        if func.declare {
             sig.push_str("declare ");
         }
-        if r#async {
+        if func.r#async {
             sig.push_str("async ");
         }
         sig.push_str("function ");
-        if generator {
+        if func.generator {
             sig.push('*');
         }
         sig.push_str(name);
-        sig.push_str(&self.format_type_parameter_declaration(type_parameters));
+        sig.push_str(&self.format_type_parameter_declaration(func.type_parameters.as_ref()));
         sig.push('(');
-        sig.push_str(&self.format_formal_parameters(params));
+        sig.push_str(&self.format_formal_parameters(&func.params));
         sig.push(')');
 
-        if let Some(return_type) = return_type {
+        if let Some(return_type) = func.return_type.as_ref() {
             sig.push_str(": ");
-            sig.push_str(&self.slice(return_type.type_annotation.span().start, return_type.type_annotation.span().end));
+            sig.push_str(&self.slice(
+                return_type.type_annotation.span().start,
+                return_type.type_annotation.span().end,
+            ));
         }
 
         sig
@@ -400,7 +382,9 @@ impl<'a> DocVisitor<'a> {
         &self,
         name: &str,
         r#async: bool,
-        type_parameters: Option<&oxc_allocator::Box<'a, oxc_ast::ast::TSTypeParameterDeclaration<'a>>>,
+        type_parameters: Option<
+            &oxc_allocator::Box<'a, oxc_ast::ast::TSTypeParameterDeclaration<'a>>,
+        >,
         params: &oxc_ast::ast::FormalParameters<'a>,
         return_type: Option<&oxc_allocator::Box<'a, oxc_ast::ast::TSTypeAnnotation<'a>>>,
     ) -> String {
@@ -416,7 +400,10 @@ impl<'a> DocVisitor<'a> {
 
         if let Some(return_type) = return_type {
             sig.push_str(": ");
-            sig.push_str(&self.slice(return_type.type_annotation.span().start, return_type.type_annotation.span().end));
+            sig.push_str(&self.slice(
+                return_type.type_annotation.span().start,
+                return_type.type_annotation.span().end,
+            ));
         }
 
         sig
@@ -449,7 +436,8 @@ impl<'a> DocVisitor<'a> {
             let implements = implements
                 .iter()
                 .map(|item| {
-                    let mut value = self.slice(item.expression.span().start, item.expression.span().end);
+                    let mut value =
+                        self.slice(item.expression.span().start, item.expression.span().end);
                     if let Some(type_params) = &item.type_parameters {
                         value.push_str(&self.format_type_parameter_declaration(Some(type_params)));
                     }
@@ -487,7 +475,8 @@ impl<'a> DocVisitor<'a> {
             let extends = extends
                 .iter()
                 .map(|item| {
-                    let mut value = self.slice(item.expression.span().start, item.expression.span().end);
+                    let mut value =
+                        self.slice(item.expression.span().start, item.expression.span().end);
                     if let Some(type_params) = &item.type_parameters {
                         value.push_str(&self.format_type_parameter_declaration(Some(type_params)));
                     }
@@ -521,10 +510,12 @@ impl<'a> DocVisitor<'a> {
         sig.push_str(type_alias.id.name.as_str());
         sig.push_str(&self.format_type_parameter_declaration(type_alias.type_parameters.as_ref()));
         sig.push_str(" = ");
-        sig.push_str(&self.slice(
-            type_alias.type_annotation.span().start,
-            type_alias.type_annotation.span().end,
-        ));
+        sig.push_str(
+            &self.slice(
+                type_alias.type_annotation.span().start,
+                type_alias.type_annotation.span().end,
+            ),
+        );
         sig
     }
 
@@ -707,14 +698,9 @@ impl<'a> DocVisitor<'a> {
             jsdoc: Some(jsdoc),
             exported,
             signature: Some(self.format_function_signature(
+                func,
                 func.id.as_ref()?.name.as_str(),
                 exported,
-                func.declare,
-                func.r#async,
-                func.generator,
-                func.type_parameters.as_ref(),
-                &func.params,
-                func.return_type.as_ref(),
             )),
             params: self.extract_params(func, &tags),
             return_type: self.extract_return_type(func, &tags),
@@ -795,14 +781,16 @@ impl<'a> DocVisitor<'a> {
                         _ => continue,
                     };
 
-                    let Some((prop_jsdoc, prop_doc, prop_tags)) = self.extract_jsdoc(prop.span.start)
+                    let Some((prop_jsdoc, prop_doc, prop_tags)) =
+                        self.extract_jsdoc(prop.span.start)
                     else {
                         continue;
                     };
                     if !self.include_private && Self::has_private_tag(&prop_tags) {
                         continue;
                     }
-                    let (prop_line, prop_end_line) = self.span_lines(prop.span.start, prop.span.end);
+                    let (prop_line, prop_end_line) =
+                        self.span_lines(prop.span.start, prop.span.end);
 
                     let type_annotation = prop
                         .type_annotation
@@ -861,8 +849,7 @@ impl<'a> Visit<'a> for DocVisitor<'a> {
                 self.has_default_export = true;
                 match &export.declaration {
                     ExportDefaultDeclarationKind::FunctionDeclaration(func) => {
-                        if let Some(item) =
-                            self.create_function_item(func, true, export.span.start)
+                        if let Some(item) = self.create_function_item(func, true, export.span.start)
                         {
                             self.items.push(item);
                         }
@@ -1110,7 +1097,8 @@ impl<'a> DocVisitor<'a> {
                                     &method.params,
                                     method.return_type.as_ref(),
                                 )),
-                                params: self.extract_params_from_formals(&method.params, &method_tags),
+                                params: self
+                                    .extract_params_from_formals(&method.params, &method_tags),
                                 return_type: self.extract_return_type_from_annotation(
                                     method.return_type.as_ref(),
                                     &method_tags,

@@ -811,7 +811,7 @@ impl HtmlRenderer {
         renderer.output
     }
 
-    fn detect_callout<'a>(&self, paragraph: &Paragraph<'a>) -> Option<(CalloutKind, usize)> {
+    fn detect_callout<'a>(paragraph: &Paragraph<'a>) -> Option<(CalloutKind, usize)> {
         let mut prefix = String::new();
 
         for child in &paragraph.children {
@@ -834,7 +834,7 @@ impl HtmlRenderer {
         let Some(Node::Paragraph(first_paragraph)) = block_quote.children.first() else {
             return false;
         };
-        let Some((kind, consumed_chars)) = self.detect_callout(first_paragraph) else {
+        let Some((kind, consumed_chars)) = Self::detect_callout(first_paragraph) else {
             return false;
         };
 
@@ -845,10 +845,8 @@ impl HtmlRenderer {
         self.write(kind.label());
         self.write("</p>\n");
 
-        let paragraph_body = self.render_paragraph_with_skipped_text_prefix(
-            first_paragraph,
-            consumed_chars,
-        );
+        let paragraph_body =
+            self.render_paragraph_with_skipped_text_prefix(first_paragraph, consumed_chars);
         if !paragraph_body.trim().is_empty() {
             self.write("<p>");
             self.write(&paragraph_body);
@@ -1470,8 +1468,7 @@ mod tests {
     #[test]
     fn test_render_github_style_callout_with_inline_content_after_marker() {
         let allocator = Allocator::new();
-        let doc =
-            Parser::new(&allocator, "> [!NOTE] Supports **inline** content").parse().unwrap();
+        let doc = Parser::new(&allocator, "> [!NOTE] Supports **inline** content").parse().unwrap();
         let mut renderer = HtmlRenderer::new();
         let html = renderer.render(&doc);
 

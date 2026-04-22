@@ -276,3 +276,4 @@ const result = napi.transform(content, { gfm: true });</code></pre>
 <p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/transform.ts#L388-L395">View source</a></p>
   </div>
 </details>
+

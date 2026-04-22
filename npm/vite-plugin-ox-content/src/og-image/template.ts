@@ -80,12 +80,11 @@ export function getDefaultTemplate(): OgImageTemplateFn {
     const isBrandCard = normalizeBrandValue(title) === normalizeBrandValue(rawBrand);
 
     const heroTitle = isBrandCard ? "cargo doc for JavaScript" : title;
-    const heroDescription =
-      isBrandCard
-        ? "Rust-powered docs and high-performance Markdown tooling."
-        : description && description.trim().length > 0
-          ? description
-          : "Rust-powered docs and Markdown tooling.";
+    const heroDescription = isBrandCard
+      ? "Rust-powered docs and high-performance Markdown tooling."
+      : description && description.trim().length > 0
+        ? description
+        : "Rust-powered docs and Markdown tooling.";
     const descriptionHtml =
       heroDescription.trim().length > 0
         ? `<p style="max-width:760px;font-size:28px;color:#93a4c3;line-height:1.45;margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${escapeHtml(heroDescription)}</p>`

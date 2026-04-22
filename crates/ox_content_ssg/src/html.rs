@@ -655,14 +655,8 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
         // Process hero image src
         let image = hero.image.as_ref().map(|img| {
             let src = convert_entry_link(&img.src, base);
-            let light_src = img
-                .light_src
-                .as_ref()
-                .map(|src| convert_entry_link(src, base));
-            let dark_src = img
-                .dark_src
-                .as_ref()
-                .map(|src| convert_entry_link(src, base));
+            let light_src = img.light_src.as_ref().map(|src| convert_entry_link(src, base));
+            let dark_src = img.dark_src.as_ref().map(|src| convert_entry_link(src, base));
             HeroImage {
                 src,
                 light_src,
@@ -830,9 +824,7 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         .map_or_else(|| "logo.svg", std::string::String::as_str);
     let logo_width = header_config.and_then(|h| h.logo_width).unwrap_or(28);
     let logo_height = header_config.and_then(|h| h.logo_height).unwrap_or(28);
-    let show_site_name_text = header_config
-        .and_then(|h| h.show_site_name_text)
-        .unwrap_or(true);
+    let show_site_name_text = header_config.and_then(|h| h.show_site_name_text).unwrap_or(true);
 
     let resolve_theme_asset = |url: &str| {
         if url.starts_with("http://") || url.starts_with("https://") || url.starts_with('/') {
@@ -844,12 +836,9 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
 
     // Build logo src (prepend base if not absolute URL)
     let logo_src = resolve_theme_asset(logo_url);
-    let logo_light_src = header_config
-        .and_then(|h| h.logo_light.as_deref())
-        .map(resolve_theme_asset);
-    let logo_dark_src = header_config
-        .and_then(|h| h.logo_dark.as_deref())
-        .map(resolve_theme_asset);
+    let logo_light_src =
+        header_config.and_then(|h| h.logo_light.as_deref()).map(resolve_theme_asset);
+    let logo_dark_src = header_config.and_then(|h| h.logo_dark.as_deref()).map(resolve_theme_asset);
 
     // Custom JS
     let custom_js = theme.and_then(|t| t.js.as_deref()).unwrap_or("");
@@ -887,9 +876,7 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         body_classes.push(page_class.to_string());
     }
     if is_entry_page
-        && theme
-            .and_then(|t| t.entry_page.as_ref())
-            .and_then(|entry| entry.mode.as_deref())
+        && theme.and_then(|t| t.entry_page.as_ref()).and_then(|entry| entry.mode.as_deref())
             == Some("subtle")
     {
         body_classes.push("entry-page--subtle".to_string());

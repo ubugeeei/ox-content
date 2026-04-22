@@ -88,22 +88,16 @@ impl OgImageGenerator {
         let height = self.config.height;
         let bg = &self.config.background_color;
         let text_color = &self.config.text_color;
-        let font_family = self
-            .config
-            .font_family
-            .as_deref()
-            .unwrap_or("IBM Plex Sans, system-ui, sans-serif");
+        let font_family =
+            self.config.font_family.as_deref().unwrap_or("IBM Plex Sans, system-ui, sans-serif");
         let brand = data
             .site_name
             .as_deref()
             .filter(|name| !name.trim().is_empty())
             .unwrap_or("Ox Content");
         let is_brand_card = normalize_for_compare(&data.title) == normalize_for_compare(brand);
-        let hero_title = if is_brand_card {
-            "cargo doc for JavaScript".to_string()
-        } else {
-            data.title.clone()
-        };
+        let hero_title =
+            if is_brand_card { "cargo doc for JavaScript".to_string() } else { data.title.clone() };
         let hero_description = if is_brand_card {
             "Rust-powered docs and high-performance Markdown tooling.".to_string()
         } else {
@@ -115,9 +109,11 @@ impl OgImageGenerator {
         };
 
         let title_lines = wrap_text_limited(&hero_title, 28, 2);
+        let title_line_height = u64::from(self.config.title_font_size) + 10;
         let title_svg = title_lines.iter().enumerate().fold(String::new(), |mut acc, (i, line)| {
             use std::fmt::Write;
-            let y = 300 + (i as i32 * (self.config.title_font_size as i32 + 10));
+            let line_index = u64::try_from(i).unwrap_or(u64::MAX);
+            let y = 300_u64.saturating_add(line_index.saturating_mul(title_line_height));
             let _ = write!(
                 acc,
                 r#"<text x="64" y="{y}" fill="{text_color}" font-size="{}" font-weight="700" letter-spacing="-3.8px" font-family="{font_family}">{}</text>"#,
@@ -128,16 +124,21 @@ impl OgImageGenerator {
         });
 
         let description_lines = wrap_text_limited(&hero_description, 56, 2);
-        let description_start_y =
-            300 + ((title_lines.len().saturating_sub(1)) as i32 * (self.config.title_font_size as i32 + 10)) + 58;
+        let title_line_offset =
+            u64::try_from(title_lines.len().saturating_sub(1)).unwrap_or(u64::MAX);
+        let description_start_y = 300_u64
+            .saturating_add(title_line_offset.saturating_mul(title_line_height))
+            .saturating_add(58);
+        let description_line_height = u64::from(self.config.description_font_size) + 14;
         let description_svg =
             description_lines
                 .iter()
                 .enumerate()
                 .fold(String::new(), |mut acc, (i, line)| {
                     use std::fmt::Write;
-                    let y =
-                        description_start_y + (i as i32 * (self.config.description_font_size as i32 + 14));
+                    let line_index = u64::try_from(i).unwrap_or(u64::MAX);
+                    let y = description_start_y
+                        .saturating_add(line_index.saturating_mul(description_line_height));
                     let _ = write!(
                         acc,
                         r##"<text x="64" y="{y}" fill="#93a4c3" font-size="{}" font-family="{font_family}">{}</text>"##,
@@ -171,8 +172,7 @@ impl OgImageGenerator {
 
   {title_svg}
   {description_svg}
-</svg>"##
-            ,
+</svg>"##,
             border_width = width.saturating_sub(1),
             border_height = height.saturating_sub(1)
         )
@@ -180,11 +180,7 @@ impl OgImageGenerator {
 }
 
 fn normalize_for_compare(value: &str) -> String {
-    value
-        .chars()
-        .filter(|ch| !ch.is_whitespace())
-        .flat_map(char::to_lowercase)
-        .collect()
+    value.chars().filter(|ch| !ch.is_whitespace()).flat_map(char::to_lowercase).collect()
 }
 
 /// Wraps text into lines of approximately max_chars length.

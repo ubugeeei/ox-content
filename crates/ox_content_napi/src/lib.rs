@@ -1197,10 +1197,9 @@ fn convert_entry_page_config(
             name: h.name,
             text: h.text,
             tagline: h.tagline,
-            notice: h.notice.map(|n| ox_content_ssg::HeroNoticeConfig {
-                title: n.title,
-                body: n.body,
-            }),
+            notice: h
+                .notice
+                .map(|n| ox_content_ssg::HeroNoticeConfig { title: n.title, body: n.body }),
             image: h.image.map(|i| ox_content_ssg::HeroImage {
                 src: i.src,
                 light_src: i.light_src,

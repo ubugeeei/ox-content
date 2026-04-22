@@ -115,7 +115,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible social links type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L494-L498">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L495-L499">View source</a></p>
   </div>
 </details>
 
@@ -125,7 +125,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible theme colors type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L435-L445">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L436-L446">View source</a></p>
   </div>
 </details>
 
@@ -135,7 +135,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible theme configuration type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L518-L530">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L519-L531">View source</a></p>
   </div>
 </details>
 
@@ -145,7 +145,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible theme embed type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L503-L513">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L504-L514">View source</a></p>
   </div>
 </details>
 
@@ -155,7 +155,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible entry page theme type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L458-L460">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L459-L461">View source</a></p>
   </div>
 </details>
 
@@ -165,7 +165,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible theme fonts type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L450-L453">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L451-L454">View source</a></p>
   </div>
 </details>
 
@@ -175,7 +175,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible theme footer type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L486-L489">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L487-L490">View source</a></p>
   </div>
 </details>
 
@@ -185,7 +185,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible theme header type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L474-L481">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L475-L482">View source</a></p>
   </div>
 </details>
 
@@ -195,7 +195,7 @@
 <div class="ox-api-entry__prose">
 <p>NAPI-compatible theme layout type.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L465-L469">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L466-L470">View source</a></p>
   </div>
 </details>
 
@@ -334,7 +334,7 @@
 <div class="ox-api-entry__prose">
 <p>Converts resolved theme to the format expected by Rust NAPI.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L355-L430">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L355-L431">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -356,3 +356,4 @@
 </div>
   </div>
 </details>
+

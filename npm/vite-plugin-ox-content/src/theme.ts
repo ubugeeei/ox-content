@@ -398,16 +398,17 @@ export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig {
           maxContentWidth: theme.layout.maxContentWidth,
         }
       : undefined,
-    header: theme.header.logo || theme.header.logoLight || theme.header.logoDark
-      ? {
-          logo: theme.header.logo,
-          logoLight: theme.header.logoLight,
-          logoDark: theme.header.logoDark,
-          showSiteNameText: theme.header.showSiteNameText,
-          logoWidth: theme.header.logoWidth,
-          logoHeight: theme.header.logoHeight,
-        }
-      : undefined,
+    header:
+      theme.header.logo || theme.header.logoLight || theme.header.logoDark
+        ? {
+            logo: theme.header.logo,
+            logoLight: theme.header.logoLight,
+            logoDark: theme.header.logoDark,
+            showSiteNameText: theme.header.showSiteNameText,
+            logoWidth: theme.header.logoWidth,
+            logoHeight: theme.header.logoHeight,
+          }
+        : undefined,
     footer:
       theme.footer.message || theme.footer.copyright
         ? {
