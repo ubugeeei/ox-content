@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.3.0] - 2026-04-22
+
+### Features
+
+- wasm (#46)
+- generated docs UX and scoped search (#44)
+- code highlighting (#42)
+
+### Bug Fixes
+
+- text autosizing
+- ci
+
 ## [2.2.0] - 2026-04-22
 
 ### Bug Fixes
