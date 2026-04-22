@@ -17,6 +17,11 @@
   <a href="https://ubugeeei.github.io/ox-content/playground/">Playground</a>
 </p>
 
+> [!NOTE]
+> Ox Content is an independent personal project by [ubugeeei](https://github.com/ubugeeei). It is not an official VoidZero project, product, or endorsement.
+> The current branding is an intentional homage to the VoidZero ecosystem because I care a lot about that design direction and hope I can contribute more directly in the future.
+> If VoidZero or the relevant rights holders would prefer that I stop using this branding direction, I will change it.
+
 ---
 
 ## Features
