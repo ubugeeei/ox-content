@@ -303,14 +303,15 @@ jobs:
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
       - name: Publish @ox-content/wasm
+        working-directory: crates/ox_content_wasm/pkg
         run: |
-          PKG_NAME=$(node -p "require('./crates/ox_content_wasm/pkg/package.json').name")
-          PKG_VERSION=$(node -p "require('./crates/ox_content_wasm/pkg/package.json').version")
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
           if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
             echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
             exit 0
           fi
-          pnpm --filter @ox-content/wasm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+          npm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
   publish-crates:
     name: Publish to crates.io
