@@ -51,11 +51,25 @@ export interface ThemeFonts {
 }
 
 /**
+ * Entry page theme configuration.
+ */
+export interface ThemeEntryPage {
+  /** Landing page presentation mode */
+  mode?: "default" | "subtle";
+}
+
+/**
  * Theme header configuration.
  */
 export interface ThemeHeader {
   /** Logo image URL */
   logo?: string;
+  /** Light mode logo image URL */
+  logoLight?: string;
+  /** Dark mode logo image URL */
+  logoDark?: string;
+  /** Whether to render the site name text next to the logo */
+  showSiteNameText?: boolean;
   /** Logo width in pixels */
   logoWidth?: number;
   /** Logo height in pixels */
@@ -122,6 +136,8 @@ export interface ThemeConfig {
   darkColors?: ThemeColors;
   /** Font configuration (maps to CSS variables) */
   fonts?: ThemeFonts;
+  /** Entry page configuration */
+  entryPage?: ThemeEntryPage;
   /** Layout configuration (maps to CSS variables) */
   layout?: ThemeLayout;
   /** Header configuration */
@@ -146,6 +162,7 @@ export interface ResolvedThemeConfig {
   colors: ThemeColors;
   darkColors: ThemeColors;
   fonts: ThemeFonts;
+  entryPage: ThemeEntryPage;
   layout: ThemeLayout;
   header: ThemeHeader;
   footer: ThemeFooter;
@@ -162,30 +179,33 @@ export interface ResolvedThemeConfig {
 export const defaultTheme: ThemeConfig = {
   name: "default",
   colors: {
-    primary: "#e04d0a",
-    primaryHover: "#f5602a",
+    primary: "#4f6fae",
+    primaryHover: "#425f96",
     background: "#ffffff",
-    backgroundAlt: "#f8f9fa",
-    text: "#1a1a1a",
-    textMuted: "#666666",
-    border: "#e5e7eb",
-    codeBackground: "#1e293b",
-    codeText: "#e2e8f0",
+    backgroundAlt: "#f5f7fb",
+    text: "#131a30",
+    textMuted: "#4f607b",
+    border: "#d2dbea",
+    codeBackground: "#101a31",
+    codeText: "#edf3ff",
   },
   darkColors: {
-    primary: "#f5714a",
-    primaryHover: "#ff8a66",
-    background: "#141414",
-    backgroundAlt: "#141414",
-    text: "#e5e5e5",
-    textMuted: "#a3a3a3",
-    border: "#2a2a2a",
-    codeBackground: "#1a1a1a",
-    codeText: "#e5e5e5",
+    primary: "#86a4da",
+    primaryHover: "#a3bbe8",
+    background: "#060816",
+    backgroundAlt: "#0d1528",
+    text: "#ebf2ff",
+    textMuted: "#8ea0bf",
+    border: "#223252",
+    codeBackground: "#0a1020",
+    codeText: "#e7f0ff",
   },
   fonts: {
-    sans: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    mono: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+    sans: '"IBM Plex Sans", "Avenir Next", "Segoe UI Variable", "Segoe UI", sans-serif',
+    mono: '"IBM Plex Mono", "SFMono-Regular", Consolas, monospace',
+  },
+  entryPage: {
+    mode: "default",
   },
   layout: {
     sidebarWidth: "260px",
@@ -194,6 +214,9 @@ export const defaultTheme: ThemeConfig = {
   },
   header: {
     logo: undefined,
+    logoLight: undefined,
+    logoDark: undefined,
+    showSiteNameText: true,
     logoWidth: 28,
     logoHeight: 28,
   },
@@ -315,6 +338,7 @@ export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig {
     colors: merged.colors ?? defaultTheme.colors!,
     darkColors: merged.darkColors ?? defaultTheme.darkColors!,
     fonts: merged.fonts ?? defaultTheme.fonts!,
+    entryPage: merged.entryPage ?? defaultTheme.entryPage!,
     layout: merged.layout ?? defaultTheme.layout!,
     header: merged.header ?? defaultTheme.header!,
     footer: merged.footer ?? defaultTheme.footer!,
@@ -362,6 +386,11 @@ export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig {
           mono: theme.fonts.mono,
         }
       : undefined,
+    entryPage: theme.entryPage.mode
+      ? {
+          mode: theme.entryPage.mode,
+        }
+      : undefined,
     layout: theme.layout.sidebarWidth
       ? {
           sidebarWidth: theme.layout.sidebarWidth,
@@ -369,13 +398,17 @@ export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig {
           maxContentWidth: theme.layout.maxContentWidth,
         }
       : undefined,
-    header: theme.header.logo
-      ? {
-          logo: theme.header.logo,
-          logoWidth: theme.header.logoWidth,
-          logoHeight: theme.header.logoHeight,
-        }
-      : undefined,
+    header:
+      theme.header.logo || theme.header.logoLight || theme.header.logoDark
+        ? {
+            logo: theme.header.logo,
+            logoLight: theme.header.logoLight,
+            logoDark: theme.header.logoDark,
+            showSiteNameText: theme.header.showSiteNameText,
+            logoWidth: theme.header.logoWidth,
+            logoHeight: theme.header.logoHeight,
+          }
+        : undefined,
     footer:
       theme.footer.message || theme.footer.copyright
         ? {
@@ -421,6 +454,13 @@ export interface NapiThemeFonts {
 }
 
 /**
+ * NAPI-compatible entry page theme type.
+ */
+export interface NapiThemeEntryPage {
+  mode?: "default" | "subtle";
+}
+
+/**
  * NAPI-compatible theme layout type.
  */
 export interface NapiThemeLayout {
@@ -434,6 +474,9 @@ export interface NapiThemeLayout {
  */
 export interface NapiThemeHeader {
   logo?: string;
+  logoLight?: string;
+  logoDark?: string;
+  showSiteNameText?: boolean;
   logoWidth?: number;
   logoHeight?: number;
 }
@@ -477,6 +520,7 @@ export interface NapiThemeConfig {
   colors?: NapiThemeColors;
   darkColors?: NapiThemeColors;
   fonts?: NapiThemeFonts;
+  entryPage?: NapiThemeEntryPage;
   layout?: NapiThemeLayout;
   header?: NapiThemeHeader;
   footer?: NapiThemeFooter;

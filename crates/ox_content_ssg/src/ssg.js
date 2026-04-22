@@ -131,6 +131,22 @@ mobileSearchBtn?.addEventListener("click", () => {
 
 mobileThemeBtn?.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
 
+document.querySelectorAll(".ox-api-controls").forEach((controls) => {
+  const targetSelector = controls.getAttribute("data-ox-api-target");
+  if (!targetSelector) return;
+
+  controls.querySelectorAll("[data-ox-api-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const shouldOpen = button.getAttribute("data-ox-api-toggle") === "expand";
+      document.querySelectorAll(targetSelector).forEach((entry) => {
+        if (entry instanceof HTMLDetailsElement) {
+          entry.open = shouldOpen;
+        }
+      });
+    });
+  });
+});
+
 // ox-content:search:start
 window.__oxContentInitSearch = (() => {
   let api = null;

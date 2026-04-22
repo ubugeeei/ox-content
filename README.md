@@ -1,12 +1,14 @@
-# Ox Content
-
 <p align="center">
-  <img src="./assets/logo.svg" alt="Ox Content Logo" width="200" height="200" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/oxcontent-light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/oxcontent-dark.svg">
+    <img alt="Ox Content logo" src="./assets/oxcontent-dark.svg" height="60">
+  </picture>
 </p>
 
 <p align="center">
-  <strong>Framework-agnostic documentation tooling</strong><br>
-  High-performance Markdown parser built in Rust
+  <strong>cargo doc for JavaScript</strong><br>
+  Rust-powered document generator and high-performance Markdown toolkit
 </p>
 
 <p align="center">
@@ -22,7 +24,7 @@
 - **Blazing Fast** - Arena-allocated parser with zero-copy parsing
 - **mdast Compatible** - Full compatibility with the unified ecosystem
 - **GFM Support** - Tables, task lists, strikethrough, autolinks, footnotes
-- **Multi-Runtime** - Node.js (NAPI), WebAssembly, Native Rust
+- **Multi-Runtime** - Node.js (NAPI), WebAssembly (WIP), Native Rust
 - **Framework Agnostic** - Works with Vue, React, Svelte, and more
 - **Built-in SSG** - Static site generation with theming, search, and OG images
 - **API Docs Generation** - Generate docs from JSDoc/TypeScript (like `cargo doc`)
@@ -45,8 +47,10 @@ const { html } = parseAndRender("# Hello World", { gfm: true });
 ### Vite Plugin
 
 ```bash
-npm install @ox-content/vite-plugin @ox-content/napi
+npm install @ox-content/vite-plugin
 ```
+
+`@ox-content/vite-plugin` already installs the native `@ox-content/napi` dependency it needs.
 
 ```typescript
 // vite.config.ts
@@ -71,13 +75,13 @@ export default defineConfig({
 
 ```bash
 # Vue
-npm install @ox-content/vite-plugin-vue @ox-content/napi
+npm install @ox-content/vite-plugin-vue
 
 # React
-npm install @ox-content/vite-plugin-react @ox-content/napi
+npm install @ox-content/vite-plugin-react
 
 # Svelte
-npm install @ox-content/vite-plugin-svelte @ox-content/napi
+npm install @ox-content/vite-plugin-svelte
 ```
 
 ### i18n Static Checker (CLI)
@@ -94,28 +98,33 @@ ox-content-i18n validate "Hello {$name}"
 
 ## Performance
 
-Latest local `parse-benchmark` run on 2026-03-07 with Node `v24.14.0` on Apple M2 Max:
+Ox Content is positioned both as a document generator and as a high-performance Markdown toolkit. The numbers below focus on the Markdown engine side.
+
+Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro. The tables below show median results from 7 local runs of the benchmark harness for the large 48.7 KB case.
 
 ### Parse Only (48.7 KB)
 
-| Library            | ops/sec |  throughput |      relative |
-| ------------------ | ------: | ----------: | ------------: |
-| `@ox-content/napi` |    2463 | 117.22 MB/s |         1.00x |
-| `md4w (md4c)`      |     735 |  34.99 MB/s |  3.35x slower |
-| `markdown-it`      |     639 |  30.43 MB/s |  3.85x slower |
-| `marked`           |     362 |  17.25 MB/s |  6.80x slower |
-| `remark`           |      32 |   1.51 MB/s | 77.86x slower |
+| Library            | ops/sec | avg time | throughput |
+| ------------------ | ------: | -------: | ---------: |
+| `@ox-content/napi` |    2933 |  0.34 ms | 139.55 MB/s |
+| `md4w (md4c)`      |    1054 |  0.95 ms |  50.16 MB/s |
+| `markdown-it`      |     807 |  1.24 ms |  38.42 MB/s |
+| `marked`           |     512 |  1.95 ms |  24.36 MB/s |
+| `remark`           |      42 | 23.89 ms |   1.99 MB/s |
 
 ### Parse + Render (48.7 KB)
 
-| Library            | ops/sec |  throughput |      relative |
-| ------------------ | ------: | ----------: | ------------: |
-| `@ox-content/napi` |    2122 | 100.97 MB/s |         1.00x |
-| `md4w (md4c)`      |    1903 |  90.54 MB/s |  1.12x slower |
-| `markdown-it`      |     532 |  25.31 MB/s |  3.99x slower |
-| `marked`           |     345 |  16.42 MB/s |  6.15x slower |
-| `micromark`        |      34 |   1.62 MB/s | 62.35x slower |
-| `remark`           |      28 |   1.33 MB/s | 75.81x slower |
+| Library             | ops/sec | avg time | throughput  |
+| ------------------- | ------: | -------: | ----------: |
+| `@ox-content/napi`  |    3273 |  0.31 ms | 155.73 MB/s |
+| `Bun.markdown.html` |    2848 |  0.35 ms | 135.52 MB/s |
+| `md4w (md4c)`       |    2608 |  0.38 ms | 124.13 MB/s |
+| `markdown-it`       |     787 |  1.27 ms |  37.44 MB/s |
+| `marked`            |     489 |  2.04 ms |  23.28 MB/s |
+| `micromark`         |      44 | 22.62 ms |   2.10 MB/s |
+| `remark`            |      36 | 28.16 ms |   1.69 MB/s |
+
+In this latest local release-build sweep, Ox Content came out on top for both parse-only and parse+render in the large 48.7 KB case while still serving as the native core for the full documentation pipeline.
 
 Run the benchmark with:
 

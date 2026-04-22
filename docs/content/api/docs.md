@@ -2,63 +2,148 @@
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts)**
 
-> 13 documented symbols. Skim the one-line surface first, then expand the accordions for details.
-
-## Overview
-
-- [`extractDocs`](#extractdocs) `function` `extractDocs( srcDirs: string[], options: ResolvedDocsOptions, ): Promise<ExtractedDocs[]>` - Extracts JSDoc documentation from source files in specified directories. This function…
-- [`findFiles`](#findfiles) `function` `findFiles(dir: string, options: ResolvedDocsOptions): Promise<string[]>` - Recursively finds all source files matching include/exclude patterns.
-- [`extractFromContent`](#extractfromcontent) `function` `extractFromContent( content: string, file: string, options: ResolvedDocsOptions, ): DocEntry[]` - Extracts documentation entries from file content.
-- [`extractFunctionSignature`](#extractfunctionsignature) `function` `extractFunctionSignature(signature: string): string | undefined` - Extracts the complete function signature for display. Captures the full function declar…
-- [`extractTypesFromSignature`](#extracttypesfromsignature) `function` `extractTypesFromSignature( signature: string, _params: ParamDoc[], ):` - Extracts parameter and return types from a TypeScript function signature. Parses functi…
-- [`splitParameters`](#splitparameters) `function` `splitParameters(paramListStr: string): string[]` - Splits function parameters while respecting nested angle brackets (generics). Handles c…
-- [`parseJsdocBlock`](#parsejsdocblock) `function` - Parses a JSDoc block and the following declaration. Only matches if the declaration is…
-- [`generateMarkdown`](#generatemarkdown) `function` `generateMarkdown( docs: ExtractedDocs[], options: ResolvedDocsOptions, ): Record<string, string>` - Generates Markdown documentation from extracted docs.
-- [`SymbolLocation`](#symbollocation) `interface` - Symbol location info for cross-file linking.
-- [`convertSymbolLinks`](#convertsymbollinks) `function` `convertSymbolLinks( text: string, currentFileName: string, symbolMap: Map<string, SymbolLocation>, ): string` - Converts symbol links [SymbolName] to markdown links. Processes description text to con…
-- [`buildSymbolMap`](#buildsymbolmap) `function` `buildSymbolMap(docs: ExtractedDocs[]): Map<string, SymbolLocation>` - Builds a map of all symbols to their file locations.
-- [`writeDocs`](#writedocs) `function` - Writes generated documentation to the output directory.
-- [`generateSourceHref`](#generatesourcehref) `function` `generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number): string` - Generates a GitHub source link for a file and optional line number.
+> 8 documented symbols. Read the signatures first, then expand each item for parameters, return types, and examples.
 
 ## Reference
 
-<details id="extractdocs" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractDocs</code><code class="ox-api-entry__signature">extractDocs( srcDirs: string[], options: ResolvedDocsOptions, ): Promise&lt;ExtractedDocs[]&gt;</code><span class="ox-api-entry__description">Extracts JSDoc documentation from source files in specified directories. This f…</span></summary>
+<div class="ox-api-controls" data-ox-api-target=".ox-api-entry" role="toolbar" aria-label="Reference display controls">
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="expand">Open all</button>
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="collapse">Close all</button>
+</div>
+
+<details id="buildsymbolmap" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">buildSymbolMap(docs: ExtractedDocs[]): Map&lt;string, SymbolLocation&gt;</code><span class="ox-api-entry__description">Builds a map of all symbols to their file locations.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Extracts JSDoc documentation from source files in specified directories.<br>This function recursively searches directories for source files matching<br>the include/exclude patterns, then extracts all documented items (functions,<br>classes, interfaces, types) from those files.<br>## Process<br>1. **File Discovery**: Recursively walks directories, applying filters<br>2. **File Reading**: Loads each matching file&#39;s content<br>3. **JSDoc Extraction**: Parses JSDoc comments using regex patterns<br>4. **Declaration Matching**: Pairs JSDoc comments with source declarations<br>5. **Result Collection**: Aggregates extracted documentation by file<br>## Include/Exclude Patterns<br>Patterns support:<br>- <code>**</code> - Match any directory structure<br>- <code>*</code> - Match any filename<br>- Standard glob patterns (e.g., <code>**\/*.test.ts</code>)<br>## Performance Considerations<br>- Uses filesystem I/O which can be slow for large codebases<br>- Consider using more specific include patterns to reduce file scanning<br>- Results are not cached; call once per build/dev session<br>Each ExtractedDocs object contains file path and array of DocEntry items.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L180">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export async function extractDocs(
-  srcDirs: string[],
-  options: ResolvedDocsOptions,
-  ): Promise&lt;ExtractedDocs[]&gt;</code></pre>
+<div class="ox-api-entry__prose">
+<p>Builds a map of all symbols to their file locations.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1103-L1122">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
-<table>
-  <thead>
-    <tr><th>Name</th><th>Type</th><th>Description</th></tr>
-  </thead>
-  <tbody>
-<tr>
-  <td><code>srcDirs</code></td>
-  <td><code>string[]</code></td>
-  <td>Array of source directory paths to scan</td>
-</tr>
-<tr>
-  <td><code>options</code></td>
-  <td><code>ResolvedDocsOptions</code></td>
-  <td>Documentation extraction options (filters, grouping, etc.)</td>
-</tr>
-  </tbody>
-</table>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">docs</code>
+    <code class="ox-api-entry__param-type">ExtractedDocs[]</code>
+  </div>
+  
+</li>
+</ul>
 </div>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Promise&lt;ExtractedDocs[]&gt;</code> — Promise resolving to array of extracted documentation by file.</p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Map</code>
+  
 </div>
-<div class="ox-api-entry__section">
+</div>
+  </div>
+</details>
+
+<details id="convertsymbollinks" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">convertSymbolLinks(text: string, currentFileName: string, symbolMap: Map&lt;string, SymbolLocation&gt;): string</code><span class="ox-api-entry__description">Converts symbol links [SymbolName] to markdown links. Processes description tex…</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Converts symbol links [SymbolName] to markdown links. Processes description text to convert cargo-docs-style symbol references <code>[SymbolName]</code> into clickable markdown links pointing to the appropriate documentation page.</p>
+<h2>Examples</h2>
+<p>Input: &quot;See [transformMarkdown] for usage&quot; (same file) Output: &quot;See <a href="#transformmarkdown">transformMarkdown</a> for usage&quot; Input: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot; (different file: types.ts) Output: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot;</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1076-L1098">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">text</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  <p class="ox-api-entry__param-description">Description text containing symbol references</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">currentFileName</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  <p class="ox-api-entry__param-description">Current file name (without extension) for same-file detection</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">symbolMap</code>
+    <code class="ox-api-entry__param-type">Map</code>
+  </div>
+  <p class="ox-api-entry__param-description">Map of symbol names to their file locations</p>
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  <p class="ox-api-entry__return-description">Text with symbol references converted to markdown links</p>
+</div>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--tags">
+<h4>Tags</h4>
+<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span class="ox-api-entry__tag-value"></span></li></ul>
+</div>
+  </div>
+</details>
+
+<details id="extractdocs" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">extractDocs(srcDirs: string[], options: ResolvedDocsOptions): Promise&lt;ExtractedDocs[]&gt;</code><span class="ox-api-entry__description">Extracts JSDoc documentation from source files in specified directories. This f…</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Extracts JSDoc documentation from source files in specified directories. This function recursively searches directories for source files matching the include/exclude patterns, then extracts all documented items (functions, classes, interfaces, types) from those files.</p>
+<h2>Process</h2>
+<ol>
+<li><strong>File Discovery</strong>: Recursively walks directories, applying filters</li>
+<li><strong>File Reading</strong>: Loads each matching file&#39;s content</li>
+<li><strong>JSDoc Extraction</strong>: Parses JSDoc comments using regex patterns</li>
+<li><strong>Declaration Matching</strong>: Pairs JSDoc comments with source declarations</li>
+<li><strong>Result Collection</strong>: Aggregates extracted documentation by file</li>
+</ol>
+<h2>Include/Exclude Patterns</h2>
+<p>Patterns support:</p>
+<ul>
+<li><code>**</code> - Match any directory structure</li>
+<li><code>*</code> - Match any filename</li>
+<li>Standard glob patterns (e.g., <code>**\/*.test.ts</code>)</li>
+</ul>
+<h2>Performance Considerations</h2>
+<ul>
+<li>Uses filesystem I/O which can be slow for large codebases</li>
+<li>Consider using more specific include patterns to reduce file scanning</li>
+<li>Results are not cached; call once per build/dev session Each ExtractedDocs object contains file path and array of DocEntry items.</li>
+</ul>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L407-L437">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">srcDirs</code>
+    <code class="ox-api-entry__param-type">string[]</code>
+  </div>
+  <p class="ox-api-entry__param-description">Array of source directory paths to scan</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">ResolvedDocsOptions</code>
+  </div>
+  <p class="ox-api-entry__param-description">Documentation extraction options (filters, grouping, etc.)</p>
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  <p class="ox-api-entry__return-description">Promise resolving to array of extracted documentation by file.</p>
+</div>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
 <h4>Examples</h4>
 <pre><code class="language-ts">const docs = await extractDocs(
   [&#39;./packages/vite-plugin/src&#39;],
@@ -91,303 +176,188 @@
 </details>
 
 <details id="findfiles" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">findFiles</code><code class="ox-api-entry__signature">findFiles(dir: string, options: ResolvedDocsOptions): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Recursively finds all source files matching include/exclude patterns.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">findFiles(dir: string, options: ResolvedDocsOptions): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Recursively finds all source files matching include/exclude patterns.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Recursively finds all source files matching include/exclude patterns.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L267">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">async function findFiles(dir: string, options: ResolvedDocsOptions): Promise&lt;string[]&gt;</code></pre>
 </div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>Promise&lt;string[]&gt;</code></p>
-</div>
-<div class="ox-api-entry__section">
-<h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span></span></li></ul>
-</div>
-  </div>
-</details>
-
-<details id="extractfromcontent" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractFromContent</code><code class="ox-api-entry__signature">extractFromContent( content: string, file: string, options: ResolvedDocsOptions, ): DocEntry[]</code><span class="ox-api-entry__description">Extracts documentation entries from file content.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Extracts documentation entries from file content.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L324">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function extractFromContent(
-  content: string,
-  file: string,
-  options: ResolvedDocsOptions,
-  ): DocEntry[]</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>DocEntry[]</code></p>
-</div>
-  </div>
-</details>
-
-<details id="extractfunctionsignature" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractFunctionSignature</code><code class="ox-api-entry__signature">extractFunctionSignature(signature: string): string | undefined</code><span class="ox-api-entry__description">Extracts the complete function signature for display. Captures the full functio…</span></summary>
-  <div class="ox-api-entry__body">
-<p>Extracts the complete function signature for display.<br>Captures the full function declaration from <code>export/async/function name(...): ReturnType</code><br>or <code>export const name = (...): ReturnType =&gt; {}</code>, handling multi-line signatures.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L354">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function extractFunctionSignature(signature: string): string | undefined</code></pre>
-</div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L444-L472">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
-<table>
-  <thead>
-    <tr><th>Name</th><th>Type</th><th>Description</th></tr>
-  </thead>
-  <tbody>
-<tr>
-  <td><code>signature</code></td>
-  <td><code>string</code></td>
-  <td>Multi-line function declaration text</td>
-</tr>
-  </tbody>
-</table>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>string | undefined</code> — Cleaned function signature or undefined if not found</p>
-</div>
-<div class="ox-api-entry__section">
-<h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span></span></li></ul>
-</div>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">dir</code>
+    <code class="ox-api-entry__param-type">string</code>
   </div>
-</details>
-
-<details id="extracttypesfromsignature" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractTypesFromSignature</code><code class="ox-api-entry__signature">extractTypesFromSignature( signature: string, _params: ParamDoc[], ):</code><span class="ox-api-entry__description">Extracts parameter and return types from a TypeScript function signature. Parse…</span></summary>
-  <div class="ox-api-entry__body">
-<p>Extracts parameter and return types from a TypeScript function signature.<br>Parses function signatures to extract:<br>- Parameter names and their type annotations<br>- Return type annotation<br>Handles various function declaration styles:<br>- <code>function name(param: type): ReturnType</code><br>- <code>const name = (param: type): ReturnType =&gt; {}</code><br>- <code>export async function name(param: type): Promise&lt;ReturnType&gt;</code></p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L387">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function extractTypesFromSignature(
-  signature: string,
-  _params: ParamDoc[],
-  ):</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Parameters</h4>
-<table>
-  <thead>
-    <tr><th>Name</th><th>Type</th><th>Description</th></tr>
-  </thead>
-  <tbody>
-<tr>
-  <td><code>signature</code></td>
-  <td><code>string</code></td>
-  <td>Multi-line function signature text</td>
-</tr>
-<tr>
-  <td><code>params</code></td>
-  <td><code>ParamDoc[]</code></td>
-  <td>Array of parameter docs with names already extracted</td>
-</tr>
-  </tbody>
-</table>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>{ paramTypes: string[]; returnType?: string }</code> — Object with extracted parameter types and return type</p>
-</div>
-<div class="ox-api-entry__section">
-<h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span></span></li></ul>
-</div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">ResolvedDocsOptions</code>
   </div>
-</details>
-
-<details id="splitparameters" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">splitParameters</code><code class="ox-api-entry__signature">splitParameters(paramListStr: string): string[]</code><span class="ox-api-entry__description">Splits function parameters while respecting nested angle brackets (generics). H…</span></summary>
-  <div class="ox-api-entry__body">
-<p>Splits function parameters while respecting nested angle brackets (generics).<br>Handles cases like:<br>- <code>a: string, b: number</code> → <code>[&quot;a: string&quot;, &quot;b: number&quot;]</code><br>- <code>a: Promise&lt;string&gt;, b: Record&lt;string, any&gt;</code> → <code>[&quot;a: Promise&lt;string&gt;&quot;, &quot;b: Record&lt;string, any&gt;&quot;]</code></p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L456">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function splitParameters(paramListStr: string): string[]</code></pre>
+  
+</li>
+</ul>
 </div>
-<div class="ox-api-entry__section">
-<h4>Parameters</h4>
-<table>
-  <thead>
-    <tr><th>Name</th><th>Type</th><th>Description</th></tr>
-  </thead>
-  <tbody>
-<tr>
-  <td><code>paramListStr</code></td>
-  <td><code>string</code></td>
-  <td>String containing all parameters</td>
-</tr>
-  </tbody>
-</table>
-</div>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>string[]</code> — Array of individual parameter strings</p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
 </div>
-<div class="ox-api-entry__section">
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--tags">
 <h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span></span></li></ul>
+<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span class="ox-api-entry__tag-value"></span></li></ul>
 </div>
-  </div>
-</details>
-
-<details id="parsejsdocblock" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">parseJsdocBlock</code><span class="ox-api-entry__description">Parses a JSDoc block and the following declaration. Only matches if the declaration is immediately after the JSDoc (wit…</span></summary>
-  <div class="ox-api-entry__body">
-<p>Parses a JSDoc block and the following declaration.<br>Only matches if the declaration is immediately after the JSDoc (with only whitespace/keywords between).</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L495">View source</a></p>
   </div>
 </details>
 
 <details id="generatemarkdown" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateMarkdown</code><code class="ox-api-entry__signature">generateMarkdown( docs: ExtractedDocs[], options: ResolvedDocsOptions, ): Record&lt;string, string&gt;</code><span class="ox-api-entry__description">Generates Markdown documentation from extracted docs.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">generateMarkdown(docs: ExtractedDocs[], options: ResolvedDocsOptions): Record&lt;string, string&gt;</code><span class="ox-api-entry__description">Generates Markdown documentation from extracted docs.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Generates Markdown documentation from extracted docs.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L661">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function generateMarkdown(
-  docs: ExtractedDocs[],
-  options: ResolvedDocsOptions,
-  ): Record&lt;string, string&gt;</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L678-L725">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">docs</code>
+    <code class="ox-api-entry__param-type">ExtractedDocs[]</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">ResolvedDocsOptions</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Record&lt;string, string&gt;</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Record</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="generatesourcehref" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number, endLineNumber?: number): string</code><span class="ox-api-entry__description">Generates a GitHub source link for a file and optional line range.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Generates a GitHub source link for a file and optional line range.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1200-L1216">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">filePath</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  <p class="ox-api-entry__param-description">Full path to the source file</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">githubUrl</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  <p class="ox-api-entry__param-description">Base GitHub repository URL</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">lineNumber</code>
+    <code class="ox-api-entry__param-type">number</code>
+  </div>
+  <p class="ox-api-entry__param-description">Optional start line number to link to — optional</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">endLineNumber</code>
+    <code class="ox-api-entry__param-type">number</code>
+  </div>
+  <p class="ox-api-entry__param-description">Optional end line number to link to — optional</p>
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  <p class="ox-api-entry__return-description">Absolute GitHub URL to source code</p>
+</div>
 </div>
   </div>
 </details>
 
 <details id="symbollocation" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SymbolLocation</code><span class="ox-api-entry__description">Symbol location info for cross-file linking.</span></summary>
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">SymbolLocation</code><span class="ox-api-entry__description">Symbol location info for cross-file linking.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Symbol location info for cross-file linking.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1000">View source</a></p>
-  </div>
-</details>
-
-<details id="convertsymbollinks" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">convertSymbolLinks</code><code class="ox-api-entry__signature">convertSymbolLinks( text: string, currentFileName: string, symbolMap: Map&lt;string, SymbolLocation&gt;, ): string</code><span class="ox-api-entry__description">Converts symbol links [SymbolName] to markdown links. Processes description tex…</span></summary>
-  <div class="ox-api-entry__body">
-<p>Converts symbol links [SymbolName] to markdown links.<br>Processes description text to convert cargo-docs-style symbol references<br><code>[SymbolName]</code> into clickable markdown links pointing to the appropriate<br>documentation page.<br>## Examples<br>Input: &quot;See [transformMarkdown] for usage&quot; (same file)<br>Output: &quot;See <a href="#transformmarkdown">transformMarkdown</a> for usage&quot;<br>Input: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot; (different file: types.ts)<br>Output: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot;</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1009">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function convertSymbolLinks(
-  text: string,
-  currentFileName: string,
-  symbolMap: Map&lt;string, SymbolLocation&gt;,
-  ): string</code></pre>
 </div>
-<div class="ox-api-entry__section">
-<h4>Parameters</h4>
-<table>
-  <thead>
-    <tr><th>Name</th><th>Type</th><th>Description</th></tr>
-  </thead>
-  <tbody>
-<tr>
-  <td><code>text</code></td>
-  <td><code>string</code></td>
-  <td>Description text containing symbol references</td>
-</tr>
-<tr>
-  <td><code>currentFileName</code></td>
-  <td><code>string</code></td>
-  <td>Current file name (without extension) for same-file detection</td>
-</tr>
-<tr>
-  <td><code>symbolMap</code></td>
-  <td><code>Map&lt;string, SymbolLocation&gt;</code></td>
-  <td>Map of symbol names to their file locations</td>
-</tr>
-  </tbody>
-</table>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>string</code> — Text with symbol references converted to markdown links</p>
-</div>
-<div class="ox-api-entry__section">
-<h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span></span></li></ul>
-</div>
-  </div>
-</details>
-
-<details id="buildsymbolmap" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">buildSymbolMap</code><code class="ox-api-entry__signature">buildSymbolMap(docs: ExtractedDocs[]): Map&lt;string, SymbolLocation&gt;</code><span class="ox-api-entry__description">Builds a map of all symbols to their file locations.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Builds a map of all symbols to their file locations.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1055">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function buildSymbolMap(docs: ExtractedDocs[]): Map&lt;string, SymbolLocation&gt;</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>Map&lt;string, SymbolLocation&gt;</code></p>
-</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1048-L1052">View source</a></p>
   </div>
 </details>
 
 <details id="writedocs" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">writeDocs</code><span class="ox-api-entry__description">Writes generated documentation to the output directory.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">writeDocs(docs: Record&lt;string, string&gt;, outDir: string, extractedDocs?: ExtractedDocs[], options?: ResolvedDocsOptions): Promise&lt;void&gt;</code><span class="ox-api-entry__description">Writes generated documentation to the output directory.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Writes generated documentation to the output directory.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1079">View source</a></p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1127-L1186">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">docs</code>
+    <code class="ox-api-entry__param-type">Record</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">outDir</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">extractedDocs</code>
+    <code class="ox-api-entry__param-type">ExtractedDocs[]</code>
+  </div>
+  <p class="ox-api-entry__param-description">optional</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">ResolvedDocsOptions</code>
+  </div>
+  <p class="ox-api-entry__param-description">optional</p>
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
+</div>
+</div>
   </div>
 </details>
 
-<details id="generatesourcehref" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateSourceHref</code><code class="ox-api-entry__signature">generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number): string</code><span class="ox-api-entry__description">Generates a GitHub source link for a file and optional line number.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Generates a GitHub source link for a file and optional line number.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1146">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function generateSourceHref(filePath: string, githubUrl: string, lineNumber?: number): string</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Parameters</h4>
-<table>
-  <thead>
-    <tr><th>Name</th><th>Type</th><th>Description</th></tr>
-  </thead>
-  <tbody>
-<tr>
-  <td><code>filePath</code></td>
-  <td><code>string</code></td>
-  <td>Full path to the source file</td>
-</tr>
-<tr>
-  <td><code>githubUrl</code></td>
-  <td><code>string</code></td>
-  <td>Base GitHub repository URL</td>
-</tr>
-<tr>
-  <td><code>lineNumber</code></td>
-  <td><code>number</code></td>
-  <td>Optional line number to link to</td>
-</tr>
-  </tbody>
-</table>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>string</code> — Absolute GitHub URL to source code</p>
-</div>
-  </div>
-</details>

@@ -50,11 +50,27 @@ pub struct ThemeFonts {
     pub mono: Option<String>,
 }
 
+/// Theme configuration for entry pages.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ThemeEntryPage {
+    /// Landing page presentation mode.
+    pub mode: Option<String>,
+}
+
 /// Theme header configuration.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ThemeHeader {
     /// Logo image URL.
     pub logo: Option<String>,
+    /// Light mode logo image URL.
+    #[serde(rename = "logoLight")]
+    pub logo_light: Option<String>,
+    /// Dark mode logo image URL.
+    #[serde(rename = "logoDark")]
+    pub logo_dark: Option<String>,
+    /// Whether to render the site name text next to the logo.
+    #[serde(rename = "showSiteNameText")]
+    pub show_site_name_text: Option<bool>,
     /// Logo width in pixels.
     pub logo_width: Option<u32>,
     /// Logo height in pixels.
@@ -113,6 +129,9 @@ pub struct ThemeConfig {
     pub dark_colors: Option<ThemeColors>,
     /// Font configuration.
     pub fonts: Option<ThemeFonts>,
+    /// Entry page configuration.
+    #[serde(rename = "entryPage")]
+    pub entry_page: Option<ThemeEntryPage>,
     /// Layout configuration.
     pub layout: Option<ThemeLayout>,
     /// Header configuration.
@@ -149,6 +168,12 @@ pub struct HeroAction {
 pub struct HeroImage {
     /// Image source URL.
     pub src: String,
+    /// Light mode image source URL.
+    #[serde(rename = "lightSrc")]
+    pub light_src: Option<String>,
+    /// Dark mode image source URL.
+    #[serde(rename = "darkSrc")]
+    pub dark_src: Option<String>,
     /// Alt text.
     pub alt: Option<String>,
     /// Image width.
@@ -166,10 +191,21 @@ pub struct HeroConfig {
     pub text: Option<String>,
     /// Tagline.
     pub tagline: Option<String>,
+    /// Optional notice shown in the hero.
+    pub notice: Option<HeroNoticeConfig>,
     /// Hero image.
     pub image: Option<HeroImage>,
     /// Action buttons.
     pub actions: Option<Vec<HeroAction>>,
+}
+
+/// Hero notice configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct HeroNoticeConfig {
+    /// Notice title.
+    pub title: Option<String>,
+    /// Notice paragraphs.
+    pub body: Option<Vec<String>>,
 }
 
 /// Feature card configuration.
@@ -338,6 +374,7 @@ pub struct HeroView {
     pub name: Option<String>,
     pub text: Option<String>,
     pub tagline: Option<String>,
+    pub notice: Option<HeroNoticeConfig>,
     pub image: Option<HeroImage>,
     pub actions: Option<Vec<HeroActionView>>,
 }
@@ -354,8 +391,8 @@ struct EntryTemplate<'a> {
 #[derive(Template)]
 #[template(path = "page.html")]
 struct PageTemplate<'a> {
-    title: &'a str,
     site_name: &'a str,
+    document_title: &'a str,
     description: Option<&'a str>,
     og_image: Option<&'a str>,
     css: &'a str,
@@ -365,6 +402,9 @@ struct PageTemplate<'a> {
     embed_header_after: &'a str,
     base: &'a str,
     logo_src: &'a str,
+    logo_light_src: Option<&'a str>,
+    logo_dark_src: Option<&'a str>,
+    show_site_name_text: bool,
     logo_width: u32,
     logo_height: u32,
     social_links: &'a str,
@@ -614,21 +654,24 @@ fn generate_entry_html(entry: &EntryPageConfig, base: &str) -> String {
 
         // Process hero image src
         let image = hero.image.as_ref().map(|img| {
-            let src = if img.src.starts_with("http://")
-                || img.src.starts_with("https://")
-                || img.src.starts_with('/')
-            {
-                img.src.clone()
-            } else {
-                format!("{}{}", base, img.src)
-            };
-            HeroImage { src, alt: img.alt.clone(), width: img.width, height: img.height }
+            let src = convert_entry_link(&img.src, base);
+            let light_src = img.light_src.as_ref().map(|src| convert_entry_link(src, base));
+            let dark_src = img.dark_src.as_ref().map(|src| convert_entry_link(src, base));
+            HeroImage {
+                src,
+                light_src,
+                dark_src,
+                alt: img.alt.clone(),
+                width: img.width,
+                height: img.height,
+            }
         });
 
         HeroView {
             name: hero.name.clone(),
             text: hero.text.clone(),
             tagline: hero.tagline.clone(),
+            notice: hero.notice.clone(),
             image,
             actions,
         }
@@ -781,16 +824,21 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         .map_or_else(|| "logo.svg", std::string::String::as_str);
     let logo_width = header_config.and_then(|h| h.logo_width).unwrap_or(28);
     let logo_height = header_config.and_then(|h| h.logo_height).unwrap_or(28);
+    let show_site_name_text = header_config.and_then(|h| h.show_site_name_text).unwrap_or(true);
+
+    let resolve_theme_asset = |url: &str| {
+        if url.starts_with("http://") || url.starts_with("https://") || url.starts_with('/') {
+            url.to_string()
+        } else {
+            format!("{}{}", config.base, url)
+        }
+    };
 
     // Build logo src (prepend base if not absolute URL)
-    let logo_src = if logo_url.starts_with("http://")
-        || logo_url.starts_with("https://")
-        || logo_url.starts_with('/')
-    {
-        logo_url.to_string()
-    } else {
-        format!("{}{}", config.base, logo_url)
-    };
+    let logo_src = resolve_theme_asset(logo_url);
+    let logo_light_src =
+        header_config.and_then(|h| h.logo_light.as_deref()).map(resolve_theme_asset);
+    let logo_dark_src = header_config.and_then(|h| h.logo_dark.as_deref()).map(resolve_theme_asset);
 
     // Custom JS
     let custom_js = theme.and_then(|t| t.js.as_deref()).unwrap_or("");
@@ -823,11 +871,27 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         ("", format!("<article class=\"content\">\n{}\n      </article>", page_data.content))
     };
 
-    let body_class = if page_class.is_empty() { String::new() } else { page_class.to_string() };
+    let mut body_classes = Vec::new();
+    if !page_class.is_empty() {
+        body_classes.push(page_class.to_string());
+    }
+    if is_entry_page
+        && theme.and_then(|t| t.entry_page.as_ref()).and_then(|entry| entry.mode.as_deref())
+            == Some("subtle")
+    {
+        body_classes.push("entry-page--subtle".to_string());
+    }
+    let body_class = body_classes.join(" ");
+
+    let document_title = if page_data.title.trim() == config.site_name.trim() {
+        config.site_name.clone()
+    } else {
+        format!("{} - {}", page_data.title, config.site_name)
+    };
 
     let template = PageTemplate {
-        title: &page_data.title,
         site_name: &config.site_name,
+        document_title: &document_title,
         description: page_data.description.as_deref(),
         og_image: config.og_image.as_deref(),
         css: &all_css,
@@ -837,6 +901,9 @@ pub fn generate_html(page_data: &PageData, nav_groups: &[NavGroup], config: &Ssg
         embed_header_after,
         base: &config.base,
         logo_src: &logo_src,
+        logo_light_src: logo_light_src.as_deref(),
+        logo_dark_src: logo_dark_src.as_deref(),
+        show_site_name_text,
         logo_width,
         logo_height,
         social_links: &social_links_html,

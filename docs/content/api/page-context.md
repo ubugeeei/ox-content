@@ -2,209 +2,255 @@
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts)**
 
-> 16 documented symbols. Skim the one-line surface first, then expand the accordions for details.
-
-## Overview
-
-- [`BasePageProps`](#basepageprops) `interface` - Base page props available for all pages.
-- [`PageProps`](#pageprops) `type` - Extended page props with custom frontmatter.
-- [`SiteConfig`](#siteconfig) `interface` - Site-wide configuration available in context.
-- [`NavGroup`](#navgroup) `interface` - Navigation group.
-- [`NavItem`](#navitem) `interface` - Navigation item.
-- [`RenderContext`](#rendercontext) `interface` - Complete render context.
-- [`setRenderContext`](#setrendercontext) `function` `setRenderContext(ctx: RenderContext): void` - Sets the current render context. Called internally during page rendering.
-- [`clearRenderContext`](#clearrendercontext) `function` `clearRenderContext(): void` - Clears the current render context. Called internally after page rendering.
-- [`usePageProps`](#usepageprops) `function` - Gets the current page props.
-- [`useSiteConfig`](#usesiteconfig) `function` `useSiteConfig(): SiteConfig` - Gets the site configuration.
-- [`useRenderContext`](#userendercontext) `function` - Gets the full render context.
-- [`useNav`](#usenav) `function` `useNav(): NavGroup[]` - Gets the navigation groups.
-- [`useIsActive`](#useisactive) `function` `useIsActive(path: string): boolean` - Checks if the given path is the current page.
-- [`FrontmatterSchema`](#frontmatterschema) `interface` - Schema for frontmatter type generation.
-- [`inferType`](#infertype) `function` `inferType(value: unknown): string` - Infers TypeScript types from frontmatter values.
-- [`generateFrontmatterTypes`](#generatefrontmattertypes) `function` `generateFrontmatterTypes( samples: Record<string, unknown>[], interfaceName = "PageFrontmatter", ): string` - Generates TypeScript interface from frontmatter samples.
+> 16 documented symbols. Read the signatures first, then expand each item for parameters, return types, and examples.
 
 ## Reference
 
+<div class="ox-api-controls" data-ox-api-target=".ox-api-entry" role="toolbar" aria-label="Reference display controls">
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="expand">Open all</button>
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="collapse">Close all</button>
+</div>
+
 <details id="basepageprops" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">BasePageProps</code><span class="ox-api-entry__description">Base page props available for all pages.</span></summary>
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">BasePageProps</code><span class="ox-api-entry__description">Base page props available for all pages.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Base page props available for all pages.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L31">View source</a></p>
-  </div>
-</details>
-
-<details id="pageprops" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">type</span><code class="ox-api-entry__name">PageProps</code><span class="ox-api-entry__description">Extended page props with custom frontmatter.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Extended page props with custom frontmatter.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L53">View source</a></p>
-  </div>
-</details>
-
-<details id="siteconfig" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SiteConfig</code><span class="ox-api-entry__description">Site-wide configuration available in context.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Site-wide configuration available in context.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L62">View source</a></p>
-  </div>
-</details>
-
-<details id="navgroup" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NavGroup</code><span class="ox-api-entry__description">Navigation group.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Navigation group.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L76">View source</a></p>
-  </div>
-</details>
-
-<details id="navitem" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NavItem</code><span class="ox-api-entry__description">Navigation item.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Navigation item.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L84">View source</a></p>
-  </div>
-</details>
-
-<details id="rendercontext" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">RenderContext</code><span class="ox-api-entry__description">Complete render context.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Complete render context.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L93">View source</a></p>
-  </div>
-</details>
-
-<details id="setrendercontext" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">setRenderContext</code><code class="ox-api-entry__signature">setRenderContext(ctx: RenderContext): void</code><span class="ox-api-entry__description">Sets the current render context. Called internally during page rendering.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Sets the current render context.<br>Called internally during page rendering.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L106">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function setRenderContext(ctx: RenderContext): void</code></pre>
 </div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>void</code></p>
-</div>
-<div class="ox-api-entry__section">
-<h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span></span></li></ul>
-</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L34-L51">View source</a></p>
   </div>
 </details>
 
 <details id="clearrendercontext" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">clearRenderContext</code><code class="ox-api-entry__signature">clearRenderContext(): void</code><span class="ox-api-entry__description">Clears the current render context. Called internally after page rendering.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">clearRenderContext(): void</code><span class="ox-api-entry__description">Clears the current render context. Called internally after page rendering.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Clears the current render context.<br>Called internally after page rendering.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L115">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function clearRenderContext(): void</code></pre>
+<div class="ox-api-entry__prose">
+<p>Clears the current render context. Called internally after page rendering.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L120-L122">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>void</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">void</code>
+  
 </div>
-<div class="ox-api-entry__section">
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--tags">
 <h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span></span></li></ul>
+<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span class="ox-api-entry__tag-value"></span></li></ul>
 </div>
   </div>
 </details>
 
-<details id="usepageprops" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">usePageProps</code><span class="ox-api-entry__description">Gets the current page props.</span></summary>
+<details id="frontmatterschema" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">FrontmatterSchema</code><span class="ox-api-entry__description">Schema for frontmatter type generation.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Gets the current page props.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L124">View source</a></p>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__prose">
+<p>Schema for frontmatter type generation.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L254-L263">View source</a></p>
+  </div>
+</details>
+
+<details id="generatefrontmattertypes" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">generateFrontmatterTypes(samples: Record&lt;string, unknown&gt;[], interfaceName = &quot;PageFrontmatter&quot;): string</code><span class="ox-api-entry__description">Generates TypeScript interface from frontmatter samples.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Generates TypeScript interface from frontmatter samples.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L292-L333">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">samples</code>
+    <code class="ox-api-entry__param-type">Record[]</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">param</code>
+    <code class="ox-api-entry__param-type">unknown</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>PageProps&lt;T&gt;</code> — The current page props</p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  
 </div>
-<div class="ox-api-entry__section">
-<h4>Examples</h4>
-<pre><code class="language-ts">function PageTitle() {
-  const page = usePageProps();
-  return &lt;h1&gt;{page.title}&lt;/h1&gt;;
-}</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@throws</span><span>Error if called outside of a render context</span></li></ul>
 </div>
   </div>
 </details>
 
-<details id="usesiteconfig" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useSiteConfig</code><code class="ox-api-entry__signature">useSiteConfig(): SiteConfig</code><span class="ox-api-entry__description">Gets the site configuration.</span></summary>
+<details id="infertype" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">inferType(value: unknown): string</code><span class="ox-api-entry__description">Infers TypeScript types from frontmatter values.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Gets the site configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L150">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function useSiteConfig(): SiteConfig</code></pre>
+<div class="ox-api-entry__prose">
+<p>Infers TypeScript types from frontmatter values.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L268-L287">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">value</code>
+    <code class="ox-api-entry__param-type">unknown</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>SiteConfig</code> — The site configuration</p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  
 </div>
-<div class="ox-api-entry__section">
-<h4>Examples</h4>
-<pre><code class="language-ts">function SiteHeader() {
-  const site = useSiteConfig();
-  return &lt;header&gt;{site.name}&lt;/header&gt;;
-}</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@throws</span><span>Error if called outside of a render context</span></li></ul>
 </div>
   </div>
 </details>
 
-<details id="userendercontext" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useRenderContext</code><span class="ox-api-entry__description">Gets the full render context.</span></summary>
+<details id="navgroup" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NavGroup</code><span class="ox-api-entry__description">Navigation group.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Gets the full render context.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L174">View source</a></p>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__prose">
+<p>Navigation group.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L79-L82">View source</a></p>
+  </div>
+</details>
+
+<details id="navitem" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NavItem</code><span class="ox-api-entry__description">Navigation item.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Navigation item.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L87-L91">View source</a></p>
+  </div>
+</details>
+
+<details id="pageprops" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">type</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">PageProps&lt;T extends Record&lt;string, unknown&gt; = Record&lt;string, unknown&gt;&gt; = BasePageProps &amp; { /** Custom frontmatter fields */ frontmatter: T &amp; Record&lt;string, unknown&gt;; }</code><span class="ox-api-entry__description">Extended page props with custom frontmatter.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Extended page props with custom frontmatter.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L56-L60">View source</a></p>
+  </div>
+</details>
+
+<details id="rendercontext" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">RenderContext&lt;T extends Record&lt;string, unknown&gt; = Record&lt;string, unknown&gt;&gt;</code><span class="ox-api-entry__description">Complete render context.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Complete render context.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L96-L101">View source</a></p>
+  </div>
+</details>
+
+<details id="setrendercontext" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">setRenderContext(ctx: RenderContext): void</code><span class="ox-api-entry__description">Sets the current render context. Called internally during page rendering.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Sets the current render context. Called internally during page rendering.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L111-L113">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">ctx</code>
+    <code class="ox-api-entry__param-type">RenderContext</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>RenderContext&lt;T&gt;</code> — The complete render context</p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">void</code>
+  
 </div>
-<div class="ox-api-entry__section">
-<h4>Examples</h4>
-<pre><code class="language-ts">function Layout({ children }) {
-  const ctx = useRenderContext();
-  return (
-    &lt;html&gt;
-      &lt;head&gt;&lt;title&gt;{ctx.page.title} - {ctx.site.name}&lt;/title&gt;&lt;/head&gt;
-      &lt;body&gt;{children}&lt;/body&gt;
-    &lt;/html&gt;
-  );
-}</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__section ox-api-entry__section--tags">
 <h4>Tags</h4>
-<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@throws</span><span>Error if called outside of a render context</span></li></ul>
+<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@internal</span><span class="ox-api-entry__tag-value"></span></li></ul>
+</div>
+  </div>
+</details>
+
+<details id="siteconfig" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">SiteConfig</code><span class="ox-api-entry__description">Site-wide configuration available in context.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Site-wide configuration available in context.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L65-L74">View source</a></p>
+  </div>
+</details>
+
+<details id="useisactive" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">useIsActive(path: string): boolean</code><span class="ox-api-entry__description">Checks if the given path is the current page.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Checks if the given path is the current page.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L244-L247">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">path</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">boolean</code>
+  
+</div>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
+<h4>Examples</h4>
+<pre><code class="language-ts">function NavLink({ href, children }) {
+  const isActive = useIsActive(href);
+  return &lt;a href={href} class={isActive ? &#39;active&#39; : &#39;&#39;}&gt;{children}&lt;/a&gt;;
+}</code></pre>
 </div>
   </div>
 </details>
 
 <details id="usenav" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useNav</code><code class="ox-api-entry__signature">useNav(): NavGroup[]</code><span class="ox-api-entry__description">Gets the navigation groups.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">useNav(): NavGroup[]</code><span class="ox-api-entry__description">Gets the navigation groups.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Gets the navigation groups.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L205">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function useNav(): NavGroup[]</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L229-L231">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>NavGroup[]</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">NavGroup[]</code>
+  
 </div>
-<div class="ox-api-entry__section">
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
 <h4>Examples</h4>
 <pre><code class="language-ts">function Sidebar() {
   const nav = useNav();
@@ -227,68 +273,92 @@
   </div>
 </details>
 
-<details id="useisactive" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">useIsActive</code><code class="ox-api-entry__signature">useIsActive(path: string): boolean</code><span class="ox-api-entry__description">Checks if the given path is the current page.</span></summary>
+<details id="usepageprops" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">usePageProps&lt; T extends Record&lt;string, unknown&gt; = Record&lt;string, unknown&gt;, &gt;(): PageProps&lt;T&gt;</code><span class="ox-api-entry__description">Gets the current page props.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Checks if the given path is the current page.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L233">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function useIsActive(path: string): boolean</code></pre>
+<div class="ox-api-entry__prose">
+<p>Gets the current page props.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L138-L148">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>boolean</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">PageProps</code>
+  <p class="ox-api-entry__return-description">The current page props</p>
 </div>
-<div class="ox-api-entry__section">
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
 <h4>Examples</h4>
-<pre><code class="language-ts">function NavLink({ href, children }) {
-  const isActive = useIsActive(href);
-  return &lt;a href={href} class={isActive ? &#39;active&#39; : &#39;&#39;}&gt;{children}&lt;/a&gt;;
+<pre><code class="language-ts">function PageTitle() {
+  const page = usePageProps();
+  return &lt;h1&gt;{page.title}&lt;/h1&gt;;
 }</code></pre>
 </div>
-  </div>
-</details>
-
-<details id="frontmatterschema" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">FrontmatterSchema</code><span class="ox-api-entry__description">Schema for frontmatter type generation.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Schema for frontmatter type generation.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L251">View source</a></p>
-  </div>
-</details>
-
-<details id="infertype" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">inferType</code><code class="ox-api-entry__signature">inferType(value: unknown): string</code><span class="ox-api-entry__description">Infers TypeScript types from frontmatter values.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Infers TypeScript types from frontmatter values.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L265">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function inferType(value: unknown): string</code></pre>
+<div class="ox-api-entry__section ox-api-entry__section--tags">
+<h4>Tags</h4>
+<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@throws</span><span class="ox-api-entry__tag-value">Error if called outside of a render context</span></li></ul>
 </div>
-<div class="ox-api-entry__section">
+  </div>
+</details>
+
+<details id="userendercontext" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">useRenderContext&lt; T extends Record&lt;string, unknown&gt; = Record&lt;string, unknown&gt;, &gt;(): RenderContext&lt;T&gt;</code><span class="ox-api-entry__description">Gets the full render context.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Gets the full render context.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L193-L203">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>string</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">RenderContext</code>
+  <p class="ox-api-entry__return-description">The complete render context</p>
+</div>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
+<h4>Examples</h4>
+<pre><code class="language-ts">function Layout({ children }) {
+  const ctx = useRenderContext();
+  return (
+    &lt;html&gt;
+      &lt;head&gt;&lt;title&gt;{ctx.page.title} - {ctx.site.name}&lt;/title&gt;&lt;/head&gt;
+      &lt;body&gt;{children}&lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--tags">
+<h4>Tags</h4>
+<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@throws</span><span class="ox-api-entry__tag-value">Error if called outside of a render context</span></li></ul>
 </div>
   </div>
 </details>
 
-<details id="generatefrontmattertypes" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">generateFrontmatterTypes</code><code class="ox-api-entry__signature">generateFrontmatterTypes( samples: Record&lt;string, unknown&gt;[], interfaceName = &quot;PageFrontmatter&quot;, ): string</code><span class="ox-api-entry__description">Generates TypeScript interface from frontmatter samples.</span></summary>
+<details id="usesiteconfig" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">useSiteConfig(): SiteConfig</code><span class="ox-api-entry__description">Gets the site configuration.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Generates TypeScript interface from frontmatter samples.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L289">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function generateFrontmatterTypes(
-  samples: Record&lt;string, unknown&gt;[],
-  interfaceName = &quot;PageFrontmatter&quot;,
-  ): string</code></pre>
+<div class="ox-api-entry__prose">
+<p>Gets the site configuration.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/page-context.ts#L164-L172">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>string</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">SiteConfig</code>
+  <p class="ox-api-entry__return-description">The site configuration</p>
+</div>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
+<h4>Examples</h4>
+<pre><code class="language-ts">function SiteHeader() {
+  const site = useSiteConfig();
+  return &lt;header&gt;{site.name}&lt;/header&gt;;
+}</code></pre>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--tags">
+<h4>Tags</h4>
+<ul class="ox-api-entry__tags"><li><span class="ox-api-entry__tag-name">@throws</span><span class="ox-api-entry__tag-value">Error if called outside of a render context</span></li></ul>
 </div>
   </div>
 </details>
+

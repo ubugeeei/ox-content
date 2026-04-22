@@ -114,7 +114,7 @@ export async function transformMarkdownWithReact(
       hotkey: "k",
     },
     i18n: false,
-  } as Parameters<typeof baseTransformMarkdown>[2] & {
+  } as unknown as Parameters<typeof baseTransformMarkdown>[2] & {
     codeAnnotations?: ResolvedReactOptions["codeAnnotations"];
   };
 

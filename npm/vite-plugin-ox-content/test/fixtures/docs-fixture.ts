@@ -14,6 +14,7 @@ export function createDocsFixture(): ExtractedDocs[] {
           },
           file: "/repo/src/math.ts",
           line: 3,
+          endLine: 3,
         },
         {
           name: "round",
@@ -49,6 +50,7 @@ export function createDocsFixture(): ExtractedDocs[] {
           },
           file: "/repo/src/math.ts",
           line: 10,
+          endLine: 24,
           signature:
             'export function round(value: number, decimals: number, mode: RoundMode = "half-up"): number',
         },
@@ -79,6 +81,7 @@ export function createDocsFixture(): ExtractedDocs[] {
           },
           file: "/repo/src/utils.ts",
           line: 4,
+          endLine: 14,
           signature: "export function capitalize(value: string): string",
         },
       ],

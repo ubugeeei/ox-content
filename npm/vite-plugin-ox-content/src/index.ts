@@ -29,7 +29,7 @@ import { resolveI18nOptions, createI18nPlugin } from "./i18n";
 import type { OxContentOptions, ResolvedOptions } from "./types";
 
 export type { OxContentOptions } from "./types";
-export type { LanguageRegistration } from "shiki";
+export type { LanguageRegistration, ThemeRegistration } from "shiki";
 export type {
   CodeAnnotationSyntax,
   CodeAnnotationsOptions,
@@ -486,6 +486,7 @@ export type {
   ThemeColors,
   ThemeLayout,
   ThemeFonts,
+  ThemeEntryPage,
   ThemeHeader,
   ThemeFooter,
   SocialLinks,

@@ -204,13 +204,16 @@ export function DefaultTheme({ children }: ThemeProps): JSXNode {
   ${page.description ? `<meta name="description" content="${escapeHtml(page.description)}">` : ""}
   <style>
     :root {
-      --octc-color-primary: #e04d0a;
-      --octc-color-text: #1a1a1a;
+      --octc-color-primary: #4f6fae;
+      --octc-color-text: #131a30;
       --octc-color-bg: #ffffff;
+      --octc-color-bg-alt: #f5f7fb;
+      --octc-color-text-muted: #4f607b;
+      --octc-color-border: #d2dbea;
     }
     body {
-      font-family: system-ui, sans-serif;
-      line-height: 1.6;
+      font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI Variable", "Segoe UI", sans-serif;
+      line-height: 1.7;
       color: var(--octc-color-text);
       background: var(--octc-color-bg);
       max-width: 800px;

@@ -2,167 +2,341 @@
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts)**
 
-> 10 documented symbols. Skim the one-line surface first, then expand the accordions for details.
-
-## Overview
-
-- [`shouldSkip`](#shouldskip) `function` `shouldSkip(url: string): boolean` - Check if a request URL should be skipped by the dev server middleware.
-- [`resolveMarkdownFile`](#resolvemarkdownfile) `function` `resolveMarkdownFile(url: string, srcDir: string): Promise<string | null>` - Resolve a request URL to a markdown file path. Returns null if no matching file exists.
-- [`injectViteHmrClient`](#injectvitehmrclient) `function` `injectViteHmrClient(html: string): string` - Inject Vite HMR client script into the HTML.
-- [`DevServerCache`](#devservercache) `interface` - Dev server state for caching.
-- [`createDevServerCache`](#createdevservercache) `function` `createDevServerCache(): DevServerCache` - Create a dev server cache instance.
-- [`invalidateNavCache`](#invalidatenavcache) `function` `invalidateNavCache(cache: DevServerCache): void` - Invalidate navigation cache (called on file add/unlink).
-- [`invalidatePageCache`](#invalidatepagecache) `function` `invalidatePageCache(cache: DevServerCache, filePath: string): void` - Invalidate page cache for a specific file (called on file change).
-- [`resolveSiteName`](#resolvesitename) `function` `resolveSiteName(options: ResolvedOptions, root: string): Promise<string>` - Resolve site name from options or package.json.
-- [`renderPage`](#renderpage) `function` - Render a single markdown page to full HTML.
-- [`createDevServerMiddleware`](#createdevservermiddleware) `function` `createDevServerMiddleware( options: ResolvedOptions, root: string, cache: DevServerCache, ): Connect.NextHandleFunction` - Create the dev server middleware for SSG page serving.
+> 10 documented symbols. Read the signatures first, then expand each item for parameters, return types, and examples.
 
 ## Reference
 
-<details id="shouldskip" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">shouldSkip</code><code class="ox-api-entry__signature">shouldSkip(url: string): boolean</code><span class="ox-api-entry__description">Check if a request URL should be skipped by the dev server middleware.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Check if a request URL should be skipped by the dev server middleware.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L57">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function shouldSkip(url: string): boolean</code></pre>
+<div class="ox-api-controls" data-ox-api-target=".ox-api-entry" role="toolbar" aria-label="Reference display controls">
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="expand">Open all</button>
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="collapse">Close all</button>
 </div>
-<div class="ox-api-entry__section">
+
+<details id="createdevservercache" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">createDevServerCache(): DevServerCache</code><span class="ox-api-entry__description">Create a dev server cache instance.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Create a dev server cache instance.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L210-L216">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>boolean</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">DevServerCache</code>
+  
+</div>
 </div>
   </div>
 </details>
 
-<details id="resolvemarkdownfile" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveMarkdownFile</code><code class="ox-api-entry__signature">resolveMarkdownFile(url: string, srcDir: string): Promise&lt;string | null&gt;</code><span class="ox-api-entry__description">Resolve a request URL to a markdown file path. Returns null if no matching file…</span></summary>
+<details id="createdevservermiddleware" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">createDevServerMiddleware(options: ResolvedOptions, root: string, cache: DevServerCache): Connect.NextHandleFunction</code><span class="ox-api-entry__description">Create the dev server middleware for SSG page serving.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Resolve a request URL to a markdown file path.<br>Returns null if no matching file exists.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L79">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">async function resolveMarkdownFile(url: string, srcDir: string): Promise&lt;string | null&gt;</code></pre>
+<div class="ox-api-entry__prose">
+<p>Create the dev server middleware for SSG page serving.</p>
 </div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>Promise&lt;string | null&gt;</code></p>
-</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L351-L412">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">ResolvedOptions</code>
   </div>
-</details>
-
-<details id="injectvitehmrclient" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">injectViteHmrClient</code><code class="ox-api-entry__signature">injectViteHmrClient(html: string): string</code><span class="ox-api-entry__description">Inject Vite HMR client script into the HTML.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Inject Vite HMR client script into the HTML.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L123">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function injectViteHmrClient(html: string): string</code></pre>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">root</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">cache</code>
+    <code class="ox-api-entry__param-type">DevServerCache</code>
+  </div>
+  
+</li>
+</ul>
 </div>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>string</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Connect.NextHandleFunction</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="devservercache" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">DevServerCache</code><span class="ox-api-entry__description">Dev server state for caching.</span></summary>
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">DevServerCache</code><span class="ox-api-entry__description">Dev server state for caching.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Dev server state for caching.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L195">View source</a></p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L198-L205">View source</a></p>
   </div>
 </details>
 
-<details id="createdevservercache" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createDevServerCache</code><code class="ox-api-entry__signature">createDevServerCache(): DevServerCache</code><span class="ox-api-entry__description">Create a dev server cache instance.</span></summary>
+<details id="injectvitehmrclient" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">injectViteHmrClient(html: string): string</code><span class="ox-api-entry__description">Inject Vite HMR client script into the HTML.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Create a dev server cache instance.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L207">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function createDevServerCache(): DevServerCache</code></pre>
+<div class="ox-api-entry__prose">
+<p>Inject Vite HMR client script into the HTML.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L126-L193">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">html</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>DevServerCache</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="invalidatenavcache" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">invalidateNavCache</code><code class="ox-api-entry__signature">invalidateNavCache(cache: DevServerCache): void</code><span class="ox-api-entry__description">Invalidate navigation cache (called on file add/unlink).</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">invalidateNavCache(cache: DevServerCache): void</code><span class="ox-api-entry__description">Invalidate navigation cache (called on file add/unlink).</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Invalidate navigation cache (called on file add/unlink).</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L218">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function invalidateNavCache(cache: DevServerCache): void</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L221-L225">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">cache</code>
+    <code class="ox-api-entry__param-type">DevServerCache</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>void</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">void</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="invalidatepagecache" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">invalidatePageCache</code><code class="ox-api-entry__signature">invalidatePageCache(cache: DevServerCache, filePath: string): void</code><span class="ox-api-entry__description">Invalidate page cache for a specific file (called on file change).</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">invalidatePageCache(cache: DevServerCache, filePath: string): void</code><span class="ox-api-entry__description">Invalidate page cache for a specific file (called on file change).</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Invalidate page cache for a specific file (called on file change).</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L227">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function invalidatePageCache(cache: DevServerCache, filePath: string): void</code></pre>
 </div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>void</code></p>
-</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L230-L232">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">cache</code>
+    <code class="ox-api-entry__param-type">DevServerCache</code>
   </div>
-</details>
-
-<details id="resolvesitename" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveSiteName</code><code class="ox-api-entry__signature">resolveSiteName(options: ResolvedOptions, root: string): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Resolve site name from options or package.json.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Resolve site name from options or package.json.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L234">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">async function resolveSiteName(options: ResolvedOptions, root: string): Promise&lt;string&gt;</code></pre>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">filePath</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
 </div>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Promise&lt;string&gt;</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">void</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="renderpage" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">renderPage</code><span class="ox-api-entry__description">Render a single markdown page to full HTML.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">renderPage(filePath: string, options: ResolvedOptions, navGroups: NavGroup[], siteName: string, base: string, root: string): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Render a single markdown page to full HTML.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Render a single markdown page to full HTML.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L255">View source</a></p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L258-L346">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">filePath</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">ResolvedOptions</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">navGroups</code>
+    <code class="ox-api-entry__param-type">NavGroup[]</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">siteName</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">base</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">root</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
+</div>
+</div>
   </div>
 </details>
 
-<details id="createdevservermiddleware" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createDevServerMiddleware</code><code class="ox-api-entry__signature">createDevServerMiddleware( options: ResolvedOptions, root: string, cache: DevServerCache, ): Connect.NextHandleFunction</code><span class="ox-api-entry__description">Create the dev server middleware for SSG page serving.</span></summary>
+<details id="resolvemarkdownfile" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">resolveMarkdownFile(url: string, srcDir: string): Promise&lt;string | null&gt;</code><span class="ox-api-entry__description">Resolve a request URL to a markdown file path. Returns null if no matching file…</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Create the dev server middleware for SSG page serving.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L348">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function createDevServerMiddleware(
-  options: ResolvedOptions,
-  root: string,
-  cache: DevServerCache,
-  ): Connect.NextHandleFunction</code></pre>
+<div class="ox-api-entry__prose">
+<p>Resolve a request URL to a markdown file path. Returns null if no matching file exists.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L83-L121">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">url</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">srcDir</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Connect.NextHandleFunction</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
+</div>
 </div>
   </div>
 </details>
+
+<details id="resolvesitename" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">resolveSiteName(options: ResolvedOptions, root: string): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Resolve site name from options or package.json.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Resolve site name from options or package.json.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L237-L253">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">ResolvedOptions</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">root</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="shouldskip" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">shouldSkip(url: string): boolean</code><span class="ox-api-entry__description">Check if a request URL should be skipped by the dev server middleware.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Check if a request URL should be skipped by the dev server middleware.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/dev-server.ts#L60-L77">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">url</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">boolean</code>
+  
+</div>
+</div>
+  </div>
+</details>
+

@@ -2,7 +2,7 @@
  * Type definitions for @ox-content/vite-plugin
  */
 
-import type { LanguageRegistration } from "shiki";
+import type { LanguageRegistration, ThemeRegistration } from "shiki";
 import type { ThemeConfig, ResolvedThemeConfig } from "./theme";
 
 // =============================================================================
@@ -27,12 +27,26 @@ export interface HeroAction {
 export interface HeroImage {
   /** Image source URL */
   src: string;
+  /** Light mode image source URL */
+  lightSrc?: string;
+  /** Dark mode image source URL */
+  darkSrc?: string;
   /** Alt text */
   alt?: string;
   /** Image width */
   width?: number;
   /** Image height */
   height?: number;
+}
+
+/**
+ * Hero notice configuration.
+ */
+export interface HeroNotice {
+  /** Notice title */
+  title?: string;
+  /** Notice paragraphs */
+  body?: string[];
 }
 
 /**
@@ -45,6 +59,8 @@ export interface HeroConfig {
   text?: string;
   /** Tagline (smaller, muted) */
   tagline?: string;
+  /** Notice shown near the top of the hero */
+  notice?: HeroNotice;
   /** Hero image */
   image?: HeroImage;
   /** Action buttons */
@@ -224,7 +240,7 @@ export interface OxContentOptions {
    * Syntax highlighting theme.
    * @default 'github-dark'
    */
-  highlightTheme?: string;
+  highlightTheme?: string | ThemeRegistration;
 
   /**
    * Additional languages for syntax highlighting.
@@ -329,7 +345,7 @@ export interface ResolvedOptions {
   taskLists: boolean;
   strikethrough: boolean;
   highlight: boolean;
-  highlightTheme: string;
+  highlightTheme: string | ThemeRegistration;
   highlightLangs: LanguageRegistration[];
   codeAnnotations: ResolvedCodeAnnotationsOptions;
   mermaid: boolean;
@@ -668,6 +684,7 @@ export interface DocEntry {
   private?: boolean;
   file: string;
   line: number;
+  endLine: number;
   signature?: string; // Full function/type signature (for functions and type aliases)
 }
 

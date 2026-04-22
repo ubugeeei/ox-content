@@ -2,13 +2,13 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPatternKind, Class, Declaration, ExportDefaultDeclarationKind, Function, Statement,
-    TSSignature, TSType, TSTypeName,
+    BindingPatternKind, Class, Comment, Declaration, ExportDefaultDeclarationKind, Expression,
+    Function, Statement, TSSignature, TSType, TSTypeName,
 };
 use oxc_ast::visit::walk;
 use oxc_ast::Visit;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use thiserror::Error;
@@ -45,8 +45,12 @@ pub struct DocItem {
     pub source_path: String,
     /// Line number in source.
     pub line: u32,
+    /// End line number in source.
+    pub end_line: u32,
     /// Column number in source.
     pub column: u32,
+    /// Raw JSDoc comment content without the outer delimiters.
+    pub jsdoc: Option<String>,
     /// Whether the item is exported.
     pub exported: bool,
     /// Type signature (if applicable).
@@ -164,7 +168,12 @@ impl DocExtractor {
             return Err(ExtractError::Parse(error_msg));
         }
 
-        let mut visitor = DocVisitor::new(source, file_path, self.include_private);
+        let mut visitor = DocVisitor::new(
+            source,
+            file_path,
+            self.include_private,
+            ret.program.comments.iter().copied().collect(),
+        );
         visitor.visit_program(&ret.program);
 
         Ok(visitor.items)
@@ -191,146 +200,327 @@ struct DocVisitor<'a> {
     source: &'a str,
     file_path: &'a str,
     include_private: bool,
+    comments: Vec<Comment>,
+    line_starts: Vec<usize>,
     items: Vec<DocItem>,
     /// Track default export
     has_default_export: bool,
 }
 
 impl<'a> DocVisitor<'a> {
-    fn new(source: &'a str, file_path: &'a str, include_private: bool) -> Self {
-        Self { source, file_path, include_private, items: Vec::new(), has_default_export: false }
+    fn new(
+        source: &'a str,
+        file_path: &'a str,
+        include_private: bool,
+        comments: Vec<Comment>,
+    ) -> Self {
+        let mut line_starts = vec![0];
+        line_starts.extend(
+            source
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
+        );
+
+        Self {
+            source,
+            file_path,
+            include_private,
+            comments,
+            line_starts,
+            items: Vec::new(),
+            has_default_export: false,
+        }
     }
 
-    /// Extract JSDoc comment before a given position.
-    /// Only extracts if the JSDoc is immediately adjacent to the declaration
-    /// (with only whitespace and keywords like 'export', 'async', etc. in between).
-    fn extract_jsdoc(&self, start: u32) -> Option<(String, Vec<DocTag>)> {
-        let source_before = &self.source[..start as usize];
+    fn slice(&self, start: u32, end: u32) -> String {
+        self.source[start as usize..end as usize].to_string()
+    }
 
-        // Find the last JSDoc comment (/** ... */)
-        if let Some(end) = source_before.rfind("*/") {
-            let remaining = &source_before[..end];
-            if let Some(start_idx) = remaining.rfind("/**") {
-                // Check that between the comment end and declaration start,
-                // there's only whitespace and allowed keywords
-                let between = &source_before[end + 2..];
-                let between_trimmed = between.trim();
+    fn line_number(&self, position: u32) -> u32 {
+        let position = position as usize;
+        self.line_starts.partition_point(|&start| start <= position) as u32
+    }
 
-                // Skip if there's actual code between the comment and declaration
-                // Allow: whitespace, 'export', 'default', 'async', 'function', 'class', 'interface', 'type', 'const', 'let', 'var', 'enum'
-                let allowed_keywords = [
-                    "export",
-                    "default",
-                    "async",
-                    "function",
-                    "class",
-                    "interface",
-                    "type",
-                    "const",
-                    "let",
-                    "var",
-                    "enum",
-                    "abstract",
-                    "declare",
-                ];
+    fn column_number(&self, position: u32) -> u32 {
+        let position = position as usize;
+        let line_index = self.line_starts.partition_point(|&start| start <= position);
+        let line_start = self.line_starts[line_index.saturating_sub(1)];
+        (position.saturating_sub(line_start)) as u32
+    }
 
-                // Check if the content between is just allowed keywords
-                let words: Vec<&str> = between_trimmed.split_whitespace().collect();
-                let is_adjacent =
-                    words.iter().all(|word| allowed_keywords.contains(word) || word.is_empty());
+    fn span_lines(&self, start: u32, end: u32) -> (u32, u32) {
+        let start_line = self.line_number(start);
+        let end_position = end.saturating_sub(1).max(start);
+        let end_line = self.line_number(end_position);
+        (start_line, end_line)
+    }
 
-                if is_adjacent {
-                    let comment = &source_before[start_idx..end + 2];
-                    let (doc, tags) = Self::parse_jsdoc(comment);
-                    return Some((doc, tags));
-                }
-            }
+    fn extract_jsdoc(&self, attached_to: u32) -> Option<(String, String, Vec<DocTag>)> {
+        let comment =
+            self.comments.iter().rev().find(|comment| {
+                comment.attached_to == attached_to && comment.is_jsdoc(self.source)
+            })?;
+
+        let mut raw = comment.content_span().source_text(self.source).to_string();
+        if raw.starts_with('*') {
+            raw.remove(0);
         }
-        None
+        let raw = raw.trim_matches('\n').to_string();
+        let (doc, tags) = Self::parse_jsdoc(&raw);
+        Some((raw, doc, tags))
     }
 
     /// Parse JSDoc comment into description and tags.
     fn parse_jsdoc(comment: &str) -> (String, Vec<DocTag>) {
-        let mut description = String::new();
+        let mut description_lines = Vec::new();
         let mut tags = Vec::new();
-        let mut current_tag: Option<(String, String)> = None;
+        let mut current_tag: Option<(String, Vec<String>)> = None;
 
-        // Remove /** and */ and leading asterisks
-        let lines: Vec<&str> = comment
-            .trim_start_matches("/**")
-            .trim_end_matches("*/")
+        let lines: Vec<String> = comment
             .lines()
-            .map(|line| line.trim().trim_start_matches('*').trim())
-            .filter(|line| !line.is_empty())
+            .map(|line| {
+                let trimmed = line.trim_start();
+                let trimmed = trimmed.strip_prefix('*').unwrap_or(trimmed);
+                trimmed.strip_prefix(' ').unwrap_or(trimmed).trim_end().to_string()
+            })
             .collect();
 
         for line in lines {
-            if line.starts_with('@') {
+            let trimmed = line.trim_start();
+            if let Some(without_at) = trimmed.strip_prefix('@') {
                 // Save previous tag if any
-                if let Some((tag, value)) = current_tag.take() {
-                    tags.push(DocTag { tag, value });
+                if let Some((tag, value_lines)) = current_tag.take() {
+                    tags.push(DocTag { tag, value: value_lines.join("\n").trim().to_string() });
                 }
 
-                // Parse new tag
-                let parts: Vec<&str> = line.splitn(2, ' ').collect();
-                let tag_name = parts[0].trim_start_matches('@').to_string();
-                let tag_value = parts.get(1).unwrap_or(&"").to_string();
-                current_tag = Some((tag_name, tag_value));
-            } else if let Some((_, ref mut value)) = current_tag {
-                // Continue previous tag value
-                if !value.is_empty() {
-                    value.push(' ');
-                }
-                value.push_str(line);
+                let split_at = without_at
+                    .char_indices()
+                    .find_map(|(index, ch)| ch.is_whitespace().then_some(index))
+                    .unwrap_or(without_at.len());
+                let tag_name = without_at[..split_at].to_string();
+                let tag_value = without_at[split_at..].trim_start().to_string();
+                current_tag = Some((tag_name, vec![tag_value]));
+            } else if let Some((_, ref mut value_lines)) = current_tag {
+                value_lines.push(line);
             } else {
-                // Add to description
-                if !description.is_empty() {
-                    description.push(' ');
-                }
-                description.push_str(line);
+                description_lines.push(line);
             }
         }
 
         // Save last tag if any
-        if let Some((tag, value)) = current_tag {
-            tags.push(DocTag { tag, value });
+        if let Some((tag, value_lines)) = current_tag {
+            tags.push(DocTag { tag, value: value_lines.join("\n").trim().to_string() });
         }
 
-        (description, tags)
+        (description_lines.join("\n").trim().to_string(), tags)
     }
 
-    /// Format a function signature.
-    fn format_function_signature(&self, func: &Function) -> String {
+    fn format_type_parameter_declaration<T>(
+        &self,
+        type_params: Option<&oxc_allocator::Box<'a, T>>,
+    ) -> String
+    where
+        T: oxc_span::GetSpan,
+    {
+        type_params
+            .map(|type_params| self.slice(type_params.span().start, type_params.span().end))
+            .unwrap_or_default()
+    }
+
+    fn format_formal_parameters(&self, params: &oxc_ast::ast::FormalParameters<'a>) -> String {
+        let mut items = params
+            .items
+            .iter()
+            .map(|param| self.slice(param.span.start, param.span.end))
+            .collect::<Vec<_>>();
+
+        if let Some(rest) = &params.rest {
+            items.push(format!(
+                "...{}",
+                self.slice(rest.argument.span().start, rest.argument.span().end)
+            ));
+        }
+
+        items.join(", ")
+    }
+
+    fn format_function_signature(&self, func: &Function<'a>, name: &str, exported: bool) -> String {
         let mut sig = String::new();
 
-        // Function name
-        if let Some(id) = &func.id {
-            sig.push_str(id.name.as_str());
+        if exported {
+            sig.push_str("export ");
         }
-
-        // Type parameters
-        if let Some(type_params) = &func.type_parameters {
-            sig.push('<');
-            let params: Vec<String> =
-                type_params.params.iter().map(|p| p.name.name.to_string()).collect();
-            sig.push_str(&params.join(", "));
-            sig.push('>');
+        if func.declare {
+            sig.push_str("declare ");
         }
-
-        // Parameters
+        if func.r#async {
+            sig.push_str("async ");
+        }
+        sig.push_str("function ");
+        if func.generator {
+            sig.push('*');
+        }
+        sig.push_str(name);
+        sig.push_str(&self.format_type_parameter_declaration(func.type_parameters.as_ref()));
         sig.push('(');
-        let params: Vec<String> =
-            func.params.items.iter().map(|p| self.format_binding_pattern(&p.pattern)).collect();
-        sig.push_str(&params.join(", "));
+        sig.push_str(&self.format_formal_parameters(&func.params));
         sig.push(')');
 
-        // Return type
-        if let Some(return_type) = &func.return_type {
+        if let Some(return_type) = func.return_type.as_ref() {
             sig.push_str(": ");
-            sig.push_str(&self.format_ts_type(&return_type.type_annotation));
+            sig.push_str(&self.slice(
+                return_type.type_annotation.span().start,
+                return_type.type_annotation.span().end,
+            ));
         }
 
         sig
+    }
+
+    fn format_assigned_function_signature(
+        &self,
+        name: &str,
+        r#async: bool,
+        type_parameters: Option<
+            &oxc_allocator::Box<'a, oxc_ast::ast::TSTypeParameterDeclaration<'a>>,
+        >,
+        params: &oxc_ast::ast::FormalParameters<'a>,
+        return_type: Option<&oxc_allocator::Box<'a, oxc_ast::ast::TSTypeAnnotation<'a>>>,
+    ) -> String {
+        let mut sig = String::new();
+        if r#async {
+            sig.push_str("async ");
+        }
+        sig.push_str(name);
+        sig.push_str(&self.format_type_parameter_declaration(type_parameters));
+        sig.push('(');
+        sig.push_str(&self.format_formal_parameters(params));
+        sig.push(')');
+
+        if let Some(return_type) = return_type {
+            sig.push_str(": ");
+            sig.push_str(&self.slice(
+                return_type.type_annotation.span().start,
+                return_type.type_annotation.span().end,
+            ));
+        }
+
+        sig
+    }
+
+    fn format_class_signature(&self, class: &Class, name: &str, exported: bool) -> String {
+        let mut sig = String::new();
+        if exported {
+            sig.push_str("export ");
+        }
+        if class.r#abstract {
+            sig.push_str("abstract ");
+        }
+        if class.declare {
+            sig.push_str("declare ");
+        }
+        sig.push_str("class ");
+        sig.push_str(name);
+        sig.push_str(&self.format_type_parameter_declaration(class.type_parameters.as_ref()));
+
+        if let Some(super_class) = &class.super_class {
+            sig.push_str(" extends ");
+            sig.push_str(&self.slice(super_class.span().start, super_class.span().end));
+            if let Some(type_params) = &class.super_type_parameters {
+                sig.push_str(&self.format_type_parameter_declaration(Some(type_params)));
+            }
+        }
+
+        if let Some(implements) = &class.implements {
+            let implements = implements
+                .iter()
+                .map(|item| {
+                    let mut value =
+                        self.slice(item.expression.span().start, item.expression.span().end);
+                    if let Some(type_params) = &item.type_parameters {
+                        value.push_str(&self.format_type_parameter_declaration(Some(type_params)));
+                    }
+                    value
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+
+            if !implements.is_empty() {
+                sig.push_str(" implements ");
+                sig.push_str(&implements);
+            }
+        }
+
+        sig
+    }
+
+    fn format_interface_signature(
+        &self,
+        interface: &oxc_ast::ast::TSInterfaceDeclaration<'a>,
+        exported: bool,
+    ) -> String {
+        let mut sig = String::new();
+        if exported {
+            sig.push_str("export ");
+        }
+        if interface.declare {
+            sig.push_str("declare ");
+        }
+        sig.push_str("interface ");
+        sig.push_str(interface.id.name.as_str());
+        sig.push_str(&self.format_type_parameter_declaration(interface.type_parameters.as_ref()));
+
+        if let Some(extends) = &interface.extends {
+            let extends = extends
+                .iter()
+                .map(|item| {
+                    let mut value =
+                        self.slice(item.expression.span().start, item.expression.span().end);
+                    if let Some(type_params) = &item.type_parameters {
+                        value.push_str(&self.format_type_parameter_declaration(Some(type_params)));
+                    }
+                    value
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+
+            if !extends.is_empty() {
+                sig.push_str(" extends ");
+                sig.push_str(&extends);
+            }
+        }
+
+        sig
+    }
+
+    fn format_type_alias_signature(
+        &self,
+        type_alias: &oxc_ast::ast::TSTypeAliasDeclaration<'a>,
+        exported: bool,
+    ) -> String {
+        let mut sig = String::new();
+        if exported {
+            sig.push_str("export ");
+        }
+        if type_alias.declare {
+            sig.push_str("declare ");
+        }
+        sig.push_str("type ");
+        sig.push_str(type_alias.id.name.as_str());
+        sig.push_str(&self.format_type_parameter_declaration(type_alias.type_parameters.as_ref()));
+        sig.push_str(" = ");
+        sig.push_str(
+            &self.slice(
+                type_alias.type_annotation.span().start,
+                type_alias.type_annotation.span().end,
+            ),
+        );
+        sig
+    }
+
+    fn has_private_tag(tags: &[DocTag]) -> bool {
+        tags.iter().any(|tag| tag.tag == "private")
     }
 
     /// Format a binding pattern.
@@ -423,9 +613,12 @@ impl<'a> DocVisitor<'a> {
         }
     }
 
-    /// Extract parameters from a function.
-    fn extract_params(&self, func: &Function, tags: &[DocTag]) -> Vec<ParamDoc> {
-        func.params
+    fn extract_params_from_formals(
+        &self,
+        params: &oxc_ast::ast::FormalParameters<'a>,
+        tags: &[DocTag],
+    ) -> Vec<ParamDoc> {
+        params
             .items
             .iter()
             .map(|param| {
@@ -460,34 +653,55 @@ impl<'a> DocVisitor<'a> {
             .collect()
     }
 
-    /// Extract return type from tags.
-    fn extract_return_type(&self, func: &Function, tags: &[DocTag]) -> Option<String> {
-        func.return_type.as_ref().map(|r| self.format_ts_type(&r.type_annotation)).or_else(|| {
+    /// Extract parameters from a function.
+    fn extract_params(&self, func: &Function, tags: &[DocTag]) -> Vec<ParamDoc> {
+        self.extract_params_from_formals(&func.params, tags)
+    }
+
+    fn extract_return_type_from_annotation(
+        &self,
+        return_type: Option<&oxc_allocator::Box<'a, oxc_ast::ast::TSTypeAnnotation<'a>>>,
+        tags: &[DocTag],
+    ) -> Option<String> {
+        return_type.map(|r| self.format_ts_type(&r.type_annotation)).or_else(|| {
             tags.iter().find(|t| t.tag == "returns" || t.tag == "return").map(|t| t.value.clone())
         })
     }
 
-    /// Create a DocItem from a function.
-    fn create_function_item(&self, func: &Function, exported: bool) -> Option<DocItem> {
-        let name = func.id.as_ref()?.name.to_string();
+    /// Extract return type from tags.
+    fn extract_return_type(&self, func: &Function, tags: &[DocTag]) -> Option<String> {
+        self.extract_return_type_from_annotation(func.return_type.as_ref(), tags)
+    }
 
-        // Skip private items if not included
-        if !self.include_private && name.starts_with('_') {
+    /// Create a DocItem from a function.
+    fn create_function_item(
+        &self,
+        func: &Function,
+        exported: bool,
+        attached_to: u32,
+    ) -> Option<DocItem> {
+        let name = func.id.as_ref()?.name.to_string();
+        let (jsdoc, doc, tags) = self.extract_jsdoc(attached_to)?;
+        if !self.include_private && Self::has_private_tag(&tags) {
             return None;
         }
-
-        let (doc, tags) =
-            self.extract_jsdoc(func.span.start).unwrap_or((String::new(), Vec::new()));
+        let (line, end_line) = self.span_lines(attached_to, func.span.end);
 
         Some(DocItem {
             name,
             kind: DocItemKind::Function,
             doc: if doc.is_empty() { None } else { Some(doc) },
             source_path: self.file_path.to_string(),
-            line: func.span.start,
-            column: 0,
+            line,
+            end_line,
+            column: self.column_number(attached_to),
+            jsdoc: Some(jsdoc),
             exported,
-            signature: Some(self.format_function_signature(func)),
+            signature: Some(self.format_function_signature(
+                func,
+                func.id.as_ref()?.name.as_str(),
+                exported,
+            )),
             params: self.extract_params(func, &tags),
             return_type: self.extract_return_type(func, &tags),
             children: Vec::new(),
@@ -496,14 +710,18 @@ impl<'a> DocVisitor<'a> {
     }
 
     /// Create a DocItem from a class.
-    fn create_class_item(&self, class: &Class, name: &str, exported: bool) -> Option<DocItem> {
-        // Skip private items if not included
-        if !self.include_private && name.starts_with('_') {
+    fn create_class_item(
+        &self,
+        class: &Class,
+        name: &str,
+        exported: bool,
+        attached_to: u32,
+    ) -> Option<DocItem> {
+        let (jsdoc, doc, tags) = self.extract_jsdoc(attached_to)?;
+        if !self.include_private && Self::has_private_tag(&tags) {
             return None;
         }
-
-        let (doc, tags) =
-            self.extract_jsdoc(class.span.start).unwrap_or((String::new(), Vec::new()));
+        let (line, end_line) = self.span_lines(attached_to, class.span.end);
 
         let mut children = Vec::new();
 
@@ -516,10 +734,6 @@ impl<'a> DocVisitor<'a> {
                         _ => continue,
                     };
 
-                    if !self.include_private && method_name.starts_with('_') {
-                        continue;
-                    }
-
                     let kind = match method.kind {
                         oxc_ast::ast::MethodDefinitionKind::Constructor => DocItemKind::Constructor,
                         oxc_ast::ast::MethodDefinitionKind::Get => DocItemKind::Getter,
@@ -527,19 +741,34 @@ impl<'a> DocVisitor<'a> {
                         oxc_ast::ast::MethodDefinitionKind::Method => DocItemKind::Method,
                     };
 
-                    let (method_doc, method_tags) = self
-                        .extract_jsdoc(method.span.start)
-                        .unwrap_or((String::new(), Vec::new()));
+                    let Some((method_jsdoc, method_doc, method_tags)) =
+                        self.extract_jsdoc(method.span.start)
+                    else {
+                        continue;
+                    };
+                    if !self.include_private && Self::has_private_tag(&method_tags) {
+                        continue;
+                    }
+                    let (method_line, method_end_line) =
+                        self.span_lines(method.span.start, method.span.end);
 
                     children.push(DocItem {
                         name: method_name,
                         kind,
                         doc: if method_doc.is_empty() { None } else { Some(method_doc) },
                         source_path: self.file_path.to_string(),
-                        line: method.span.start,
-                        column: 0,
+                        line: method_line,
+                        end_line: method_end_line,
+                        column: self.column_number(method.span.start),
+                        jsdoc: Some(method_jsdoc),
                         exported: false,
-                        signature: Some(self.format_function_signature(&method.value)),
+                        signature: Some(self.format_assigned_function_signature(
+                            "",
+                            method.value.r#async,
+                            method.value.type_parameters.as_ref(),
+                            &method.value.params,
+                            method.value.return_type.as_ref(),
+                        )),
                         params: self.extract_params(&method.value, &method_tags),
                         return_type: self.extract_return_type(&method.value, &method_tags),
                         children: Vec::new(),
@@ -552,12 +781,16 @@ impl<'a> DocVisitor<'a> {
                         _ => continue,
                     };
 
-                    if !self.include_private && prop_name.starts_with('_') {
+                    let Some((prop_jsdoc, prop_doc, prop_tags)) =
+                        self.extract_jsdoc(prop.span.start)
+                    else {
+                        continue;
+                    };
+                    if !self.include_private && Self::has_private_tag(&prop_tags) {
                         continue;
                     }
-
-                    let (prop_doc, prop_tags) =
-                        self.extract_jsdoc(prop.span.start).unwrap_or((String::new(), Vec::new()));
+                    let (prop_line, prop_end_line) =
+                        self.span_lines(prop.span.start, prop.span.end);
 
                     let type_annotation = prop
                         .type_annotation
@@ -569,8 +802,10 @@ impl<'a> DocVisitor<'a> {
                         kind: DocItemKind::Property,
                         doc: if prop_doc.is_empty() { None } else { Some(prop_doc) },
                         source_path: self.file_path.to_string(),
-                        line: prop.span.start,
-                        column: 0,
+                        line: prop_line,
+                        end_line: prop_end_line,
+                        column: self.column_number(prop.span.start),
+                        jsdoc: Some(prop_jsdoc),
                         exported: false,
                         signature: type_annotation,
                         params: Vec::new(),
@@ -588,10 +823,12 @@ impl<'a> DocVisitor<'a> {
             kind: DocItemKind::Class,
             doc: if doc.is_empty() { None } else { Some(doc) },
             source_path: self.file_path.to_string(),
-            line: class.span.start,
-            column: 0,
+            line,
+            end_line,
+            column: self.column_number(attached_to),
+            jsdoc: Some(jsdoc),
             exported,
-            signature: None,
+            signature: Some(self.format_class_signature(class, name, exported)),
             params: Vec::new(),
             return_type: None,
             children,
@@ -605,14 +842,15 @@ impl<'a> Visit<'a> for DocVisitor<'a> {
         match stmt {
             Statement::ExportNamedDeclaration(export) => {
                 if let Some(ref decl) = export.declaration {
-                    self.visit_declaration_as_exported(decl);
+                    self.visit_declaration_as_exported(decl, export.span.start);
                 }
             }
             Statement::ExportDefaultDeclaration(export) => {
                 self.has_default_export = true;
                 match &export.declaration {
                     ExportDefaultDeclarationKind::FunctionDeclaration(func) => {
-                        if let Some(item) = self.create_function_item(func, true) {
+                        if let Some(item) = self.create_function_item(func, true, export.span.start)
+                        {
                             self.items.push(item);
                         }
                     }
@@ -621,7 +859,9 @@ impl<'a> Visit<'a> for DocVisitor<'a> {
                             .id
                             .as_ref()
                             .map_or_else(|| "default".to_string(), |id| id.name.to_string());
-                        if let Some(item) = self.create_class_item(class, &name, true) {
+                        if let Some(item) =
+                            self.create_class_item(class, &name, true, export.span.start)
+                        {
                             self.items.push(item);
                         }
                     }
@@ -636,86 +876,130 @@ impl<'a> Visit<'a> for DocVisitor<'a> {
 
     fn visit_declaration(&mut self, decl: &Declaration<'a>) {
         // Only visit non-exported declarations
-        self.visit_declaration_internal(decl, false);
+        self.visit_declaration_internal(decl, false, decl.span().start);
     }
 }
 
 impl<'a> DocVisitor<'a> {
-    fn visit_declaration_as_exported(&mut self, decl: &Declaration<'a>) {
-        self.visit_declaration_internal(decl, true);
+    fn visit_declaration_as_exported(&mut self, decl: &Declaration<'a>, attached_to: u32) {
+        self.visit_declaration_internal(decl, true, attached_to);
     }
 
-    fn visit_declaration_internal(&mut self, decl: &Declaration<'a>, exported: bool) {
+    fn visit_declaration_internal(
+        &mut self,
+        decl: &Declaration<'a>,
+        exported: bool,
+        attached_to: u32,
+    ) {
         match decl {
             Declaration::FunctionDeclaration(func) => {
-                if let Some(item) = self.create_function_item(func, exported) {
+                if let Some(item) = self.create_function_item(func, exported, attached_to) {
                     self.items.push(item);
                 }
             }
             Declaration::ClassDeclaration(class) => {
                 if let Some(id) = &class.id {
                     let name = id.name.to_string();
-                    if let Some(item) = self.create_class_item(class, &name, exported) {
+                    if let Some(item) = self.create_class_item(class, &name, exported, attached_to)
+                    {
                         self.items.push(item);
                     }
                 }
             }
             Declaration::VariableDeclaration(var_decl) => {
+                let Some((jsdoc, doc, tags)) = self.extract_jsdoc(attached_to) else {
+                    return;
+                };
+                if !self.include_private && Self::has_private_tag(&tags) {
+                    return;
+                }
+                let (line, end_line) = self.span_lines(attached_to, var_decl.span.end);
+
                 for declarator in &var_decl.declarations {
                     if let BindingPatternKind::BindingIdentifier(id) = &declarator.id.kind {
                         let name = id.name.to_string();
 
-                        if !self.include_private && name.starts_with('_') {
+                        let Some(initializer) = &declarator.init else {
                             continue;
+                        };
+
+                        match initializer {
+                            Expression::ArrowFunctionExpression(arrow) => {
+                                self.items.push(DocItem {
+                                    name: name.clone(),
+                                    kind: DocItemKind::Function,
+                                    doc: if doc.is_empty() { None } else { Some(doc.clone()) },
+                                    source_path: self.file_path.to_string(),
+                                    line,
+                                    end_line,
+                                    column: self.column_number(attached_to),
+                                    jsdoc: Some(jsdoc.clone()),
+                                    exported,
+                                    signature: Some(self.format_assigned_function_signature(
+                                        &name,
+                                        arrow.r#async,
+                                        arrow.type_parameters.as_ref(),
+                                        &arrow.params,
+                                        arrow.return_type.as_ref(),
+                                    )),
+                                    params: self.extract_params_from_formals(&arrow.params, &tags),
+                                    return_type: self.extract_return_type_from_annotation(
+                                        arrow.return_type.as_ref(),
+                                        &tags,
+                                    ),
+                                    children: Vec::new(),
+                                    tags: tags.clone(),
+                                });
+                            }
+                            Expression::FunctionExpression(func_expr) => {
+                                self.items.push(DocItem {
+                                    name: name.clone(),
+                                    kind: DocItemKind::Function,
+                                    doc: if doc.is_empty() { None } else { Some(doc.clone()) },
+                                    source_path: self.file_path.to_string(),
+                                    line,
+                                    end_line,
+                                    column: self.column_number(attached_to),
+                                    jsdoc: Some(jsdoc.clone()),
+                                    exported,
+                                    signature: Some(self.format_assigned_function_signature(
+                                        &name,
+                                        func_expr.r#async,
+                                        func_expr.type_parameters.as_ref(),
+                                        &func_expr.params,
+                                        func_expr.return_type.as_ref(),
+                                    )),
+                                    params: self.extract_params(func_expr, &tags),
+                                    return_type: self.extract_return_type(func_expr, &tags),
+                                    children: Vec::new(),
+                                    tags: tags.clone(),
+                                });
+                            }
+                            _ => {}
                         }
-
-                        let (doc, tags) = self
-                            .extract_jsdoc(var_decl.span.start)
-                            .unwrap_or((String::new(), Vec::new()));
-
-                        let type_annotation = declarator
-                            .id
-                            .type_annotation
-                            .as_ref()
-                            .map(|t| self.format_ts_type(&t.type_annotation));
-
-                        self.items.push(DocItem {
-                            name,
-                            kind: DocItemKind::Variable,
-                            doc: if doc.is_empty() { None } else { Some(doc) },
-                            source_path: self.file_path.to_string(),
-                            line: var_decl.span.start,
-                            column: 0,
-                            exported,
-                            signature: type_annotation,
-                            params: Vec::new(),
-                            return_type: None,
-                            children: Vec::new(),
-                            tags,
-                        });
                     }
                 }
             }
             Declaration::TSTypeAliasDeclaration(type_alias) => {
-                let name = type_alias.id.name.to_string();
-
-                if !self.include_private && name.starts_with('_') {
+                let Some((jsdoc, doc, tags)) = self.extract_jsdoc(attached_to) else {
+                    return;
+                };
+                if !self.include_private && Self::has_private_tag(&tags) {
                     return;
                 }
-
-                let (doc, tags) = self
-                    .extract_jsdoc(type_alias.span.start)
-                    .unwrap_or((String::new(), Vec::new()));
+                let (line, end_line) = self.span_lines(attached_to, type_alias.span.end);
 
                 self.items.push(DocItem {
-                    name,
+                    name: type_alias.id.name.to_string(),
                     kind: DocItemKind::Type,
                     doc: if doc.is_empty() { None } else { Some(doc) },
                     source_path: self.file_path.to_string(),
-                    line: type_alias.span.start,
-                    column: 0,
+                    line,
+                    end_line,
+                    column: self.column_number(attached_to),
+                    jsdoc: Some(jsdoc),
                     exported,
-                    signature: Some(self.format_ts_type(&type_alias.type_annotation)),
+                    signature: Some(self.format_type_alias_signature(type_alias, exported)),
                     params: Vec::new(),
                     return_type: None,
                     children: Vec::new(),
@@ -723,14 +1007,13 @@ impl<'a> DocVisitor<'a> {
                 });
             }
             Declaration::TSInterfaceDeclaration(interface) => {
-                let name = interface.id.name.to_string();
-
-                if !self.include_private && name.starts_with('_') {
+                let Some((jsdoc, doc, tags)) = self.extract_jsdoc(attached_to) else {
+                    return;
+                };
+                if !self.include_private && Self::has_private_tag(&tags) {
                     return;
                 }
-
-                let (doc, tags) =
-                    self.extract_jsdoc(interface.span.start).unwrap_or((String::new(), Vec::new()));
+                let (line, end_line) = self.span_lines(attached_to, interface.span.end);
 
                 let mut children = Vec::new();
 
@@ -745,9 +1028,16 @@ impl<'a> DocVisitor<'a> {
                                 _ => continue,
                             };
 
-                            let (prop_doc, prop_tags) = self
-                                .extract_jsdoc(prop.span.start)
-                                .unwrap_or((String::new(), Vec::new()));
+                            let Some((prop_jsdoc, prop_doc, prop_tags)) =
+                                self.extract_jsdoc(prop.span.start)
+                            else {
+                                continue;
+                            };
+                            if !self.include_private && Self::has_private_tag(&prop_tags) {
+                                continue;
+                            }
+                            let (prop_line, prop_end_line) =
+                                self.span_lines(prop.span.start, prop.span.end);
 
                             let type_annotation = prop
                                 .type_annotation
@@ -759,8 +1049,10 @@ impl<'a> DocVisitor<'a> {
                                 kind: DocItemKind::Property,
                                 doc: if prop_doc.is_empty() { None } else { Some(prop_doc) },
                                 source_path: self.file_path.to_string(),
-                                line: prop.span.start,
-                                column: 0,
+                                line: prop_line,
+                                end_line: prop_end_line,
+                                column: self.column_number(prop.span.start),
+                                jsdoc: Some(prop_jsdoc),
                                 exported: false,
                                 signature: type_annotation,
                                 params: Vec::new(),
@@ -777,51 +1069,40 @@ impl<'a> DocVisitor<'a> {
                                 _ => continue,
                             };
 
-                            let (method_doc, method_tags) = self
-                                .extract_jsdoc(method.span.start)
-                                .unwrap_or((String::new(), Vec::new()));
-
-                            let params: Vec<ParamDoc> = method
-                                .params
-                                .items
-                                .iter()
-                                .map(|p| {
-                                    let param_name = match &p.pattern.kind {
-                                        BindingPatternKind::BindingIdentifier(id) => {
-                                            id.name.to_string()
-                                        }
-                                        _ => "param".to_string(),
-                                    };
-                                    ParamDoc {
-                                        name: param_name,
-                                        type_annotation: p
-                                            .pattern
-                                            .type_annotation
-                                            .as_ref()
-                                            .map(|t| self.format_ts_type(&t.type_annotation)),
-                                        optional: p.pattern.optional,
-                                        default_value: None,
-                                        description: None,
-                                    }
-                                })
-                                .collect();
-
-                            let return_type = method
-                                .return_type
-                                .as_ref()
-                                .map(|r| self.format_ts_type(&r.type_annotation));
+                            let Some((method_jsdoc, method_doc, method_tags)) =
+                                self.extract_jsdoc(method.span.start)
+                            else {
+                                continue;
+                            };
+                            if !self.include_private && Self::has_private_tag(&method_tags) {
+                                continue;
+                            }
+                            let (method_line, method_end_line) =
+                                self.span_lines(method.span.start, method.span.end);
 
                             children.push(DocItem {
-                                name: method_name,
+                                name: method_name.clone(),
                                 kind: DocItemKind::Method,
                                 doc: if method_doc.is_empty() { None } else { Some(method_doc) },
                                 source_path: self.file_path.to_string(),
-                                line: method.span.start,
-                                column: 0,
+                                line: method_line,
+                                end_line: method_end_line,
+                                column: self.column_number(method.span.start),
+                                jsdoc: Some(method_jsdoc),
                                 exported: false,
-                                signature: None,
-                                params,
-                                return_type,
+                                signature: Some(self.format_assigned_function_signature(
+                                    &method_name,
+                                    false,
+                                    method.type_parameters.as_ref(),
+                                    &method.params,
+                                    method.return_type.as_ref(),
+                                )),
+                                params: self
+                                    .extract_params_from_formals(&method.params, &method_tags),
+                                return_type: self.extract_return_type_from_annotation(
+                                    method.return_type.as_ref(),
+                                    &method_tags,
+                                ),
                                 children: Vec::new(),
                                 tags: method_tags,
                             });
@@ -831,14 +1112,16 @@ impl<'a> DocVisitor<'a> {
                 }
 
                 self.items.push(DocItem {
-                    name,
+                    name: interface.id.name.to_string(),
                     kind: DocItemKind::Interface,
                     doc: if doc.is_empty() { None } else { Some(doc) },
                     source_path: self.file_path.to_string(),
-                    line: interface.span.start,
-                    column: 0,
+                    line,
+                    end_line,
+                    column: self.column_number(attached_to),
+                    jsdoc: Some(jsdoc),
                     exported,
-                    signature: None,
+                    signature: Some(self.format_interface_signature(interface, exported)),
                     params: Vec::new(),
                     return_type: None,
                     children,
@@ -846,14 +1129,13 @@ impl<'a> DocVisitor<'a> {
                 });
             }
             Declaration::TSEnumDeclaration(enum_decl) => {
-                let name = enum_decl.id.name.to_string();
-
-                if !self.include_private && name.starts_with('_') {
+                let Some((jsdoc, doc, tags)) = self.extract_jsdoc(attached_to) else {
+                    return;
+                };
+                if !self.include_private && Self::has_private_tag(&tags) {
                     return;
                 }
-
-                let (doc, tags) =
-                    self.extract_jsdoc(enum_decl.span.start).unwrap_or((String::new(), Vec::new()));
+                let (line, end_line) = self.span_lines(attached_to, enum_decl.span.end);
 
                 let children: Vec<DocItem> = enum_decl
                     .members
@@ -863,13 +1145,17 @@ impl<'a> DocVisitor<'a> {
                             oxc_ast::ast::TSEnumMemberName::Identifier(id) => id.name.to_string(),
                             oxc_ast::ast::TSEnumMemberName::String(s) => s.value.to_string(),
                         };
+                        let (member_line, member_end_line) =
+                            self.span_lines(member.span.start, member.span.end);
                         DocItem {
                             name: member_name,
                             kind: DocItemKind::Property,
                             doc: None,
                             source_path: self.file_path.to_string(),
-                            line: member.span.start,
-                            column: 0,
+                            line: member_line,
+                            end_line: member_end_line,
+                            column: self.column_number(member.span.start),
+                            jsdoc: None,
                             exported: false,
                             signature: None,
                             params: Vec::new(),
@@ -881,12 +1167,14 @@ impl<'a> DocVisitor<'a> {
                     .collect();
 
                 self.items.push(DocItem {
-                    name,
+                    name: enum_decl.id.name.to_string(),
                     kind: DocItemKind::Enum,
                     doc: if doc.is_empty() { None } else { Some(doc) },
                     source_path: self.file_path.to_string(),
-                    line: enum_decl.span.start,
-                    column: 0,
+                    line,
+                    end_line,
+                    column: self.column_number(attached_to),
+                    jsdoc: Some(jsdoc),
                     exported,
                     signature: None,
                     params: Vec::new(),

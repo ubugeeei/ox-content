@@ -2,202 +2,366 @@
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts)**
 
-> 11 documented symbols. Skim the one-line surface first, then expand the accordions for details.
-
-## Overview
-
-- [`getAttribute`](#getattribute) `function` `getAttribute(el: Element, name: string): string | undefined` - Get element attribute value.
-- [`extractDomain`](#extractdomain) `function` `extractDomain(url: string): string` - Extract domain from URL.
-- [`getFaviconUrl`](#getfaviconurl) `function` `getFaviconUrl(url: string): string` - Get favicon URL for a domain.
-- [`parseOgpFromHtml`](#parseogpfromhtml) `function` `parseOgpFromHtml(html: string, url: string): OgpData` - Parse OGP metadata from HTML.
-- [`fetchOgpData`](#fetchogpdata) `function` `fetchOgpData( url: string, options: Required<OgpOptions>, ): Promise<OgpData | null>` - Fetch OGP data for a URL.
-- [`createOgpCard`](#createogpcard) `function` `createOgpCard(data: OgpData): Element` - Create OGP card element.
-- [`createFallbackCard`](#createfallbackcard) `function` `createFallbackCard(url: string): Element` - Create fallback element when OGP data is unavailable.
-- [`collectOgpUrls`](#collectogpurls) `function` `collectOgpUrls(html: string): Promise<string[]>` - Collect all OGP URLs from HTML for pre-fetching.
-- [`prefetchOgpData`](#prefetchogpdata) `function` `prefetchOgpData( urls: string[], options?: OgpOptions, ): Promise<Map<string, OgpData | null>>` - Pre-fetch all OGP data.
-- [`rehypeOgp`](#rehypeogp) `function` `rehypeOgp(ogpDataMap: Map<string, OgpData | null>)` - Rehype plugin to transform OgCard components.
-- [`transformOgp`](#transformogp) `function` `transformOgp( html: string, ogpDataMap?: Map<string, OgpData | null>, options?: OgpOptions, ): Promise<string>` - Transform OgCard components in HTML.
+> 11 documented symbols. Read the signatures first, then expand each item for parameters, return types, and examples.
 
 ## Reference
 
-<details id="getattribute" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getAttribute</code><code class="ox-api-entry__signature">getAttribute(el: Element, name: string): string | undefined</code><span class="ox-api-entry__description">Get element attribute value.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Get element attribute value.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L43">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function getAttribute(el: Element, name: string): string | undefined</code></pre>
+<div class="ox-api-controls" data-ox-api-target=".ox-api-entry" role="toolbar" aria-label="Reference display controls">
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="expand">Open all</button>
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="collapse">Close all</button>
 </div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>string | undefined</code></p>
-</div>
-  </div>
-</details>
 
-<details id="extractdomain" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">extractDomain</code><code class="ox-api-entry__signature">extractDomain(url: string): string</code><span class="ox-api-entry__description">Extract domain from URL.</span></summary>
+<details id="collectogpurls" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">collectOgpUrls(html: string): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Collect all OGP URLs from HTML for pre-fetching.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Extract domain from URL.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L53">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function extractDomain(url: string): string</code></pre>
+<div class="ox-api-entry__prose">
+<p>Collect all OGP URLs from HTML for pre-fetching.</p>
 </div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>string</code></p>
-</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L328-L338">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">html</code>
+    <code class="ox-api-entry__param-type">string</code>
   </div>
-</details>
-
-<details id="getfaviconurl" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getFaviconUrl</code><code class="ox-api-entry__signature">getFaviconUrl(url: string): string</code><span class="ox-api-entry__description">Get favicon URL for a domain.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Get favicon URL for a domain.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L65">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function getFaviconUrl(url: string): string</code></pre>
+  
+</li>
+</ul>
 </div>
-<div class="ox-api-entry__section">
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>string</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
 </div>
-  </div>
-</details>
-
-<details id="parseogpfromhtml" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">parseOgpFromHtml</code><code class="ox-api-entry__signature">parseOgpFromHtml(html: string, url: string): OgpData</code><span class="ox-api-entry__description">Parse OGP metadata from HTML.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Parse OGP metadata from HTML.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L78">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function parseOgpFromHtml(html: string, url: string): OgpData</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>OgpData</code></p>
-</div>
-  </div>
-</details>
-
-<details id="fetchogpdata" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">fetchOgpData</code><code class="ox-api-entry__signature">fetchOgpData( url: string, options: Required&lt;OgpOptions&gt;, ): Promise&lt;OgpData | null&gt;</code><span class="ox-api-entry__description">Fetch OGP data for a URL.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Fetch OGP data for a URL.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L140">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export async function fetchOgpData(
-  url: string,
-  options: Required&lt;OgpOptions&gt;,
-  ): Promise&lt;OgpData | null&gt;</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>Promise&lt;OgpData | null&gt;</code></p>
-</div>
-  </div>
-</details>
-
-<details id="createogpcard" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createOgpCard</code><code class="ox-api-entry__signature">createOgpCard(data: OgpData): Element</code><span class="ox-api-entry__description">Create OGP card element.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Create OGP card element.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L193">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function createOgpCard(data: OgpData): Element</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>Element</code></p>
 </div>
   </div>
 </details>
 
 <details id="createfallbackcard" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">createFallbackCard</code><code class="ox-api-entry__signature">createFallbackCard(url: string): Element</code><span class="ox-api-entry__description">Create fallback element when OGP data is unavailable.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">createFallbackCard(url: string): Element</code><span class="ox-api-entry__description">Create fallback element when OGP data is unavailable.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Create fallback element when OGP data is unavailable.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L286">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function createFallbackCard(url: string): Element</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L289-L323">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">url</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Element</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Element</code>
+  
+</div>
 </div>
   </div>
 </details>
 
-<details id="collectogpurls" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">collectOgpUrls</code><code class="ox-api-entry__signature">collectOgpUrls(html: string): Promise&lt;string[]&gt;</code><span class="ox-api-entry__description">Collect all OGP URLs from HTML for pre-fetching.</span></summary>
+<details id="createogpcard" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">createOgpCard(data: OgpData): Element</code><span class="ox-api-entry__description">Create OGP card element.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Collect all OGP URLs from HTML for pre-fetching.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L325">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export async function collectOgpUrls(html: string): Promise&lt;string[]&gt;</code></pre>
+<div class="ox-api-entry__prose">
+<p>Create OGP card element.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L196-L284">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">data</code>
+    <code class="ox-api-entry__param-type">OgpData</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Promise&lt;string[]&gt;</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Element</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="extractdomain" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">extractDomain(url: string): string</code><span class="ox-api-entry__description">Extract domain from URL.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Extract domain from URL.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L56-L63">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">url</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="fetchogpdata" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">fetchOgpData(url: string, options: Required&lt;OgpOptions&gt;): Promise&lt;OgpData | null&gt;</code><span class="ox-api-entry__description">Fetch OGP data for a URL.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Fetch OGP data for a URL.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L143-L191">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">url</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">Required</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="getattribute" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">getAttribute(el: Element, name: string): string | undefined</code><span class="ox-api-entry__description">Get element attribute value.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Get element attribute value.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L46-L51">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">el</code>
+    <code class="ox-api-entry__param-type">Element</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">name</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string | undefined</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="getfaviconurl" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">getFaviconUrl(url: string): string</code><span class="ox-api-entry__description">Get favicon URL for a domain.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Get favicon URL for a domain.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L68-L76">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">url</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="parseogpfromhtml" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">parseOgpFromHtml(html: string, url: string): OgpData</code><span class="ox-api-entry__description">Parse OGP metadata from HTML.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Parse OGP metadata from HTML.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L81-L138">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">html</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">url</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">OgpData</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="prefetchogpdata" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">prefetchOgpData</code><code class="ox-api-entry__signature">prefetchOgpData( urls: string[], options?: OgpOptions, ): Promise&lt;Map&lt;string, OgpData | null&gt;&gt;</code><span class="ox-api-entry__description">Pre-fetch all OGP data.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">prefetchOgpData(urls: string[], options?: OgpOptions): Promise&lt;Map&lt;string, OgpData | null&gt;&gt;</code><span class="ox-api-entry__description">Pre-fetch all OGP data.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Pre-fetch all OGP data.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L340">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export async function prefetchOgpData(
-  urls: string[],
-  options?: OgpOptions,
-  ): Promise&lt;Map&lt;string, OgpData | null&gt;&gt;</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L343-L358">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">urls</code>
+    <code class="ox-api-entry__param-type">string[]</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">OgpOptions</code>
+  </div>
+  <p class="ox-api-entry__param-description">optional</p>
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Promise&lt;Map&lt;string, OgpData | null&gt;&gt;</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="rehypeogp" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">rehypeOgp</code><code class="ox-api-entry__signature">rehypeOgp(ogpDataMap: Map&lt;string, OgpData | null&gt;)</code><span class="ox-api-entry__description">Rehype plugin to transform OgCard components.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">rehypeOgp(ogpDataMap: Map&lt;string, OgpData | null&gt;)</code><span class="ox-api-entry__description">Rehype plugin to transform OgCard components.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Rehype plugin to transform OgCard components.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L360">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function rehypeOgp(ogpDataMap: Map&lt;string, OgpData | null&gt;)</code></pre>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L363-L390">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">ogpDataMap</code>
+    <code class="ox-api-entry__param-type">Map</code>
+  </div>
+  
+</li>
+</ul>
 </div>
   </div>
 </details>
 
 <details id="transformogp" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">transformOgp</code><code class="ox-api-entry__signature">transformOgp( html: string, ogpDataMap?: Map&lt;string, OgpData | null&gt;, options?: OgpOptions, ): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Transform OgCard components in HTML.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">transformOgp(html: string, ogpDataMap?: Map&lt;string, OgpData | null&gt;, options?: OgpOptions): Promise&lt;string&gt;</code><span class="ox-api-entry__description">Transform OgCard components in HTML.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Transform OgCard components in HTML.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L392">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export async function transformOgp(
-  html: string,
-  ogpDataMap?: Map&lt;string, OgpData | null&gt;,
-  options?: OgpOptions,
-  ): Promise&lt;string&gt;</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/plugins/ogp.ts#L395-L414">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">html</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">ogpDataMap</code>
+    <code class="ox-api-entry__param-type">Map</code>
+  </div>
+  <p class="ox-api-entry__param-description">optional</p>
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">options</code>
+    <code class="ox-api-entry__param-type">OgpOptions</code>
+  </div>
+  <p class="ox-api-entry__param-description">optional</p>
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>Promise&lt;string&gt;</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">Promise</code>
+  
+</div>
 </div>
   </div>
 </details>
+
