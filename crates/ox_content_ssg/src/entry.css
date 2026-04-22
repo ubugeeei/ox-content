@@ -425,7 +425,7 @@
   .hero {
     min-height: 0;
     align-items: stretch;
-    padding: 1.75rem 1rem 1.5rem;
+    padding: 1.5rem 0.75rem 1.35rem;
     text-align: left;
   }
 
@@ -464,7 +464,7 @@
     width: 100%;
     max-width: none;
     margin: 1rem 0 0;
-    padding: 0.75rem 0.85rem;
+    padding: 0.72rem 0.78rem;
   }
 
   .hero-notice-title {
@@ -498,7 +498,7 @@
   }
 
   .features {
-    padding: 0.75rem 1rem 3rem;
+    padding: 0.5rem 0.75rem 3rem;
   }
 
   .feature-card {
@@ -529,18 +529,18 @@
   }
 
   .entry-content {
-    padding: 0 1rem 2.5rem;
+    padding: 0 0.75rem 2.25rem;
   }
 
   .entry-content .content {
-    padding: 1.25rem 1rem 1.75rem;
+    padding: 1.1rem 0 1.5rem;
     border-radius: 0;
   }
 
   .entry-page--subtle .hero {
     min-height: 0;
     grid-template-columns: 1fr;
-    padding: 1.75rem 1.25rem 1rem;
+    padding: 1.5rem 0.9rem 0.95rem;
   }
 
   .entry-page--subtle .hero-image,
@@ -567,10 +567,10 @@
   }
 
   .entry-page--subtle .features {
-    padding: 0.5rem 1.25rem 3rem;
+    padding: 0.35rem 0.9rem 3rem;
   }
 
   .entry-page--subtle .entry-content {
-    padding: 0 1.25rem 3rem;
+    padding: 0 0.9rem 3rem;
   }
 }

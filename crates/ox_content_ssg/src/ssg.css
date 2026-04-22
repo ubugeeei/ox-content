@@ -659,7 +659,8 @@ a:hover {
   border: 1px solid color-mix(in srgb, var(--octc-color-border) 72%, transparent);
   padding: 0.2em 0.4em;
   border-radius: 4px;
-  word-break: break-all;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 .content pre {
   background: linear-gradient(
@@ -1249,11 +1250,11 @@ a:hover {
   }
   .main {
     margin-left: 0;
-    padding: 1rem 0.75rem;
-    padding-bottom: calc(56px + 1rem);
+    padding: 0.9rem 0.5rem;
+    padding-bottom: calc(56px + 0.9rem);
   }
   .content {
-    padding: 0 0.25rem;
+    padding: 0;
   }
   .content h1 {
     font-size: 1.5rem;
@@ -1261,58 +1262,161 @@ a:hover {
   .content h2 {
     font-size: 1.2rem;
   }
+  .content code {
+    font-size: 0.82em;
+    padding: 0.16em 0.34em;
+  }
   .content pre {
-    padding: 0.75rem;
-    font-size: 0.75rem;
-    margin: 1rem -0.75rem;
-    border-radius: 0;
+    padding: 0.85rem 0.95rem;
+    font-size: 0.78rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    line-height: 1.6;
+  }
+  .content pre code {
+    font-size: 0.78rem;
   }
   .content .ox-api-controls {
     justify-content: flex-start;
-    gap: 0.75rem;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+  }
+  .content .ox-api-controls__button {
+    padding: 0.45rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.74rem;
+  }
+  .content .ox-api-entry summary,
+  .content .ox-api-module summary {
+    padding: 0.95rem 0.125rem 0.95rem 0;
+  }
+  .content .ox-api-entry summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem 0.75rem;
+  }
+  .content .ox-api-module summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem 0.75rem;
+  }
+  .content .ox-api-entry summary::after,
+  .content .ox-api-module summary::after {
+    order: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.95rem;
+    height: 1.95rem;
+    margin-left: auto;
+    border: 1px solid color-mix(in srgb, var(--octc-color-border) 82%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--octc-color-bg-alt) 84%, var(--octc-color-bg));
+    font-size: 1rem;
+    line-height: 1;
+    flex: 0 0 auto;
+    align-self: center;
+  }
+  .content .ox-api-entry__kind {
+    order: 1;
+    width: auto;
+    padding: 0.28rem 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--octc-color-border) 82%, transparent);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--octc-color-bg-alt) 80%, var(--octc-color-bg));
+    font-size: 0.72rem;
+    line-height: 1;
+    align-self: center;
+  }
+  .content .ox-api-entry__summary-main {
+    order: 3;
+    flex: 1 1 100%;
+    gap: 0.35rem;
+  }
+  .content .ox-api-module__item {
+    order: 1;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  .content .ox-api-module__count {
+    order: 2;
+    width: auto;
+    max-width: 100%;
+    padding: 0.28rem 0.55rem;
+    border-radius: 8px;
   }
   .content .ox-api-entry__body {
     margin-left: 0;
-    margin-top: 0.55rem;
-    padding: 1.2rem 0 1.7rem;
+    margin-top: 0.65rem;
+    padding: 1rem 0.2rem 1.45rem;
+    border-top: 0;
     border-left: 0;
     border-right: 0;
     border-bottom: 0;
     border-radius: 0;
     background: transparent;
   }
+  .content .ox-api-entry__name,
+  .content .ox-api-entry__signature,
+  .content .ox-api-module__name,
+  .content .ox-api-module__signature {
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+  .content .ox-api-entry__description,
+  .content .ox-api-module__summary {
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
   .content .ox-api-entry__section {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
   .content .ox-api-entry__tags li,
-  .content .ox-api-module__list li,
-  .content .ox-api-module summary {
+  .content .ox-api-module__list li {
     grid-template-columns: 1fr;
+  }
+  .content .ox-api-module__list li {
+    gap: 0.4rem;
+    padding: 0.85rem 0.1rem;
+  }
+  .content .ox-api-module__kind {
+    width: auto;
+    padding: 0;
+    font-size: 0.72rem;
   }
   .content .ox-api-entry__signature {
     width: 100%;
   }
+  .content code.shiki-inline.ox-api-entry__signature--highlighted,
+  .content code.shiki-inline.ox-api-module__signature--highlighted {
+    padding: 0.5rem 0.65rem !important;
+    border-radius: 8px !important;
+    font-size: 0.82rem !important;
+  }
   .content pre.ox-code-block[data-code-title]::before {
-    margin: -0.75rem -0.75rem 0.75rem;
-    padding: 0.625rem 0.75rem;
+    margin: -0.85rem -0.95rem 0.75rem;
+    padding: 0.65rem 0.95rem;
   }
   .content pre.ox-code-block .line {
-    margin: 0 -0.75rem;
-    padding: 0 0.75rem;
+    margin: 0 -0.95rem;
+    padding: 0 0.95rem;
   }
   .content pre.ox-code-block.line-numbers-mode .line {
-    padding-left: 3.5rem;
+    padding-left: 3.7rem;
   }
   .content pre.ox-code-block.line-numbers-mode .line::before {
-    left: 0.75rem;
+    left: 0.95rem;
     width: 1.75rem;
   }
   .content table {
     display: block;
     width: max-content;
     min-width: 100%;
-    max-width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1rem);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin: 1rem 0;
@@ -1350,18 +1454,44 @@ a:hover {
 
 @media (max-width: 480px) {
   .main {
-    padding: 0.75rem 0.5rem;
+    padding: 0.75rem 0.4rem;
     padding-bottom: calc(56px + 0.75rem);
   }
   .content h1 {
     font-size: 1.35rem;
   }
+  .content code {
+    font-size: 0.8em;
+  }
   .content pre {
-    font-size: 0.6875rem;
-    padding: 0.625rem;
+    font-size: 0.72rem;
+    padding: 0.78rem 0.85rem;
+  }
+  .content pre code {
+    font-size: 0.72rem;
+  }
+  .content .ox-api-entry summary::after,
+  .content .ox-api-module summary::after {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+  .content .ox-api-entry__kind,
+  .content .ox-api-module__count {
+    font-size: 0.68rem;
+  }
+  .content pre.ox-code-block[data-code-title]::before {
+    margin: -0.78rem -0.85rem 0.72rem;
+    padding: 0.6rem 0.85rem;
+  }
+  .content pre.ox-code-block .line {
+    margin: 0 -0.85rem;
+    padding: 0 0.85rem;
+  }
+  .content pre.ox-code-block.line-numbers-mode .line::before {
+    left: 0.85rem;
   }
   .content table {
-    max-width: calc(100vw - 1rem);
+    max-width: calc(100vw - 0.8rem);
     font-size: 0.75rem;
   }
   .content th,
