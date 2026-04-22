@@ -615,6 +615,9 @@ importers:
       svelte:
         specifier: ^5.0.0
         version: 5.46.1
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -643,9 +646,6 @@ importers:
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260124.1
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
       vite-plus:
         specifier: 'catalog:'
         version: 0.1.11(@types/node@22.19.3)(@voidzero-dev/vite-plus-core@0.1.11(@types/node@22.19.3)(esbuild@0.27.4)(jiti@1.21.7)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2))(esbuild@0.27.4)(jiti@1.21.7)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)
@@ -3600,7 +3600,7 @@ packages:
   basic-ftp@5.1.0:
     resolution: {integrity: sha512-RkaJzeJKDbaDWTIPiJwubyljaEPwpVWkm9Rt5h9Nd6h7tEXTJ3VB4qxdZBioV7JO5yLUaOKwz7vDOzlncUsegw==}
     engines: {node: '>=10.0.0'}
-    deprecated: Security vulnerability fixed in 5.2.0, please upgrade
+    deprecated: Security vulnerability fixed in 5.2.1, please upgrade
 
   before-after-hook@4.0.0:
     resolution: {integrity: sha512-q6tR3RPqIB1pMiTRMFcZwuG5T8vwp+vUvEG0vuI6B+Rikh5BfPp2fQ82c925FOs+b0lcFQ8CFrL+KbilfZFhOQ==}

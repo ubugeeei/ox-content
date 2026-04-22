@@ -511,13 +511,13 @@ Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro.
 
 | Library             | Parse Only (48.7 KB) | Parse + Render (48.7 KB) |
 | ------------------- | -------------------: | -----------------------: |
-| `Bun.markdown.html` |                    - |             4261 ops/sec |
-| `md4w (md4c)`       |         1092 ops/sec |             2605 ops/sec |
-| `markdown-it`       |         1018 ops/sec |              739 ops/sec |
-| `marked`            |          534 ops/sec |              462 ops/sec |
-| `@ox-content/napi`  |          209 ops/sec |              202 ops/sec |
+| `@ox-content/napi`  |         2933 ops/sec |             3273 ops/sec |
+| `Bun.markdown.html` |                    - |             2848 ops/sec |
+| `md4w (md4c)`       |         1054 ops/sec |             2608 ops/sec |
+| `markdown-it`       |          807 ops/sec |              787 ops/sec |
+| `marked`            |          512 ops/sec |              489 ops/sec |
 | `micromark`         |                    - |               44 ops/sec |
-| `remark`            |           39 ops/sec |               35 ops/sec |
+| `remark`            |           42 ops/sec |               36 ops/sec |
 
 This benchmark uses `node benchmarks/bundle-size/parse-benchmark.mjs`. The comparison set now includes `md4w (md4c)` by default, and `Bun.markdown.html` is measured automatically when `bun` is available on the host.
 

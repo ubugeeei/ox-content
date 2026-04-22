@@ -106,25 +106,25 @@ Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro.
 
 | Library            | ops/sec | avg time | throughput |
 | ------------------ | ------: | -------: | ---------: |
-| `md4w (md4c)`      |    1092 |  0.92 ms | 51.98 MB/s |
-| `markdown-it`      |    1018 |  0.98 ms | 48.46 MB/s |
-| `marked`           |     534 |  1.87 ms | 25.39 MB/s |
-| `@ox-content/napi` |     209 |  4.79 ms |  9.93 MB/s |
-| `remark`           |      39 | 25.55 ms |  1.86 MB/s |
+| `@ox-content/napi` |    2933 |  0.34 ms | 139.55 MB/s |
+| `md4w (md4c)`      |    1054 |  0.95 ms |  50.16 MB/s |
+| `markdown-it`      |     807 |  1.24 ms |  38.42 MB/s |
+| `marked`           |     512 |  1.95 ms |  24.36 MB/s |
+| `remark`           |      42 | 23.89 ms |   1.99 MB/s |
 
 ### Parse + Render (48.7 KB)
 
 | Library             | ops/sec | avg time | throughput  |
 | ------------------- | ------: | -------: | ----------: |
-| `Bun.markdown.html` |    4261 |  0.23 ms | 202.77 MB/s |
-| `md4w (md4c)`       |    2605 |  0.38 ms | 123.95 MB/s |
-| `markdown-it`       |     739 |  1.35 ms |  35.17 MB/s |
-| `marked`            |     462 |  2.16 ms |  22.00 MB/s |
-| `@ox-content/napi`  |     202 |  4.95 ms |   9.61 MB/s |
-| `micromark`         |      44 | 22.97 ms |   2.07 MB/s |
-| `remark`            |      35 | 28.37 ms |   1.68 MB/s |
+| `@ox-content/napi`  |    3273 |  0.31 ms | 155.73 MB/s |
+| `Bun.markdown.html` |    2848 |  0.35 ms | 135.52 MB/s |
+| `md4w (md4c)`       |    2608 |  0.38 ms | 124.13 MB/s |
+| `markdown-it`       |     787 |  1.27 ms |  37.44 MB/s |
+| `marked`            |     489 |  2.04 ms |  23.28 MB/s |
+| `micromark`         |      44 | 22.62 ms |   2.10 MB/s |
+| `remark`            |      36 | 28.16 ms |   1.69 MB/s |
 
-Ox Content is not the absolute fastest parser in this synthetic benchmark, but it stays far ahead of heavier AST-oriented JavaScript stacks like `remark` while also serving as the native core for the full documentation pipeline.
+In this latest local release-build sweep, Ox Content came out on top for both parse-only and parse+render in the large 48.7 KB case while still serving as the native core for the full documentation pipeline.
 
 Run the benchmark with:
 

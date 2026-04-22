@@ -19,6 +19,15 @@ use ox_content_parser::{Parser, ParserOptions};
 use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 use ox_content_search::{DocumentIndexer, SearchIndex, SearchIndexBuilder, SearchOptions};
 
+const ALLOCATOR_BYTES_PER_INPUT_BYTE: usize = 8;
+const MIN_ALLOCATOR_CAPACITY: usize = 4 * 1024;
+
+fn create_allocator_for_source(source: &str) -> Allocator {
+    let capacity =
+        source.len().saturating_mul(ALLOCATOR_BYTES_PER_INPUT_BYTE).max(MIN_ALLOCATOR_CAPACITY);
+    Allocator::with_capacity(capacity)
+}
+
 /// Parse result containing the AST as JSON.
 #[napi(object)]
 pub struct ParseResult {
@@ -181,7 +190,7 @@ impl From<JsParserOptions> for ParserOptions {
 /// Returns the AST as a JSON string for zero-copy transfer to JavaScript.
 #[napi]
 pub fn parse(source: String, options: Option<JsParserOptions>) -> ParseResult {
-    let allocator = Allocator::new();
+    let allocator = create_allocator_for_source(&source);
     let parser_options = options.map(ParserOptions::from).unwrap_or_default();
     let parser = Parser::with_options(&allocator, &source, parser_options);
 
@@ -198,7 +207,7 @@ pub fn parse(source: String, options: Option<JsParserOptions>) -> ParseResult {
 /// Parses Markdown and renders to HTML.
 #[napi]
 pub fn parse_and_render(source: String, options: Option<JsParserOptions>) -> RenderResult {
-    let allocator = Allocator::new();
+    let allocator = create_allocator_for_source(&source);
     let parser_options = options.map(ParserOptions::from).unwrap_or_default();
     let parser = Parser::with_options(&allocator, &source, parser_options);
 
@@ -315,7 +324,7 @@ pub fn transform(source: String, options: Option<JsTransformOptions>) -> Transfo
     let (content, frontmatter) = parse_frontmatter(&source);
 
     // Parse markdown
-    let allocator = Allocator::new();
+    let allocator = create_allocator_for_source(&content);
     let parser_options = transform_options_to_parser_options(&opts);
     let parser = Parser::with_options(&allocator, &content, parser_options);
 
@@ -538,7 +547,7 @@ impl Task for ParseAndRenderTask {
     type JsValue = RenderResult;
 
     fn compute(&mut self) -> Result<Self::Output> {
-        let allocator = Allocator::new();
+        let allocator = create_allocator_for_source(&self.source);
         let parser = Parser::with_options(&allocator, &self.source, self.options.clone());
 
         let result = match parser.parse() {
@@ -584,7 +593,7 @@ impl Task for TransformTask {
         let (content, frontmatter) = parse_frontmatter(&self.source);
 
         // Parse markdown
-        let allocator = Allocator::new();
+        let allocator = create_allocator_for_source(&content);
         let parser_options = transform_options_to_parser_options(&self.options);
         let parser = Parser::with_options(&allocator, &content, parser_options);
 
@@ -1294,11 +1303,10 @@ pub fn extract_search_content(
     url: String,
     options: Option<JsParserOptions>,
 ) -> JsSearchDocument {
-    let allocator = Allocator::new();
-    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
-
     // Parse frontmatter first
     let (content, frontmatter) = parse_frontmatter(&source);
+    let allocator = create_allocator_for_source(&content);
+    let parser_options = options.map(ParserOptions::from).unwrap_or_default();
 
     // Try to get title from frontmatter
     let frontmatter_title = frontmatter.get("title").and_then(|v| v.as_str()).map(String::from);
