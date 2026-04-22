@@ -217,8 +217,8 @@ Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro.
 
 ### Parse Only (48.7 KB)
 
-| Library            | ops/sec | avg time | throughput |
-| ------------------ | ------: | -------: | ---------: |
+| Library            | ops/sec | avg time |  throughput |
+| ------------------ | ------: | -------: | ----------: |
 | `@ox-content/napi` |    2933 |  0.34 ms | 139.55 MB/s |
 | `md4w (md4c)`      |    1054 |  0.95 ms |  50.16 MB/s |
 | `markdown-it`      |     807 |  1.24 ms |  38.42 MB/s |
@@ -227,7 +227,7 @@ Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro.
 
 ### Parse + Render (48.7 KB)
 
-| Library             | ops/sec | avg time | throughput  |
+| Library             | ops/sec | avg time |  throughput |
 | ------------------- | ------: | -------: | ----------: |
 | `@ox-content/napi`  |    3273 |  0.31 ms | 155.73 MB/s |
 | `Bun.markdown.html` |    2848 |  0.35 ms | 135.52 MB/s |

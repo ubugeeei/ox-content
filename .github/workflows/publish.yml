@@ -201,6 +201,8 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -208,8 +210,14 @@ jobs:
       - name: Build NAPI (for local use)
         run: vp run build:napi
 
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked
+
       - name: Build packages
         run: vp run build:npm
+
+      - name: Build WASM package
+        run: vp run build:wasm
 
       - name: Determine npm tag
         id: npm-tag
@@ -293,6 +301,16 @@ jobs:
           fi
           TARBALL=$(vp exec -- pnpm pack --pack-destination /tmp | tail -1)
           npm publish "$TARBALL" --provenance --access public ${{ steps.npm-tag.outputs.tag }}
+
+      - name: Publish @ox-content/wasm
+        run: |
+          PKG_NAME=$(node -p "require('./crates/ox_content_wasm/pkg/package.json').name")
+          PKG_VERSION=$(node -p "require('./crates/ox_content_wasm/pkg/package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "Skipping ${PKG_NAME}@${PKG_VERSION} (already published)"
+            exit 0
+          fi
+          pnpm --filter @ox-content/wasm publish --provenance --access public ${{ steps.npm-tag.outputs.tag }}
 
   publish-crates:
     name: Publish to crates.io

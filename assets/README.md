@@ -4,13 +4,13 @@ This directory contains logo assets for Ox Content.
 
 ## Files
 
-| File            | Description                    | Use Case                 |
-| --------------- | ------------------------------ | ------------------------ |
-| `logo.svg`      | Primary markdown mark          | Docs, README, marketing  |
-| `logo-dark.svg` | Markdown mark on dark plaque   | Dark surfaces, social    |
-| `logo-icon.svg` | Compact icon export            | Favicons, small displays |
-| `oxcontent-light.svg` | Light wordmark lockup     | Dark-mode README and badges |
-| `oxcontent-dark.svg` | Dark wordmark lockup       | Light-mode README and badges |
+| File                  | Description                  | Use Case                     |
+| --------------------- | ---------------------------- | ---------------------------- |
+| `logo.svg`            | Primary markdown mark        | Docs, README, marketing      |
+| `logo-dark.svg`       | Markdown mark on dark plaque | Dark surfaces, social        |
+| `logo-icon.svg`       | Compact icon export          | Favicons, small displays     |
+| `oxcontent-light.svg` | Light wordmark lockup        | Dark-mode README and badges  |
+| `oxcontent-dark.svg`  | Dark wordmark lockup         | Light-mode README and badges |
 
 ## Design Concept
 
@@ -21,11 +21,11 @@ The Ox Content logo combines two key concepts:
 
 ## Color Palette
 
-| Color         | Hex       | Usage                         |
-| ------------- | --------- | ----------------------------- |
-| Blue          | `#355cff` | Gradient start and main tone  |
-| Sky Blue      | `#74c7ff` | Gradient end and lift         |
-| Deep Navy     | `#0b1220` | Dark plaque and OG surfaces  |
+| Color     | Hex       | Usage                        |
+| --------- | --------- | ---------------------------- |
+| Blue      | `#355cff` | Gradient start and main tone |
+| Sky Blue  | `#74c7ff` | Gradient end and lift        |
+| Deep Navy | `#0b1220` | Dark plaque and OG surfaces  |
 
 ## Usage Guidelines
 

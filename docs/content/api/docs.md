@@ -17,7 +17,7 @@
 <div class="ox-api-entry__prose">
 <p>Builds a map of all symbols to their file locations.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1103-L1122">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1116-L1135">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -48,7 +48,7 @@
 <h2>Examples</h2>
 <p>Input: &quot;See [transformMarkdown] for usage&quot; (same file) Output: &quot;See <a href="#transformmarkdown">transformMarkdown</a> for usage&quot; Input: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot; (different file: types.ts) Output: &quot;Uses <a href="./types.md#navitem">NavItem</a> interface&quot;</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1076-L1098">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1089-L1111">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -116,7 +116,7 @@
 <li>Results are not cached; call once per build/dev session Each ExtractedDocs object contains file path and array of DocEntry items.</li>
 </ul>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L407-L437">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L420-L450">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -181,7 +181,7 @@
 <div class="ox-api-entry__prose">
 <p>Recursively finds all source files matching include/exclude patterns.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L444-L472">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L457-L485">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -221,7 +221,7 @@
 <div class="ox-api-entry__prose">
 <p>Generates Markdown documentation from extracted docs.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L678-L725">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L691-L738">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -257,7 +257,7 @@
 <div class="ox-api-entry__prose">
 <p>Generates a GitHub source link for a file and optional line range.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1200-L1216">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1213-L1227">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -307,7 +307,7 @@
 <div class="ox-api-entry__prose">
 <p>Symbol location info for cross-file linking.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1048-L1052">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1061-L1065">View source</a></p>
   </div>
 </details>
 
@@ -317,7 +317,7 @@
 <div class="ox-api-entry__prose">
 <p>Writes generated documentation to the output directory.</p>
 </div>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1127-L1186">View source</a></p>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/docs.ts#L1140-L1199">View source</a></p>
 <div class="ox-api-entry__section ox-api-entry__section--params">
 <h4>Parameters</h4>
 <ul class="ox-api-entry__params">
@@ -360,4 +360,3 @@
 </div>
   </div>
 </details>
-

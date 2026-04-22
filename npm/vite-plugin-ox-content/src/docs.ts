@@ -304,11 +304,24 @@ function renderDetailsControlsHtml(targetSelector: ".ox-api-entry" | ".ox-api-mo
 </div>`;
 }
 
+function normalizeDocFilePath(filePath: string): string {
+  const normalized = filePath.replace(/\\/g, "/");
+  const match = normalized.match(/(?:^|\/)((?:npm|packages|crates|src)\/.+)$/);
+  return match?.[1] ?? normalized.replace(/^\/+/, "");
+}
+
 function buildDocsData(docs: ExtractedDocs[]): GeneratedDocsData {
   return {
     version: 1,
     generatedAt: new Date().toISOString(),
-    modules: docs,
+    modules: docs.map((doc) => ({
+      ...doc,
+      file: normalizeDocFilePath(doc.file),
+      entries: doc.entries.map((entry) => ({
+        ...entry,
+        file: normalizeDocFilePath(entry.file),
+      })),
+    })),
   };
 }
 interface NapiDocTag {
@@ -1203,9 +1216,7 @@ function generateSourceHref(
   lineNumber?: number,
   endLineNumber?: number,
 ): string {
-  // Convert absolute path to relative path from repository root
-  // Match common project directory patterns: npm/, packages/, crates/, src/
-  const relativePath = filePath.replace(/^.*?\/(npm|packages|crates|src)\//, "$1/");
+  const relativePath = normalizeDocFilePath(filePath);
 
   const fragment = lineNumber
     ? endLineNumber && endLineNumber > lineNumber

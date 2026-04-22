@@ -148,7 +148,8 @@ a:hover {
   right: 0;
   height: var(--octc-header-height);
   background: color-mix(in srgb, var(--octc-color-bg) 92%, var(--octc-color-bg-alt));
-  border-bottom: 1px solid color-mix(in srgb, var(--octc-color-border) 75%, var(--octc-surface-line));
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--octc-color-border) 75%, var(--octc-surface-line));
   display: flex;
   align-items: center;
   padding: 0 1.5rem;

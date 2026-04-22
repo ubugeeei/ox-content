@@ -53,9 +53,7 @@ export default defineConfig({
       "build:npm": task("vp run --filter './npm/*' build", {
         dependsOn: ["build:napi"],
       }),
-      "build:wasm": task("wasm-pack build --target web --out-dir pkg", {
-        cwd: "crates/ox_content_wasm",
-      }),
+      "build:wasm": task("node --experimental-strip-types scripts/build-wasm-package.ts"),
 
       test: noopTask(["test:rust", "test:ts"]),
       "test:rust": task("cargo test --workspace"),
