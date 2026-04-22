@@ -92,6 +92,8 @@ describe("writeDocs", () => {
     };
 
     expect(docsJson.version).toBe(1);
+    expect(docsJson.modules[0]?.file).toBe("src/math.ts");
+    expect(docsJson.modules[0]?.entries[0]?.file).toBe("src/math.ts");
     expect(docsJson.modules[0]?.entries[0]?.name).toBe("clamp");
   });
 });

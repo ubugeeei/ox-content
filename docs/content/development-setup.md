@@ -8,11 +8,12 @@ If you just want to use the plugin or APIs, go back to [Getting Started](./getti
 
 Before you begin, ensure you have the following installed:
 
-| Requirement | Version | Installation                                                                         |
-| ----------- | ------- | ------------------------------------------------------------------------------------ |
-| **Rust**    | 1.83+   | Provided by `nix develop` (pinned in `flake.nix`) or [rustup.rs](https://rustup.rs/) |
-| **Node.js** | 24+     | Provided by `nix develop` or managed via `.node-version`                             |
-| **Vite+**   | Latest  | Available as `vp` inside the dev shell                                               |
+| Requirement   | Version | Installation                                                                         |
+| ------------- | ------- | ------------------------------------------------------------------------------------ |
+| **Rust**      | 1.83+   | Provided by `nix develop` (pinned in `flake.nix`) or [rustup.rs](https://rustup.rs/) |
+| **Node.js**   | 24+     | Provided by `nix develop` or managed via `.node-version`                             |
+| **Vite+**     | Latest  | Available as `vp` inside the dev shell                                               |
+| **wasm-pack** | Latest  | Provided by `nix develop`; needed when you run `vp run build:wasm`                   |
 
 ## Clone and Bootstrap
 
@@ -49,6 +50,7 @@ vp run build:rust
 vp run build:rust-release
 vp run build:napi
 vp run build:npm
+vp run build:wasm
 
 # Testing
 vp run test
@@ -211,6 +213,17 @@ vp run build:napi
 ```
 
 If you manage Node.js outside Nix, match the version in `.node-version`.
+
+### `wasm-pack: command not found`
+
+The WASM build task expects `wasm-pack` to be available:
+
+```bash
+nix develop
+vp run build:wasm
+```
+
+If you are not using Nix, install `wasm-pack` manually and make sure `wasm32-unknown-unknown` is available through `rustup`.
 
 ## Getting Help
 

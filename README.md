@@ -29,7 +29,7 @@
 - **Blazing Fast** - Arena-allocated parser with zero-copy parsing
 - **mdast Compatible** - Full compatibility with the unified ecosystem
 - **GFM Support** - Tables, task lists, strikethrough, autolinks, footnotes
-- **Multi-Runtime** - Node.js (NAPI), WebAssembly (WIP), Native Rust
+- **Multi-Runtime** - Node.js (NAPI), WebAssembly, Native Rust
 - **Framework Agnostic** - Works with Vue, React, Svelte, and more
 - **Built-in SSG** - Static site generation with theming, search, and OG images
 - **API Docs Generation** - Generate docs from JSDoc/TypeScript (like `cargo doc`)
@@ -76,6 +76,26 @@ export default defineConfig({
 });
 ```
 
+### Browser Usage (WebAssembly)
+
+```bash
+npm install @ox-content/wasm
+```
+
+```ts
+import init, { parseAndRender, WasmParserOptions } from "@ox-content/wasm";
+
+await init();
+
+const options = new WasmParserOptions();
+options.gfm = true;
+options.tables = true;
+options.taskLists = true;
+
+const result = parseAndRender("# Hello from WASM", options);
+console.log(result.html);
+```
+
 ### Framework Integration
 
 ```bash
@@ -109,8 +129,8 @@ Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro.
 
 ### Parse Only (48.7 KB)
 
-| Library            | ops/sec | avg time | throughput |
-| ------------------ | ------: | -------: | ---------: |
+| Library            | ops/sec | avg time |  throughput |
+| ------------------ | ------: | -------: | ----------: |
 | `@ox-content/napi` |    2933 |  0.34 ms | 139.55 MB/s |
 | `md4w (md4c)`      |    1054 |  0.95 ms |  50.16 MB/s |
 | `markdown-it`      |     807 |  1.24 ms |  38.42 MB/s |
@@ -119,7 +139,7 @@ Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro.
 
 ### Parse + Render (48.7 KB)
 
-| Library             | ops/sec | avg time | throughput  |
+| Library             | ops/sec | avg time |  throughput |
 | ------------------- | ------: | -------: | ----------: |
 | `@ox-content/napi`  |    3273 |  0.31 ms | 155.73 MB/s |
 | `Bun.markdown.html` |    2848 |  0.35 ms | 135.52 MB/s |
@@ -146,6 +166,7 @@ nix develop           # Enter the pinned dev shell
 vp install             # Install JS dependencies through Vite+
 vp run build:napi      # Build NAPI bindings
 vp run build:npm       # Build npm packages
+vp run build:wasm      # Build publish-ready @ox-content/wasm package
 vp run test            # Run tests
 ```
 
