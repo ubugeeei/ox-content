@@ -23,9 +23,11 @@ describe("theme", () => {
     it("should have all required properties", () => {
       expect(defaultTheme.name).toBe("default");
       expect(defaultTheme.colors).toBeDefined();
-      expect(defaultTheme.colors?.primary).toBe("#e04d0a");
+      expect(defaultTheme.colors?.primary).toBe("#4f6fae");
       expect(defaultTheme.darkColors).toBeDefined();
       expect(defaultTheme.fonts).toBeDefined();
+      expect(defaultTheme.entryPage?.mode).toBe("default");
+      expect(defaultTheme.header?.showSiteNameText).toBe(true);
       expect(defaultTheme.layout).toBeDefined();
     });
   });
@@ -67,18 +69,20 @@ describe("theme", () => {
     it("should resolve undefined to default theme", () => {
       const resolved = resolveTheme(undefined);
       expect(resolved.name).toBe("default");
-      expect(resolved.colors.primary).toBe("#e04d0a");
+      expect(resolved.colors.primary).toBe("#4f6fae");
     });
 
     it("should resolve extends chain", () => {
       const customTheme: ThemeConfig = {
         extends: defaultTheme,
         colors: { primary: "#3498db" },
+        entryPage: { mode: "subtle" },
       };
 
       const resolved = resolveTheme(customTheme);
       expect(resolved.colors.primary).toBe("#3498db");
       expect(resolved.colors.background).toBe("#ffffff");
+      expect(resolved.entryPage.mode).toBe("subtle");
     });
 
     it("should resolve nested extends", () => {
@@ -110,10 +114,14 @@ describe("theme", () => {
       const resolved = resolveTheme({
         colors: { primary: "#3498db" },
         footer: { message: "Test", copyright: "2025" },
+        entryPage: { mode: "subtle" },
+        header: { logoLight: "wordmark.svg", showSiteNameText: false },
       });
 
       const napi = themeToNapi(resolved);
       expect(napi.colors?.primary).toBe("#3498db");
+      expect(napi.entryPage?.mode).toBe("subtle");
+      expect(napi.header?.showSiteNameText).toBe(false);
       expect(napi.footer?.message).toBe("Test");
       expect(napi.footer?.copyright).toBe("2025");
     });

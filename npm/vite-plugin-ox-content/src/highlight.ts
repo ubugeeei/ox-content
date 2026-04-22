@@ -11,6 +11,7 @@ import {
   type Highlighter,
   type BundledTheme,
   type LanguageRegistration,
+  type ThemeRegistration,
 } from "shiki";
 
 const BUILTIN_LANGS = [
@@ -47,18 +48,19 @@ const highlighterCache = new Map<string, Promise<Highlighter>>();
  * Get or create the Shiki highlighter.
  */
 async function getHighlighter(
-  theme: string,
+  theme: string | ThemeRegistration,
   customLangs: LanguageRegistration[] = [],
 ): Promise<Highlighter> {
+  const { themeInput } = normalizeThemeInput(theme);
   const cacheKey = JSON.stringify({
-    theme,
+    theme: themeInput,
     langs: customLangs,
   });
 
   let highlighterPromise = highlighterCache.get(cacheKey);
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
-      themes: [theme as BundledTheme],
+      themes: [themeInput as BundledTheme | ThemeRegistration],
       langs: [...BUILTIN_LANGS, ...customLangs],
     });
     highlighterCache.set(cacheKey, highlighterPromise);
@@ -66,14 +68,111 @@ async function getHighlighter(
   return highlighterPromise;
 }
 
+function normalizeThemeInput(theme: string | ThemeRegistration): {
+  themeInput: string | ThemeRegistration;
+  themeName: string;
+} {
+  if (typeof theme === "string") {
+    return {
+      themeInput: theme,
+      themeName: theme,
+    };
+  }
+
+  const themeName = theme.name || "ox-content-custom-theme";
+  return {
+    themeInput: theme.name ? theme : { ...theme, name: themeName },
+    themeName,
+  };
+}
+
 /**
  * Rehype plugin for syntax highlighting with Shiki.
  */
-function rehypeShikiHighlight(options: { theme: string; langs?: LanguageRegistration[] }) {
+function rehypeShikiHighlight(options: {
+  theme: string | ThemeRegistration;
+  langs?: LanguageRegistration[];
+}) {
   const { theme, langs } = options;
 
   return async (tree: Root) => {
+    const { themeName } = normalizeThemeInput(theme);
     const highlighter = await getHighlighter(theme, langs);
+
+    const highlightBlockCode = (codeElement: Element): Element | null => {
+      let lang = "text";
+      const originalCodeClasses = normalizeClassName(codeElement.properties?.className);
+
+      const langClass = originalCodeClasses.find((value) => value.startsWith("language-"));
+      if (langClass) {
+        lang = langClass.replace("language-", "");
+      }
+
+      const codeText = getTextContent(codeElement);
+
+      try {
+        const highlighted = highlighter.codeToHtml(codeText, {
+          lang: lang as any,
+          theme: themeName as BundledTheme,
+        });
+
+        const parsed = unified().use(rehypeParse, { fragment: true }).parse(highlighted);
+
+        if (parsed.children[0]?.type === "element") {
+          const highlightedPre = parsed.children[0];
+          highlightedPre.properties ??= {};
+          highlightedPre.properties["data-language"] = lang;
+          return highlightedPre;
+        }
+      } catch {
+        // If highlighting fails, keep the original
+      }
+
+      return null;
+    };
+
+    const highlightInlineCode = (codeElement: Element): Element | null => {
+      let lang = "text";
+      const originalCodeClasses = normalizeClassName(codeElement.properties?.className);
+
+      const langClass = originalCodeClasses.find((value) => value.startsWith("language-"));
+      if (!langClass) {
+        return null;
+      }
+
+      lang = langClass.replace("language-", "");
+      const codeText = getTextContent(codeElement);
+
+      try {
+        const highlighted = highlighter.codeToHtml(codeText, {
+          lang: lang as any,
+          theme: themeName as BundledTheme,
+        });
+
+        const parsed = unified().use(rehypeParse, { fragment: true }).parse(highlighted);
+
+        if (parsed.children[0]?.type === "element") {
+          const highlightedPre = parsed.children[0];
+          const highlightedCode = highlightedPre.children.find(
+            (child): child is Element => child.type === "element" && child.tagName === "code",
+          );
+
+          if (highlightedCode) {
+            highlightedCode.properties ??= {};
+            const highlightedClasses = normalizeClassName(highlightedCode.properties.className);
+            highlightedCode.properties.className = [
+              ...new Set([...originalCodeClasses, ...highlightedClasses, "shiki-inline"]),
+            ];
+            highlightedCode.properties["data-language"] = lang;
+            return highlightedCode;
+          }
+        }
+      } catch {
+        // If highlighting fails, keep the original
+      }
+
+      return null;
+    };
 
     // Find all pre > code elements
     const visit = async (node: Root | Element) => {
@@ -87,39 +186,15 @@ function rehypeShikiHighlight(options: { theme: string; langs?: LanguageRegistra
             );
 
             if (codeElement) {
-              // Extract language from class
-              let lang = "text";
-              const originalCodeClasses = normalizeClassName(codeElement.properties?.className);
-
-              const langClass = originalCodeClasses.find((value) => value.startsWith("language-"));
-              if (langClass) {
-                lang = langClass.replace("language-", "");
+              const highlightedPre = highlightBlockCode(codeElement);
+              if (highlightedPre) {
+                node.children[i] = highlightedPre;
               }
-
-              // Get code text
-              const codeText = getTextContent(codeElement);
-
-              // Highlight with Shiki
-              try {
-                const highlighted = highlighter.codeToHtml(codeText, {
-                  lang: lang as any,
-                  theme: theme as BundledTheme,
-                });
-
-                // Parse the highlighted HTML and replace the pre element
-                const parsed = unified().use(rehypeParse, { fragment: true }).parse(highlighted);
-
-                // Replace the pre element with the highlighted one
-                if (parsed.children[0]?.type === "element") {
-                  const highlightedPre = parsed.children[0];
-                  highlightedPre.properties ??= {};
-                  highlightedPre.properties["data-language"] = lang;
-
-                  node.children[i] = highlightedPre;
-                }
-              } catch {
-                // If highlighting fails, keep the original
-              }
+            }
+          } else if (child.type === "element" && child.tagName === "code") {
+            const highlightedCode = highlightInlineCode(child);
+            if (highlightedCode) {
+              node.children[i] = highlightedCode;
             }
           } else if (child.type === "element") {
             await visit(child);
@@ -168,7 +243,7 @@ function normalizeClassName(className: unknown): string[] {
  */
 export async function highlightCode(
   html: string,
-  theme: string = "github-dark",
+  theme: string | ThemeRegistration = "github-dark",
   langs: LanguageRegistration[] = [],
 ): Promise<string> {
   const result = await unified()

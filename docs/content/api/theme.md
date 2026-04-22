@@ -2,133 +2,78 @@
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts)**
 
-> 22 documented symbols. Skim the one-line surface first, then expand the accordions for details.
-
-## Overview
-
-- [`ThemeColors`](#themecolors) `interface` - Theme color configuration.
-- [`ThemeLayout`](#themelayout) `interface` - Theme layout configuration.
-- [`ThemeFonts`](#themefonts) `interface` - Theme font configuration.
-- [`ThemeHeader`](#themeheader) `interface` - Theme header configuration.
-- [`ThemeFooter`](#themefooter) `interface` - Theme footer configuration.
-- [`SocialLinks`](#sociallinks) `interface` - Social links configuration.
-- [`ThemeEmbed`](#themeembed) `interface` - Embedded HTML content for specific positions in the page layout.
-- [`ThemeConfig`](#themeconfig) `interface` - Complete theme configuration.
-- [`ResolvedThemeConfig`](#resolvedthemeconfig) `interface` - Resolved theme configuration (after merging with defaults).
-- [`deepMerge`](#deepmerge) `function` - Deep merge two objects.
-- [`defineTheme`](#definetheme) `function` `defineTheme(config: ThemeConfig): ThemeConfig` - Defines a theme configuration with type checking.
-- [`mergeThemes`](#mergethemes) `function` `mergeThemes(...themes: ThemeConfig[]): ThemeConfig` - Merges multiple theme configurations. Later themes override earlier ones.
-- [`resolveTheme`](#resolvetheme) `function` `resolveTheme(config?: ThemeConfig): ResolvedThemeConfig` - Resolves a theme configuration by merging with its extends chain and defaults.
-- [`themeToNapi`](#themetonapi) `function` `themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig` - Converts resolved theme to the format expected by Rust NAPI.
-- [`NapiThemeColors`](#napithemecolors) `interface` - NAPI-compatible theme colors type.
-- [`NapiThemeFonts`](#napithemefonts) `interface` - NAPI-compatible theme fonts type.
-- [`NapiThemeLayout`](#napithemelayout) `interface` - NAPI-compatible theme layout type.
-- [`NapiThemeHeader`](#napithemeheader) `interface` - NAPI-compatible theme header type.
-- [`NapiThemeFooter`](#napithemefooter) `interface` - NAPI-compatible theme footer type.
-- [`NapiSocialLinks`](#napisociallinks) `interface` - NAPI-compatible social links type.
-- [`NapiThemeEmbed`](#napithemeembed) `interface` - NAPI-compatible theme embed type.
-- [`NapiThemeConfig`](#napithemeconfig) `interface` - NAPI-compatible theme configuration type.
+> 24 documented symbols. Read the signatures first, then expand each item for parameters, return types, and examples.
 
 ## Reference
 
-<details id="themecolors" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeColors</code><span class="ox-api-entry__description">Theme color configuration.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Theme color configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L7">View source</a></p>
-  </div>
-</details>
-
-<details id="themelayout" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeLayout</code><span class="ox-api-entry__description">Theme layout configuration.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Theme layout configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L31">View source</a></p>
-  </div>
-</details>
-
-<details id="themefonts" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeFonts</code><span class="ox-api-entry__description">Theme font configuration.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Theme font configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L43">View source</a></p>
-  </div>
-</details>
-
-<details id="themeheader" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeHeader</code><span class="ox-api-entry__description">Theme header configuration.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Theme header configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L53">View source</a></p>
-  </div>
-</details>
-
-<details id="themefooter" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeFooter</code><span class="ox-api-entry__description">Theme footer configuration.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Theme footer configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L65">View source</a></p>
-  </div>
-</details>
-
-<details id="sociallinks" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">SocialLinks</code><span class="ox-api-entry__description">Social links configuration.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Social links configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L75">View source</a></p>
-  </div>
-</details>
-
-<details id="themeembed" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeEmbed</code><span class="ox-api-entry__description">Embedded HTML content for specific positions in the page layout.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Embedded HTML content for specific positions in the page layout.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L87">View source</a></p>
-  </div>
-</details>
-
-<details id="themeconfig" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ThemeConfig</code><span class="ox-api-entry__description">Complete theme configuration.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Complete theme configuration.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L111">View source</a></p>
-  </div>
-</details>
-
-<details id="resolvedthemeconfig" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">ResolvedThemeConfig</code><span class="ox-api-entry__description">Resolved theme configuration (after merging with defaults).</span></summary>
-  <div class="ox-api-entry__body">
-<p>Resolved theme configuration (after merging with defaults).</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L141">View source</a></p>
-  </div>
-</details>
+<div class="ox-api-controls" data-ox-api-target=".ox-api-entry" role="toolbar" aria-label="Reference display controls">
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="expand">Open all</button>
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="collapse">Close all</button>
+</div>
 
 <details id="deepmerge" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">deepMerge</code><span class="ox-api-entry__description">Deep merge two objects.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">deepMerge&lt;T extends Record&lt;string, unknown&gt;&gt;(target: T, source: Partial&lt;T&gt;): T</code><span class="ox-api-entry__description">Deep merge two objects.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Deep merge two objects.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L210">View source</a></p>
-<div class="ox-api-entry__section">
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L236-L262">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">target</code>
+    <code class="ox-api-entry__param-type">T</code>
+  </div>
+  
+</li>
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">source</code>
+    <code class="ox-api-entry__param-type">Partial</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>T</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">T</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="definetheme" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">defineTheme</code><code class="ox-api-entry__signature">defineTheme(config: ThemeConfig): ThemeConfig</code><span class="ox-api-entry__description">Defines a theme configuration with type checking.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">defineTheme(config: ThemeConfig): ThemeConfig</code><span class="ox-api-entry__description">Defines a theme configuration with type checking.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Defines a theme configuration with type checking.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L241">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function defineTheme(config: ThemeConfig): ThemeConfig</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L280-L282">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">config</code>
+    <code class="ox-api-entry__param-type">ThemeConfig</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>ThemeConfig</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">ThemeConfig</code>
+  
 </div>
-<div class="ox-api-entry__section">
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
 <h4>Examples</h4>
 <pre><code class="language-ts">const myTheme = defineTheme({
   extends: defaultTheme,
@@ -144,117 +89,271 @@
 </details>
 
 <details id="mergethemes" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">mergeThemes</code><code class="ox-api-entry__signature">mergeThemes(...themes: ThemeConfig[]): ThemeConfig</code><span class="ox-api-entry__description">Merges multiple theme configurations. Later themes override earlier ones.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">mergeThemes(...themes): ThemeConfig</code><span class="ox-api-entry__description">Merges multiple theme configurations. Later themes override earlier ones.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Merges multiple theme configurations.<br>Later themes override earlier ones.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L261">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function mergeThemes(...themes: ThemeConfig[]): ThemeConfig</code></pre>
+<div class="ox-api-entry__prose">
+<p>Merges multiple theme configurations. Later themes override earlier ones.</p>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L293-L308">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>ThemeConfig</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">ThemeConfig</code>
+  
 </div>
-<div class="ox-api-entry__section">
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--examples">
 <h4>Examples</h4>
 <pre><code class="language-ts">const merged = mergeThemes(defaultTheme, customTheme, overrides);</code></pre>
 </div>
   </div>
 </details>
 
-<details id="resolvetheme" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">resolveTheme</code><code class="ox-api-entry__signature">resolveTheme(config?: ThemeConfig): ResolvedThemeConfig</code><span class="ox-api-entry__description">Resolves a theme configuration by merging with its extends chain and defaults.</span></summary>
+<details id="napisociallinks" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiSocialLinks</code><span class="ox-api-entry__description">NAPI-compatible social links type.</span></span></summary>
   <div class="ox-api-entry__body">
-<p>Resolves a theme configuration by merging with its extends chain and defaults.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L287">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function resolveTheme(config?: ThemeConfig): ResolvedThemeConfig</code></pre>
+<div class="ox-api-entry__prose">
+<p>NAPI-compatible social links type.</p>
 </div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>ResolvedThemeConfig</code></p>
-</div>
-  </div>
-</details>
-
-<details id="themetonapi" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">themeToNapi</code><code class="ox-api-entry__signature">themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig</code><span class="ox-api-entry__description">Converts resolved theme to the format expected by Rust NAPI.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Converts resolved theme to the format expected by Rust NAPI.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L328">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig</code></pre>
-</div>
-<div class="ox-api-entry__section">
-<h4>Returns</h4>
-<p><code>NapiThemeConfig</code></p>
-</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L494-L498">View source</a></p>
   </div>
 </details>
 
 <details id="napithemecolors" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeColors</code><span class="ox-api-entry__description">NAPI-compatible theme colors type.</span></summary>
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeColors</code><span class="ox-api-entry__description">NAPI-compatible theme colors type.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>NAPI-compatible theme colors type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L400">View source</a></p>
-  </div>
-</details>
-
-<details id="napithemefonts" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeFonts</code><span class="ox-api-entry__description">NAPI-compatible theme fonts type.</span></summary>
-  <div class="ox-api-entry__body">
-<p>NAPI-compatible theme fonts type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L415">View source</a></p>
-  </div>
-</details>
-
-<details id="napithemelayout" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeLayout</code><span class="ox-api-entry__description">NAPI-compatible theme layout type.</span></summary>
-  <div class="ox-api-entry__body">
-<p>NAPI-compatible theme layout type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L423">View source</a></p>
-  </div>
-</details>
-
-<details id="napithemeheader" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeHeader</code><span class="ox-api-entry__description">NAPI-compatible theme header type.</span></summary>
-  <div class="ox-api-entry__body">
-<p>NAPI-compatible theme header type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L432">View source</a></p>
-  </div>
-</details>
-
-<details id="napithemefooter" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeFooter</code><span class="ox-api-entry__description">NAPI-compatible theme footer type.</span></summary>
-  <div class="ox-api-entry__body">
-<p>NAPI-compatible theme footer type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L441">View source</a></p>
-  </div>
-</details>
-
-<details id="napisociallinks" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiSocialLinks</code><span class="ox-api-entry__description">NAPI-compatible social links type.</span></summary>
-  <div class="ox-api-entry__body">
-<p>NAPI-compatible social links type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L449">View source</a></p>
-  </div>
-</details>
-
-<details id="napithemeembed" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeEmbed</code><span class="ox-api-entry__description">NAPI-compatible theme embed type.</span></summary>
-  <div class="ox-api-entry__body">
-<p>NAPI-compatible theme embed type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L458">View source</a></p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L435-L445">View source</a></p>
   </div>
 </details>
 
 <details id="napithemeconfig" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">interface</span><code class="ox-api-entry__name">NapiThemeConfig</code><span class="ox-api-entry__description">NAPI-compatible theme configuration type.</span></summary>
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeConfig</code><span class="ox-api-entry__description">NAPI-compatible theme configuration type.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>NAPI-compatible theme configuration type.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L473">View source</a></p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L518-L530">View source</a></p>
   </div>
 </details>
+
+<details id="napithemeembed" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeEmbed</code><span class="ox-api-entry__description">NAPI-compatible theme embed type.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>NAPI-compatible theme embed type.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L503-L513">View source</a></p>
+  </div>
+</details>
+
+<details id="napithemeentrypage" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeEntryPage</code><span class="ox-api-entry__description">NAPI-compatible entry page theme type.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>NAPI-compatible entry page theme type.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L458-L460">View source</a></p>
+  </div>
+</details>
+
+<details id="napithemefonts" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeFonts</code><span class="ox-api-entry__description">NAPI-compatible theme fonts type.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>NAPI-compatible theme fonts type.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L450-L453">View source</a></p>
+  </div>
+</details>
+
+<details id="napithemefooter" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeFooter</code><span class="ox-api-entry__description">NAPI-compatible theme footer type.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>NAPI-compatible theme footer type.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L486-L489">View source</a></p>
+  </div>
+</details>
+
+<details id="napithemeheader" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeHeader</code><span class="ox-api-entry__description">NAPI-compatible theme header type.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>NAPI-compatible theme header type.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L474-L481">View source</a></p>
+  </div>
+</details>
+
+<details id="napithemelayout" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">NapiThemeLayout</code><span class="ox-api-entry__description">NAPI-compatible theme layout type.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>NAPI-compatible theme layout type.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L465-L469">View source</a></p>
+  </div>
+</details>
+
+<details id="resolvedthemeconfig" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ResolvedThemeConfig</code><span class="ox-api-entry__description">Resolved theme configuration (after merging with defaults).</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Resolved theme configuration (after merging with defaults).</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L160-L173">View source</a></p>
+  </div>
+</details>
+
+<details id="resolvetheme" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">resolveTheme(config?: ThemeConfig): ResolvedThemeConfig</code><span class="ox-api-entry__description">Resolves a theme configuration by merging with its extends chain and defaults.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Resolves a theme configuration by merging with its extends chain and defaults.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L313-L350">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">config</code>
+    <code class="ox-api-entry__param-type">ThemeConfig</code>
+  </div>
+  <p class="ox-api-entry__param-description">optional</p>
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">ResolvedThemeConfig</code>
+  
+</div>
+</div>
+  </div>
+</details>
+
+<details id="sociallinks" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">SocialLinks</code><span class="ox-api-entry__description">Social links configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Social links configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L92-L99">View source</a></p>
+  </div>
+</details>
+
+<details id="themecolors" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeColors</code><span class="ox-api-entry__description">Theme color configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Theme color configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L10-L29">View source</a></p>
+  </div>
+</details>
+
+<details id="themeconfig" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeConfig</code><span class="ox-api-entry__description">Complete theme configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Complete theme configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L128-L155">View source</a></p>
+  </div>
+</details>
+
+<details id="themeembed" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeEmbed</code><span class="ox-api-entry__description">Embedded HTML content for specific positions in the page layout.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Embedded HTML content for specific positions in the page layout.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L104-L123">View source</a></p>
+  </div>
+</details>
+
+<details id="themeentrypage" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeEntryPage</code><span class="ox-api-entry__description">Entry page theme configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Entry page theme configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L56-L59">View source</a></p>
+  </div>
+</details>
+
+<details id="themefonts" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeFonts</code><span class="ox-api-entry__description">Theme font configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Theme font configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L46-L51">View source</a></p>
+  </div>
+</details>
+
+<details id="themefooter" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeFooter</code><span class="ox-api-entry__description">Theme footer configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Theme footer configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L82-L87">View source</a></p>
+  </div>
+</details>
+
+<details id="themeheader" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeHeader</code><span class="ox-api-entry__description">Theme header configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Theme header configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L64-L77">View source</a></p>
+  </div>
+</details>
+
+<details id="themelayout" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">interface</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">ThemeLayout</code><span class="ox-api-entry__description">Theme layout configuration.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Theme layout configuration.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L34-L41">View source</a></p>
+  </div>
+</details>
+
+<details id="themetonapi" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">themeToNapi(theme: ResolvedThemeConfig): NapiThemeConfig</code><span class="ox-api-entry__description">Converts resolved theme to the format expected by Rust NAPI.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Converts resolved theme to the format expected by Rust NAPI.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/theme.ts#L355-L430">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">theme</code>
+    <code class="ox-api-entry__param-type">ResolvedThemeConfig</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
+<h4>Returns</h4>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">NapiThemeConfig</code>
+  
+</div>
+</div>
+  </div>
+</details>
+

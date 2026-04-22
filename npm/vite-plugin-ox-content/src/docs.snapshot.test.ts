@@ -35,5 +35,6 @@ describe("docs generation snapshots", () => {
 
     expect(result.html).toContain('<details id="capitalize" class="ox-api-entry">');
     expect(result.html).not.toContain("&#x3C;details");
+    expect(result.html).toContain("shiki-inline");
   });
 });

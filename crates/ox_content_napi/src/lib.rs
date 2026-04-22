@@ -10,9 +10,11 @@ use napi::bindgen_prelude::*;
 use napi::Task;
 use napi_derive::napi;
 use std::collections::HashMap;
+use std::path::Path;
 
 use ox_content_allocator::Allocator;
 use ox_content_ast::{Document, Heading, Node};
+use ox_content_docs::{DocExtractor, DocItem, DocItemKind, DocTag, ParamDoc};
 use ox_content_parser::{Parser, ParserOptions};
 use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 use ox_content_search::{DocumentIndexer, SearchIndex, SearchIndexBuilder, SearchOptions};
@@ -58,6 +60,43 @@ pub struct TransformResult {
     pub toc: Vec<TocEntry>,
     /// Parse/render errors, if any.
     pub errors: Vec<String>,
+}
+
+/// Raw JSDoc tag extracted from source code.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSourceDocTag {
+    pub tag: String,
+    pub value: String,
+}
+
+/// Parameter documentation extracted from source code.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSourceDocParam {
+    pub name: String,
+    pub type_annotation: Option<String>,
+    pub optional: bool,
+    pub default_value: Option<String>,
+    pub description: Option<String>,
+}
+
+/// Source documentation item extracted from a JS/TS file.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsSourceDocItem {
+    pub name: String,
+    pub kind: String,
+    pub doc: Option<String>,
+    pub jsdoc: Option<String>,
+    pub source_path: String,
+    pub line: u32,
+    pub end_line: u32,
+    pub exported: bool,
+    pub signature: Option<String>,
+    pub params: Vec<JsSourceDocParam>,
+    pub return_type: Option<String>,
+    pub tags: Vec<JsSourceDocTag>,
 }
 
 /// Transform options for JavaScript.
@@ -193,6 +232,69 @@ pub fn render(_ast_json: String) -> RenderResult {
 #[napi]
 pub fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
+}
+
+fn doc_item_kind_to_string(kind: DocItemKind) -> String {
+    match kind {
+        DocItemKind::Module => "module",
+        DocItemKind::Function => "function",
+        DocItemKind::Class => "class",
+        DocItemKind::Interface => "interface",
+        DocItemKind::Type => "type",
+        DocItemKind::Enum => "enum",
+        DocItemKind::Variable => "variable",
+        DocItemKind::Method => "method",
+        DocItemKind::Property => "property",
+        DocItemKind::Constructor => "constructor",
+        DocItemKind::Getter => "getter",
+        DocItemKind::Setter => "setter",
+    }
+    .to_string()
+}
+
+fn map_doc_tag(tag: DocTag) -> JsSourceDocTag {
+    JsSourceDocTag { tag: tag.tag, value: tag.value }
+}
+
+fn map_param_doc(param: ParamDoc) -> JsSourceDocParam {
+    JsSourceDocParam {
+        name: param.name,
+        type_annotation: param.type_annotation,
+        optional: param.optional,
+        default_value: param.default_value,
+        description: param.description,
+    }
+}
+
+fn map_doc_item(item: DocItem) -> JsSourceDocItem {
+    JsSourceDocItem {
+        name: item.name,
+        kind: doc_item_kind_to_string(item.kind),
+        doc: item.doc,
+        jsdoc: item.jsdoc,
+        source_path: item.source_path,
+        line: item.line,
+        end_line: item.end_line,
+        exported: item.exported,
+        signature: item.signature,
+        params: item.params.into_iter().map(map_param_doc).collect(),
+        return_type: item.return_type,
+        tags: item.tags.into_iter().map(map_doc_tag).collect(),
+    }
+}
+
+/// Extracts documented declarations from a JavaScript/TypeScript file using Oxc.
+#[napi]
+pub fn extract_file_docs(
+    file_path: String,
+    include_private: Option<bool>,
+) -> Result<Vec<JsSourceDocItem>> {
+    let extractor = DocExtractor::with_private(include_private.unwrap_or(false));
+    let items = extractor
+        .extract_file(Path::new(&file_path))
+        .map_err(|err| Error::from_reason(err.to_string()))?;
+
+    Ok(items.into_iter().map(map_doc_item).collect())
 }
 
 /// Restores code block metadata after JavaScript-side syntax highlighting.
@@ -764,12 +866,26 @@ pub struct JsHeroAction {
 pub struct JsHeroImage {
     /// Image source URL.
     pub src: String,
+    /// Light mode image source URL.
+    pub light_src: Option<String>,
+    /// Dark mode image source URL.
+    pub dark_src: Option<String>,
     /// Alt text.
     pub alt: Option<String>,
     /// Image width.
     pub width: Option<u32>,
     /// Image height.
     pub height: Option<u32>,
+}
+
+/// Hero notice for entry page.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsHeroNotice {
+    /// Notice title.
+    pub title: Option<String>,
+    /// Notice paragraphs.
+    pub body: Option<Vec<String>>,
 }
 
 /// Hero section configuration for entry page.
@@ -782,6 +898,8 @@ pub struct JsHeroConfig {
     pub text: Option<String>,
     /// Tagline.
     pub tagline: Option<String>,
+    /// Optional notice shown in the hero.
+    pub notice: Option<JsHeroNotice>,
     /// Hero image.
     pub image: Option<JsHeroImage>,
     /// Action buttons.
@@ -869,6 +987,14 @@ pub struct JsThemeFonts {
     pub mono: Option<String>,
 }
 
+/// Entry page theme configuration for JavaScript.
+#[napi(object)]
+#[derive(Clone, Default)]
+pub struct JsThemeEntryPage {
+    /// Landing page presentation mode.
+    pub mode: Option<String>,
+}
+
 /// Theme layout for JavaScript.
 #[napi(object)]
 #[derive(Clone, Default)]
@@ -887,6 +1013,12 @@ pub struct JsThemeLayout {
 pub struct JsThemeHeader {
     /// Logo image URL.
     pub logo: Option<String>,
+    /// Light mode logo image URL.
+    pub logo_light: Option<String>,
+    /// Dark mode logo image URL.
+    pub logo_dark: Option<String>,
+    /// Whether to render the site name text next to the logo.
+    pub show_site_name_text: Option<bool>,
     /// Logo width in pixels.
     pub logo_width: Option<u32>,
     /// Logo height in pixels.
@@ -949,6 +1081,8 @@ pub struct JsThemeConfig {
     pub dark_colors: Option<JsThemeColors>,
     /// Font configuration.
     pub fonts: Option<JsThemeFonts>,
+    /// Entry page configuration.
+    pub entry_page: Option<JsThemeEntryPage>,
     /// Layout configuration.
     pub layout: Option<JsThemeLayout>,
     /// Header configuration.
@@ -1016,6 +1150,7 @@ fn convert_theme_config(theme: Option<JsThemeConfig>) -> Option<ox_content_ssg::
         colors: convert_theme_colors(t.colors),
         dark_colors: convert_theme_colors(t.dark_colors),
         fonts: t.fonts.map(|f| ox_content_ssg::ThemeFonts { sans: f.sans, mono: f.mono }),
+        entry_page: t.entry_page.map(|entry| ox_content_ssg::ThemeEntryPage { mode: entry.mode }),
         layout: t.layout.map(|l| ox_content_ssg::ThemeLayout {
             sidebar_width: l.sidebar_width,
             header_height: l.header_height,
@@ -1023,6 +1158,9 @@ fn convert_theme_config(theme: Option<JsThemeConfig>) -> Option<ox_content_ssg::
         }),
         header: t.header.map(|h| ox_content_ssg::ThemeHeader {
             logo: h.logo,
+            logo_light: h.logo_light,
+            logo_dark: h.logo_dark,
+            show_site_name_text: h.show_site_name_text,
             logo_width: h.logo_width,
             logo_height: h.logo_height,
         }),
@@ -1059,8 +1197,14 @@ fn convert_entry_page_config(
             name: h.name,
             text: h.text,
             tagline: h.tagline,
+            notice: h.notice.map(|n| ox_content_ssg::HeroNoticeConfig {
+                title: n.title,
+                body: n.body,
+            }),
             image: h.image.map(|i| ox_content_ssg::HeroImage {
                 src: i.src,
+                light_src: i.light_src,
+                dark_src: i.dark_src,
                 alt: i.alt,
                 width: i.width,
                 height: i.height,

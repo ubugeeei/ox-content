@@ -2,43 +2,58 @@
 
 **[Source](https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/template.ts)**
 
-> 2 documented symbols. Skim the one-line surface first, then expand the accordions for details.
-
-## Overview
-
-- [`escapeHtml`](#escapehtml) `function` `escapeHtml(str: string): string` - Escapes HTML special characters.
-- [`getDefaultTemplate`](#getdefaulttemplate) `function` `getDefaultTemplate(): OgImageTemplateFn` - Returns the built-in default template function.
+> 2 documented symbols. Read the signatures first, then expand each item for parameters, return types, and examples.
 
 ## Reference
 
-<details id="escapehtml" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">escapeHtml</code><code class="ox-api-entry__signature">escapeHtml(str: string): string</code><span class="ox-api-entry__description">Escapes HTML special characters.</span></summary>
-  <div class="ox-api-entry__body">
-<p>Escapes HTML special characters.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/template.ts#L10">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">function escapeHtml(str: string): string</code></pre>
+<div class="ox-api-controls" data-ox-api-target=".ox-api-entry" role="toolbar" aria-label="Reference display controls">
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="expand">Open all</button>
+<button type="button" class="ox-api-controls__button" data-ox-api-toggle="collapse">Close all</button>
 </div>
-<div class="ox-api-entry__section">
+
+<details id="escapehtml" class="ox-api-entry">
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">escapeHtml(str: string): string</code><span class="ox-api-entry__description">Escapes HTML special characters.</span></span></summary>
+  <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
+<p>Escapes HTML special characters.</p>
+</div>
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/template.ts#L13-L19">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--params">
+<h4>Parameters</h4>
+<ul class="ox-api-entry__params">
+<li class="ox-api-entry__param">
+  <div class="ox-api-entry__param-heading">
+    <code class="ox-api-entry__param-name">str</code>
+    <code class="ox-api-entry__param-type">string</code>
+  </div>
+  
+</li>
+</ul>
+</div>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>string</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">string</code>
+  
+</div>
 </div>
   </div>
 </details>
 
 <details id="getdefaulttemplate" class="ox-api-entry">
-  <summary><span class="ox-api-entry__kind">function</span><code class="ox-api-entry__name">getDefaultTemplate</code><code class="ox-api-entry__signature">getDefaultTemplate(): OgImageTemplateFn</code><span class="ox-api-entry__description">Returns the built-in default template function.</span></summary>
+  <summary><span class="ox-api-entry__kind">fn</span><span class="ox-api-entry__summary-main"><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">getDefaultTemplate(): OgImageTemplateFn</code><span class="ox-api-entry__description">Returns the built-in default template function.</span></span></summary>
   <div class="ox-api-entry__body">
+<div class="ox-api-entry__prose">
 <p>Returns the built-in default template function.</p>
-<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/template.ts#L21">View source</a></p>
-<div class="ox-api-entry__section">
-<h4>Signature</h4>
-<pre><code class="language-typescript">export function getDefaultTemplate(): OgImageTemplateFn</code></pre>
 </div>
-<div class="ox-api-entry__section">
+<p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/og-image/template.ts#L76-L104">View source</a></p>
+<div class="ox-api-entry__section ox-api-entry__section--returns">
 <h4>Returns</h4>
-<p><code>OgImageTemplateFn</code></p>
+<div class="ox-api-entry__return">
+  <code class="ox-api-entry__return-type">OgImageTemplateFn</code>
+  
+</div>
 </div>
   </div>
 </details>
+

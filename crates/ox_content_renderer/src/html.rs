@@ -4,8 +4,8 @@ use std::collections::BTreeMap;
 
 use ox_content_ast::{
     BlockQuote, Break, CodeBlock, Definition, Delete, Document, Emphasis, FootnoteDefinition,
-    FootnoteReference, Heading, Html, Image, InlineCode, Link, List, ListItem, Paragraph, Strong,
-    Table, TableCell, TableRow, Text, ThematicBreak, Visit,
+    FootnoteReference, Heading, Html, Image, InlineCode, Link, List, ListItem, Node, Paragraph,
+    Strong, Table, TableCell, TableRow, Text, ThematicBreak, Visit,
 };
 
 use crate::render::{RenderResult, Renderer};
@@ -134,6 +134,52 @@ impl CodeAnnotationKind {
             Self::Highlight | Self::Warning | Self::Error => Some("has-highlighted"),
             Self::Add | Self::Remove => Some("has-diff"),
             Self::Focus => Some("has-focused"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CalloutKind {
+    Note,
+    Tip,
+    Important,
+    Warning,
+    Caution,
+}
+
+impl CalloutKind {
+    fn parse_marker(value: &str) -> Option<(Self, &str)> {
+        let marker = value.strip_prefix("[!")?;
+        let end = marker.find(']')?;
+        let kind = match marker[..end].trim().to_ascii_uppercase().as_str() {
+            "NOTE" => Self::Note,
+            "TIP" => Self::Tip,
+            "IMPORTANT" => Self::Important,
+            "WARNING" => Self::Warning,
+            "CAUTION" => Self::Caution,
+            _ => return None,
+        };
+
+        Some((kind, marker[end + 1..].trim_start_matches(char::is_whitespace)))
+    }
+
+    fn class_name(self) -> &'static str {
+        match self {
+            Self::Note => "note",
+            Self::Tip => "tip",
+            Self::Important => "important",
+            Self::Warning => "warning",
+            Self::Caution => "caution",
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::Note => "Note",
+            Self::Tip => "Tip",
+            Self::Important => "Important",
+            Self::Warning => "Warning",
+            Self::Caution => "Caution",
         }
     }
 }
@@ -740,6 +786,83 @@ impl HtmlRenderer {
         }
     }
 
+    fn render_paragraph_with_skipped_text_prefix<'a>(
+        &self,
+        paragraph: &Paragraph<'a>,
+        mut skip_chars: usize,
+    ) -> String {
+        let mut renderer = HtmlRenderer::with_options(self.options.clone());
+
+        for child in &paragraph.children {
+            match child {
+                Node::Text(text) if skip_chars > 0 => {
+                    if skip_chars >= text.value.len() {
+                        skip_chars -= text.value.len();
+                        continue;
+                    }
+
+                    renderer.write_escaped(&text.value[skip_chars..]);
+                    skip_chars = 0;
+                }
+                _ => renderer.visit_node(child),
+            }
+        }
+
+        renderer.output
+    }
+
+    fn detect_callout<'a>(&self, paragraph: &Paragraph<'a>) -> Option<(CalloutKind, usize)> {
+        let mut prefix = String::new();
+
+        for child in &paragraph.children {
+            let Node::Text(text) = child else {
+                break;
+            };
+
+            prefix.push_str(text.value);
+
+            if let Some((kind, remainder)) = CalloutKind::parse_marker(&prefix) {
+                let consumed = prefix.len().saturating_sub(remainder.len());
+                return Some((kind, consumed));
+            }
+        }
+
+        None
+    }
+
+    fn render_callout_block_quote<'a>(&mut self, block_quote: &BlockQuote<'a>) -> bool {
+        let Some(Node::Paragraph(first_paragraph)) = block_quote.children.first() else {
+            return false;
+        };
+        let Some((kind, consumed_chars)) = self.detect_callout(first_paragraph) else {
+            return false;
+        };
+
+        self.write("<blockquote class=\"ox-callout ox-callout--");
+        self.write(kind.class_name());
+        self.write("\">\n");
+        self.write("<p class=\"ox-callout-title\">");
+        self.write(kind.label());
+        self.write("</p>\n");
+
+        let paragraph_body = self.render_paragraph_with_skipped_text_prefix(
+            first_paragraph,
+            consumed_chars,
+        );
+        if !paragraph_body.trim().is_empty() {
+            self.write("<p>");
+            self.write(&paragraph_body);
+            self.write("</p>\n");
+        }
+
+        for child in block_quote.children.iter().skip(1) {
+            self.visit_node(child);
+        }
+
+        self.write("</blockquote>\n");
+        true
+    }
+
     fn build_code_block_state(&self, code_block: &CodeBlock<'_>) -> CodeBlockRenderState {
         let info = normalize_code_block_info(code_block.lang, code_block.meta);
         let syntax = self.options.code_annotation_syntax;
@@ -1029,6 +1152,10 @@ impl<'a> Visit<'a> for HtmlRenderer {
     }
 
     fn visit_block_quote(&mut self, block_quote: &BlockQuote<'a>) {
+        if self.render_callout_block_quote(block_quote) {
+            return;
+        }
+
         self.write("<blockquote>\n");
         for child in &block_quote.children {
             self.visit_node(child);
@@ -1325,6 +1452,33 @@ mod tests {
         assert!(html.contains("<blockquote>"));
         assert!(html.contains("<strong>Note:</strong>"));
         assert!(html.contains("</blockquote>"));
+    }
+
+    #[test]
+    fn test_render_github_style_important_callout() {
+        let allocator = Allocator::new();
+        let doc = Parser::new(&allocator, "> [!IMPORTANT]\n> This is important.").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+
+        assert!(html.contains("<blockquote class=\"ox-callout ox-callout--important\">"));
+        assert!(html.contains("<p class=\"ox-callout-title\">Important</p>"));
+        assert!(html.contains("<p>This is important.</p>"));
+        assert!(!html.contains("[!IMPORTANT]"));
+    }
+
+    #[test]
+    fn test_render_github_style_callout_with_inline_content_after_marker() {
+        let allocator = Allocator::new();
+        let doc =
+            Parser::new(&allocator, "> [!NOTE] Supports **inline** content").parse().unwrap();
+        let mut renderer = HtmlRenderer::new();
+        let html = renderer.render(&doc);
+
+        assert!(html.contains("<blockquote class=\"ox-callout ox-callout--note\">"));
+        assert!(html.contains("<p class=\"ox-callout-title\">Note</p>"));
+        assert!(html.contains("<p>Supports <strong>inline</strong> content</p>"));
+        assert!(!html.contains("[!NOTE]"));
     }
 
     #[test]

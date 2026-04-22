@@ -12,4 +12,15 @@ describe("highlightCode", () => {
     expect(vitesseDark).toContain("vitesse-dark");
     expect(vitesseDark).not.toContain("github-dark");
   });
+
+  it("highlights standalone language-tagged code inline", async () => {
+    const html =
+      '<p><code class="ox-api-entry__signature ox-api-entry__signature--highlighted language-typescript">function capitalize(value: string): string</code></p>';
+
+    const highlighted = await highlightCode(html, "vitesse-dark");
+
+    expect(highlighted).toContain("shiki-inline");
+    expect(highlighted).toContain("ox-api-entry__signature--highlighted");
+    expect(highlighted).toContain('<span style="color:');
+  });
 });

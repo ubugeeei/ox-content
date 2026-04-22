@@ -51,6 +51,7 @@
     "rehype-stringify": "^10.0.1",
     "rolldown": "^1.0.0-rc.1",
     "shiki": "^1.24.0",
+    "typescript": "catalog:",
     "unified": "^11.0.5"
   },
   "devDependencies": {
@@ -60,7 +61,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@typescript/native-preview": "catalog:",
-    "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:",
     "yaml": "^2.8.2"
