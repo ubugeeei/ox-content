@@ -9,7 +9,7 @@ If you are building for Node.js, prefer [`@ox-content/napi`](./napi.md).
 ## Installation
 
 ```bash
-pnpm add @ox-content/wasm
+vp install @ox-content/wasm
 ```
 
 ## Usage
@@ -49,7 +49,8 @@ From the repository root:
 
 ```bash
 vp run build:wasm
-pnpm --filter @ox-content/wasm pack --dry-run
+cd crates/ox_content_wasm/pkg
+vp exec -- npm pack --dry-run
 ```
 
 The generated publish-ready package lives in `crates/ox_content_wasm/pkg/`.
@@ -59,12 +60,13 @@ The generated publish-ready package lives in `crates/ox_content_wasm/pkg/`.
 If you are publishing this package from a local machine for the first time:
 
 ```bash
-pnpm whoami || pnpm login
-pnpm --filter @ox-content/wasm publish --access public --no-git-checks
+cd crates/ox_content_wasm/pkg
+vp exec -- npm whoami || vp exec -- npm login
+vp exec -- npm publish --access public
 ```
 
 The package is scoped, so the initial publish should use `--access public`.
 
-Using `--filter @ox-content/wasm` from the workspace root is the safest option in this monorepo. Avoid `pnpm -r publish` unless you intentionally want to publish every publishable workspace package.
+Publishing from `crates/ox_content_wasm/pkg` is the safest option in this monorepo because it targets only the generated package.
 
 After the package exists on npm, the repository's tag-based GitHub Actions workflow can publish later versions with provenance enabled.

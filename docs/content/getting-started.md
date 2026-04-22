@@ -38,7 +38,7 @@ It already brings in the native runtime it needs, so you do not need to install 
 ### Install
 
 ```bash
-pnpm add @ox-content/vite-plugin
+vp install @ox-content/vite-plugin
 ```
 
 ### Minimal Setup
@@ -87,13 +87,13 @@ If you want component islands inside Markdown, add one of the first-party integr
 
 ```bash
 # Vue
-pnpm add @ox-content/vite-plugin-vue vue @vitejs/plugin-vue
+vp install @ox-content/vite-plugin-vue vue @vitejs/plugin-vue
 
 # React
-pnpm add @ox-content/vite-plugin-react react react-dom @vitejs/plugin-react
+vp install @ox-content/vite-plugin-react react react-dom @vitejs/plugin-react
 
 # Svelte
-pnpm add @ox-content/vite-plugin-svelte svelte @sveltejs/vite-plugin-svelte
+vp install @ox-content/vite-plugin-svelte svelte @sveltejs/vite-plugin-svelte
 ```
 
 Read more:
@@ -112,7 +112,7 @@ If you want Ox Content as a fast Markdown engine inside a Node.js tool, script, 
 ### Install
 
 ```bash
-pnpm add @ox-content/napi
+vp install @ox-content/napi
 ```
 
 ### Parse and Render
@@ -162,7 +162,7 @@ If you need Ox Content in the browser, in a Web Worker, or in another WebAssembl
 ### Install
 
 ```bash
-pnpm add @ox-content/wasm
+vp install @ox-content/wasm
 ```
 
 ### Use from JavaScript
@@ -189,21 +189,23 @@ If you are maintaining Ox Content itself, the repository can generate a publish-
 
 ```bash
 vp run build:wasm
-pnpm --filter @ox-content/wasm pack --dry-run
+cd crates/ox_content_wasm/pkg
+vp exec -- npm pack --dry-run
 ```
 
 For the first local publish of this scoped package, authenticate with the registry if needed and publish it as public:
 
 ```bash
-pnpm whoami || pnpm login
-pnpm --filter @ox-content/wasm publish --access public --no-git-checks
+cd crates/ox_content_wasm/pkg
+vp exec -- npm whoami || vp exec -- npm login
+vp exec -- npm publish --access public
 ```
 
-Using `--filter @ox-content/wasm` from the workspace root is safer than a recursive workspace publish, because it only targets this generated package.
+Publishing from `crates/ox_content_wasm/pkg` is safer than publishing from the workspace root, because it only targets the generated package.
 
-Avoid `pnpm -r publish` here unless you intentionally want to publish every publishable package in the workspace.
+Avoid publishing from the workspace root here unless you intentionally want a broader workspace release flow.
 
-If your npm account enforces 2FA for publishing, pnpm will prompt for the one-time code during `pnpm publish`.
+If your npm account enforces 2FA for publishing, npm will prompt for the one-time code during `npm publish`.
 
 The current WASM surface exposes `parseAndRender`, `transform`, `version`, and `WasmParserOptions` from [`crates/ox_content_wasm/src/lib.rs`](https://github.com/ubugeeei/ox-content/blob/main/crates/ox_content_wasm/src/lib.rs).
 

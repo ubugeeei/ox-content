@@ -5,10 +5,10 @@ Base Vite plugin for Ox Content with Environment API support.
 ## Installation
 
 ```bash
-pnpm add @ox-content/vite-plugin
+vp install @ox-content/vite-plugin
 ```
 
-`@ox-content/vite-plugin` already depends on `@ox-content/napi`, so a separate `pnpm add @ox-content/napi` is not required when you are using the Vite plugin.
+`@ox-content/vite-plugin` already depends on `@ox-content/napi`, so a separate `vp install @ox-content/napi` is not required when you are using the Vite plugin.
 
 ## Basic Usage
 

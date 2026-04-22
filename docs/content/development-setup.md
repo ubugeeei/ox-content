@@ -92,7 +92,7 @@ vp run bench:bundle
 ```text
 ox-content/
 ├── Cargo.toml              # Workspace configuration
-├── flake.nix               # Nix dev shell (Node.js, pnpm, Rust, Vite+ wrapper)
+├── flake.nix               # Nix dev shell (Node.js, workspace bootstrap, Rust, Vite+ wrapper)
 ├── .node-version           # Node.js version for CI / setup-node compatibility
 ├── vite.config.ts          # Vite+ workspace task graph
 ├── crates/                 # Rust crates

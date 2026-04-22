@@ -5,7 +5,7 @@ Node.js bindings for Ox Content's Rust core.
 ## Installation
 
 ```bash
-pnpm add @ox-content/napi
+vp install @ox-content/napi
 ```
 
 ## Usage
