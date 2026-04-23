@@ -4,6 +4,7 @@
 //! enabling zero-copy AST transfer and JavaScript interoperability.
 
 mod highlight;
+mod lint;
 mod mdast;
 mod slides;
 

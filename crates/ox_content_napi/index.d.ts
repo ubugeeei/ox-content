@@ -198,6 +198,53 @@ export interface JsLocaleInfo {
   dir: string
 }
 
+export interface JsMarkdownLintDiagnostic {
+  ruleId: string
+  severity: string
+  message: string
+  line: number
+  column: number
+  endLine: number
+  endColumn: number
+  language?: string
+  suggestions?: Array<string>
+}
+
+export interface JsMarkdownLintDictionaryOptions {
+  words?: Array<string>
+  byLanguage?: Array<JsMarkdownLintLanguageWords>
+  ignoredWords?: Array<string>
+}
+
+export interface JsMarkdownLintLanguageWords {
+  language: string
+  words: Array<string>
+}
+
+export interface JsMarkdownLintOptions {
+  languages?: Array<string>
+  rules?: JsMarkdownLintRuleOptions
+  dictionary?: JsMarkdownLintDictionaryOptions
+}
+
+export interface JsMarkdownLintResult {
+  diagnostics: Array<JsMarkdownLintDiagnostic>
+  errorCount: number
+  warningCount: number
+  infoCount: number
+  maskedDocument: string
+}
+
+export interface JsMarkdownLintRuleOptions {
+  duplicateHeadings?: boolean
+  headingIncrement?: boolean
+  maxConsecutiveBlankLines?: number
+  repeatedPunctuation?: boolean
+  repeatedWords?: boolean
+  spellcheck?: boolean
+  trailingSpaces?: boolean
+}
+
 /** OG image configuration for JavaScript. */
 export interface JsOgImageConfig {
   /** Image width in pixels. */
@@ -583,6 +630,10 @@ export interface JsTransformOptions {
   /** Enable line numbers for all code blocks by default. */
   codeAnnotationDefaultLineNumbers?: boolean
 }
+
+export declare function lintMarkdown(source: string, options?: JsMarkdownLintOptions | undefined | null): JsMarkdownLintResult
+
+export declare function lintMarkdownDocuments(sources: Array<string>, options?: JsMarkdownLintOptions | undefined | null): Array<JsMarkdownLintResult>
 
 /**
  * Loads dictionaries from the given directory.
