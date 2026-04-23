@@ -5,6 +5,9 @@ export default defineConfig({
   fmt: {
     ignorePatterns: ["dist/**"],
   },
+  test: {
+    include: ["test/unit/**/*.test.ts"],
+  },
   pack: definePackConfig({
     entry: ["src/index.ts"],
     format: ["esm", "cjs"],

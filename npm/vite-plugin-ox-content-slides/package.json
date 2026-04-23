@@ -36,6 +36,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
+    "test:unit": "vp test run",
     "typecheck": "tsgo --noEmit",
     "test:vrt": "playwright test",
     "test:vrt:update": "playwright test --update-snapshots"
@@ -52,7 +53,8 @@
     "@typescript/native-preview": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "vite": "catalog:"
