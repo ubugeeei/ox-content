@@ -17,25 +17,28 @@
       --ox-slide-surface-border: {{ theme.surface_border|safe }};
       --ox-slide-surface-shadow: {{ theme.surface_shadow|safe }};
       --ox-slide-sidebar: {{ theme.presenter_sidebar_background|safe }};
+      --ox-slide-aspect-ratio: {{ theme.aspect_ratio|safe }};
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body {
       font-family: var(--ox-slide-font-sans);
       color: var(--ox-slide-text);
-      background: linear-gradient(180deg, #f5f7fb 0%, #ffffff 100%);
+      background: linear-gradient(rgba(17, 24, 39, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17, 24, 39, 0.05) 1px, transparent 1px), var(--ox-slide-canvas);
+      background-size: 32px 32px, 32px 32px, auto;
     }
     .ox-presenter {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.9fr);
-      gap: 16px;
-      padding: 16px;
+      grid-template-columns: minmax(0, 2.15fr) minmax(320px, 0.95fr);
+      gap: 12px;
+      padding: 12px;
     }
     .ox-presenter__panel,
     .ox-presenter__sidebar {
       border: 1px solid var(--ox-slide-surface-border);
-      border-radius: 24px;
+      border-radius: 12px;
       background: var(--ox-slide-surface);
       box-shadow: var(--ox-slide-surface-shadow);
       overflow: hidden;
@@ -43,7 +46,7 @@
     .ox-presenter__panel iframe {
       display: block;
       width: 100%;
-      min-height: calc(100vh - 32px);
+      min-height: calc(100vh - 24px);
       border: 0;
       background: white;
     }
@@ -53,7 +56,7 @@
       background: var(--ox-slide-sidebar);
     }
     .ox-presenter__section {
-      padding: 18px 20px;
+      padding: 16px 18px;
       border-bottom: 1px solid var(--ox-slide-border);
     }
     .ox-presenter__eyebrow {
@@ -87,11 +90,42 @@
       justify-content: center;
       min-height: 36px;
       padding: 0 12px;
-      border-radius: 999px;
+      border-radius: 8px;
       border: 1px solid var(--ox-slide-surface-border);
-      background: var(--ox-slide-surface);
+      background: rgba(255, 255, 255, 0.96);
       color: var(--ox-slide-text);
       text-decoration: none;
+    }
+    .ox-presenter__title {
+      margin: 0;
+      font-size: 1.3rem;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+    .ox-presenter__meta {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--ox-slide-text-muted);
+    }
+    .ox-presenter__notes {
+      display: grid;
+      gap: 0.75rem;
+      font-size: 0.98rem;
+      line-height: 1.58;
+    }
+    .ox-presenter__notes > :first-child, .ox-presenter__notes > :last-child { margin-block: 0; }
+    .ox-presenter__next-frame {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--ox-slide-aspect-ratio);
+      border: 0;
+      background: white;
+    }
+    .ox-presenter__empty {
+      margin: 0;
+      color: var(--ox-slide-text-muted);
     }
     @media (max-width: 1200px) {
       .ox-presenter { grid-template-columns: 1fr; }
@@ -107,12 +141,7 @@
     <aside class="ox-presenter__sidebar">
       <section class="ox-presenter__section">
         <p class="ox-presenter__eyebrow">{{ deck_title }}</p>
-        <h1 style="margin:0;font-size:1.2rem;">
-          {{ slide_title }}
-          <span style="display:block;font-size:0.9rem;font-weight:500;color:var(--ox-slide-text-muted);margin-top:8px;">
-            Slide {{ slide_number }} / {{ slide_count }}
-          </span>
-        </h1>
+        <h1 class="ox-presenter__title">{{ slide_title }}<span class="ox-presenter__meta">Slide {{ slide_number }} / {{ slide_count }}</span></h1>
       </section>
       <section class="ox-presenter__section">
         <p class="ox-presenter__eyebrow">Timer</p>
@@ -126,21 +155,17 @@
       <section class="ox-presenter__section">
         <p class="ox-presenter__eyebrow">Talk Script</p>
         {% if has_notes %}
-        {{ notes_html|safe }}
+        <div class="ox-presenter__notes">{{ notes_html|safe }}</div>
         {% else %}
-        <p style="margin:0;color:var(--ox-slide-text-muted);">No speaker notes for this slide.</p>
+        <p class="ox-presenter__empty">No speaker notes for this slide.</p>
         {% endif %}
       </section>
       <section class="ox-presenter__section">
         <p class="ox-presenter__eyebrow">Next</p>
         {% if has_next_preview %}
-        <iframe
-          src="{{ next_slide_href }}"
-          title="Next slide preview"
-          style="display:block;width:100%;aspect-ratio:16 / 9;border:0;background:white;"
-        ></iframe>
+        <iframe src="{{ next_slide_href }}" title="Next slide preview" class="ox-presenter__next-frame"></iframe>
         {% else %}
-        <p style="margin:0;color:var(--ox-slide-text-muted);">This is the last slide.</p>
+        <p class="ox-presenter__empty">This is the last slide.</p>
         {% endif %}
         <div class="ox-presenter__nav">
           <div>
@@ -166,7 +191,6 @@
     const startButton = document.querySelector("[data-timer-start]");
     const pauseButton = document.querySelector("[data-timer-pause]");
     const resetButton = document.querySelector("[data-timer-reset]");
-
     const readState = () => {
       try {
         return JSON.parse(localStorage.getItem(storageKey) || "null") || { elapsed: 0, startedAt: null };
@@ -174,11 +198,7 @@
         return { elapsed: 0, startedAt: null };
       }
     };
-
-    const writeState = (state) => {
-      localStorage.setItem(storageKey, JSON.stringify(state));
-    };
-
+    const writeState = (state) => localStorage.setItem(storageKey, JSON.stringify(state));
     let state = readState();
     const format = (ms) => {
       const totalSeconds = Math.floor(ms / 1000);
@@ -190,7 +210,6 @@
       const now = state.startedAt ? Date.now() - state.startedAt + state.elapsed : state.elapsed;
       if (timerValue) timerValue.textContent = format(now);
     };
-
     startButton?.addEventListener("click", () => {
       if (!state.startedAt) {
         state.startedAt = Date.now();
@@ -213,7 +232,6 @@
     });
     setInterval(renderTimer, 500);
     renderTimer();
-
     document.addEventListener("keydown", (event) => {
       const tag = event.target instanceof HTMLElement ? event.target.tagName : "";
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;

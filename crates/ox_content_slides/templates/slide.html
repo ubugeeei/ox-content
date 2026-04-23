@@ -30,28 +30,42 @@
     body {
       font-family: var(--ox-slide-font-sans);
       color: var(--ox-slide-text);
-      background: var(--ox-slide-canvas);
+      background:
+        linear-gradient(rgba(17, 24, 39, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17, 24, 39, 0.05) 1px, transparent 1px),
+        var(--ox-slide-canvas);
+      background-size: 32px 32px, 32px 32px, auto;
     }
     a { color: inherit; text-decoration: none; }
     .ox-slide-page {
       min-height: 100vh;
-      padding: 20px;
+      padding: 12px;
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 18px;
+      gap: 12px;
     }
     .ox-slide-toolbar,
     .ox-slide-nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 12px;
+      width: min(100%, var(--ox-slide-max-width));
+      margin: 0 auto;
+      padding: 10px 12px;
+      border: 1px solid var(--ox-slide-surface-border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.74);
+      backdrop-filter: blur(20px);
     }
     .ox-slide-toolbar__meta {
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
       color: var(--ox-slide-text-muted);
+      font-size: 0.92rem;
+      letter-spacing: 0.02em;
     }
     .ox-slide-toolbar__badge,
     .ox-slide-toolbar__link,
@@ -61,9 +75,14 @@
       justify-content: center;
       min-height: 38px;
       padding: 0 14px;
-      border-radius: 999px;
+      border-radius: 8px;
       border: 1px solid var(--ox-slide-surface-border);
-      background: var(--ox-slide-surface);
+      background: rgba(255, 255, 255, 0.96);
+    }
+    .ox-slide-toolbar__badge {
+      min-width: 72px;
+      font-family: var(--ox-slide-font-mono);
+      color: var(--ox-slide-text);
     }
     .ox-slide-stage {
       display: grid;
@@ -74,16 +93,76 @@
       width: min(100%, var(--ox-slide-max-width));
       max-height: var(--ox-slide-max-height);
       aspect-ratio: var(--ox-slide-aspect-ratio);
-      background: var(--ox-slide-surface);
+      background:
+        linear-gradient(180deg, rgba(17, 24, 39, 0.02) 0, rgba(17, 24, 39, 0.02) 72px, transparent 72px),
+        var(--ox-slide-surface);
       border: 1px solid var(--ox-slide-surface-border);
       box-shadow: var(--ox-slide-surface-shadow);
-      border-radius: 28px;
+      border-radius: 12px;
       padding: var(--ox-slide-padding);
       overflow: auto;
     }
     .ox-slide-content {
-      font-size: clamp(1rem, 1.45vw, 1.4rem);
-      line-height: 1.45;
+      display: grid;
+      align-content: start;
+      gap: 0.9rem;
+      min-height: 100%;
+      font-size: clamp(1.02rem, 1.35vw, 1.48rem);
+      line-height: 1.38;
+    }
+    .ox-slide-content h1,
+    .ox-slide-content h2,
+    .ox-slide-content h3,
+    .ox-slide-content p,
+    .ox-slide-content ul,
+    .ox-slide-content ol,
+    .ox-slide-content pre,
+    .ox-slide-content blockquote {
+      margin: 0;
+    }
+    .ox-slide-content h1 {
+      max-width: 11ch;
+      font-size: clamp(2.8rem, 5vw, 5.4rem);
+      line-height: 0.92;
+      letter-spacing: -0.05em;
+    }
+    .ox-slide-content h2 {
+      max-width: 14ch;
+      font-size: clamp(2.1rem, 3.4vw, 3.4rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+    }
+    .ox-slide-content h3 {
+      font-size: clamp(1.4rem, 2vw, 2rem);
+      line-height: 1.08;
+    }
+    .ox-slide-content p,
+    .ox-slide-content li {
+      max-width: 62ch;
+    }
+    .ox-slide-content ul,
+    .ox-slide-content ol {
+      padding-left: 1.25em;
+      display: grid;
+      gap: 0.55em;
+    }
+    .ox-slide-content code {
+      font-family: var(--ox-slide-font-mono);
+      font-size: 0.92em;
+    }
+    .ox-slide-content pre {
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--ox-slide-surface-border);
+      border-radius: 10px;
+      background: rgba(17, 24, 39, 0.035);
+      overflow: auto;
+    }
+    .ox-slide-content img,
+    .ox-slide-content svg,
+    .ox-slide-content video,
+    .ox-slide-content canvas {
+      max-width: 100%;
+      max-height: 100%;
     }
     .ox-slide-content > :first-child { margin-top: 0; }
     .ox-slide-content > :last-child { margin-bottom: 0; }
@@ -91,6 +170,19 @@
       flex: 1;
       text-align: center;
       color: var(--ox-slide-text-muted);
+    }
+    @media (max-width: 900px) {
+      .ox-slide-page {
+        padding: 8px;
+        gap: 8px;
+      }
+      .ox-slide-toolbar,
+      .ox-slide-nav {
+        padding: 8px 10px;
+      }
+      .ox-slide-frame {
+        border-radius: 10px;
+      }
     }
   </style>
 </head>
