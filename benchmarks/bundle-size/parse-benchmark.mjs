@@ -188,6 +188,7 @@ async function runBenchmarks() {
   const { Lexer: MarkedLexer } = await import("marked");
   const MarkdownIt = (await import("markdown-it")).default;
   const { init: initMd4w, mdToHtml, mdToJSON } = await import("md4w");
+  const { parseAST: md4xParseAST, renderToHtml: md4xRenderToHtml } = await import("md4x/napi");
   const { micromark } = await import("micromark");
   const { unified } = await import("unified");
   const remarkParse = (await import("remark-parse")).default;
@@ -227,6 +228,7 @@ async function runBenchmarks() {
   parsers.push(
     { name: "marked", fn: (input) => MarkedLexer.lex(input) },
     { name: "md4w (md4c)", fn: (input) => mdToJSON(input) },
+    { name: "md4x (napi)", fn: (input) => md4xParseAST(input) },
     { name: "markdown-it", fn: (input) => md.parse(input, {}) },
     { name: "remark", fn: (input) => remarkParseProcessor.parse(input) },
   );
@@ -244,6 +246,7 @@ async function runBenchmarks() {
   renderers.push(
     { name: "marked", fn: (input) => marked(input) },
     { name: "md4w (md4c)", fn: (input) => mdToHtml(input) },
+    { name: "md4x (napi)", fn: (input) => md4xRenderToHtml(input) },
     { name: "markdown-it", fn: (input) => md.render(input) },
     { name: "micromark", fn: (input) => micromark(input) },
     {
