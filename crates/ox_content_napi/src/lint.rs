@@ -1,3 +1,5 @@
+#![cfg_attr(test, allow(dead_code))]
+
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
@@ -482,8 +484,7 @@ fn collect_markdown_lint_state(
 
         if normalized_options.rules.spellcheck {
             for token in &tokens {
-                if !should_spellcheck_token(token, &dictionary)
-                    || is_known_token(token, &dictionary)
+                if !should_spellcheck_token(token, dictionary) || is_known_token(token, dictionary)
                 {
                     continue;
                 }
@@ -1216,8 +1217,7 @@ fn mask_inline_code(line_chars: &[char], chars: &mut [char]) {
             tick_count += 1;
         }
 
-        if let Some(close_index) = find_backtick_fence(&line_chars, index + tick_count, tick_count)
-        {
+        if let Some(close_index) = find_backtick_fence(line_chars, index + tick_count, tick_count) {
             blank_range(chars, index, close_index + tick_count);
             index = close_index + tick_count;
         } else {
