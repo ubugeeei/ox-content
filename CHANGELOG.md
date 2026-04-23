@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.4.0] - 2026-04-23
+
+### Features
+
+- unify ox content lsp and i18n tooling (#51)
+- configurable markdown linting (#49)
+- wasm (#46)
+
+### Bug Fixes
+
+- publish wasm package via npm (#48)
+- publish wasm package via npm (#47)
+
 ## [2.3.0] - 2026-04-22
 
 ### Features
