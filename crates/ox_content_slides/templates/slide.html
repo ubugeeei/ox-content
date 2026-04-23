@@ -37,6 +37,7 @@
       color-scheme: light dark;
     }
     * { box-sizing: border-box; }
+    .ox-ui-icon { width: 0.95rem; height: 0.95rem; flex: 0 0 auto; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
     html, body { margin: 0; min-height: 100%; }
     body { font-family: var(--ox-slide-font-sans); color: var(--ox-slide-text); background: var(--ox-slide-canvas); }
     @media (prefers-color-scheme: dark) {
@@ -57,6 +58,17 @@
       background: var(--ox-slide-surface);
       border-radius: var(--ox-slide-radius);
     }
+    .ox-slide-toolbar__brand,
+    .ox-slide-toolbar__actions,
+    .ox-slide-nav__slot { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .ox-slide-toolbar__actions { justify-content: flex-end; flex-wrap: wrap; }
+    .ox-slide-toolbar__stack,
+    .ox-slide-nav__status { display: grid; gap: 2px; min-width: 0; }
+    .ox-slide-nav__status { flex: 1; justify-items: center; }
+    .ox-slide-toolbar__title,
+    .ox-slide-progress { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ox-slide-toolbar__title { font-weight: 600; color: var(--ox-slide-text); max-width: 30ch; }
+    .ox-slide-toolbar__label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ox-slide-text-muted); }
     .ox-slide-toolbar__meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--ox-slide-text-muted); font-size: 0.98rem; letter-spacing: 0.02em; }
     .ox-slide-toolbar__badge,
     .ox-slide-toolbar__link,
@@ -70,11 +82,14 @@
       background: var(--ox-slide-surface);
       border-radius: var(--ox-slide-radius);
     }
-    .ox-slide-toolbar__badge {
-      min-width: 72px;
-      font-family: var(--ox-slide-font-mono);
-      color: var(--ox-slide-text);
-    }
+    .ox-slide-toolbar__badge,
+    .ox-slide-toolbar__link,
+    .ox-slide-nav a { gap: 8px; font-weight: 500; }
+    .ox-slide-toolbar__badge { min-width: 72px; font-family: var(--ox-slide-font-mono); color: var(--ox-slide-text); }
+    .ox-slide-toolbar__link:hover,
+    .ox-slide-nav a:hover { border-color: var(--ox-slide-border); color: var(--ox-slide-text); }
+    .ox-slide-nav__slot { flex: 1; }
+    .ox-slide-nav__slot--end { justify-content: flex-end; }
     .ox-slide-stage { display: grid; place-items: center; min-height: 0; }
     .ox-slide-frame {
       width: min(100%, var(--ox-slide-max-width));
@@ -149,11 +164,7 @@
     }
     .ox-slide-content > :first-child { margin-top: 0; }
     .ox-slide-content > :last-child { margin-bottom: 0; }
-    .ox-slide-progress {
-      flex: 1;
-      text-align: center;
-      color: var(--ox-slide-text-muted);
-    }
+    .ox-slide-progress { text-align: center; color: var(--ox-slide-text-muted); }
     {% if theme.builtin_animations %}
     @media (prefers-reduced-motion: no-preference) {
       .ox-slide-toolbar, .ox-slide-nav { animation: ox-slide-fade 280ms ease-out both; }
@@ -176,21 +187,27 @@
       .ox-slide-nav {
         padding: 10px 12px;
       }
+      .ox-slide-toolbar,
+      .ox-slide-nav { flex-wrap: wrap; }
+      .ox-slide-nav__status,
+      .ox-slide-nav__slot,
+      .ox-slide-nav__slot--end { width: 100%; justify-content: center; }
     }
   </style>
 </head>
 <body>
   <div class="ox-slide-page">
     <header class="ox-slide-toolbar">
-      <div class="ox-slide-toolbar__meta">
-        <span>{{ deck_title }}</span>
-        <span class="ox-slide-toolbar__badge">{{ slide_number }} / {{ slide_count }}</span>
+      <div class="ox-slide-toolbar__brand">
+        <svg class="ox-ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5 12 3l8 3.5-8 3.5L4 6.5Z"/><path d="M4 12l8 3.5 8-3.5"/><path d="M4 17.5 12 21l8-3.5"/></svg>
+        <div class="ox-slide-toolbar__stack"><span class="ox-slide-toolbar__label">Deck</span><span class="ox-slide-toolbar__title">{{ deck_title }}</span></div>
+        <span class="ox-slide-toolbar__badge"><svg class="ox-ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9 9h6M9 13h4"/></svg>{{ slide_number }} / {{ slide_count }}</span>
       </div>
-      <div class="ox-slide-toolbar__meta">
+      <div class="ox-slide-toolbar__actions">
         {% if has_presenter %}
-        <a class="ox-slide-toolbar__link" href="{{ presenter_href }}" target="_blank" rel="noreferrer">Presenter</a>
+        <a class="ox-slide-toolbar__link" href="{{ presenter_href }}" target="_blank" rel="noreferrer"><svg class="ox-ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Presenter</span></a>
         {% endif %}
-        <a class="ox-slide-toolbar__link" href="{{ home_href }}">Home</a>
+        <a class="ox-slide-toolbar__link" href="{{ home_href }}"><svg class="ox-ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-6 8 6"/><path d="M6.5 10.5V20h11v-9.5"/></svg><span>Home</span></a>
       </div>
     </header>
     <main class="ox-slide-stage">
@@ -199,15 +216,15 @@
       </article>
     </main>
     <nav class="ox-slide-nav">
-      <div>
+      <div class="ox-slide-nav__slot">
         {% if has_previous %}
-        <a href="{{ previous_href }}" rel="prev">Previous</a>
+        <a href="{{ previous_href }}" rel="prev"><svg class="ox-ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/><path d="M9 12h10"/></svg><span>Previous</span></a>
         {% endif %}
       </div>
-      <div class="ox-slide-progress">{{ slide_title }}</div>
-      <div>
+      <div class="ox-slide-nav__status"><span class="ox-slide-toolbar__label">Current</span><div class="ox-slide-progress">{{ slide_title }}</div></div>
+      <div class="ox-slide-nav__slot ox-slide-nav__slot--end">
         {% if has_next %}
-        <a href="{{ next_href }}" rel="next">Next</a>
+        <a href="{{ next_href }}" rel="next"><span>Next</span><svg class="ox-ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/><path d="M5 12h10"/></svg></a>
         {% endif %}
       </div>
     </nav>
