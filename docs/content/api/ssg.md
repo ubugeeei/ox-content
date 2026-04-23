@@ -718,3 +718,4 @@
 <p class="ox-api-entry__source"><a href="https://github.com/ubugeeei/ox-content/blob/main/npm/vite-plugin-ox-content/src/ssg.ts#L49-L59">View source</a></p>
   </div>
 </details>
+
