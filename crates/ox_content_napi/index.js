@@ -72,6 +72,7 @@ module.exports = binding;
 module.exports.parse = binding.parse;
 module.exports.parseAndRender = binding.parseAndRender;
 module.exports.parseAndRenderAsync = binding.parseAndRenderAsync;
+module.exports.lintMarkdown = binding.lintMarkdown;
 module.exports.render = binding.render;
 module.exports.transform = binding.transform;
 module.exports.transformAsync = binding.transformAsync;
