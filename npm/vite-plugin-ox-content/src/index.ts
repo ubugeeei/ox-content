@@ -478,6 +478,26 @@ function generateVirtualModule(path: string, options: ResolvedOptions): string {
 export { createMarkdownEnvironment } from "./environment";
 export { transformMarkdown } from "./transform";
 export { extractDocs, generateMarkdown, writeDocs, resolveDocsOptions } from "./docs";
+export { lintMarkdown, lintMarkdownAsync } from "./lint";
+export { lintMarkdownFile, lintMarkdownFiles, shouldLintMarkdownFile } from "./lint-files";
+export type {
+  MarkdownLintDiagnostic,
+  MarkdownLintDictionaryOptions,
+  MarkdownLintLanguage,
+  MarkdownLintOptions,
+  MarkdownLintResult,
+  MarkdownLintRuleOptions,
+  MarkdownLintSeverity,
+  MarkdownLintStandardDictionaryOptions,
+} from "./lint";
+export type {
+  MarkdownLintFileDiagnostic as MarkdownLintBatchDiagnostic,
+  MarkdownLintFileDiagnostic,
+  MarkdownLintFileOptions,
+  MarkdownLintFileResult,
+  MarkdownLintFilesResult,
+  MarkdownLintFileOptions as MarkdownLintProjectOptions,
+} from "./lint-files";
 export { buildSsg, resolveSsgOptions, DEFAULT_HTML_TEMPLATE } from "./ssg";
 export { resolveSearchOptions, buildSearchIndex, writeSearchIndex } from "./search";
 export { defineTheme, defaultTheme, mergeThemes, resolveTheme } from "./theme";

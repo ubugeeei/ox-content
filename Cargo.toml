@@ -86,6 +86,8 @@ napi-build = "2.3.1"
 
 # Parsing utilities
 logos = "0.14"
+regex = "1.11"
+unicode-normalization = "0.1"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
