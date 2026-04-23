@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title }}</title>
+  <style>
+    :root {
+      --ox-slide-font-sans: {{ theme.font_sans|safe }};
+      --ox-slide-font-mono: {{ theme.font_mono|safe }};
+      --ox-slide-text: {{ theme.color_text|safe }};
+      --ox-slide-text-muted: {{ theme.color_text_muted|safe }};
+      --ox-slide-primary: {{ theme.color_primary|safe }};
+      --ox-slide-border: {{ theme.color_border|safe }};
+      --ox-slide-canvas: {{ theme.canvas_background|safe }};
+      --ox-slide-surface: {{ theme.surface_background|safe }};
+      --ox-slide-surface-border: {{ theme.surface_border|safe }};
+      --ox-slide-surface-shadow: {{ theme.surface_shadow|safe }};
+      --ox-slide-sidebar: {{ theme.presenter_sidebar_background|safe }};
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--ox-slide-font-sans);
+      color: var(--ox-slide-text);
+      background: linear-gradient(180deg, #f5f7fb 0%, #ffffff 100%);
+    }
+    .ox-presenter {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.9fr);
+      gap: 16px;
+      padding: 16px;
+    }
+    .ox-presenter__panel,
+    .ox-presenter__sidebar {
+      border: 1px solid var(--ox-slide-surface-border);
+      border-radius: 24px;
+      background: var(--ox-slide-surface);
+      box-shadow: var(--ox-slide-surface-shadow);
+      overflow: hidden;
+    }
+    .ox-presenter__panel iframe {
+      display: block;
+      width: 100%;
+      min-height: calc(100vh - 32px);
+      border: 0;
+      background: white;
+    }
+    .ox-presenter__sidebar {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      background: var(--ox-slide-sidebar);
+    }
+    .ox-presenter__section {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--ox-slide-border);
+    }
+    .ox-presenter__eyebrow {
+      margin: 0 0 10px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ox-slide-text-muted);
+    }
+    .ox-presenter__timer-value {
+      font-family: var(--ox-slide-font-mono);
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .ox-presenter__timer-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .ox-presenter__nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .ox-presenter__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--ox-slide-surface-border);
+      background: var(--ox-slide-surface);
+      color: var(--ox-slide-text);
+      text-decoration: none;
+    }
+    @media (max-width: 1200px) {
+      .ox-presenter { grid-template-columns: 1fr; }
+      .ox-presenter__panel iframe { min-height: 60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ox-presenter">
+    <section class="ox-presenter__panel">
+      <iframe src="{{ slide_href }}" title="Current slide"></iframe>
+    </section>
+    <aside class="ox-presenter__sidebar">
+      <section class="ox-presenter__section">
+        <p class="ox-presenter__eyebrow">{{ deck_title }}</p>
+        <h1 style="margin:0;font-size:1.2rem;">
+          {{ slide_title }}
+          <span style="display:block;font-size:0.9rem;font-weight:500;color:var(--ox-slide-text-muted);margin-top:8px;">
+            Slide {{ slide_number }} / {{ slide_count }}
+          </span>
+        </h1>
+      </section>
+      <section class="ox-presenter__section">
+        <p class="ox-presenter__eyebrow">Timer</p>
+        <div class="ox-presenter__timer-value" data-timer-value>00:00</div>
+        <div class="ox-presenter__timer-actions">
+          <button class="ox-presenter__button" type="button" data-timer-start>Start</button>
+          <button class="ox-presenter__button" type="button" data-timer-pause>Pause</button>
+          <button class="ox-presenter__button" type="button" data-timer-reset>Reset</button>
+        </div>
+      </section>
+      <section class="ox-presenter__section">
+        <p class="ox-presenter__eyebrow">Talk Script</p>
+        {% if has_notes %}
+        {{ notes_html|safe }}
+        {% else %}
+        <p style="margin:0;color:var(--ox-slide-text-muted);">No speaker notes for this slide.</p>
+        {% endif %}
+      </section>
+      <section class="ox-presenter__section">
+        <p class="ox-presenter__eyebrow">Next</p>
+        {% if has_next_preview %}
+        <iframe
+          src="{{ next_slide_href }}"
+          title="Next slide preview"
+          style="display:block;width:100%;aspect-ratio:16 / 9;border:0;background:white;"
+        ></iframe>
+        {% else %}
+        <p style="margin:0;color:var(--ox-slide-text-muted);">This is the last slide.</p>
+        {% endif %}
+        <div class="ox-presenter__nav">
+          <div>
+            {% if has_previous %}
+            <a class="ox-presenter__button" href="{{ previous_href }}">Previous</a>
+            {% endif %}
+          </div>
+          <a class="ox-presenter__button" href="{{ slide_href }}" target="_blank" rel="noreferrer">Open Current</a>
+          <div>
+            {% if has_next %}
+            <a class="ox-presenter__button" href="{{ next_href }}">Next</a>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+  <script type="module">
+    const storageKey = {{ storage_key_js|safe }};
+    const previousHref = {{ previous_href_js|safe }};
+    const nextHref = {{ next_href_js|safe }};
+    const timerValue = document.querySelector("[data-timer-value]");
+    const startButton = document.querySelector("[data-timer-start]");
+    const pauseButton = document.querySelector("[data-timer-pause]");
+    const resetButton = document.querySelector("[data-timer-reset]");
+
+    const readState = () => {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey) || "null") || { elapsed: 0, startedAt: null };
+      } catch {
+        return { elapsed: 0, startedAt: null };
+      }
+    };
+
+    const writeState = (state) => {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    };
+
+    let state = readState();
+    const format = (ms) => {
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+      const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+      return minutes + ":" + seconds;
+    };
+    const renderTimer = () => {
+      const now = state.startedAt ? Date.now() - state.startedAt + state.elapsed : state.elapsed;
+      if (timerValue) timerValue.textContent = format(now);
+    };
+
+    startButton?.addEventListener("click", () => {
+      if (!state.startedAt) {
+        state.startedAt = Date.now();
+        writeState(state);
+        renderTimer();
+      }
+    });
+    pauseButton?.addEventListener("click", () => {
+      if (state.startedAt) {
+        state.elapsed = Date.now() - state.startedAt + state.elapsed;
+        state.startedAt = null;
+        writeState(state);
+        renderTimer();
+      }
+    });
+    resetButton?.addEventListener("click", () => {
+      state = { elapsed: 0, startedAt: null };
+      writeState(state);
+      renderTimer();
+    });
+    setInterval(renderTimer, 500);
+    renderTimer();
+
+    document.addEventListener("keydown", (event) => {
+      const tag = event.target instanceof HTMLElement ? event.target.tagName : "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if ((event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") && nextHref) {
+        event.preventDefault();
+        window.location.assign(nextHref);
+      }
+      if ((event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") && previousHref) {
+        event.preventDefault();
+        window.location.assign(previousHref);
+      }
+    });
+  </script>
+</body>
+</html>

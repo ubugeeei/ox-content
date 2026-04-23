@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title }}</title>
+  {% if let Some(description) = description %}
+  <meta name="description" content="{{ description }}">
+  {% endif %}
+  <style>
+    :root {
+      --ox-slide-font-sans: {{ theme.font_sans|safe }};
+      --ox-slide-font-mono: {{ theme.font_mono|safe }};
+      --ox-slide-text: {{ theme.color_text|safe }};
+      --ox-slide-text-muted: {{ theme.color_text_muted|safe }};
+      --ox-slide-primary: {{ theme.color_primary|safe }};
+      --ox-slide-border: {{ theme.color_border|safe }};
+      --ox-slide-canvas: {{ theme.canvas_background|safe }};
+      --ox-slide-surface: {{ theme.surface_background|safe }};
+      --ox-slide-surface-border: {{ theme.surface_border|safe }};
+      --ox-slide-surface-shadow: {{ theme.surface_shadow|safe }};
+      --ox-slide-sidebar: {{ theme.presenter_sidebar_background|safe }};
+      --ox-slide-aspect-ratio: {{ theme.aspect_ratio|safe }};
+      --ox-slide-max-width: {{ theme.max_width|safe }};
+      --ox-slide-max-height: {{ theme.max_height|safe }};
+      --ox-slide-padding: {{ theme.padding|safe }};
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--ox-slide-font-sans);
+      color: var(--ox-slide-text);
+      background: var(--ox-slide-canvas);
+    }
+    a { color: inherit; text-decoration: none; }
+    .ox-slide-page {
+      min-height: 100vh;
+      padding: 20px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+    }
+    .ox-slide-toolbar,
+    .ox-slide-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .ox-slide-toolbar__meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--ox-slide-text-muted);
+    }
+    .ox-slide-toolbar__badge,
+    .ox-slide-toolbar__link,
+    .ox-slide-nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--ox-slide-surface-border);
+      background: var(--ox-slide-surface);
+    }
+    .ox-slide-stage {
+      display: grid;
+      place-items: center;
+      min-height: 0;
+    }
+    .ox-slide-frame {
+      width: min(100%, var(--ox-slide-max-width));
+      max-height: var(--ox-slide-max-height);
+      aspect-ratio: var(--ox-slide-aspect-ratio);
+      background: var(--ox-slide-surface);
+      border: 1px solid var(--ox-slide-surface-border);
+      box-shadow: var(--ox-slide-surface-shadow);
+      border-radius: 28px;
+      padding: var(--ox-slide-padding);
+      overflow: auto;
+    }
+    .ox-slide-content {
+      font-size: clamp(1rem, 1.45vw, 1.4rem);
+      line-height: 1.45;
+    }
+    .ox-slide-content > :first-child { margin-top: 0; }
+    .ox-slide-content > :last-child { margin-bottom: 0; }
+    .ox-slide-progress {
+      flex: 1;
+      text-align: center;
+      color: var(--ox-slide-text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="ox-slide-page">
+    <header class="ox-slide-toolbar">
+      <div class="ox-slide-toolbar__meta">
+        <span>{{ deck_title }}</span>
+        <span class="ox-slide-toolbar__badge">{{ slide_number }} / {{ slide_count }}</span>
+      </div>
+      <div class="ox-slide-toolbar__meta">
+        {% if has_presenter %}
+        <a class="ox-slide-toolbar__link" href="{{ presenter_href }}" target="_blank" rel="noreferrer">Presenter</a>
+        {% endif %}
+        <a class="ox-slide-toolbar__link" href="{{ home_href }}">Home</a>
+      </div>
+    </header>
+    <main class="ox-slide-stage">
+      <article class="ox-slide-frame">
+        <div class="ox-slide-content">{{ slide_content_html|safe }}</div>
+      </article>
+    </main>
+    <nav class="ox-slide-nav">
+      <div>
+        {% if has_previous %}
+        <a href="{{ previous_href }}" rel="prev">Previous</a>
+        {% endif %}
+      </div>
+      <div class="ox-slide-progress">{{ slide_title }}</div>
+      <div>
+        {% if has_next %}
+        <a href="{{ next_href }}" rel="next">Next</a>
+        {% endif %}
+      </div>
+    </nav>
+  </div>
+  <script type="module">
+    const previousHref = {{ previous_href_js|safe }};
+    const nextHref = {{ next_href_js|safe }};
+    const presenterHref = {{ presenter_href_js|safe }};
+    const navigate = (href) => {
+      if (href) window.location.assign(href);
+    };
+
+    document.addEventListener("keydown", (event) => {
+      const tag = event.target instanceof HTMLElement ? event.target.tagName : "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+        event.preventDefault();
+        navigate(nextHref);
+      }
+      if (event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") {
+        event.preventDefault();
+        navigate(previousHref);
+      }
+      if ((event.key === "p" || event.key === "P") && presenterHref) {
+        window.open(presenterHref, "_blank", "noopener,noreferrer");
+      }
+    });
+  </script>
+</body>
+</html>
