@@ -103,13 +103,18 @@ ox-content/
 │   ├── ox_content_search/      # Full-text search engine
 │   ├── ox_content_napi/        # Node.js N-API bindings
 │   ├── ox_content_wasm/        # WebAssembly bindings
-│   └── ox_content_og_image/    # OG image generation
+│   ├── ox_content_og_image/    # OG image generation
+│   └── ox_content_lsp/         # Unified language server
 ├── npm/                    # npm packages
 │   ├── vite-plugin-ox-content/       # @ox-content/vite-plugin
 │   ├── vite-plugin-ox-content-vue/   # @ox-content/vite-plugin-vue
 │   ├── vite-plugin-ox-content-react/ # @ox-content/vite-plugin-react
 │   ├── vite-plugin-ox-content-svelte/# @ox-content/vite-plugin-svelte
-│   └── unplugin-ox-content/          # @ox-content/unplugin
+│   ├── unplugin-ox-content/          # @ox-content/unplugin
+│   └── vscode-ox-content/            # VS Code extension
+├── editors/                # Editor integrations
+│   ├── zed/                # Zed extension
+│   └── neovim/             # Neovim plugin
 ├── examples/               # Usage examples
 ├── docs/                   # Documentation site
 └── .github/workflows/      # CI/CD

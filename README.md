@@ -34,6 +34,7 @@
 - **Built-in SSG** - Static site generation with theming, search, and OG images
 - **API Docs Generation** - Generate docs from JSDoc/TypeScript (like `cargo doc`)
 - **i18n** - ICU MessageFormat 2 parser, dictionary management, static checker, and LSP
+- **Editor Tooling** - Markdown/MDC LSP plus VS Code, Zed, and Neovim integrations
 
 ## Quick Start
 
@@ -119,6 +120,29 @@ ox-content-i18n check --dict-dir content/i18n --src src
 ox-content-i18n validate "Hello {$name}"
 ```
 
+### Editor Tooling
+
+Ox Content now ships a unified authoring and i18n language server:
+
+```bash
+cargo run -p ox_content_lsp --bin ox-content-lsp
+```
+
+You can wire it into:
+
+- VS Code via [npm/vscode-ox-content](./npm/vscode-ox-content)
+- Zed via [editors/zed](./editors/zed)
+- Neovim via [editors/neovim](./editors/neovim)
+
+Supported features include:
+
+- fast Markdown snippet completion
+- frontmatter schema completion and diagnostics
+- i18n key completion, hover, go-to-definition, diagnostics, and inlay hints for JS/TS
+- table / code fence / callout insertion commands
+- preview HTML generation for editor UIs
+- `.mdc` authoring support
+
 **[Read the full documentation →](https://ubugeeei.github.io/ox-content/)**
 
 ## Performance
@@ -167,6 +191,7 @@ vp install             # Install JS dependencies through Vite+
 vp run build:napi      # Build NAPI bindings
 vp run build:npm       # Build npm packages
 vp run build:wasm      # Build publish-ready @ox-content/wasm package
+cargo check -p ox_content_lsp
 vp run test            # Run tests
 ```
 
