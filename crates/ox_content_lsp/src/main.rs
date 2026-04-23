@@ -13,6 +13,7 @@ mod backend;
 mod config;
 mod document;
 mod frontmatter;
+mod i18n;
 mod preview;
 mod state;
 

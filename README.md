@@ -122,7 +122,7 @@ ox-content-i18n validate "Hello {$name}"
 
 ### Editor Tooling
 
-Ox Content now ships an authoring-oriented Markdown language server:
+Ox Content now ships a unified authoring and i18n language server:
 
 ```bash
 cargo run -p ox_content_lsp --bin ox-content-lsp
@@ -138,6 +138,7 @@ Supported features include:
 
 - fast Markdown snippet completion
 - frontmatter schema completion and diagnostics
+- i18n key completion, hover, go-to-definition, diagnostics, and inlay hints for JS/TS
 - table / code fence / callout insertion commands
 - preview HTML generation for editor UIs
 - `.mdc` authoring support

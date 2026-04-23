@@ -1,6 +1,6 @@
 # Ox Content for Neovim
 
-Neovim integration for Ox Content authoring.
+Neovim integration for Ox Content authoring and i18n workflows.
 
 Example with `lazy.nvim`:
 
@@ -22,4 +22,4 @@ Commands:
 - `:OxContentInsertCallout`
 - `:OxContentPreview`
 
-The plugin maps `*.mdc` to `markdown`, starts `ox-content-lsp`, and uses the LSP server for insertion commands and preview rendering.
+The plugin maps `*.mdc` to `markdown`, starts `ox-content-lsp` for Markdown and JS/TS/JSON/YAML buffers, and uses the same server for insertion commands, preview rendering, and i18n key intelligence.

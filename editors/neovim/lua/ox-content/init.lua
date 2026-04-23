@@ -48,7 +48,15 @@ function M.setup(opts)
   if config.get().auto_start then
     vim.api.nvim_create_autocmd("FileType", {
       group = augroup,
-      pattern = "markdown",
+      pattern = {
+        "markdown",
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "json",
+        "yaml",
+      },
       callback = function(args)
         client.start(args.buf)
       end,

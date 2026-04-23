@@ -1,6 +1,6 @@
 # Ox Content for Zed
 
-This extension wires Zed buffers to `ox-content-lsp`.
+This extension wires Zed Markdown, JavaScript, TypeScript, JSON, and YAML buffers to `ox-content-lsp`.
 
 Recommended Zed settings:
 
@@ -22,4 +22,4 @@ Recommended Zed settings:
 }
 ```
 
-Once `.mdc` is associated with `Markdown`, you get Zed's native Markdown preview/highlighting together with Ox Content frontmatter completion and diagnostics from the language server.
+Once `.mdc` is associated with `Markdown`, you get Zed's native Markdown preview/highlighting together with Ox Content frontmatter completion and diagnostics, plus i18n key intelligence in JS/TS.

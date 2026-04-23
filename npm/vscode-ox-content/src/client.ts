@@ -20,6 +20,12 @@ export async function startClient(
     documentSelector: [
       { language: "markdown", scheme: "file" },
       { language: "markdown", scheme: "untitled" },
+      { language: "javascript", scheme: "file" },
+      { language: "javascriptreact", scheme: "file" },
+      { language: "typescript", scheme: "file" },
+      { language: "typescriptreact", scheme: "file" },
+      { language: "json", scheme: "file" },
+      { language: "yaml", scheme: "file" },
     ],
     initializationOptions: resolveInitializationOptions(workspaceRoot),
     synchronize: { configurationSection: "oxContent" },
