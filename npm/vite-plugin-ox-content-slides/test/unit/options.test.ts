@@ -19,6 +19,10 @@ describe("resolveOptions", () => {
       base: "/docs",
       routeBase: "/decks/",
       animations: false,
+      theme: {
+        surfaceRadius: "6px",
+        darkCanvasBackground: "#000814",
+      },
       pdf: {
         fileName: "talk.pdf",
         pageWidth: "10in",
@@ -31,6 +35,10 @@ describe("resolveOptions", () => {
     expect(options.routeBase).toBe("decks");
     expect(options.routePrefix).toBe("/decks");
     expect(options.animations).toBe(false);
+    expect(options.theme.surfaceRadius).toBe("6px");
+    expect(options.theme.darkCanvasBackground).toBe("#000814");
+    expect(options.napiTheme.surfaceRadius).toBe("6px");
+    expect(options.napiTheme.darkCanvasBackground).toBe("#000814");
     expect(options.napiTheme.builtinAnimations).toBe(false);
     expect(options.pdf.enabled).toBe(true);
     expect(options.pdf.fileName).toBe("talk.pdf");

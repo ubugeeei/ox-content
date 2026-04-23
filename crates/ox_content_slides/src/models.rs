@@ -29,6 +29,8 @@ pub struct SlideTheme {
     pub max_width: Option<String>,
     pub max_height: Option<String>,
     pub padding: Option<String>,
+    pub surface_radius: Option<String>,
+    pub code_background: Option<String>,
     pub builtin_animations: Option<bool>,
     pub canvas_background: Option<String>,
     pub surface_background: Option<String>,
@@ -41,6 +43,15 @@ pub struct SlideTheme {
     pub color_text_muted: Option<String>,
     pub color_primary: Option<String>,
     pub color_border: Option<String>,
+    pub dark_canvas_background: Option<String>,
+    pub dark_surface_background: Option<String>,
+    pub dark_surface_border: Option<String>,
+    pub dark_presenter_sidebar_background: Option<String>,
+    pub dark_code_background: Option<String>,
+    pub dark_color_text: Option<String>,
+    pub dark_color_text_muted: Option<String>,
+    pub dark_color_primary: Option<String>,
+    pub dark_color_border: Option<String>,
 }
 
 /// Data used to render a standalone slide shell.

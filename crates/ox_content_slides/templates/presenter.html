@@ -17,36 +17,33 @@
       --ox-slide-surface-border: {{ theme.surface_border|safe }};
       --ox-slide-sidebar: {{ theme.presenter_sidebar_background|safe }};
       --ox-slide-aspect-ratio: {{ theme.aspect_ratio|safe }};
+      --ox-slide-radius: {{ theme.surface_radius|safe }};
+      --ox-slide-dark-canvas: {{ theme.dark_canvas_background|safe }};
+      --ox-slide-dark-surface: {{ theme.dark_surface_background|safe }};
+      --ox-slide-dark-surface-border: {{ theme.dark_surface_border|safe }};
+      --ox-slide-dark-sidebar: {{ theme.dark_presenter_sidebar_background|safe }};
+      --ox-slide-dark-text: {{ theme.dark_color_text|safe }};
+      --ox-slide-dark-text-muted: {{ theme.dark_color_text_muted|safe }};
+      --ox-slide-dark-primary: {{ theme.dark_color_primary|safe }};
+      --ox-slide-dark-border: {{ theme.dark_color_border|safe }};
+      color-scheme: light dark;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
-    body {
-      font-family: var(--ox-slide-font-sans);
-      color: var(--ox-slide-text);
-      background: var(--ox-slide-canvas);
+    body { font-family: var(--ox-slide-font-sans); color: var(--ox-slide-text); background: var(--ox-slide-canvas); }
+    @media (prefers-color-scheme: dark) {
+      :root { --ox-slide-text: var(--ox-slide-dark-text); --ox-slide-text-muted: var(--ox-slide-dark-text-muted); --ox-slide-primary: var(--ox-slide-dark-primary); --ox-slide-border: var(--ox-slide-dark-border); --ox-slide-canvas: var(--ox-slide-dark-canvas); --ox-slide-surface: var(--ox-slide-dark-surface); --ox-slide-surface-border: var(--ox-slide-dark-surface-border); --ox-slide-sidebar: var(--ox-slide-dark-sidebar); }
     }
-    .ox-presenter {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: minmax(0, 2.45fr) minmax(300px, 0.75fr);
-      gap: 4px;
-      padding: 4px;
-    }
+    .ox-presenter { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 2.45fr) minmax(300px, 0.75fr); gap: 4px; padding: 4px; }
     .ox-presenter__panel, .ox-presenter__sidebar {
       border: 1px solid var(--ox-slide-surface-border); background: var(--ox-slide-surface); overflow: hidden;
+      border-radius: var(--ox-slide-radius);
     }
     .ox-presenter__panel iframe {
-      display: block; width: 100%; min-height: calc(100vh - 24px); border: 0; background: white;
+      display: block; width: 100%; min-height: calc(100vh - 24px); border: 0; background: var(--ox-slide-surface);
     }
-    .ox-presenter__sidebar {
-      display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      background: var(--ox-slide-sidebar);
-    }
-    .ox-presenter__section {
-      padding: 16px;
-      border-bottom: 1px solid var(--ox-slide-border);
-    }
+    .ox-presenter__sidebar { display: grid; grid-template-rows: auto auto 1fr auto; background: var(--ox-slide-sidebar); }
+    .ox-presenter__section { padding: 16px; border-bottom: 1px solid var(--ox-slide-border); }
     .ox-presenter__eyebrow {
       margin: 0 0 10px;
       font-size: 0.8rem;
@@ -59,19 +56,8 @@
       font-size: 1.8rem;
       font-weight: 700;
     }
-    .ox-presenter__timer-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-    .ox-presenter__nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 16px;
-    }
+    .ox-presenter__timer-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .ox-presenter__nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
     .ox-presenter__button {
       display: inline-flex;
       align-items: center;
@@ -80,6 +66,7 @@
       padding: 0 14px;
       border: 1px solid var(--ox-slide-surface-border);
       background: var(--ox-slide-surface);
+      border-radius: var(--ox-slide-radius);
       color: var(--ox-slide-text);
       text-decoration: none;
     }
@@ -96,24 +83,10 @@
       font-weight: 500;
       color: var(--ox-slide-text-muted);
     }
-    .ox-presenter__notes {
-      display: grid;
-      gap: 0.75rem;
-      font-size: 0.98rem;
-      line-height: 1.58;
-    }
+    .ox-presenter__notes { display: grid; gap: 0.75rem; font-size: 0.98rem; line-height: 1.58; }
     .ox-presenter__notes > :first-child, .ox-presenter__notes > :last-child { margin-block: 0; }
-    .ox-presenter__next-frame {
-      display: block;
-      width: 100%;
-      aspect-ratio: var(--ox-slide-aspect-ratio);
-      border: 0;
-      background: white;
-    }
-    .ox-presenter__empty {
-      margin: 0;
-      color: var(--ox-slide-text-muted);
-    }
+    .ox-presenter__next-frame { display: block; width: 100%; aspect-ratio: var(--ox-slide-aspect-ratio); border: 0; background: var(--ox-slide-surface); }
+    .ox-presenter__empty { margin: 0; color: var(--ox-slide-text-muted); }
     {% if theme.builtin_animations %}
     @media (prefers-reduced-motion: no-preference) {
       .ox-presenter__panel, .ox-presenter__sidebar, .ox-presenter__section { animation: ox-slide-fade 320ms ease-out both; }
@@ -180,66 +153,12 @@
     </aside>
   </div>
   <script type="module">
-    const storageKey = {{ storage_key_js|safe }};
-    const previousHref = {{ previous_href_js|safe }};
-    const nextHref = {{ next_href_js|safe }};
-    const timerValue = document.querySelector("[data-timer-value]");
-    const startButton = document.querySelector("[data-timer-start]");
-    const pauseButton = document.querySelector("[data-timer-pause]");
-    const resetButton = document.querySelector("[data-timer-reset]");
-    const readState = () => {
-      try {
-        return JSON.parse(localStorage.getItem(storageKey) || "null") || { elapsed: 0, startedAt: null };
-      } catch {
-        return { elapsed: 0, startedAt: null };
-      }
-    };
-    const writeState = (state) => localStorage.setItem(storageKey, JSON.stringify(state));
-    let state = readState();
-    const format = (ms) => {
-      const totalSeconds = Math.floor(ms / 1000);
-      const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
-      const seconds = (totalSeconds % 60).toString().padStart(2, "0");
-      return minutes + ":" + seconds;
-    };
-    const renderTimer = () => {
-      const now = state.startedAt ? Date.now() - state.startedAt + state.elapsed : state.elapsed;
-      if (timerValue) timerValue.textContent = format(now);
-    };
-    startButton?.addEventListener("click", () => {
-      if (!state.startedAt) {
-        state.startedAt = Date.now();
-        writeState(state);
-        renderTimer();
-      }
-    });
-    pauseButton?.addEventListener("click", () => {
-      if (state.startedAt) {
-        state.elapsed = Date.now() - state.startedAt + state.elapsed;
-        state.startedAt = null;
-        writeState(state);
-        renderTimer();
-      }
-    });
-    resetButton?.addEventListener("click", () => {
-      state = { elapsed: 0, startedAt: null };
-      writeState(state);
-      renderTimer();
-    });
-    setInterval(renderTimer, 500);
-    renderTimer();
-    document.addEventListener("keydown", (event) => {
-      const tag = event.target instanceof HTMLElement ? event.target.tagName : "";
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      if ((event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") && nextHref) {
-        event.preventDefault();
-        window.location.assign(nextHref);
-      }
-      if ((event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") && previousHref) {
-        event.preventDefault();
-        window.location.assign(previousHref);
-      }
-    });
+    const storageKey = {{ storage_key_js|safe }}, previousHref = {{ previous_href_js|safe }}, nextHref = {{ next_href_js|safe }}, timerValue = document.querySelector("[data-timer-value]"), startButton = document.querySelector("[data-timer-start]"), pauseButton = document.querySelector("[data-timer-pause]"), resetButton = document.querySelector("[data-timer-reset]");
+    const readState = () => { try { return JSON.parse(localStorage.getItem(storageKey) || "null") || { elapsed: 0, startedAt: null }; } catch { return { elapsed: 0, startedAt: null }; } }, writeState = (state) => localStorage.setItem(storageKey, JSON.stringify(state)), format = (ms) => { const totalSeconds = Math.floor(ms / 1000), minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0"), seconds = (totalSeconds % 60).toString().padStart(2, "0"); return minutes + ":" + seconds; };
+    let state = readState(); const renderTimer = () => { const now = state.startedAt ? Date.now() - state.startedAt + state.elapsed : state.elapsed; if (timerValue) timerValue.textContent = format(now); };
+    startButton?.addEventListener("click", () => { if (!state.startedAt) { state.startedAt = Date.now(); writeState(state); renderTimer(); } }); pauseButton?.addEventListener("click", () => { if (state.startedAt) { state.elapsed = Date.now() - state.startedAt + state.elapsed; state.startedAt = null; writeState(state); renderTimer(); } }); resetButton?.addEventListener("click", () => { state = { elapsed: 0, startedAt: null }; writeState(state); renderTimer(); });
+    setInterval(renderTimer, 500); renderTimer();
+    document.addEventListener("keydown", (event) => { const tag = event.target instanceof HTMLElement ? event.target.tagName : ""; if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return; if ((event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") && nextHref) { event.preventDefault(); window.location.assign(nextHref); } if ((event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") && previousHref) { event.preventDefault(); window.location.assign(previousHref); } });
   </script>
 </body>
 </html>

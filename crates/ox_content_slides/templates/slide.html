@@ -19,26 +19,31 @@
       --ox-slide-surface: {{ theme.surface_background|safe }};
       --ox-slide-surface-border: {{ theme.surface_border|safe }};
       --ox-slide-sidebar: {{ theme.presenter_sidebar_background|safe }};
+      --ox-slide-code-surface: {{ theme.code_background|safe }};
       --ox-slide-aspect-ratio: {{ theme.aspect_ratio|safe }};
       --ox-slide-max-width: {{ theme.max_width|safe }};
       --ox-slide-max-height: {{ theme.max_height|safe }};
       --ox-slide-padding: {{ theme.padding|safe }};
+      --ox-slide-radius: {{ theme.surface_radius|safe }};
+      --ox-slide-dark-canvas: {{ theme.dark_canvas_background|safe }};
+      --ox-slide-dark-surface: {{ theme.dark_surface_background|safe }};
+      --ox-slide-dark-surface-border: {{ theme.dark_surface_border|safe }};
+      --ox-slide-dark-sidebar: {{ theme.dark_presenter_sidebar_background|safe }};
+      --ox-slide-dark-code-surface: {{ theme.dark_code_background|safe }};
+      --ox-slide-dark-text: {{ theme.dark_color_text|safe }};
+      --ox-slide-dark-text-muted: {{ theme.dark_color_text_muted|safe }};
+      --ox-slide-dark-primary: {{ theme.dark_color_primary|safe }};
+      --ox-slide-dark-border: {{ theme.dark_color_border|safe }};
+      color-scheme: light dark;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
-    body {
-      font-family: var(--ox-slide-font-sans);
-      color: var(--ox-slide-text);
-      background: var(--ox-slide-canvas);
+    body { font-family: var(--ox-slide-font-sans); color: var(--ox-slide-text); background: var(--ox-slide-canvas); }
+    @media (prefers-color-scheme: dark) {
+      :root { --ox-slide-text: var(--ox-slide-dark-text); --ox-slide-text-muted: var(--ox-slide-dark-text-muted); --ox-slide-primary: var(--ox-slide-dark-primary); --ox-slide-border: var(--ox-slide-dark-border); --ox-slide-canvas: var(--ox-slide-dark-canvas); --ox-slide-surface: var(--ox-slide-dark-surface); --ox-slide-surface-border: var(--ox-slide-dark-surface-border); --ox-slide-sidebar: var(--ox-slide-dark-sidebar); --ox-slide-code-surface: var(--ox-slide-dark-code-surface); }
     }
     a { color: inherit; text-decoration: none; }
-    .ox-slide-page {
-      min-height: 100vh;
-      padding: 4px;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 4px;
-    }
+    .ox-slide-page { min-height: 100vh; padding: 4px; display: grid; grid-template-rows: auto 1fr auto; gap: 4px; }
     .ox-slide-toolbar,
     .ox-slide-nav {
       display: flex;
@@ -50,16 +55,9 @@
       padding: 12px 16px;
       border: 1px solid var(--ox-slide-surface-border);
       background: var(--ox-slide-surface);
+      border-radius: var(--ox-slide-radius);
     }
-    .ox-slide-toolbar__meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      color: var(--ox-slide-text-muted);
-      font-size: 0.98rem;
-      letter-spacing: 0.02em;
-    }
+    .ox-slide-toolbar__meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--ox-slide-text-muted); font-size: 0.98rem; letter-spacing: 0.02em; }
     .ox-slide-toolbar__badge,
     .ox-slide-toolbar__link,
     .ox-slide-nav a {
@@ -70,23 +68,21 @@
       padding: 0 16px;
       border: 1px solid var(--ox-slide-surface-border);
       background: var(--ox-slide-surface);
+      border-radius: var(--ox-slide-radius);
     }
     .ox-slide-toolbar__badge {
       min-width: 72px;
       font-family: var(--ox-slide-font-mono);
       color: var(--ox-slide-text);
     }
-    .ox-slide-stage {
-      display: grid;
-      place-items: center;
-      min-height: 0;
-    }
+    .ox-slide-stage { display: grid; place-items: center; min-height: 0; }
     .ox-slide-frame {
       width: min(100%, var(--ox-slide-max-width));
       max-height: var(--ox-slide-max-height);
       aspect-ratio: var(--ox-slide-aspect-ratio);
       background: var(--ox-slide-surface);
       border: 1px solid var(--ox-slide-surface-border);
+      border-radius: var(--ox-slide-radius);
       padding: var(--ox-slide-padding);
       overflow: auto;
     }
@@ -141,7 +137,7 @@
     .ox-slide-content pre {
       padding: 1rem 1.15rem;
       border: 1px solid var(--ox-slide-surface-border);
-      background: #f5f7fa;
+      background: var(--ox-slide-code-surface);
       overflow: auto;
     }
     .ox-slide-content img,
@@ -217,28 +213,8 @@
     </nav>
   </div>
   <script type="module">
-    const previousHref = {{ previous_href_js|safe }};
-    const nextHref = {{ next_href_js|safe }};
-    const presenterHref = {{ presenter_href_js|safe }};
-    const navigate = (href) => {
-      if (href) window.location.assign(href);
-    };
-
-    document.addEventListener("keydown", (event) => {
-      const tag = event.target instanceof HTMLElement ? event.target.tagName : "";
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
-        event.preventDefault();
-        navigate(nextHref);
-      }
-      if (event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") {
-        event.preventDefault();
-        navigate(previousHref);
-      }
-      if ((event.key === "p" || event.key === "P") && presenterHref) {
-        window.open(presenterHref, "_blank", "noopener,noreferrer");
-      }
-    });
+    const previousHref = {{ previous_href_js|safe }}, nextHref = {{ next_href_js|safe }}, presenterHref = {{ presenter_href_js|safe }}, navigate = (href) => href && window.location.assign(href);
+    document.addEventListener("keydown", (event) => { const tag = event.target instanceof HTMLElement ? event.target.tagName : ""; if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return; if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") { event.preventDefault(); navigate(nextHref); } if (event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") { event.preventDefault(); navigate(previousHref); } if ((event.key === "p" || event.key === "P") && presenterHref) window.open(presenterHref, "_blank", "noopener,noreferrer"); });
   </script>
 </body>
 </html>

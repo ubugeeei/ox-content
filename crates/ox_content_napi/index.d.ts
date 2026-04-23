@@ -376,6 +376,8 @@ export interface JsSlideTheme {
   maxWidth?: string
   maxHeight?: string
   padding?: string
+  surfaceRadius?: string
+  codeBackground?: string
   builtinAnimations?: boolean
   canvasBackground?: string
   surfaceBackground?: string
@@ -388,6 +390,15 @@ export interface JsSlideTheme {
   colorTextMuted?: string
   colorPrimary?: string
   colorBorder?: string
+  darkCanvasBackground?: string
+  darkSurfaceBackground?: string
+  darkSurfaceBorder?: string
+  darkPresenterSidebarBackground?: string
+  darkCodeBackground?: string
+  darkColorText?: string
+  darkColorTextMuted?: string
+  darkColorPrimary?: string
+  darkColorBorder?: string
 }
 
 /** Social links for JavaScript. */

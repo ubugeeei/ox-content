@@ -33,6 +33,8 @@ pub struct JsSlideTheme {
     pub max_width: Option<String>,
     pub max_height: Option<String>,
     pub padding: Option<String>,
+    pub surface_radius: Option<String>,
+    pub code_background: Option<String>,
     pub builtin_animations: Option<bool>,
     pub canvas_background: Option<String>,
     pub surface_background: Option<String>,
@@ -45,6 +47,15 @@ pub struct JsSlideTheme {
     pub color_text_muted: Option<String>,
     pub color_primary: Option<String>,
     pub color_border: Option<String>,
+    pub dark_canvas_background: Option<String>,
+    pub dark_surface_background: Option<String>,
+    pub dark_surface_border: Option<String>,
+    pub dark_presenter_sidebar_background: Option<String>,
+    pub dark_code_background: Option<String>,
+    pub dark_color_text: Option<String>,
+    pub dark_color_text_muted: Option<String>,
+    pub dark_color_primary: Option<String>,
+    pub dark_color_border: Option<String>,
 }
 
 /// Slide page render data for JavaScript.
@@ -93,6 +104,8 @@ fn convert_slide_theme(theme: Option<JsSlideTheme>) -> Option<SlideTheme> {
         max_width: t.max_width,
         max_height: t.max_height,
         padding: t.padding,
+        surface_radius: t.surface_radius,
+        code_background: t.code_background,
         builtin_animations: t.builtin_animations,
         canvas_background: t.canvas_background,
         surface_background: t.surface_background,
@@ -105,6 +118,15 @@ fn convert_slide_theme(theme: Option<JsSlideTheme>) -> Option<SlideTheme> {
         color_text_muted: t.color_text_muted,
         color_primary: t.color_primary,
         color_border: t.color_border,
+        dark_canvas_background: t.dark_canvas_background,
+        dark_surface_background: t.dark_surface_background,
+        dark_surface_border: t.dark_surface_border,
+        dark_presenter_sidebar_background: t.dark_presenter_sidebar_background,
+        dark_code_background: t.dark_code_background,
+        dark_color_text: t.dark_color_text,
+        dark_color_text_muted: t.dark_color_text_muted,
+        dark_color_primary: t.dark_color_primary,
+        dark_color_border: t.dark_color_border,
     })
 }
 

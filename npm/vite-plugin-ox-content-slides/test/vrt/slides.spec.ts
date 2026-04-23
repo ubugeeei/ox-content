@@ -139,6 +139,7 @@ test.describe("slides VRT", () => {
   });
 
   test("renders the default slide shell", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light" });
     await routeBuiltExample(page);
 
     await page.goto("http://slides.test/slides/1/");
@@ -153,7 +154,24 @@ test.describe("slides VRT", () => {
     });
   });
 
+  test("renders the default slide shell in dark mode", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await routeBuiltExample(page);
+
+    await page.goto("http://slides.test/slides/1/");
+    await page.locator(".ox-slide-page").waitFor();
+    await page.waitForFunction(() => document.fonts.status === "loaded");
+
+    await expect(page.locator(".ox-slide-page")).toHaveScreenshot("slides-default-shell-dark.png", {
+      animations: "disabled",
+      caret: "hide",
+      maxDiffPixelRatio: 0.02,
+      scale: "css",
+    });
+  });
+
   test("renders presenter mode with notes, timer, and next preview", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light" });
     await routeBuiltExample(page);
 
     await page.goto("http://slides.test/slides/presenter/1/");

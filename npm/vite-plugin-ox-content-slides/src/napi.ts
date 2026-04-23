@@ -22,6 +22,8 @@ export function toNapiTheme(theme: SlideThemeConfig, animations = true): NapiSli
     maxWidth: theme.maxWidth,
     maxHeight: theme.maxHeight,
     padding: theme.padding,
+    surfaceRadius: theme.surfaceRadius,
+    codeBackground: theme.codeBackground,
     builtinAnimations: animations,
     canvasBackground: theme.canvasBackground,
     surfaceBackground: theme.surfaceBackground,
@@ -34,5 +36,14 @@ export function toNapiTheme(theme: SlideThemeConfig, animations = true): NapiSli
     colorTextMuted: theme.colorTextMuted,
     colorPrimary: theme.colorPrimary,
     colorBorder: theme.colorBorder,
+    darkCanvasBackground: theme.darkCanvasBackground,
+    darkSurfaceBackground: theme.darkSurfaceBackground,
+    darkSurfaceBorder: theme.darkSurfaceBorder,
+    darkPresenterSidebarBackground: theme.darkPresenterSidebarBackground,
+    darkCodeBackground: theme.darkCodeBackground,
+    darkColorText: theme.darkColorText,
+    darkColorTextMuted: theme.darkColorTextMuted,
+    darkColorPrimary: theme.darkColorPrimary,
+    darkColorBorder: theme.darkColorBorder,
   };
 }

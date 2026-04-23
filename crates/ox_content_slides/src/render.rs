@@ -208,4 +208,53 @@ mod tests {
 
         assert!(!html.contains("@keyframes ox-slide-enter"));
     }
+
+    #[test]
+    fn includes_default_surface_radius() {
+        let html = generate_slide_html(
+            &SlideRenderData {
+                deck_title: "Deck Title".to_string(),
+                slide_title: "Slide Title".to_string(),
+                slide_description: None,
+                slide_content_html: "<h1>Hello</h1>".to_string(),
+                slide_notes_html: None,
+                slide_number: 1,
+                slide_count: 1,
+                home_href: "/slides/".to_string(),
+                slide_href: "/slides/1/".to_string(),
+                presenter_href: None,
+                previous_href: None,
+                next_href: None,
+                next_slide_href: None,
+            },
+            None,
+        );
+
+        assert!(html.contains("--ox-slide-radius: 4px;"));
+    }
+
+    #[test]
+    fn includes_dark_mode_tokens() {
+        let html = generate_slide_html(
+            &SlideRenderData {
+                deck_title: "Deck Title".to_string(),
+                slide_title: "Slide Title".to_string(),
+                slide_description: None,
+                slide_content_html: "<pre><code>Hello</code></pre>".to_string(),
+                slide_notes_html: None,
+                slide_number: 1,
+                slide_count: 1,
+                home_href: "/slides/".to_string(),
+                slide_href: "/slides/1/".to_string(),
+                presenter_href: None,
+                previous_href: None,
+                next_href: None,
+                next_slide_href: None,
+            },
+            None,
+        );
+
+        assert!(html.contains("@media (prefers-color-scheme: dark)"));
+        assert!(html.contains("--ox-slide-dark-code-surface: #0f141a;"));
+    }
 }

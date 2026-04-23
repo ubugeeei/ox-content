@@ -11,6 +11,8 @@ export interface SlideThemeConfig {
   maxWidth?: string;
   maxHeight?: string;
   padding?: string;
+  surfaceRadius?: string;
+  codeBackground?: string;
   canvasBackground?: string;
   surfaceBackground?: string;
   surfaceBorder?: string;
@@ -22,6 +24,15 @@ export interface SlideThemeConfig {
   colorTextMuted?: string;
   colorPrimary?: string;
   colorBorder?: string;
+  darkCanvasBackground?: string;
+  darkSurfaceBackground?: string;
+  darkSurfaceBorder?: string;
+  darkPresenterSidebarBackground?: string;
+  darkCodeBackground?: string;
+  darkColorText?: string;
+  darkColorTextMuted?: string;
+  darkColorPrimary?: string;
+  darkColorBorder?: string;
 }
 
 /**
