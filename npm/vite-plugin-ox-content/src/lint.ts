@@ -275,10 +275,15 @@ interface NapiMarkdownLintResult extends MarkdownLintResult {
 }
 
 interface NapiMarkdownLintModule {
+  lintMarkdownDocuments?: (
+    sources: string[],
+    options?: NapiMarkdownLintOptions,
+  ) => NapiMarkdownLintResult[];
   lintMarkdown: (source: string, options?: NapiMarkdownLintOptions) => NapiMarkdownLintResult;
 }
 
 let napiBinding: NapiMarkdownLintModule | null | undefined;
+let cspellLibPromise: Promise<typeof import("cspell-lib")> | undefined;
 
 /**
  * Lints Markdown prose with the Rust-backed built-in rule engine.
@@ -288,7 +293,36 @@ export function lintMarkdown(
   options: MarkdownLintOptions = {},
 ): MarkdownLintResult {
   const normalizedOptions = normalizeLintOptions(options);
+  return lintMarkdownWithNormalizedOptions(source, normalizedOptions);
+}
 
+/**
+ * Async Markdown linter that supports opt-in standard dictionaries.
+ */
+export async function lintMarkdownAsync(
+  source: string,
+  options: MarkdownLintOptions = {},
+): Promise<MarkdownLintResult> {
+  const normalizedOptions = normalizeLintOptions(options);
+  const [result] = await lintMarkdownDocumentsWithNormalizedOptions([source], normalizedOptions);
+  return result ?? createEmptyLintResult();
+}
+
+/**
+ * Internal batched Markdown linting entry point used by file-based workflows.
+ */
+export async function lintMarkdownDocumentsAsync(
+  sources: string[],
+  options: MarkdownLintOptions = {},
+): Promise<MarkdownLintResult[]> {
+  const normalizedOptions = normalizeLintOptions(options);
+  return lintMarkdownDocumentsWithNormalizedOptions(sources, normalizedOptions);
+}
+
+function lintMarkdownWithNormalizedOptions(
+  source: string,
+  normalizedOptions: InternalNormalizedMarkdownLintOptions,
+): MarkdownLintResult {
   if (normalizedOptions.dictionary.standard) {
     throw new Error(
       "[ox-content] lintMarkdownAsync is required when dictionary.standard is enabled.",
@@ -301,29 +335,38 @@ export function lintMarkdown(
   );
 }
 
-/**
- * Async Markdown linter that supports opt-in standard dictionaries.
- */
-export async function lintMarkdownAsync(
-  source: string,
-  options: MarkdownLintOptions = {},
-): Promise<MarkdownLintResult> {
-  const normalizedOptions = normalizeLintOptions(options);
-  const napi = loadNapiBindingSync();
-  const builtInResult = napi.lintMarkdown(
-    source,
-    toNapiMarkdownLintOptions(normalizedOptions, Boolean(normalizedOptions.dictionary.standard)),
-  );
-
-  if (!normalizedOptions.rules.spellcheck || !normalizedOptions.dictionary.standard) {
-    return stripMaskedDocument(builtInResult);
+async function lintMarkdownDocumentsWithNormalizedOptions(
+  sources: string[],
+  normalizedOptions: InternalNormalizedMarkdownLintOptions,
+): Promise<MarkdownLintResult[]> {
+  if (sources.length === 0) {
+    return [];
   }
 
-  const diagnostics = builtInResult.diagnostics.concat(
-    await runStandardSpellcheck(builtInResult.maskedDocument, normalizedOptions),
+  const napi = loadNapiBindingSync();
+  const napiOptions = toNapiMarkdownLintOptions(
+    normalizedOptions,
+    Boolean(normalizedOptions.dictionary.standard),
+  );
+  const builtInResults =
+    typeof napi.lintMarkdownDocuments === "function"
+      ? napi.lintMarkdownDocuments(sources, napiOptions)
+      : sources.map((source) => napi.lintMarkdown(source, napiOptions));
+
+  if (!normalizedOptions.rules.spellcheck || !normalizedOptions.dictionary.standard) {
+    return builtInResults.map(stripMaskedDocument);
+  }
+
+  const standardDiagnostics = await runStandardSpellcheckDocuments(
+    builtInResults.map((result) => result.maskedDocument),
+    normalizedOptions,
   );
 
-  return summarizeDiagnostics(sortDiagnostics(diagnostics));
+  return builtInResults.map((result, index) =>
+    summarizeDiagnostics(
+      sortDiagnostics(result.diagnostics.concat(standardDiagnostics[index] ?? [])),
+    ),
+  );
 }
 
 function loadNapiBindingSync(): NapiMarkdownLintModule {
@@ -462,47 +505,48 @@ function normalizeStandardDictionaryOptions(
   };
 }
 
-async function runStandardSpellcheck(
-  maskedDocument: string,
+async function runStandardSpellcheckDocuments(
+  maskedDocuments: string[],
   options: InternalNormalizedMarkdownLintOptions,
-): Promise<MarkdownLintDiagnostic[]> {
+): Promise<MarkdownLintDiagnostic[][]> {
   const standard = options.dictionary.standard;
 
-  if (!standard || maskedDocument.trim().length === 0) {
-    return [];
+  if (!standard || maskedDocuments.length === 0) {
+    return maskedDocuments.map(() => []);
   }
 
   try {
-    const { spellCheckDocument } = await import("cspell-lib");
+    const { spellCheckDocument } = await loadCspellLib();
     const locale = standard.languages.join(",");
-    const settings: CSpellUserSettings = {
-      import: standard.imports,
-      ignoreWords: options.dictionary.ignoredWords,
-      language: locale,
-      version: "0.2",
-      words: [
-        ...(options.dictionary.words ?? []),
-        ...Object.values(options.dictionary.byLanguage ?? {}).flat(),
-      ],
-    };
+    const settings = createStandardSpellcheckSettings(options, locale);
 
-    const result = await spellCheckDocument(
-      {
-        languageId: "plaintext",
-        locale,
-        text: maskedDocument,
-        uri: "file:///ox-content-lint.md",
-      },
-      {
-        generateSuggestions: true,
-        noConfigSearch: true,
-        numSuggestions: 3,
-        resolveImportsRelativeTo: standard.resolveImportsRelativeTo,
-      },
-      settings,
+    return Promise.all(
+      maskedDocuments.map(async (maskedDocument, index) => {
+        if (maskedDocument.trim().length === 0) {
+          return [];
+        }
+
+        const result = await spellCheckDocument(
+          {
+            languageId: "plaintext",
+            locale,
+            text: maskedDocument,
+            uri: `file:///ox-content-lint-${index}.md`,
+          },
+          {
+            generateSuggestions: true,
+            noConfigSearch: true,
+            numSuggestions: 3,
+            resolveImportsRelativeTo: standard.resolveImportsRelativeTo,
+          },
+          settings,
+        );
+
+        return result.issues.map((issue) =>
+          mapStandardIssueToDiagnostic(issue, standard.languages),
+        );
+      }),
     );
-
-    return result.issues.map((issue) => mapStandardIssueToDiagnostic(issue, standard.languages));
   } catch (error) {
     const imports = standard.imports.join(", ");
     const message =
@@ -514,6 +558,27 @@ async function runStandardSpellcheck(
       cause: error,
     });
   }
+}
+
+function createStandardSpellcheckSettings(
+  options: InternalNormalizedMarkdownLintOptions,
+  locale: string,
+): CSpellUserSettings {
+  return {
+    import: options.dictionary.standard ? options.dictionary.standard.imports : [],
+    ignoreWords: options.dictionary.ignoredWords,
+    language: locale,
+    version: "0.2",
+    words: [
+      ...(options.dictionary.words ?? []),
+      ...Object.values(options.dictionary.byLanguage ?? {}).flat(),
+    ],
+  };
+}
+
+async function loadCspellLib(): Promise<typeof import("cspell-lib")> {
+  cspellLibPromise ??= import("cspell-lib");
+  return cspellLibPromise;
 }
 
 function mapStandardIssueToDiagnostic(
@@ -605,6 +670,10 @@ function summarizeDiagnostics(diagnostics: MarkdownLintDiagnostic[]): MarkdownLi
   }
 
   return { diagnostics, errorCount, infoCount, warningCount };
+}
+
+function createEmptyLintResult(): MarkdownLintResult {
+  return summarizeDiagnostics([]);
 }
 
 function sortDiagnostics(diagnostics: MarkdownLintDiagnostic[]): MarkdownLintDiagnostic[] {

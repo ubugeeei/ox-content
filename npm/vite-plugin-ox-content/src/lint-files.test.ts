@@ -78,6 +78,37 @@ describe("lintMarkdownFiles", () => {
       ruleId: "spellcheck",
     });
   });
+
+  it("supports opt-in standard dictionaries across multiple files", async () => {
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "ox-content-lint-files-"));
+    tempDirs.push(cwd);
+
+    const docsDir = path.join(cwd, "docs");
+    await fs.mkdir(docsDir, { recursive: true });
+    await fs.writeFile(path.join(docsDir, "guide.md"), "Hello world\n", "utf-8");
+    await fs.writeFile(path.join(docsDir, "typo.md"), "Hello wrld\n", "utf-8");
+
+    const result = await lintMarkdownFiles({
+      cwd,
+      dictionary: {
+        standard: {
+          languages: ["en"],
+        },
+      },
+      include: ["docs/**/*.md"],
+    });
+
+    expect(result.checkedFileCount).toBe(2);
+    expect(result.files.map((file) => file.relativePath)).toEqual([
+      "docs/guide.md",
+      "docs/typo.md",
+    ]);
+    expect(result.diagnostics).toHaveLength(1);
+    expect(result.diagnostics[0]).toMatchObject({
+      relativePath: "docs/typo.md",
+      ruleId: "spellcheck",
+    });
+  });
 });
 
 describe("shouldLintMarkdownFile", () => {

@@ -2,6 +2,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { glob } from "glob";
 import {
+  lintMarkdownDocumentsAsync,
   lintMarkdownAsync,
   type MarkdownLintDiagnostic,
   type MarkdownLintOptions,
@@ -79,6 +80,11 @@ interface ResolvedMarkdownLintFileOptions {
   lintOptions: MarkdownLintOptions;
 }
 
+interface MarkdownLintFileEntry {
+  filePath: string;
+  relativePath: string;
+}
+
 /**
  * Returns true if the file path is included by the configured glob filters.
  */
@@ -114,10 +120,19 @@ export async function lintMarkdownFiles(
   options: MarkdownLintFileOptions = {},
 ): Promise<MarkdownLintFilesResult> {
   const resolvedOptions = resolveMarkdownLintFileOptions(options);
-  const matchedFiles = await collectMarkdownLintFiles(resolvedOptions);
+  const matchedFiles = await collectMarkdownLintFileEntries(resolvedOptions);
+  const sources = await Promise.all(
+    matchedFiles.map((file) => fs.readFile(file.filePath, "utf-8")),
+  );
+  const results = await lintMarkdownDocumentsAsync(sources, resolvedOptions.lintOptions);
 
-  const files = await Promise.all(
-    matchedFiles.map((filePath) => lintMarkdownFileWithResolvedOptions(filePath, resolvedOptions)),
+  const files = matchedFiles.map(
+    (file, index): MarkdownLintFileResult => ({
+      ...(results[index] ?? createEmptyLintResult()),
+      filePath: file.filePath,
+      relativePath: file.relativePath,
+      skipped: false,
+    }),
   );
 
   const diagnostics = files.flatMap((fileResult) =>
@@ -184,27 +199,31 @@ async function lintMarkdownFileWithResolvedOptions(
   };
 }
 
-async function collectMarkdownLintFiles(
+async function collectMarkdownLintFileEntries(
   options: ResolvedMarkdownLintFileOptions,
-): Promise<string[]> {
-  const files = new Set<string>();
+): Promise<MarkdownLintFileEntry[]> {
+  const files = new Map<string, MarkdownLintFileEntry>();
 
   for (const pattern of options.include) {
     const matches = await glob(pattern, {
       absolute: true,
       cwd: options.cwd,
+      ignore: options.exclude,
       nodir: true,
     });
 
     for (const filePath of matches) {
       const absoluteFilePath = path.resolve(filePath);
       if (shouldLintAbsoluteFile(absoluteFilePath, options)) {
-        files.add(absoluteFilePath);
+        files.set(absoluteFilePath, {
+          filePath: absoluteFilePath,
+          relativePath: normalizePath(path.relative(options.cwd, absoluteFilePath)),
+        });
       }
     }
   }
 
-  return [...files].sort((left, right) => left.localeCompare(right));
+  return [...files.values()].sort((left, right) => left.filePath.localeCompare(right.filePath));
 }
 
 function shouldLintAbsoluteFile(
