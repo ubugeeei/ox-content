@@ -549,6 +549,8 @@ export interface JsTransformOptions {
 
 export declare function lintMarkdown(source: string, options?: JsMarkdownLintOptions | undefined | null): JsMarkdownLintResult
 
+export declare function lintMarkdownDocuments(sources: Array<string>, options?: JsMarkdownLintOptions | undefined | null): Array<JsMarkdownLintResult>
+
 /**
  * Loads dictionaries from the given directory.
  *

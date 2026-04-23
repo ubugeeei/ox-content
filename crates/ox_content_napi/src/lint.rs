@@ -42,6 +42,68 @@ struct LintDictionaryData {
     by_language: HashMap<String, Vec<String>>,
 }
 
+struct PreparedLintDictionaryData {
+    global_words: HashSet<String>,
+    by_language: HashMap<String, PreparedLanguageDictionary>,
+}
+
+struct PreparedLanguageDictionary {
+    has_base_words: bool,
+    cjk_segment_words: Vec<SegmentWord>,
+    words: HashSet<String>,
+}
+
+#[derive(Clone)]
+struct SegmentWord {
+    char_len: usize,
+    text: String,
+}
+
+static PREPARED_LINT_DICTIONARY_DATA: LazyLock<PreparedLintDictionaryData> = LazyLock::new(|| {
+    let global_words = LINT_DICTIONARY_DATA
+        .global
+        .iter()
+        .map(|word| normalize_word_for_set(word))
+        .filter(|word| !word.is_empty())
+        .collect::<HashSet<_>>();
+
+    let by_language = SUPPORTED_MARKDOWN_LINT_LANGUAGES
+        .iter()
+        .map(|language| {
+            let words = LINT_DICTIONARY_DATA
+                .by_language
+                .get(*language)
+                .into_iter()
+                .flatten()
+                .map(|word| normalize_word_for_set(word))
+                .filter(|word| !word.is_empty())
+                .collect::<HashSet<_>>();
+
+            let mut cjk_segment_words = words
+                .iter()
+                .chain(global_words.iter())
+                .filter(|word| word.chars().any(is_cjk_char))
+                .map(|word| SegmentWord {
+                    char_len: count_code_points(word),
+                    text: (*word).clone(),
+                })
+                .collect::<Vec<_>>();
+            sort_and_dedupe_segment_words(&mut cjk_segment_words);
+
+            (
+                (*language).to_string(),
+                PreparedLanguageDictionary {
+                    has_base_words: !words.is_empty(),
+                    cjk_segment_words,
+                    words,
+                },
+            )
+        })
+        .collect();
+
+    PreparedLintDictionaryData { global_words, by_language }
+});
+
 #[napi(object)]
 #[derive(Clone)]
 pub struct JsMarkdownLintLanguageWords {
@@ -127,10 +189,12 @@ struct InternalMarkdownLintRules {
 
 struct DictionaryBundle {
     active_languages: HashSet<String>,
+    cjk_segment_words: HashMap<String, Vec<SegmentWord>>,
+    extra_by_language: HashMap<String, HashSet<String>>,
+    extra_global_words: HashSet<String>,
     ignored_words: HashSet<String>,
     latin_words: HashSet<String>,
     latin_suggestion_words: Vec<String>,
-    per_language: HashMap<String, HashSet<String>>,
 }
 
 #[derive(Clone)]
@@ -152,8 +216,29 @@ pub fn lint_markdown(
     options: Option<JsMarkdownLintOptions>,
 ) -> JsMarkdownLintResult {
     let normalized_options = normalize_lint_options(options);
-    let state = collect_markdown_lint_state(&source, &normalized_options);
+    let dictionary = create_dictionary_bundle(&normalized_options);
+    let state = collect_markdown_lint_state(&source, &normalized_options, &dictionary);
     summarize_diagnostics(sort_diagnostics(state.diagnostics), state.masked_lines.join("\n"))
+}
+
+#[napi(js_name = "lintMarkdownDocuments")]
+pub fn lint_markdown_documents(
+    sources: Vec<String>,
+    options: Option<JsMarkdownLintOptions>,
+) -> Vec<JsMarkdownLintResult> {
+    let normalized_options = normalize_lint_options(options);
+    let dictionary = create_dictionary_bundle(&normalized_options);
+
+    sources
+        .into_iter()
+        .map(|source| {
+            let state = collect_markdown_lint_state(&source, &normalized_options, &dictionary);
+            summarize_diagnostics(
+                sort_diagnostics(state.diagnostics),
+                state.masked_lines.join("\n"),
+            )
+        })
+        .collect()
 }
 
 fn normalize_lint_options(options: Option<JsMarkdownLintOptions>) -> InternalMarkdownLintOptions {
@@ -199,8 +284,8 @@ fn normalize_lint_options(options: Option<JsMarkdownLintOptions>) -> InternalMar
 fn collect_markdown_lint_state(
     source: &str,
     normalized_options: &InternalMarkdownLintOptions,
+    dictionary: &DictionaryBundle,
 ) -> MarkdownLintState {
-    let dictionary = create_dictionary_bundle(normalized_options);
     let mut diagnostics = Vec::new();
     let mut masked_lines = Vec::new();
     let mut seen_headings = HashMap::new();
@@ -365,18 +450,17 @@ fn collect_markdown_lint_state(
             diagnostics.extend(collect_repeated_punctuation_diagnostics(line_number, &masked_line));
         }
 
-        let mut tokens = collect_tokens(&masked_line, &normalized_options.languages, &dictionary);
-        tokens.sort_by(|left, right| left.start.cmp(&right.start));
+        let tokens = collect_tokens(&masked_line, &normalized_options.languages, dictionary);
 
         if normalized_options.rules.repeated_words {
-            let mut previous_comparable_token: Option<Token> = None;
+            let mut previous_comparable_token: Option<&Token> = None;
 
             for token in &tokens {
                 if should_ignore_repeated_word_token(token) {
                     continue;
                 }
 
-                if let Some(previous_token) = &previous_comparable_token {
+                if let Some(previous_token) = previous_comparable_token {
                     if normalize_comparable_word(&previous_token.text)
                         == normalize_comparable_word(&token.text)
                     {
@@ -392,7 +476,7 @@ fn collect_markdown_lint_state(
                     }
                 }
 
-                previous_comparable_token = Some(token.clone());
+                previous_comparable_token = Some(token);
             }
         }
 
@@ -433,29 +517,30 @@ fn collect_markdown_lint_state(
 }
 
 fn create_dictionary_bundle(options: &InternalMarkdownLintOptions) -> DictionaryBundle {
-    let mut per_language = HashMap::new();
+    let extra_global_words = options
+        .dictionary
+        .words
+        .iter()
+        .map(|word| normalize_word_for_set(word))
+        .filter(|word| !word.is_empty())
+        .collect::<HashSet<_>>();
 
-    for language in SUPPORTED_MARKDOWN_LINT_LANGUAGES {
-        let mut words = HashSet::new();
-
-        if let Some(base_words) = LINT_DICTIONARY_DATA.by_language.get(language) {
-            for word in base_words {
-                words.insert(normalize_word_for_set(word));
-            }
-        }
-
-        for word in &LINT_DICTIONARY_DATA.global {
-            words.insert(normalize_word_for_set(word));
-        }
-
-        if let Some(extra_words) = options.dictionary.by_language.get(language) {
-            for word in extra_words {
-                words.insert(normalize_word_for_set(word));
-            }
-        }
-
-        per_language.insert(language.to_string(), words);
-    }
+    let extra_by_language = options
+        .dictionary
+        .by_language
+        .iter()
+        .map(|(language, words)| {
+            (
+                language.clone(),
+                words
+                    .iter()
+                    .map(|word| normalize_word_for_set(word))
+                    .filter(|word| !word.is_empty())
+                    .collect::<HashSet<_>>(),
+            )
+        })
+        .filter(|(_, words)| !words.is_empty())
+        .collect::<HashMap<_, _>>();
 
     let mut latin_words = HashSet::new();
     let mut latin_suggestion_words = HashSet::new();
@@ -465,7 +550,19 @@ fn create_dictionary_bundle(options: &InternalMarkdownLintOptions) -> Dictionary
             continue;
         }
 
-        if let Some(words) = per_language.get(language) {
+        if let Some(words) = PREPARED_LINT_DICTIONARY_DATA.by_language.get(language.as_str()) {
+            for word in &words.words {
+                latin_words.insert(word.clone());
+                latin_suggestion_words.insert(word.clone());
+            }
+        }
+
+        for word in &PREPARED_LINT_DICTIONARY_DATA.global_words {
+            latin_words.insert(word.clone());
+            latin_suggestion_words.insert(word.clone());
+        }
+
+        if let Some(words) = extra_by_language.get(language.as_str()) {
             for word in words {
                 latin_words.insert(word.clone());
                 latin_suggestion_words.insert(word.clone());
@@ -473,14 +570,9 @@ fn create_dictionary_bundle(options: &InternalMarkdownLintOptions) -> Dictionary
         }
     }
 
-    for word in &options.dictionary.words {
-        let normalized_word = normalize_word_for_set(word);
-        latin_words.insert(normalized_word.clone());
-        latin_suggestion_words.insert(normalized_word.clone());
-
-        for language in SUPPORTED_MARKDOWN_LINT_LANGUAGES {
-            per_language.entry(language.to_string()).or_default().insert(normalized_word.clone());
-        }
+    for word in &extra_global_words {
+        latin_words.insert(word.clone());
+        latin_suggestion_words.insert(word.clone());
     }
 
     let ignored_words =
@@ -490,17 +582,53 @@ fn create_dictionary_bundle(options: &InternalMarkdownLintOptions) -> Dictionary
         .languages
         .iter()
         .filter(|language| {
-            let base_words =
-                LINT_DICTIONARY_DATA.by_language.get((*language).as_str()).map_or(0, Vec::len);
-            let extra_words =
-                options.dictionary.by_language.get((*language).as_str()).map_or(0, Vec::len);
-            base_words > 0 || extra_words > 0
+            PREPARED_LINT_DICTIONARY_DATA
+                .by_language
+                .get((*language).as_str())
+                .is_some_and(|entry| entry.has_base_words)
+                || extra_by_language
+                    .get((*language).as_str())
+                    .is_some_and(|words| !words.is_empty())
         })
         .cloned()
         .collect();
 
+    let mut cjk_segment_words = HashMap::new();
+
+    for language in
+        options.languages.iter().filter(|language| *language == "ja" || *language == "zh")
+    {
+        let mut words = PREPARED_LINT_DICTIONARY_DATA
+            .by_language
+            .get(language.as_str())
+            .map_or_else(Vec::new, |entry| entry.cjk_segment_words.clone());
+
+        words.extend(
+            extra_global_words
+                .iter()
+                .filter(|word| word.chars().any(is_cjk_char))
+                .map(|word| SegmentWord { char_len: count_code_points(word), text: word.clone() }),
+        );
+
+        if let Some(extra_words) = extra_by_language.get(language.as_str()) {
+            words.extend(
+                extra_words.iter().filter(|word| word.chars().any(is_cjk_char)).map(|word| {
+                    SegmentWord { char_len: count_code_points(word), text: word.clone() }
+                }),
+            );
+        }
+
+        sort_and_dedupe_segment_words(&mut words);
+        if !words.is_empty() {
+            cjk_segment_words.insert(language.clone(), words);
+        }
+    }
+
     DictionaryBundle {
         active_languages,
+        cjk_segment_words,
+        extra_by_language,
+        extra_global_words,
         ignored_words,
         latin_words,
         latin_suggestion_words: {
@@ -508,7 +636,6 @@ fn create_dictionary_bundle(options: &InternalMarkdownLintOptions) -> Dictionary
             values.sort();
             values
         },
-        per_language,
     }
 }
 
@@ -517,14 +644,39 @@ fn collect_tokens(
     languages: &[String],
     dictionary: &DictionaryBundle,
 ) -> Vec<Token> {
-    let mut tokens = collect_latin_tokens(masked_line, languages, dictionary);
+    let latin_tokens = collect_latin_tokens(masked_line, languages, dictionary);
+    let mut cjk_tokens = Vec::new();
 
     for value in CJK_RUN_PATTERN.find_iter(masked_line) {
         let start = byte_to_char_index(masked_line, value.start());
-        tokens.extend(collect_cjk_tokens(value.as_str(), start, languages, dictionary));
+        cjk_tokens.extend(collect_cjk_tokens(value.as_str(), start, languages, dictionary));
     }
 
-    tokens
+    merge_tokens(latin_tokens, cjk_tokens)
+}
+
+fn merge_tokens(left: Vec<Token>, right: Vec<Token>) -> Vec<Token> {
+    let mut merged = Vec::with_capacity(left.len() + right.len());
+    let mut left_iter = left.into_iter().peekable();
+    let mut right_iter = right.into_iter().peekable();
+
+    while left_iter.peek().is_some() || right_iter.peek().is_some() {
+        let take_left = match (left_iter.peek(), right_iter.peek()) {
+            (Some(left_token), Some(right_token)) => left_token.start <= right_token.start,
+            (Some(_), None) => true,
+            _ => false,
+        };
+
+        if take_left {
+            if let Some(token) = left_iter.next() {
+                merged.push(token);
+            }
+        } else if let Some(token) = right_iter.next() {
+            merged.push(token);
+        }
+    }
+
+    merged
 }
 
 fn collect_latin_tokens(
@@ -604,7 +756,7 @@ fn segment_cjk_run(
     language: &str,
     dictionary: &DictionaryBundle,
 ) -> Vec<Token> {
-    let Some(words) = dictionary.per_language.get(language) else {
+    let Some(words) = dictionary.cjk_segment_words.get(language) else {
         return vec![Token {
             end: start_offset + count_code_points(run),
             language: language.to_string(),
@@ -613,39 +765,36 @@ fn segment_cjk_run(
         }];
     };
 
-    let mut dictionary_words = words.iter().cloned().collect::<Vec<_>>();
-    dictionary_words.sort_by(|left, right| right.chars().count().cmp(&left.chars().count()));
-
-    let total_chars = count_code_points(run);
+    let char_boundaries = collect_char_boundaries(run);
+    let total_chars = char_boundaries.len().saturating_sub(1);
     let mut tokens = Vec::new();
     let mut char_index = 0;
 
     while char_index < total_chars {
-        let start_byte = char_to_byte_index(run, char_index);
-        let best_match = dictionary_words.iter().find_map(|word| {
-            let word_length = count_code_points(word);
-            let end_char = char_index + word_length;
+        let start_byte = char_boundaries[char_index];
+        let best_match = words.iter().find(|word| {
+            let end_char = char_index + word.char_len;
             if end_char > total_chars {
-                return None;
+                return false;
             }
 
-            let end_byte = char_to_byte_index(run, end_char);
-            (run[start_byte..end_byte] == *word).then_some((word.clone(), word_length))
+            let end_byte = char_boundaries[end_char];
+            run[start_byte..end_byte] == word.text
         });
 
-        if let Some((word, word_length)) = best_match {
+        if let Some(word) = best_match {
             tokens.push(Token {
-                end: start_offset + char_index + word_length,
+                end: start_offset + char_index + word.char_len,
                 language: language.to_string(),
                 start: start_offset + char_index,
-                text: word,
+                text: word.text.clone(),
             });
-            char_index += word_length;
+            char_index += word.char_len;
             continue;
         }
 
         let end_char = char_index + 1;
-        let end_byte = char_to_byte_index(run, end_char);
+        let end_byte = char_boundaries[end_char];
         tokens.push(Token {
             end: start_offset + end_char,
             language: language.to_string(),
@@ -676,10 +825,14 @@ fn assign_latin_languages(
     let mut scores =
         languages.iter().map(|language| (language.clone(), 0_usize)).collect::<HashMap<_, _>>();
 
-    for token in &tokens {
-        let matching_languages = get_matching_latin_languages(&token.text, languages, dictionary);
-        if matching_languages.len() == 1 {
-            let language = &matching_languages[0];
+    let matching_languages = tokens
+        .iter()
+        .map(|token| get_matching_latin_languages(&token.text, languages, dictionary))
+        .collect::<Vec<_>>();
+
+    for matches in &matching_languages {
+        if matches.len() == 1 {
+            let language = &matches[0];
             *scores.entry(language.clone()).or_default() += 1;
         }
     }
@@ -691,9 +844,8 @@ fn assign_latin_languages(
 
     tokens
         .into_iter()
-        .map(|token| {
-            let matching_languages =
-                get_matching_latin_languages(&token.text, languages, dictionary);
+        .zip(matching_languages)
+        .map(|(token, matching_languages)| {
             let inferred_language = matching_languages
                 .first()
                 .cloned()
@@ -717,10 +869,7 @@ fn get_matching_latin_languages(
     languages
         .iter()
         .filter(|language| {
-            dictionary
-                .per_language
-                .get((*language).as_str())
-                .is_some_and(|words| words.contains(&normalized_word))
+            language_contains_word((*language).as_str(), &normalized_word, dictionary)
         })
         .cloned()
         .collect()
@@ -802,6 +951,23 @@ fn infer_latin_language_from_characters(word: &str, languages: &[String]) -> Opt
     }
 
     None
+}
+
+fn language_contains_word(
+    language: &str,
+    normalized_word: &str,
+    dictionary: &DictionaryBundle,
+) -> bool {
+    dictionary.extra_global_words.contains(normalized_word)
+        || PREPARED_LINT_DICTIONARY_DATA.global_words.contains(normalized_word)
+        || dictionary
+            .extra_by_language
+            .get(language)
+            .is_some_and(|words| words.contains(normalized_word))
+        || PREPARED_LINT_DICTIONARY_DATA
+            .by_language
+            .get(language)
+            .is_some_and(|words| words.words.contains(normalized_word))
 }
 
 fn collect_repeated_punctuation_diagnostics(
@@ -892,10 +1058,7 @@ fn is_known_token(token: &Token, dictionary: &DictionaryBundle) -> bool {
     }
 
     if token.language == "ja" || token.language == "zh" {
-        return dictionary
-            .per_language
-            .get(token.language.as_str())
-            .is_some_and(|words| words.contains(&normalized));
+        return language_contains_word(token.language.as_str(), &normalized, dictionary);
     }
 
     dictionary.latin_words.contains(&normalized)
@@ -979,18 +1142,20 @@ fn create_skipped_line_mask(line: &str) -> String {
 }
 
 fn get_trailing_whitespace_length(line: &str) -> usize {
-    line.chars().rev().take_while(|value| *value == ' ' || *value == '\t').count()
+    line.as_bytes().iter().rev().take_while(|value| **value == b' ' || **value == b'\t').count()
 }
 
 fn is_fence_close(line: &str, fence_char: char, fence_length: usize) -> bool {
-    let trimmed = line.trim_start();
-    let fence = fence_char.to_string().repeat(fence_length);
+    let trimmed = line.trim_start_matches([' ', '\t']);
+    let bytes = trimmed.as_bytes();
+    let fence_byte = fence_char as u8;
 
-    if !trimmed.starts_with(&fence) {
+    if bytes.len() < fence_length || !bytes[..fence_length].iter().all(|value| *value == fence_byte)
+    {
         return false;
     }
 
-    trimmed.chars().enumerate().all(|(index, value)| index < fence_length || value == fence_char)
+    bytes[fence_length..].iter().all(|value| *value == fence_byte)
 }
 
 fn is_indented_code_block_line(line: &str) -> bool {
@@ -1002,7 +1167,8 @@ fn get_visible_text(text: &str) -> String {
 }
 
 fn mask_markdown_line(line: &str) -> String {
-    let mut chars = line.chars().collect::<Vec<_>>();
+    let line_chars = line.chars().collect::<Vec<_>>();
+    let mut chars = line_chars.clone();
 
     if let Some(prefix_match) = LIST_PREFIX_PATTERN.find(line) {
         let (start, end) = byte_range_to_char_range(line, prefix_match.start(), prefix_match.end());
@@ -1024,8 +1190,8 @@ fn mask_markdown_line(line: &str) -> String {
         blank_range(&mut chars, start, end);
     }
 
-    mask_inline_code(line, &mut chars);
-    mask_link_targets(line, &mut chars);
+    mask_inline_code(&line_chars, &mut chars);
+    mask_link_targets(&line_chars, &mut chars);
 
     for value in &mut chars {
         if matches!(*value, '\\' | '*' | '_' | '~' | '|' | '!' | '[' | ']' | '(' | ')') {
@@ -1036,8 +1202,7 @@ fn mask_markdown_line(line: &str) -> String {
     chars.into_iter().collect()
 }
 
-fn mask_inline_code(line: &str, chars: &mut [char]) {
-    let line_chars = line.chars().collect::<Vec<_>>();
+fn mask_inline_code(line_chars: &[char], chars: &mut [char]) {
     let mut index = 0;
 
     while index < line_chars.len() {
@@ -1062,8 +1227,7 @@ fn mask_inline_code(line: &str, chars: &mut [char]) {
     }
 }
 
-fn mask_link_targets(line: &str, chars: &mut [char]) {
-    let line_chars = line.chars().collect::<Vec<_>>();
+fn mask_link_targets(line_chars: &[char], chars: &mut [char]) {
     let mut index = 0;
 
     while index + 1 < line_chars.len() {
@@ -1133,12 +1297,17 @@ fn byte_to_char_index(text: &str, byte_index: usize) -> usize {
     text[..byte_index.min(text.len())].chars().count()
 }
 
-fn char_to_byte_index(text: &str, char_index: usize) -> usize {
-    if char_index == 0 {
-        return 0;
-    }
+fn collect_char_boundaries(text: &str) -> Vec<usize> {
+    let mut boundaries = text.char_indices().map(|(index, _)| index).collect::<Vec<_>>();
+    boundaries.push(text.len());
+    boundaries
+}
 
-    text.char_indices().nth(char_index).map_or(text.len(), |(index, _)| index)
+fn sort_and_dedupe_segment_words(words: &mut Vec<SegmentWord>) {
+    words.sort_by(|left, right| {
+        right.char_len.cmp(&left.char_len).then_with(|| left.text.cmp(&right.text))
+    });
+    words.dedup_by(|left, right| left.text == right.text);
 }
 
 fn normalize_comparable_word(word: &str) -> String {
@@ -1154,11 +1323,22 @@ fn normalize_word_for_set(word: &str) -> String {
 }
 
 fn normalize_latin_word(word: &str) -> String {
-    word.nfc().collect::<String>().to_lowercase()
+    word.nfc().flat_map(char::to_lowercase).collect()
 }
 
 fn collapse_whitespace(text: &str) -> String {
-    text.split_whitespace().collect::<Vec<_>>().join(" ")
+    let mut collapsed = String::new();
+    let mut needs_space = false;
+
+    for part in text.split_whitespace() {
+        if needs_space {
+            collapsed.push(' ');
+        }
+        collapsed.push_str(part);
+        needs_space = true;
+    }
+
+    collapsed
 }
 
 fn count_code_points(text: &str) -> usize {
