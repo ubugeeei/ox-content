@@ -368,6 +368,19 @@ importers:
         specifier: workspace:*
         version: link:../../crates/ox_content_napi
 
+  examples/slides-vite:
+    dependencies:
+      '@ox-content/vite-plugin-slides':
+        specifier: workspace:*
+        version: link:../../npm/vite-plugin-ox-content-slides
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite:
+        specifier: npm:@voidzero-dev/vite-plus-core@0.1.11
+        version: '@voidzero-dev/vite-plus-core@0.1.11(@types/node@22.19.3)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)'
+
   examples/ssg-vite:
     devDependencies:
       '@ox-content/vite-plugin':
@@ -686,6 +699,37 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite-plus:
+        specifier: 'catalog:'
+        version: 0.1.11(@types/node@22.19.3)(@voidzero-dev/vite-plus-core@0.1.11(@types/node@22.19.3)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2))(esbuild@0.27.4)(jiti@2.6.1)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)
+
+  npm/vite-plugin-ox-content-slides:
+    dependencies:
+      '@ox-content/napi':
+        specifier: workspace:*
+        version: link:../../crates/ox_content_napi
+      '@ox-content/vite-plugin':
+        specifier: workspace:*
+        version: link:../vite-plugin-ox-content
+      glob:
+        specifier: ^11.0.0
+        version: 11.1.0
+      vite:
+        specifier: npm:@voidzero-dev/vite-plus-core@0.1.11
+        version: '@voidzero-dev/vite-plus-core@0.1.11(@types/node@22.19.3)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)'
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.59.1
+        version: 1.59.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260124.1
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
