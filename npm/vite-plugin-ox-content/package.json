@@ -42,8 +42,13 @@
     "test:vrt:update": "playwright test --update-snapshots"
   },
   "dependencies": {
+    "@cspell/dict-de-de": "^4.1.2",
+    "@cspell/dict-en_us": "^4.4.33",
+    "@cspell/dict-fr-fr": "^2.3.2",
+    "@cspell/dict-pl_pl": "^3.0.6",
     "@mermaid-js/mermaid-cli": "^11.12.0",
     "@ox-content/napi": "workspace:*",
+    "cspell-lib": "^10.0.0",
     "glob": "^11.0.0",
     "playwright": "^1.59.1",
     "puppeteer": "^23.11.1",
