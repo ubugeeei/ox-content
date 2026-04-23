@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn parses_markdown_deck_frontmatter_and_splits_slides() {
-        let source = r#"---
+        let source = r"---
 title: Deck Title
 description: Demo
 ---
@@ -80,7 +80,7 @@ description: Demo
 ---
 
 # Two
-"#;
+";
 
         let result = parse_markdown_slide_deck(source, "---");
         assert_eq!(result.frontmatter["title"], JsonValue::String("Deck Title".to_string()));

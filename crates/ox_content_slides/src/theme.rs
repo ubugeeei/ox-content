@@ -2,42 +2,40 @@ use std::borrow::Cow;
 
 use crate::SlideTheme;
 
-pub(crate) const DEFAULT_ASPECT_RATIO: &str = "4 / 3";
-pub(crate) const DEFAULT_MAX_WIDTH: &str = "min(1560px, calc(100vw - 24px))";
-pub(crate) const DEFAULT_MAX_HEIGHT: &str = "calc(100vh - 88px)";
-pub(crate) const DEFAULT_PADDING: &str = "clamp(24px, 2.8vw, 44px)";
-pub(crate) const DEFAULT_CANVAS_BACKGROUND: &str =
-    "linear-gradient(180deg, #f3f6fb 0%, #e9eef6 100%)";
-pub(crate) const DEFAULT_SURFACE_BACKGROUND: &str = "rgba(255, 255, 255, 0.96)";
-pub(crate) const DEFAULT_SURFACE_BORDER: &str = "rgba(15, 23, 42, 0.12)";
-pub(crate) const DEFAULT_SURFACE_SHADOW: &str = "0 18px 60px rgba(15, 23, 42, 0.1)";
-pub(crate) const DEFAULT_PRESENTER_SIDEBAR_BACKGROUND: &str = "rgba(249, 251, 253, 0.96)";
-pub(crate) const DEFAULT_FONT_SANS: &str =
+pub const DEFAULT_ASPECT_RATIO: &str = "4 / 3";
+pub const DEFAULT_MAX_WIDTH: &str = "min(1560px, calc(100vw - 24px))";
+pub const DEFAULT_MAX_HEIGHT: &str = "calc(100vh - 88px)";
+pub const DEFAULT_PADDING: &str = "clamp(24px, 2.8vw, 44px)";
+pub const DEFAULT_CANVAS_BACKGROUND: &str = "linear-gradient(180deg, #f3f6fb 0%, #e9eef6 100%)";
+pub const DEFAULT_SURFACE_BACKGROUND: &str = "rgba(255, 255, 255, 0.96)";
+pub const DEFAULT_SURFACE_BORDER: &str = "rgba(15, 23, 42, 0.12)";
+pub const DEFAULT_SURFACE_SHADOW: &str = "0 18px 60px rgba(15, 23, 42, 0.1)";
+pub const DEFAULT_PRESENTER_SIDEBAR_BACKGROUND: &str = "rgba(249, 251, 253, 0.96)";
+pub const DEFAULT_FONT_SANS: &str =
     "\"IBM Plex Sans\", \"Avenir Next\", \"Segoe UI Variable\", \"Segoe UI\", sans-serif";
-pub(crate) const DEFAULT_FONT_MONO: &str =
-    "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace";
-pub(crate) const DEFAULT_COLOR_TEXT: &str = "#111827";
-pub(crate) const DEFAULT_COLOR_TEXT_MUTED: &str = "#5b6472";
-pub(crate) const DEFAULT_COLOR_PRIMARY: &str = "#1f4b99";
-pub(crate) const DEFAULT_COLOR_BORDER: &str = "#d7dde8";
+pub const DEFAULT_FONT_MONO: &str = "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace";
+pub const DEFAULT_COLOR_TEXT: &str = "#111827";
+pub const DEFAULT_COLOR_TEXT_MUTED: &str = "#5b6472";
+pub const DEFAULT_COLOR_PRIMARY: &str = "#1f4b99";
+pub const DEFAULT_COLOR_BORDER: &str = "#d7dde8";
 
 #[derive(Debug, Clone)]
-pub(crate) struct ResolvedSlideTheme<'a> {
-    pub(crate) aspect_ratio: Cow<'a, str>,
-    pub(crate) max_width: Cow<'a, str>,
-    pub(crate) max_height: Cow<'a, str>,
-    pub(crate) padding: Cow<'a, str>,
-    pub(crate) canvas_background: Cow<'a, str>,
-    pub(crate) surface_background: Cow<'a, str>,
-    pub(crate) surface_border: Cow<'a, str>,
-    pub(crate) surface_shadow: Cow<'a, str>,
-    pub(crate) presenter_sidebar_background: Cow<'a, str>,
-    pub(crate) font_sans: Cow<'a, str>,
-    pub(crate) font_mono: Cow<'a, str>,
-    pub(crate) color_text: Cow<'a, str>,
-    pub(crate) color_text_muted: Cow<'a, str>,
-    pub(crate) color_primary: Cow<'a, str>,
-    pub(crate) color_border: Cow<'a, str>,
+pub struct ResolvedSlideTheme<'a> {
+    pub aspect_ratio: Cow<'a, str>,
+    pub max_width: Cow<'a, str>,
+    pub max_height: Cow<'a, str>,
+    pub padding: Cow<'a, str>,
+    pub canvas_background: Cow<'a, str>,
+    pub surface_background: Cow<'a, str>,
+    pub surface_border: Cow<'a, str>,
+    pub surface_shadow: Cow<'a, str>,
+    pub presenter_sidebar_background: Cow<'a, str>,
+    pub font_sans: Cow<'a, str>,
+    pub font_mono: Cow<'a, str>,
+    pub color_text: Cow<'a, str>,
+    pub color_text_muted: Cow<'a, str>,
+    pub color_primary: Cow<'a, str>,
+    pub color_border: Cow<'a, str>,
 }
 
 fn default_theme() -> ResolvedSlideTheme<'static> {
@@ -64,7 +62,7 @@ fn theme_value<'a>(value: Option<&'a String>, fallback: &'static str) -> Cow<'a,
     value.map_or_else(|| Cow::Borrowed(fallback), |value| Cow::Borrowed(value.as_str()))
 }
 
-pub(crate) fn merge_theme<'a>(input: Option<&'a SlideTheme>) -> ResolvedSlideTheme<'a> {
+pub fn merge_theme<'a>(input: Option<&'a SlideTheme>) -> ResolvedSlideTheme<'a> {
     let Some(input) = input else {
         return default_theme();
     };
