@@ -3,21 +3,20 @@ use std::borrow::Cow;
 use crate::SlideTheme;
 
 pub const DEFAULT_ASPECT_RATIO: &str = "4 / 3";
-pub const DEFAULT_MAX_WIDTH: &str = "min(1560px, calc(100vw - 24px))";
-pub const DEFAULT_MAX_HEIGHT: &str = "calc(100vh - 88px)";
-pub const DEFAULT_PADDING: &str = "clamp(24px, 2.8vw, 44px)";
-pub const DEFAULT_CANVAS_BACKGROUND: &str = "linear-gradient(180deg, #f3f6fb 0%, #e9eef6 100%)";
-pub const DEFAULT_SURFACE_BACKGROUND: &str = "rgba(255, 255, 255, 0.96)";
-pub const DEFAULT_SURFACE_BORDER: &str = "rgba(15, 23, 42, 0.12)";
-pub const DEFAULT_SURFACE_SHADOW: &str = "0 18px 60px rgba(15, 23, 42, 0.1)";
-pub const DEFAULT_PRESENTER_SIDEBAR_BACKGROUND: &str = "rgba(249, 251, 253, 0.96)";
+pub const DEFAULT_MAX_WIDTH: &str = "min(1740px, calc(100vw - 8px))";
+pub const DEFAULT_MAX_HEIGHT: &str = "calc(100vh - 56px)";
+pub const DEFAULT_PADDING: &str = "clamp(24px, 2.2vw, 38px)";
+pub const DEFAULT_CANVAS_BACKGROUND: &str = "#edf0f4";
+pub const DEFAULT_SURFACE_BACKGROUND: &str = "#ffffff";
+pub const DEFAULT_SURFACE_BORDER: &str = "#cfd6df";
+pub const DEFAULT_PRESENTER_SIDEBAR_BACKGROUND: &str = "#f7f8fa";
 pub const DEFAULT_FONT_SANS: &str =
     "\"IBM Plex Sans\", \"Avenir Next\", \"Segoe UI Variable\", \"Segoe UI\", sans-serif";
 pub const DEFAULT_FONT_MONO: &str = "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace";
 pub const DEFAULT_COLOR_TEXT: &str = "#111827";
-pub const DEFAULT_COLOR_TEXT_MUTED: &str = "#5b6472";
+pub const DEFAULT_COLOR_TEXT_MUTED: &str = "#667085";
 pub const DEFAULT_COLOR_PRIMARY: &str = "#1f4b99";
-pub const DEFAULT_COLOR_BORDER: &str = "#d7dde8";
+pub const DEFAULT_COLOR_BORDER: &str = "#d4d9e1";
 
 #[derive(Debug, Clone)]
 pub struct ResolvedSlideTheme<'a> {
@@ -28,7 +27,6 @@ pub struct ResolvedSlideTheme<'a> {
     pub canvas_background: Cow<'a, str>,
     pub surface_background: Cow<'a, str>,
     pub surface_border: Cow<'a, str>,
-    pub surface_shadow: Cow<'a, str>,
     pub presenter_sidebar_background: Cow<'a, str>,
     pub font_sans: Cow<'a, str>,
     pub font_mono: Cow<'a, str>,
@@ -47,7 +45,6 @@ fn default_theme() -> ResolvedSlideTheme<'static> {
         canvas_background: Cow::Borrowed(DEFAULT_CANVAS_BACKGROUND),
         surface_background: Cow::Borrowed(DEFAULT_SURFACE_BACKGROUND),
         surface_border: Cow::Borrowed(DEFAULT_SURFACE_BORDER),
-        surface_shadow: Cow::Borrowed(DEFAULT_SURFACE_SHADOW),
         presenter_sidebar_background: Cow::Borrowed(DEFAULT_PRESENTER_SIDEBAR_BACKGROUND),
         font_sans: Cow::Borrowed(DEFAULT_FONT_SANS),
         font_mono: Cow::Borrowed(DEFAULT_FONT_MONO),
@@ -78,7 +75,6 @@ pub fn merge_theme<'a>(input: Option<&'a SlideTheme>) -> ResolvedSlideTheme<'a> 
             DEFAULT_SURFACE_BACKGROUND,
         ),
         surface_border: theme_value(input.surface_border.as_ref(), DEFAULT_SURFACE_BORDER),
-        surface_shadow: theme_value(input.surface_shadow.as_ref(), DEFAULT_SURFACE_SHADOW),
         presenter_sidebar_background: theme_value(
             input.presenter_sidebar_background.as_ref(),
             DEFAULT_PRESENTER_SIDEBAR_BACKGROUND,

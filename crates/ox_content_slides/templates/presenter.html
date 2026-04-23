@@ -15,7 +15,6 @@
       --ox-slide-canvas: {{ theme.canvas_background|safe }};
       --ox-slide-surface: {{ theme.surface_background|safe }};
       --ox-slide-surface-border: {{ theme.surface_border|safe }};
-      --ox-slide-surface-shadow: {{ theme.surface_shadow|safe }};
       --ox-slide-sidebar: {{ theme.presenter_sidebar_background|safe }};
       --ox-slide-aspect-ratio: {{ theme.aspect_ratio|safe }};
     }
@@ -24,23 +23,19 @@
     body {
       font-family: var(--ox-slide-font-sans);
       color: var(--ox-slide-text);
-      background: linear-gradient(rgba(17, 24, 39, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(17, 24, 39, 0.05) 1px, transparent 1px), var(--ox-slide-canvas);
-      background-size: 32px 32px, 32px 32px, auto;
+      background: var(--ox-slide-canvas);
     }
     .ox-presenter {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: minmax(0, 2.15fr) minmax(320px, 0.95fr);
-      gap: 12px;
-      padding: 12px;
+      grid-template-columns: minmax(0, 2.45fr) minmax(300px, 0.75fr);
+      gap: 4px;
+      padding: 4px;
     }
     .ox-presenter__panel,
     .ox-presenter__sidebar {
       border: 1px solid var(--ox-slide-surface-border);
-      border-radius: 12px;
       background: var(--ox-slide-surface);
-      box-shadow: var(--ox-slide-surface-shadow);
       overflow: hidden;
     }
     .ox-presenter__panel iframe {
@@ -56,7 +51,7 @@
       background: var(--ox-slide-sidebar);
     }
     .ox-presenter__section {
-      padding: 16px 18px;
+      padding: 16px;
       border-bottom: 1px solid var(--ox-slide-border);
     }
     .ox-presenter__eyebrow {
@@ -88,18 +83,17 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 36px;
-      padding: 0 12px;
-      border-radius: 8px;
+      min-height: 40px;
+      padding: 0 14px;
       border: 1px solid var(--ox-slide-surface-border);
-      background: rgba(255, 255, 255, 0.96);
+      background: var(--ox-slide-surface);
       color: var(--ox-slide-text);
       text-decoration: none;
     }
     .ox-presenter__title {
       margin: 0;
-      font-size: 1.3rem;
-      line-height: 1.08;
+      font-size: 1.45rem;
+      line-height: 1.04;
       letter-spacing: -0.03em;
     }
     .ox-presenter__meta {

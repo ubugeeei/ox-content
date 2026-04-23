@@ -18,7 +18,6 @@
       --ox-slide-canvas: {{ theme.canvas_background|safe }};
       --ox-slide-surface: {{ theme.surface_background|safe }};
       --ox-slide-surface-border: {{ theme.surface_border|safe }};
-      --ox-slide-surface-shadow: {{ theme.surface_shadow|safe }};
       --ox-slide-aspect-ratio: {{ theme.aspect_ratio|safe }};
       --ox-slide-padding: {{ theme.padding|safe }};
       --ox-slide-page-width: {{ page_width|safe }};
@@ -38,7 +37,7 @@
     .ox-slide-print-page {
       width: var(--ox-slide-page-width);
       height: var(--ox-slide-page-height);
-      padding: 0.12in;
+      padding: 0.08in;
       display: grid;
       background: var(--ox-slide-canvas);
       break-after: page;
@@ -56,8 +55,6 @@
       gap: 14px;
       background: var(--ox-slide-surface);
       border: 1px solid var(--ox-slide-surface-border);
-      border-radius: 12px;
-      box-shadow: var(--ox-slide-surface-shadow);
       padding: var(--ox-slide-padding);
       overflow: hidden;
     }

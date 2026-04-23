@@ -18,7 +18,6 @@
       --ox-slide-canvas: {{ theme.canvas_background|safe }};
       --ox-slide-surface: {{ theme.surface_background|safe }};
       --ox-slide-surface-border: {{ theme.surface_border|safe }};
-      --ox-slide-surface-shadow: {{ theme.surface_shadow|safe }};
       --ox-slide-sidebar: {{ theme.presenter_sidebar_background|safe }};
       --ox-slide-aspect-ratio: {{ theme.aspect_ratio|safe }};
       --ox-slide-max-width: {{ theme.max_width|safe }};
@@ -30,19 +29,15 @@
     body {
       font-family: var(--ox-slide-font-sans);
       color: var(--ox-slide-text);
-      background:
-        linear-gradient(rgba(17, 24, 39, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(17, 24, 39, 0.05) 1px, transparent 1px),
-        var(--ox-slide-canvas);
-      background-size: 32px 32px, 32px 32px, auto;
+      background: var(--ox-slide-canvas);
     }
     a { color: inherit; text-decoration: none; }
     .ox-slide-page {
       min-height: 100vh;
-      padding: 12px;
+      padding: 4px;
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 12px;
+      gap: 4px;
     }
     .ox-slide-toolbar,
     .ox-slide-nav {
@@ -52,11 +47,9 @@
       gap: 12px;
       width: min(100%, var(--ox-slide-max-width));
       margin: 0 auto;
-      padding: 10px 12px;
+      padding: 12px 16px;
       border: 1px solid var(--ox-slide-surface-border);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.74);
-      backdrop-filter: blur(20px);
+      background: var(--ox-slide-surface);
     }
     .ox-slide-toolbar__meta {
       display: flex;
@@ -64,7 +57,7 @@
       gap: 12px;
       flex-wrap: wrap;
       color: var(--ox-slide-text-muted);
-      font-size: 0.92rem;
+      font-size: 0.98rem;
       letter-spacing: 0.02em;
     }
     .ox-slide-toolbar__badge,
@@ -73,11 +66,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 38px;
-      padding: 0 14px;
-      border-radius: 8px;
+      min-height: 42px;
+      padding: 0 16px;
       border: 1px solid var(--ox-slide-surface-border);
-      background: rgba(255, 255, 255, 0.96);
+      background: var(--ox-slide-surface);
     }
     .ox-slide-toolbar__badge {
       min-width: 72px;
@@ -93,22 +85,18 @@
       width: min(100%, var(--ox-slide-max-width));
       max-height: var(--ox-slide-max-height);
       aspect-ratio: var(--ox-slide-aspect-ratio);
-      background:
-        linear-gradient(180deg, rgba(17, 24, 39, 0.02) 0, rgba(17, 24, 39, 0.02) 72px, transparent 72px),
-        var(--ox-slide-surface);
+      background: var(--ox-slide-surface);
       border: 1px solid var(--ox-slide-surface-border);
-      box-shadow: var(--ox-slide-surface-shadow);
-      border-radius: 12px;
       padding: var(--ox-slide-padding);
       overflow: auto;
     }
     .ox-slide-content {
       display: grid;
       align-content: start;
-      gap: 0.9rem;
+      gap: 1rem;
       min-height: 100%;
-      font-size: clamp(1.02rem, 1.35vw, 1.48rem);
-      line-height: 1.38;
+      font-size: clamp(1.14rem, 1.5vw, 1.72rem);
+      line-height: 1.42;
     }
     .ox-slide-content h1,
     .ox-slide-content h2,
@@ -121,24 +109,24 @@
       margin: 0;
     }
     .ox-slide-content h1 {
-      max-width: 11ch;
-      font-size: clamp(2.8rem, 5vw, 5.4rem);
-      line-height: 0.92;
+      max-width: 12ch;
+      font-size: clamp(3.6rem, 6vw, 6.6rem);
+      line-height: 0.9;
       letter-spacing: -0.05em;
     }
     .ox-slide-content h2 {
-      max-width: 14ch;
-      font-size: clamp(2.1rem, 3.4vw, 3.4rem);
-      line-height: 0.98;
+      max-width: 16ch;
+      font-size: clamp(2.6rem, 4vw, 4.3rem);
+      line-height: 0.95;
       letter-spacing: -0.04em;
     }
     .ox-slide-content h3 {
-      font-size: clamp(1.4rem, 2vw, 2rem);
+      font-size: clamp(1.6rem, 2.2vw, 2.3rem);
       line-height: 1.08;
     }
     .ox-slide-content p,
     .ox-slide-content li {
-      max-width: 62ch;
+      max-width: 68ch;
     }
     .ox-slide-content ul,
     .ox-slide-content ol {
@@ -151,10 +139,9 @@
       font-size: 0.92em;
     }
     .ox-slide-content pre {
-      padding: 1rem 1.1rem;
+      padding: 1rem 1.15rem;
       border: 1px solid var(--ox-slide-surface-border);
-      border-radius: 10px;
-      background: rgba(17, 24, 39, 0.035);
+      background: #f5f7fa;
       overflow: auto;
     }
     .ox-slide-content img,
@@ -173,15 +160,12 @@
     }
     @media (max-width: 900px) {
       .ox-slide-page {
-        padding: 8px;
-        gap: 8px;
+        padding: 4px;
+        gap: 4px;
       }
       .ox-slide-toolbar,
       .ox-slide-nav {
-        padding: 8px 10px;
-      }
-      .ox-slide-frame {
-        border-radius: 10px;
+        padding: 10px 12px;
       }
     }
   </style>
