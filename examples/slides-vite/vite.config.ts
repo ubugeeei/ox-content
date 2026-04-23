@@ -6,6 +6,7 @@ export default defineConfig({
     oxContentSlides({
       srcDir: "slides",
       routeBase: "slides",
+      pdf: true,
       ssg: {
         clean: true,
         generateOgImage: true,

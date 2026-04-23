@@ -35,6 +35,9 @@ export declare function extractSlideComments(source: string): JsExtractedSlideCo
  */
 export declare function extractTranslationKeys(source: string, filePath: string, functionNames?: Array<string> | undefined | null): Array<I18NKeyUsage>
 
+/** Generates a print-friendly HTML shell for deck-wide PDF export. */
+export declare function generateDeckPrintHtml(data: JsDeckPrintRenderData, theme?: JsSlideTheme | undefined | null): string
+
 /**
  * Generates an OG image as SVG.
  *
@@ -96,6 +99,15 @@ export interface I18NLoadResult {
   locales: Array<string>
   /** Errors encountered during loading. */
   errors: Array<string>
+}
+
+/** Deck-level print shell render data for JavaScript. */
+export interface JsDeckPrintRenderData {
+  deckTitle: string
+  deckDescription?: string
+  pageWidth: string
+  pageHeight: string
+  slides: Array<JsPrintSlideRenderData>
 }
 
 /** Entry page configuration. */
@@ -234,6 +246,14 @@ export interface JsParserOptions {
   strikethrough?: boolean
   /** Enable autolinks. */
   autolinks?: boolean
+}
+
+/** Print shell render data for a single slide. */
+export interface JsPrintSlideRenderData {
+  slideTitle: string
+  slideContentHtml: string
+  slideNumber: number
+  slideCount: number
 }
 
 /** Search document for JavaScript. */

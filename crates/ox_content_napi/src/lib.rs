@@ -18,7 +18,7 @@ use ox_content_docs::{DocExtractor, DocItem, DocItemKind, DocTag, ParamDoc};
 use ox_content_parser::{Parser, ParserOptions};
 use ox_content_renderer::{HtmlRenderer, HtmlRendererOptions};
 use ox_content_search::{DocumentIndexer, SearchIndex, SearchIndexBuilder, SearchOptions};
-use ox_content_slides::{SlideRenderData, SlideTheme};
+use ox_content_slides::{DeckPrintRenderData, PrintSlideRenderData, SlideRenderData, SlideTheme};
 
 const ALLOCATOR_BYTES_PER_INPUT_BYTE: usize = 8;
 const MIN_ALLOCATOR_CAPACITY: usize = 4 * 1024;
@@ -1203,6 +1203,27 @@ pub struct JsSlideRenderData {
     pub next_slide_href: Option<String>,
 }
 
+/// Print shell render data for a single slide.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsPrintSlideRenderData {
+    pub slide_title: String,
+    pub slide_content_html: String,
+    pub slide_number: u32,
+    pub slide_count: u32,
+}
+
+/// Deck-level print shell render data for JavaScript.
+#[napi(object)]
+#[derive(Clone)]
+pub struct JsDeckPrintRenderData {
+    pub deck_title: String,
+    pub deck_description: Option<String>,
+    pub page_width: String,
+    pub page_height: String,
+    pub slides: Vec<JsPrintSlideRenderData>,
+}
+
 fn convert_slide_theme(theme: Option<JsSlideTheme>) -> Option<SlideTheme> {
     theme.map(|t| SlideTheme {
         aspect_ratio: t.aspect_ratio,
@@ -1238,6 +1259,25 @@ fn convert_slide_render_data(data: JsSlideRenderData) -> SlideRenderData {
         previous_href: data.previous_href,
         next_href: data.next_href,
         next_slide_href: data.next_slide_href,
+    }
+}
+
+fn convert_print_slide_render_data(data: JsPrintSlideRenderData) -> PrintSlideRenderData {
+    PrintSlideRenderData {
+        slide_title: data.slide_title,
+        slide_content_html: data.slide_content_html,
+        slide_number: data.slide_number,
+        slide_count: data.slide_count,
+    }
+}
+
+fn convert_deck_print_render_data(data: JsDeckPrintRenderData) -> DeckPrintRenderData {
+    DeckPrintRenderData {
+        deck_title: data.deck_title,
+        deck_description: data.deck_description,
+        page_width: data.page_width,
+        page_height: data.page_height,
+        slides: data.slides.into_iter().map(convert_print_slide_render_data).collect(),
     }
 }
 
@@ -1435,6 +1475,18 @@ pub fn generate_slide_html(data: JsSlideRenderData, theme: Option<JsSlideTheme>)
 pub fn generate_presenter_html(data: JsSlideRenderData, theme: Option<JsSlideTheme>) -> String {
     ox_content_slides::generate_presenter_html(
         &convert_slide_render_data(data),
+        convert_slide_theme(theme).as_ref(),
+    )
+}
+
+/// Generates a print-friendly HTML shell for deck-wide PDF export.
+#[napi]
+pub fn generate_deck_print_html(
+    data: JsDeckPrintRenderData,
+    theme: Option<JsSlideTheme>,
+) -> String {
+    ox_content_slides::generate_deck_print_html(
+        &convert_deck_print_render_data(data),
         convert_slide_theme(theme).as_ref(),
     )
 }

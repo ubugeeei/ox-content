@@ -77,6 +77,23 @@ pub struct SlideRenderData {
     pub next_slide_href: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PrintSlideRenderData {
+    pub slide_title: String,
+    pub slide_content_html: String,
+    pub slide_number: u32,
+    pub slide_count: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeckPrintRenderData {
+    pub deck_title: String,
+    pub deck_description: Option<String>,
+    pub page_width: String,
+    pub page_height: String,
+    pub slides: Vec<PrintSlideRenderData>,
+}
+
 #[derive(Template)]
 #[template(path = "slide.html")]
 struct SlideTemplate<'a> {
@@ -97,6 +114,18 @@ struct SlideTemplate<'a> {
     previous_href_js: String,
     next_href_js: String,
     presenter_href_js: String,
+    theme: &'a ResolvedSlideTheme<'a>,
+}
+
+#[derive(Template)]
+#[template(path = "print.html")]
+struct PrintTemplate<'a> {
+    page_title: &'a str,
+    description: Option<&'a str>,
+    deck_title: &'a str,
+    page_width: &'a str,
+    page_height: &'a str,
+    slides: &'a [PrintSlideRenderData],
     theme: &'a ResolvedSlideTheme<'a>,
 }
 
@@ -382,6 +411,22 @@ pub fn generate_presenter_html(data: &SlideRenderData, theme: Option<&SlideTheme
     .expect("presenter template should render")
 }
 
+pub fn generate_deck_print_html(data: &DeckPrintRenderData, theme: Option<&SlideTheme>) -> String {
+    let theme = merge_theme(theme);
+
+    PrintTemplate {
+        page_title: &data.deck_title,
+        description: data.deck_description.as_deref(),
+        deck_title: &data.deck_title,
+        page_width: &data.page_width,
+        page_height: &data.page_height,
+        slides: &data.slides,
+        theme: &theme,
+    }
+    .render()
+    .expect("deck print template should render")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -415,5 +460,28 @@ description: Demo
         let extracted = extract_slide_comments(source);
         assert_eq!(extracted.notes, vec!["talk track".to_string()]);
         assert!(!extracted.content.contains("notes:"));
+    }
+
+    #[test]
+    fn generates_deck_print_html() {
+        let html = generate_deck_print_html(
+            &DeckPrintRenderData {
+                deck_title: "Deck Title".to_string(),
+                deck_description: Some("Deck Description".to_string()),
+                page_width: "13.333in".to_string(),
+                page_height: "7.5in".to_string(),
+                slides: vec![PrintSlideRenderData {
+                    slide_title: "One".to_string(),
+                    slide_content_html: "<h1>One</h1>".to_string(),
+                    slide_number: 1,
+                    slide_count: 1,
+                }],
+            },
+            None,
+        );
+
+        assert!(html.contains("Deck Title"));
+        assert!(html.contains("13.333in"));
+        assert!(html.contains("<h1>One</h1>"));
     }
 }

@@ -86,6 +86,7 @@ module.exports.parseMarkdownSlideDeck = binding.parseMarkdownSlideDeck;
 module.exports.generateSsgHtml = binding.generateSsgHtml;
 module.exports.generateSlideHtml = binding.generateSlideHtml;
 module.exports.generatePresenterHtml = binding.generatePresenterHtml;
+module.exports.generateDeckPrintHtml = binding.generateDeckPrintHtml;
 module.exports.transformMermaid = binding.transformMermaid;
 module.exports.loadDictionaries = binding.loadDictionaries;
 module.exports.loadDictionariesFlat = binding.loadDictionariesFlat;

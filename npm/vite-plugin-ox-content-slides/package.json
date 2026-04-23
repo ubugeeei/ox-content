@@ -43,7 +43,8 @@
   "dependencies": {
     "@ox-content/napi": "workspace:*",
     "@ox-content/vite-plugin": "workspace:*",
-    "glob": "^11.0.0"
+    "glob": "^11.0.0",
+    "playwright": "^1.59.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

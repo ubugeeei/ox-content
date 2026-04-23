@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
@@ -132,6 +132,12 @@ test.beforeAll(() => {
 });
 
 test.describe("slides VRT", () => {
+  test("build exports a deck pdf", async () => {
+    const pdfPath = path.join(exampleDist, "slides", "deck.pdf");
+    const file = await stat(pdfPath);
+    expect(file.size).toBeGreaterThan(0);
+  });
+
   test("renders the default slide shell", async ({ page }) => {
     await routeBuiltExample(page);
 

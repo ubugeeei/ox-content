@@ -14,6 +14,12 @@ import {
   type ResolvedSsgOptions,
   type SsgOptions,
 } from "@ox-content/vite-plugin";
+import {
+  generateDeckPdfs,
+  resolveSlidePdfOptions,
+  type ResolvedSlidePdfOptions,
+  type SlidePdfOptions,
+} from "./pdf";
 
 export interface SlideThemeConfig {
   aspectRatio?: string;
@@ -61,6 +67,7 @@ export interface OxContentSlidesOptions {
   separator?: string;
   ssg?: SsgOptions | boolean;
   ogImageOptions?: OgImageOptions;
+  pdf?: SlidePdfOptions | boolean;
   theme?: SlideThemeConfig;
   extensions?: string[];
   renderers?: Record<string, SlideSourceRenderer>;
@@ -88,6 +95,7 @@ export interface ResolvedSlidesPluginOptions {
   renderers: Record<string, SlideSourceRenderer>;
   ssg: ResolvedSsgOptions;
   ogImageOptions: ResolvedOgImageOptions;
+  pdf: ResolvedSlidePdfOptions;
   theme: SlideThemeConfig;
   napiTheme: NapiSlideTheme;
   markdown: ResolvedOptions;
@@ -115,6 +123,7 @@ interface NapiSlideDeck {
 interface NapiModule {
   extractSlideComments(source: string): NapiSlideComments;
   parseMarkdownSlideDeck(source: string, separator?: string): NapiSlideDeck;
+  generateDeckPrintHtml(data: NapiDeckPrintRenderData, theme?: NapiSlideTheme): string;
   generateSlideHtml(data: NapiSlideRenderData, theme?: NapiSlideTheme): string;
   generatePresenterHtml(data: NapiSlideRenderData, theme?: NapiSlideTheme): string;
 }
@@ -153,6 +162,21 @@ interface NapiSlideRenderData {
   nextSlideHref?: string;
 }
 
+interface NapiPrintSlideRenderData {
+  slideTitle: string;
+  slideContentHtml: string;
+  slideNumber: number;
+  slideCount: number;
+}
+
+interface NapiDeckPrintRenderData {
+  deckTitle: string;
+  deckDescription?: string;
+  pageWidth: string;
+  pageHeight: string;
+  slides: NapiPrintSlideRenderData[];
+}
+
 interface SlideFileEntry {
   filePath: string;
 }
@@ -179,6 +203,8 @@ interface SlideDeckData {
   description?: string;
   href: string;
   outputPath: string;
+  printOutputPath?: string;
+  pdfOutputPath?: string;
   presenterHref?: string;
   presenterOutputPath?: string;
   slides: SlidePageData[];
@@ -262,6 +288,7 @@ function resolveOptions(options: OxContentSlidesOptions): ResolvedSlidesPluginOp
     renderers: options.renderers ?? {},
     ssg: resolveSsgOptions(options.ssg ?? true),
     ogImageOptions: resolveOgImageOptions(options.ogImageOptions),
+    pdf: resolveSlidePdfOptions(options.pdf),
     theme: options.theme ?? {},
     napiTheme: toNapiTheme(options.theme ?? {}),
     markdown: {} as ResolvedOptions,
@@ -434,6 +461,19 @@ function getDeckOutputPath(
   extension: string,
 ): string {
   return path.join(outDir, routeBase, slug, `index${extension}`);
+}
+
+function getDeckPrintOutputPath(outDir: string, routeBase: string, slug: string): string {
+  return path.join(outDir, routeBase, slug, "print", "index.html");
+}
+
+function getDeckPdfOutputPath(
+  outDir: string,
+  routeBase: string,
+  slug: string,
+  fileName: string,
+): string {
+  return path.join(outDir, routeBase, slug, fileName);
 }
 
 function getSlideOutputPath(
@@ -728,6 +768,12 @@ async function buildSlideDecks(
       description: deckDescription,
       href: getDeckHref(options.base, options.routeBase, slug, options.ssg.extension),
       outputPath: getDeckOutputPath(outDir, options.routeBase, slug, options.ssg.extension),
+      printOutputPath: options.pdf.enabled
+        ? getDeckPrintOutputPath(outDir, options.routeBase, slug)
+        : undefined,
+      pdfOutputPath: options.pdf.enabled
+        ? getDeckPdfOutputPath(outDir, options.routeBase, slug, options.pdf.fileName)
+        : undefined,
       presenterHref: slides[0]?.presenterHref,
       presenterOutputPath: slides[0]?.presenterOutputPath
         ? path.join(outDir, options.routeBase, slug, "presenter", `index${options.ssg.extension}`)
@@ -792,6 +838,27 @@ function buildSlideArtifacts(
   }
 
   return { routes };
+}
+
+function renderDeckPrintHtml(
+  options: ResolvedSlidesPluginOptions,
+  deck: SlideDeckData,
+  napi: NapiModule,
+): string {
+  const data: NapiDeckPrintRenderData = {
+    deckTitle: deck.title,
+    deckDescription: deck.description,
+    pageWidth: options.pdf.pageWidth,
+    pageHeight: options.pdf.pageHeight,
+    slides: deck.slides.map((slide) => ({
+      slideTitle: slide.title,
+      slideContentHtml: slide.contentHtml,
+      slideNumber: slide.slideNumber,
+      slideCount: slide.slideCount,
+    })),
+  };
+
+  return napi.generateDeckPrintHtml(data, options.napiTheme);
 }
 
 function injectViteHmrClient(html: string): string {
@@ -928,6 +995,7 @@ async function buildOutput(
     }
   }
 
+  const pdfTasks: Array<{ htmlPath: string; pdfPath: string }> = [];
   for (const deck of decks) {
     const deckFiles = await Promise.all(
       deck.slides.map(async (slide) => {
@@ -963,6 +1031,21 @@ async function buildOutput(
     );
 
     files.push(...deckFiles.flat());
+
+    if (options.pdf.enabled && deck.printOutputPath && deck.pdfOutputPath) {
+      const printHtml = renderDeckPrintHtml(options, deck, napi);
+      files.push(await writeGeneratedHtml(deck.printOutputPath, printHtml));
+      pdfTasks.push({
+        htmlPath: deck.printOutputPath,
+        pdfPath: deck.pdfOutputPath,
+      });
+    }
+  }
+
+  if (pdfTasks.length > 0) {
+    const pdfResult = await generateDeckPdfs(pdfTasks, outDir, options.pdf);
+    files.push(...pdfResult.files);
+    errors.push(...pdfResult.errors);
   }
 
   return { files, errors };
