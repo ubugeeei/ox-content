@@ -9,12 +9,15 @@ pub(super) fn markdown_parse_diagnostics(
     document: &TextDocumentState,
     block: Option<&FrontmatterBlock>,
 ) -> Vec<Diagnostic> {
-    let (source, offset) = block.map_or((document.text(), 0), |block| {
-        (
-            &document.text()[block.content_start_offset..block.content_end_offset],
-            block.content_start_offset,
-        )
-    });
+    let (source, offset) = block.map_or_else(
+        || (document.text(), 0),
+        |block| {
+            (
+                &document.text()[block.content_start_offset..block.content_end_offset],
+                block.content_start_offset,
+            )
+        },
+    );
 
     let allocator = Allocator::new();
     let parser = Parser::with_options(&allocator, source, ParserOptions::gfm());

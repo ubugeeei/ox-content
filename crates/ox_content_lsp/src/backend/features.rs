@@ -45,7 +45,7 @@ impl Backend {
             .block
             .as_ref()
             .and_then(|block| {
-                self.load_schema(&config).ok().flatten().and_then(|schema| {
+                Self::load_schema(&config).ok().flatten().and_then(|schema| {
                     frontmatter::completion_items(&document, position, block, &schema)
                 })
             })
@@ -90,7 +90,7 @@ impl Backend {
         let document = self.state.document(uri).await?;
         let config = self.resolved_config().await;
         let block = frontmatter::parse_frontmatter(&document).block?;
-        let schema = self.load_schema(&config).ok().flatten()?;
+        let schema = Self::load_schema(&config).ok().flatten()?;
         frontmatter::hover(&block, position, &schema)
     }
 

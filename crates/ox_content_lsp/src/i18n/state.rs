@@ -51,6 +51,7 @@ impl I18nState {
         let mut inner = self.inner.write().await;
         inner.file_keys.insert(file_path.to_string(), usages);
         rebuild_all_keys(&mut inner);
+        drop(inner);
     }
 
     pub async fn remove_file(&self, file_path: &str) {
@@ -60,6 +61,7 @@ impl I18nState {
             uri.to_file_path().map_or(true, |path| path.to_string_lossy() != file_path)
         });
         rebuild_all_keys(&mut inner);
+        drop(inner);
     }
 
     pub async fn add_open_uri(&self, uri: Url) {
@@ -123,14 +125,17 @@ impl I18nState {
 
     pub async fn find_key_definition(&self, key: &str) -> Option<String> {
         let inner = self.inner.read().await;
-        let dict_dir = inner.dict_dir.as_ref()?;
+        let dict_dir = inner.dict_dir.clone()?;
+        let locales: Vec<String> = inner
+            .dict_set
+            .locales()
+            .filter(|locale| inner.dict_set.get(locale).and_then(|dict| dict.get(key)).is_some())
+            .map(String::from)
+            .collect();
+        drop(inner);
         let namespace = key.split('.').next().unwrap_or(key);
 
-        for locale in inner.dict_set.locales() {
-            if inner.dict_set.get(locale).and_then(|dict| dict.get(key)).is_none() {
-                continue;
-            }
-
+        for locale in &locales {
             for ext in ["json", "yaml", "yml"] {
                 let candidate = dict_dir.join(locale).join(format!("{namespace}.{ext}"));
                 if candidate.exists() {

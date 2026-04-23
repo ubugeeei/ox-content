@@ -1,16 +1,11 @@
 import * as vscode from "vscode";
-import {
-  LanguageClient,
-  type LanguageClientOptions,
-} from "vscode-languageclient/node";
+import { LanguageClient, type LanguageClientOptions } from "vscode-languageclient/node";
 
 import { resolveInitializationOptions, resolveServerOptions } from "./config";
 
 let client: LanguageClient | undefined;
 
-export async function startClient(
-  context: vscode.ExtensionContext,
-): Promise<LanguageClient> {
+export async function startClient(context: vscode.ExtensionContext): Promise<LanguageClient> {
   if (client) {
     return client;
   }
@@ -43,9 +38,7 @@ export async function startClient(
   return client;
 }
 
-export async function restartClient(
-  context: vscode.ExtensionContext,
-): Promise<LanguageClient> {
+export async function restartClient(context: vscode.ExtensionContext): Promise<LanguageClient> {
   await stopClient();
   return startClient(context);
 }

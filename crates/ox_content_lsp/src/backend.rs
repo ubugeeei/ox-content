@@ -80,7 +80,7 @@ impl Backend {
         let mut diagnostics = frontmatter
             .block
             .as_ref()
-            .map_or_else(Vec::new, |block| self.frontmatter_diagnostics(block, &config));
+            .map_or_else(Vec::new, |block| Self::frontmatter_diagnostics(block, &config));
         diagnostics
             .extend(diagnostics::markdown_parse_diagnostics(document, frontmatter.block.as_ref()));
         diagnostics
@@ -134,14 +134,13 @@ impl Backend {
     }
 
     fn frontmatter_diagnostics(
-        &self,
         block: &frontmatter::FrontmatterBlock,
         config: &ResolvedConfig,
     ) -> Vec<Diagnostic> {
         let mut diagnostics = block.diagnostics.clone();
-        match self.load_schema(config) {
+        match Self::load_schema(config) {
             Ok(Some(schema)) => {
-                diagnostics.extend(frontmatter::validate_frontmatter(block, &schema))
+                diagnostics.extend(frontmatter::validate_frontmatter(block, &schema));
             }
             Ok(None) => {}
             Err(message) => diagnostics.push(Diagnostic {
@@ -162,7 +161,6 @@ impl Backend {
     }
 
     pub(super) fn load_schema(
-        &self,
         config: &ResolvedConfig,
     ) -> std::result::Result<Option<FrontmatterSchema>, String> {
         let Some(path) = &config.frontmatter_schema else {

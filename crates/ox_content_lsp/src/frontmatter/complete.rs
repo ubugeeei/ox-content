@@ -197,6 +197,7 @@ fn property_snippet(name: &str, property: &FrontmatterSchema) -> String {
     format!("{name}: {}", default_value_snippet(property))
 }
 
+#[allow(clippy::literal_string_with_formatting_args)]
 fn default_value_snippet(property: &FrontmatterSchema) -> String {
     if let Some(default) = &property.default {
         return display_value(default);

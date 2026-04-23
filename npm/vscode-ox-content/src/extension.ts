@@ -1,11 +1,6 @@
 import * as vscode from "vscode";
 
-import {
-  COMMAND_INSERT_CALLOUT,
-  COMMAND_INSERT_CODE_FENCE,
-  COMMAND_INSERT_TABLE,
-  COMMAND_OPEN_PREVIEW,
-} from "./constants";
+import { COMMAND_OPEN_PREVIEW } from "./constants";
 import { insertionCommands } from "./commands";
 import { restartClient, startClient, stopClient } from "./client";
 import { openPreview, refreshAllPreviews, schedulePreviewRefresh } from "./preview";

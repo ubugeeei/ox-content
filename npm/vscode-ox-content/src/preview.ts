@@ -9,9 +9,7 @@ import type { PreviewEntry, PreviewPayload } from "./types";
 const previewEntries = new Map<string, PreviewEntry>();
 const refreshTimers = new Map<string, NodeJS.Timeout>();
 
-export async function openPreview(
-  context: vscode.ExtensionContext,
-): Promise<void> {
+export async function openPreview(context: vscode.ExtensionContext): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.languageId !== "markdown") {
     void vscode.window.showInformationMessage("Open a Markdown or .mdc document first.");
@@ -38,17 +36,17 @@ export async function openPreview(
   await updatePreview(panel, editor.document);
 }
 
-export function schedulePreviewRefresh(
-  document: vscode.TextDocument,
-  dispose = false,
-): void {
+export function schedulePreviewRefresh(document: vscode.TextDocument, dispose = false): void {
   const key = document.uri.toString();
   if (dispose) {
     disposePreview(key);
     return;
   }
 
-  if (!getConfig().get<boolean>("preview.autoRefresh", true) || document.languageId !== "markdown") {
+  if (
+    !getConfig().get<boolean>("preview.autoRefresh", true) ||
+    document.languageId !== "markdown"
+  ) {
     return;
   }
 
@@ -109,10 +107,7 @@ function clearTimer(key: string): void {
 }
 
 function errorHtml(message: string): string {
-  const escaped = message
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  const escaped = message.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 
   return `<!doctype html>
 <html lang="en">

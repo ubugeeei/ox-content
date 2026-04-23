@@ -60,7 +60,7 @@ pub fn display_value(value: &Value) -> String {
 }
 
 pub fn effective_type(schema: &FrontmatterSchema) -> Option<&str> {
-    schema.type_name.as_deref().or_else(|| {
+    schema.type_name.as_deref().or({
         if schema.properties.is_empty() {
             None
         } else {
@@ -103,6 +103,5 @@ pub fn range_for_named_key(block: &FrontmatterBlock, name: &str) -> Range {
         .top_level_keys
         .iter()
         .find(|entry| entry.name == name)
-        .map(|entry| entry.key_range)
-        .unwrap_or(block.content_range)
+        .map_or(block.content_range, |entry| entry.key_range)
 }

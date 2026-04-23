@@ -31,23 +31,16 @@ export function resolveServerOptions(
   };
 }
 
-export function resolveInitializationOptions(
-  workspaceRoot?: string,
-): Record<string, string> {
+export function resolveInitializationOptions(workspaceRoot?: string): Record<string, string> {
   const schemaSetting = getConfig().get<string>("frontmatter.schema", "").trim();
-  return schemaSetting
-    ? { frontmatterSchema: resolveFilePath(schemaSetting, workspaceRoot) }
-    : {};
+  return schemaSetting ? { frontmatterSchema: resolveFilePath(schemaSetting, workspaceRoot) } : {};
 }
 
 function findLocalServerBinary(
   context: vscode.ExtensionContext,
   workspaceRoot?: string,
 ): string | undefined {
-  const binaryName =
-    process.platform === "win32"
-      ? "ox-content-lsp.exe"
-      : "ox-content-lsp";
+  const binaryName = process.platform === "win32" ? "ox-content-lsp.exe" : "ox-content-lsp";
   const candidates = [
     workspaceRoot ? path.join(workspaceRoot, "target", "debug", binaryName) : undefined,
     workspaceRoot ? path.join(workspaceRoot, "target", "release", binaryName) : undefined,

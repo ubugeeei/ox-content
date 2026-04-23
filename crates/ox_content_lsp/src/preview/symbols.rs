@@ -1,7 +1,7 @@
 use ox_content_allocator::Allocator;
 use ox_content_ast::Node;
 use ox_content_parser::{ParseError, Parser, ParserOptions};
-use tower_lsp::lsp_types::{DocumentSymbol, Range, SymbolKind};
+use tower_lsp::lsp_types::{DocumentSymbol, SymbolKind};
 
 use crate::document::TextDocumentState;
 use crate::frontmatter::parse_frontmatter;
@@ -35,10 +35,10 @@ fn collect_symbols(
     for node in nodes {
         match node {
             Node::Heading(heading) => {
-                symbols.push(symbol_for_heading(heading, document, base_offset))
+                symbols.push(symbol_for_heading(heading, document, base_offset));
             }
             Node::BlockQuote(block) => {
-                collect_symbols(&block.children, document, base_offset, symbols)
+                collect_symbols(&block.children, document, base_offset, symbols);
             }
             Node::List(list) => {
                 for item in &list.children {
@@ -65,7 +65,7 @@ fn symbol_for_heading(
         detail: Some(format!("h{}", heading.depth)),
         kind: SymbolKind::STRING,
         range,
-        selection_range: Range { start: range.start, end: range.end },
+        selection_range: range,
         tags: None,
         deprecated: None,
         children: None,

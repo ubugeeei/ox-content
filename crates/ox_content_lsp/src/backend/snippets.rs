@@ -4,6 +4,7 @@ use tower_lsp::lsp_types::{
 
 use crate::document::TextDocumentState;
 
+#[allow(clippy::literal_string_with_formatting_args)]
 pub(super) fn markdown_snippet_items(
     document: &TextDocumentState,
     position: Position,
