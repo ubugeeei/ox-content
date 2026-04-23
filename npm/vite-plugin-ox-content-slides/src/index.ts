@@ -191,7 +191,6 @@ interface SlideRouteData {
 }
 
 interface SlideBuildArtifacts {
-  decks: SlideDeckData[];
   routes: Map<string, SlideRouteData>;
 }
 
@@ -792,7 +791,7 @@ function buildSlideArtifacts(
     }
   }
 
-  return { decks, routes };
+  return { routes };
 }
 
 function injectViteHmrClient(html: string): string {
@@ -876,6 +875,12 @@ async function renderRouteHtml(
   return html;
 }
 
+async function writeGeneratedHtml(outputPath: string, html: string): Promise<string> {
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  await fs.writeFile(outputPath, html, "utf-8");
+  return outputPath;
+}
+
 async function buildOutput(
   options: ResolvedSlidesPluginOptions,
   root: string,
@@ -924,35 +929,40 @@ async function buildOutput(
   }
 
   for (const deck of decks) {
-    for (const slide of deck.slides) {
-      const slideHtml = await renderRouteHtml(options, { deck, slide, presenter: false }, napi);
-      await fs.mkdir(path.dirname(slide.outputPath), { recursive: true });
-      await fs.writeFile(slide.outputPath, slideHtml, "utf-8");
-      files.push(slide.outputPath);
+    const deckFiles = await Promise.all(
+      deck.slides.map(async (slide) => {
+        const generatedFiles: string[] = [];
+        const slideHtml = await renderRouteHtml(options, { deck, slide, presenter: false }, napi);
+        generatedFiles.push(await writeGeneratedHtml(slide.outputPath, slideHtml));
 
-      if (slide.slideNumber === 1) {
-        await fs.mkdir(path.dirname(deck.outputPath), { recursive: true });
-        await fs.writeFile(deck.outputPath, slideHtml, "utf-8");
-        files.push(deck.outputPath);
-      }
-
-      if (options.presenter && slide.presenterOutputPath) {
-        const presenterHtml = await renderRouteHtml(options, {
-          deck,
-          slide,
-          presenter: true,
-        }, napi);
-        await fs.mkdir(path.dirname(slide.presenterOutputPath), { recursive: true });
-        await fs.writeFile(slide.presenterOutputPath, presenterHtml, "utf-8");
-        files.push(slide.presenterOutputPath);
-
-        if (slide.slideNumber === 1 && deck.presenterOutputPath) {
-          await fs.mkdir(path.dirname(deck.presenterOutputPath), { recursive: true });
-          await fs.writeFile(deck.presenterOutputPath, presenterHtml, "utf-8");
-          files.push(deck.presenterOutputPath);
+        if (slide.slideNumber === 1) {
+          generatedFiles.push(await writeGeneratedHtml(deck.outputPath, slideHtml));
         }
-      }
-    }
+
+        if (options.presenter && slide.presenterOutputPath) {
+          const presenterHtml = await renderRouteHtml(
+            options,
+            {
+              deck,
+              slide,
+              presenter: true,
+            },
+            napi,
+          );
+          generatedFiles.push(await writeGeneratedHtml(slide.presenterOutputPath, presenterHtml));
+
+          if (slide.slideNumber === 1 && deck.presenterOutputPath) {
+            generatedFiles.push(
+              await writeGeneratedHtml(deck.presenterOutputPath, presenterHtml),
+            );
+          }
+        }
+
+        return generatedFiles;
+      }),
+    );
+
+    files.push(...deckFiles.flat());
   }
 
   return { files, errors };
