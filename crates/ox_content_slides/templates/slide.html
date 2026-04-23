@@ -158,6 +158,19 @@
       text-align: center;
       color: var(--ox-slide-text-muted);
     }
+    {% if theme.builtin_animations %}
+    @media (prefers-reduced-motion: no-preference) {
+      .ox-slide-toolbar, .ox-slide-nav { animation: ox-slide-fade 280ms ease-out both; }
+      .ox-slide-frame { animation: ox-slide-enter 360ms ease-out both; }
+      .ox-slide-content > * { animation: ox-slide-rise 420ms ease-out both; }
+      .ox-slide-content > :nth-child(2) { animation-delay: 40ms; }
+      .ox-slide-content > :nth-child(3) { animation-delay: 80ms; }
+      .ox-slide-content > :nth-child(n + 4) { animation-delay: 120ms; }
+    }
+    @keyframes ox-slide-fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes ox-slide-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @keyframes ox-slide-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    {% endif %}
     @media (max-width: 900px) {
       .ox-slide-page {
         padding: 4px;

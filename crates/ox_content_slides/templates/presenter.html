@@ -32,18 +32,11 @@
       gap: 4px;
       padding: 4px;
     }
-    .ox-presenter__panel,
-    .ox-presenter__sidebar {
-      border: 1px solid var(--ox-slide-surface-border);
-      background: var(--ox-slide-surface);
-      overflow: hidden;
+    .ox-presenter__panel, .ox-presenter__sidebar {
+      border: 1px solid var(--ox-slide-surface-border); background: var(--ox-slide-surface); overflow: hidden;
     }
     .ox-presenter__panel iframe {
-      display: block;
-      width: 100%;
-      min-height: calc(100vh - 24px);
-      border: 0;
-      background: white;
+      display: block; width: 100%; min-height: calc(100vh - 24px); border: 0; background: white;
     }
     .ox-presenter__sidebar {
       display: grid;
@@ -121,6 +114,15 @@
       margin: 0;
       color: var(--ox-slide-text-muted);
     }
+    {% if theme.builtin_animations %}
+    @media (prefers-reduced-motion: no-preference) {
+      .ox-presenter__panel, .ox-presenter__sidebar, .ox-presenter__section { animation: ox-slide-fade 320ms ease-out both; }
+      .ox-presenter__section:nth-child(2) { animation-delay: 40ms; }
+      .ox-presenter__section:nth-child(3) { animation-delay: 80ms; }
+      .ox-presenter__section:nth-child(4) { animation-delay: 120ms; }
+    }
+    @keyframes ox-slide-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    {% endif %}
     @media (max-width: 1200px) {
       .ox-presenter { grid-template-columns: 1fr; }
       .ox-presenter__panel iframe { min-height: 60vh; }

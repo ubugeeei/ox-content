@@ -6,6 +6,7 @@ pub const DEFAULT_ASPECT_RATIO: &str = "4 / 3";
 pub const DEFAULT_MAX_WIDTH: &str = "min(1740px, calc(100vw - 8px))";
 pub const DEFAULT_MAX_HEIGHT: &str = "calc(100vh - 56px)";
 pub const DEFAULT_PADDING: &str = "clamp(24px, 2.2vw, 38px)";
+pub const DEFAULT_BUILTIN_ANIMATIONS: bool = true;
 pub const DEFAULT_CANVAS_BACKGROUND: &str = "#edf0f4";
 pub const DEFAULT_SURFACE_BACKGROUND: &str = "#ffffff";
 pub const DEFAULT_SURFACE_BORDER: &str = "#cfd6df";
@@ -24,6 +25,7 @@ pub struct ResolvedSlideTheme<'a> {
     pub max_width: Cow<'a, str>,
     pub max_height: Cow<'a, str>,
     pub padding: Cow<'a, str>,
+    pub builtin_animations: bool,
     pub canvas_background: Cow<'a, str>,
     pub surface_background: Cow<'a, str>,
     pub surface_border: Cow<'a, str>,
@@ -42,6 +44,7 @@ fn default_theme() -> ResolvedSlideTheme<'static> {
         max_width: Cow::Borrowed(DEFAULT_MAX_WIDTH),
         max_height: Cow::Borrowed(DEFAULT_MAX_HEIGHT),
         padding: Cow::Borrowed(DEFAULT_PADDING),
+        builtin_animations: DEFAULT_BUILTIN_ANIMATIONS,
         canvas_background: Cow::Borrowed(DEFAULT_CANVAS_BACKGROUND),
         surface_background: Cow::Borrowed(DEFAULT_SURFACE_BACKGROUND),
         surface_border: Cow::Borrowed(DEFAULT_SURFACE_BORDER),
@@ -69,6 +72,7 @@ pub fn merge_theme<'a>(input: Option<&'a SlideTheme>) -> ResolvedSlideTheme<'a> 
         max_width: theme_value(input.max_width.as_ref(), DEFAULT_MAX_WIDTH),
         max_height: theme_value(input.max_height.as_ref(), DEFAULT_MAX_HEIGHT),
         padding: theme_value(input.padding.as_ref(), DEFAULT_PADDING),
+        builtin_animations: input.builtin_animations.unwrap_or(DEFAULT_BUILTIN_ANIMATIONS),
         canvas_background: theme_value(input.canvas_background.as_ref(), DEFAULT_CANVAS_BACKGROUND),
         surface_background: theme_value(
             input.surface_background.as_ref(),

@@ -60,6 +60,8 @@ export interface OxContentSlidesOptions {
   outDir?: string;
   base?: string;
   routeBase?: string;
+  /** Enables the built-in shell animations for slide and presenter pages. */
+  animations?: boolean;
   presenter?: boolean;
   separator?: string;
   ssg?: SsgOptions | boolean;

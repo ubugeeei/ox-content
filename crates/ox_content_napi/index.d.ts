@@ -329,6 +329,7 @@ export interface JsSlideTheme {
   maxWidth?: string
   maxHeight?: string
   padding?: string
+  builtinAnimations?: boolean
   canvasBackground?: string
   surfaceBackground?: string
   surfaceBorder?: string

@@ -9,6 +9,7 @@ describe("resolveOptions", () => {
     expect(options.routeBase).toBe("slides");
     expect(options.routePrefix).toBe("/slides");
     expect(options.baseHref).toBe("/");
+    expect(options.animations).toBe(true);
     expect(options.presenter).toBe(true);
     expect(options.pdf.enabled).toBe(false);
   });
@@ -17,6 +18,7 @@ describe("resolveOptions", () => {
     const options = resolveOptions({
       base: "/docs",
       routeBase: "/decks/",
+      animations: false,
       pdf: {
         fileName: "talk.pdf",
         pageWidth: "10in",
@@ -28,6 +30,8 @@ describe("resolveOptions", () => {
     expect(options.baseHref).toBe("/docs/");
     expect(options.routeBase).toBe("decks");
     expect(options.routePrefix).toBe("/decks");
+    expect(options.animations).toBe(false);
+    expect(options.napiTheme.builtinAnimations).toBe(false);
     expect(options.pdf.enabled).toBe(true);
     expect(options.pdf.fileName).toBe("talk.pdf");
     expect(options.pdf.scale).toBe(2);

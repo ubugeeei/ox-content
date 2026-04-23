@@ -158,9 +158,9 @@ fn option_href_parts(value: Option<&String>) -> (bool, &str) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{DeckPrintRenderData, PrintSlideRenderData};
+    use crate::{DeckPrintRenderData, PrintSlideRenderData, SlideRenderData, SlideTheme};
 
-    use super::generate_deck_print_html;
+    use super::{generate_deck_print_html, generate_slide_html};
 
     #[test]
     fn generates_deck_print_html() {
@@ -183,5 +183,29 @@ mod tests {
         assert!(html.contains("Deck Title"));
         assert!(html.contains("13.333in"));
         assert!(html.contains("<h1>One</h1>"));
+    }
+
+    #[test]
+    fn omits_builtin_animation_css_when_opted_out() {
+        let html = generate_slide_html(
+            &SlideRenderData {
+                deck_title: "Deck Title".to_string(),
+                slide_title: "Slide Title".to_string(),
+                slide_description: None,
+                slide_content_html: "<h1>Hello</h1>".to_string(),
+                slide_notes_html: None,
+                slide_number: 1,
+                slide_count: 1,
+                home_href: "/slides/".to_string(),
+                slide_href: "/slides/1/".to_string(),
+                presenter_href: None,
+                previous_href: None,
+                next_href: None,
+                next_slide_href: None,
+            },
+            Some(&SlideTheme { builtin_animations: Some(false), ..SlideTheme::default() }),
+        );
+
+        assert!(!html.contains("@keyframes ox-slide-enter"));
     }
 }

@@ -21,6 +21,7 @@ export interface ResolvedSlidesPluginOptions extends Omit<
   baseHref: string;
   routeBase: string;
   routePrefix: string;
+  animations: boolean;
   presenter: boolean;
   separator: string;
   extensions: string[];
@@ -66,6 +67,7 @@ export interface NapiSlideTheme {
   maxWidth?: string;
   maxHeight?: string;
   padding?: string;
+  builtinAnimations?: boolean;
   canvasBackground?: string;
   surfaceBackground?: string;
   surfaceBorder?: string;

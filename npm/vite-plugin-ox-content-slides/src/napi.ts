@@ -16,12 +16,13 @@ export async function loadNapiModule(): Promise<NapiModule> {
 /**
  * Converts plugin theme config into the N-API shape.
  */
-export function toNapiTheme(theme: SlideThemeConfig): NapiSlideTheme {
+export function toNapiTheme(theme: SlideThemeConfig, animations = true): NapiSlideTheme {
   return {
     aspectRatio: theme.aspectRatio,
     maxWidth: theme.maxWidth,
     maxHeight: theme.maxHeight,
     padding: theme.padding,
+    builtinAnimations: animations,
     canvasBackground: theme.canvasBackground,
     surfaceBackground: theme.surfaceBackground,
     surfaceBorder: theme.surfaceBorder,

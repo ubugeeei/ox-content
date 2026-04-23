@@ -29,6 +29,7 @@ pub struct SlideTheme {
     pub max_width: Option<String>,
     pub max_height: Option<String>,
     pub padding: Option<String>,
+    pub builtin_animations: Option<bool>,
     pub canvas_background: Option<String>,
     pub surface_background: Option<String>,
     pub surface_border: Option<String>,

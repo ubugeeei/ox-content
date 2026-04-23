@@ -22,6 +22,7 @@ export function resolveOptions(options: OxContentSlidesOptions): ResolvedSlidesP
     baseHref: base.endsWith("/") ? base : `${base}/`,
     routeBase,
     routePrefix: `/${routeBase}`,
+    animations: options.animations ?? true,
     presenter: options.presenter ?? true,
     separator: options.separator ?? "---",
     extensions: [
@@ -32,7 +33,7 @@ export function resolveOptions(options: OxContentSlidesOptions): ResolvedSlidesP
     ogImageOptions: resolveOgImageOptions(options.ogImageOptions),
     pdf: resolveSlidePdfOptions(options.pdf),
     theme: options.theme ?? {},
-    napiTheme: toNapiTheme(options.theme ?? {}),
+    napiTheme: toNapiTheme(options.theme ?? {}, options.animations ?? true),
     markdown: {} as ResolvedOptions,
     gfm: options.gfm ?? true,
     footnotes: options.footnotes ?? true,
