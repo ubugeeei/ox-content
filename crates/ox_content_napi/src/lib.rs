@@ -6,6 +6,7 @@
 mod highlight;
 mod lint;
 mod mdast;
+mod slides;
 
 use napi::bindgen_prelude::*;
 use napi::Task;
@@ -22,6 +23,8 @@ use ox_content_search::{DocumentIndexer, SearchIndex, SearchIndexBuilder, Search
 
 const ALLOCATOR_BYTES_PER_INPUT_BYTE: usize = 8;
 const MIN_ALLOCATOR_CAPACITY: usize = 4 * 1024;
+
+pub use slides::*;
 
 fn create_allocator_for_source(source: &str) -> Allocator {
     let capacity =

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-04-22T15:40:02.878Z",
+  "generatedAt": "2026-04-23T07:08:06.559Z",
   "modules": [
     {
       "file": "npm/vite-plugin-ox-content/src/dev-server.ts",
@@ -1417,7 +1417,9 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": ["```tsx\n<div>{raw('<strong>Bold</strong>')}</div>\n```"],
+          "examples": [
+            "```tsx\n<div>{raw('<strong>Bold</strong>')}</div>\n```"
+          ],
           "private": false,
           "file": "npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 262,
@@ -1444,7 +1446,9 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": ["```tsx\n{when(isLoggedIn, <UserMenu />)}\n```"],
+          "examples": [
+            "```tsx\n{when(isLoggedIn, <UserMenu />)}\n```"
+          ],
           "private": false,
           "file": "npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 274,
@@ -1471,12 +1475,275 @@
             "type": "JSXNode",
             "description": ""
           },
-          "examples": ["```tsx\n{each(items, (item) => <li>{item.name}</li>)}\n```"],
+          "examples": [
+            "```tsx\n{each(items, (item) => <li>{item.name}</li>)}\n```"
+          ],
           "private": false,
           "file": "npm/vite-plugin-ox-content/src/jsx-runtime.ts",
           "line": 286,
           "endLine": 289,
           "signature": "export function each<T>(items: T[], render: (item: T, index: number) => JSXNode): JSXNode"
+        }
+      ]
+    },
+    {
+      "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+      "entries": [
+        {
+          "name": "MarkdownLintFileOptions",
+          "kind": "interface",
+          "description": "File-oriented Markdown lint options for end-user configuration.\nThis extends the content-level lint options with project-level targeting,\nso consumers can decide which files should be checked and which paths should\nbe ignored.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+          "line": 22,
+          "endLine": 45,
+          "signature": "export interface MarkdownLintFileOptions extends MarkdownLintOptions"
+        },
+        {
+          "name": "MarkdownLintFileDiagnostic",
+          "kind": "interface",
+          "description": "A lint diagnostic annotated with file metadata.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+          "line": 50,
+          "endLine": 53,
+          "signature": "export interface MarkdownLintFileDiagnostic extends MarkdownLintDiagnostic"
+        },
+        {
+          "name": "MarkdownLintFileResult",
+          "kind": "interface",
+          "description": "Lint result for a single file.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+          "line": 58,
+          "endLine": 62,
+          "signature": "export interface MarkdownLintFileResult extends MarkdownLintResult"
+        },
+        {
+          "name": "MarkdownLintFilesResult",
+          "kind": "interface",
+          "description": "Aggregated lint result for multiple files.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+          "line": 67,
+          "endLine": 74,
+          "signature": "export interface MarkdownLintFilesResult"
+        },
+        {
+          "name": "shouldLintMarkdownFile",
+          "kind": "function",
+          "description": "Returns true if the file path is included by the configured glob filters.",
+          "params": [
+            {
+              "name": "filePath",
+              "type": "string",
+              "description": ""
+            },
+            {
+              "name": "param",
+              "type": "unknown",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "boolean",
+            "description": ""
+          },
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+          "line": 91,
+          "endLine": 97,
+          "signature": "export function shouldLintMarkdownFile(filePath: string, options: MarkdownLintFileOptions = {}): boolean"
+        },
+        {
+          "name": "lintMarkdownFile",
+          "kind": "function",
+          "description": "Lints a single Markdown file using project-style include/exclude settings.\nIf the file is filtered out by `include` / `exclude`, the returned result is\nmarked as `skipped` and contains no diagnostics.",
+          "params": [
+            {
+              "name": "filePath",
+              "type": "string",
+              "description": ""
+            },
+            {
+              "name": "param",
+              "type": "unknown",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise",
+            "description": ""
+          },
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+          "line": 105,
+          "endLine": 114,
+          "signature": "export async function lintMarkdownFile(filePath: string, options: MarkdownLintFileOptions = {}): Promise<MarkdownLintFileResult>"
+        },
+        {
+          "name": "lintMarkdownFiles",
+          "kind": "function",
+          "description": "Lints all Markdown files matched by the configured include/exclude patterns.",
+          "params": [
+            {
+              "name": "param",
+              "type": "unknown",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise",
+            "description": ""
+          },
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint-files.ts",
+          "line": 119,
+          "endLine": 156,
+          "signature": "export async function lintMarkdownFiles(options: MarkdownLintFileOptions = {}): Promise<MarkdownLintFilesResult>"
+        }
+      ]
+    },
+    {
+      "file": "npm/vite-plugin-ox-content/src/lint.ts",
+      "entries": [
+        {
+          "name": "MarkdownLintStandardDictionaryOptions",
+          "kind": "interface",
+          "description": "Opt-in standard dictionary sources.\nThe default provider uses CSpell dictionary packages because those packages\nare actively maintained and expose locale-specific dictionaries in a stable\nconfig format. Languages without a bundled preset can still be added through\ncustom `imports`.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 35,
+          "endLine": 66,
+          "signature": "export interface MarkdownLintStandardDictionaryOptions"
+        },
+        {
+          "name": "MarkdownLintDictionaryOptions",
+          "kind": "interface",
+          "description": "Additional dictionary configuration for the Markdown linter.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 71,
+          "endLine": 94,
+          "signature": "export interface MarkdownLintDictionaryOptions"
+        },
+        {
+          "name": "MarkdownLintRuleOptions",
+          "kind": "interface",
+          "description": "Rule switches for Markdown linting.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 99,
+          "endLine": 141,
+          "signature": "export interface MarkdownLintRuleOptions"
+        },
+        {
+          "name": "MarkdownLintOptions",
+          "kind": "interface",
+          "description": "Options for linting Markdown documents.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 146,
+          "endLine": 166,
+          "signature": "export interface MarkdownLintOptions"
+        },
+        {
+          "name": "MarkdownLintDiagnostic",
+          "kind": "interface",
+          "description": "A single Markdown lint diagnostic.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 171,
+          "endLine": 216,
+          "signature": "export interface MarkdownLintDiagnostic"
+        },
+        {
+          "name": "MarkdownLintResult",
+          "kind": "interface",
+          "description": "Markdown lint report.",
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 221,
+          "endLine": 241,
+          "signature": "export interface MarkdownLintResult"
+        },
+        {
+          "name": "lintMarkdown",
+          "kind": "function",
+          "description": "Lints Markdown prose with the Rust-backed built-in rule engine.",
+          "params": [
+            {
+              "name": "source",
+              "type": "string",
+              "description": ""
+            },
+            {
+              "name": "param",
+              "type": "unknown",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "MarkdownLintResult",
+            "description": ""
+          },
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 291,
+          "endLine": 297,
+          "signature": "export function lintMarkdown(source: string, options: MarkdownLintOptions = {}): MarkdownLintResult"
+        },
+        {
+          "name": "lintMarkdownAsync",
+          "kind": "function",
+          "description": "Async Markdown linter that supports opt-in standard dictionaries.",
+          "params": [
+            {
+              "name": "source",
+              "type": "string",
+              "description": ""
+            },
+            {
+              "name": "param",
+              "type": "unknown",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise",
+            "description": ""
+          },
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 302,
+          "endLine": 309,
+          "signature": "export async function lintMarkdownAsync(source: string, options: MarkdownLintOptions = {}): Promise<MarkdownLintResult>"
+        },
+        {
+          "name": "lintMarkdownDocumentsAsync",
+          "kind": "function",
+          "description": "Internal batched Markdown linting entry point used by file-based workflows.",
+          "params": [
+            {
+              "name": "sources",
+              "type": "string[]",
+              "description": ""
+            },
+            {
+              "name": "param",
+              "type": "unknown",
+              "description": ""
+            }
+          ],
+          "returns": {
+            "type": "Promise",
+            "description": ""
+          },
+          "private": false,
+          "file": "npm/vite-plugin-ox-content/src/lint.ts",
+          "line": 314,
+          "endLine": 320,
+          "signature": "export async function lintMarkdownDocumentsAsync(sources: string[], options: MarkdownLintOptions = {}): Promise<MarkdownLintResult[]>"
         }
       ]
     },

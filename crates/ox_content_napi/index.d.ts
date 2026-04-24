@@ -25,12 +25,18 @@ export declare function extractFileDocs(filePath: string, includePrivate?: boole
  */
 export declare function extractSearchContent(source: string, id: string, url: string, options?: JsParserOptions | undefined | null): JsSearchDocument
 
+/** Extracts HTML comment-based speaker notes from a slide source. */
+export declare function extractSlideComments(source: string): JsExtractedSlideComments
+
 /**
  * Extracts translation keys from a TypeScript/JavaScript source string.
  *
  * Finds calls like `t('key')` and `$t('key')`.
  */
 export declare function extractTranslationKeys(source: string, filePath: string, functionNames?: Array<string> | undefined | null): Array<I18NKeyUsage>
+
+/** Generates a print-friendly HTML shell for deck-wide PDF export. */
+export declare function generateDeckPrintHtml(data: JsDeckPrintRenderData, theme?: JsSlideTheme | undefined | null): string
 
 /**
  * Generates an OG image as SVG.
@@ -39,6 +45,12 @@ export declare function extractTranslationKeys(source: string, filePath: string,
  * that can be used for social media previews.
  */
 export declare function generateOgImageSvg(data: JsOgImageData, config?: JsOgImageConfig | undefined | null): string
+
+/** Generates the presenter-mode HTML shell for a slide page. */
+export declare function generatePresenterHtml(data: JsSlideRenderData, theme?: JsSlideTheme | undefined | null): string
+
+/** Generates the standalone HTML shell for a slide page. */
+export declare function generateSlideHtml(data: JsSlideRenderData, theme?: JsSlideTheme | undefined | null): string
 
 /** Generates SSG HTML page with navigation and search. */
 export declare function generateSsgHtml(pageData: JsSsgPageData, navGroups: Array<JsSsgNavGroup>, config: JsSsgConfig): string
@@ -89,12 +101,27 @@ export interface I18NLoadResult {
   errors: Array<string>
 }
 
+/** Deck-level print shell render data for JavaScript. */
+export interface JsDeckPrintRenderData {
+  deckTitle: string
+  deckDescription?: string
+  pageWidth: string
+  pageHeight: string
+  slides: Array<JsPrintSlideRenderData>
+}
+
 /** Entry page configuration. */
 export interface JsEntryPageConfig {
   /** Hero section. */
   hero?: JsHeroConfig
   /** Feature cards. */
   features?: Array<JsFeatureConfig>
+}
+
+/** Extracted slide comments result for JavaScript. */
+export interface JsExtractedSlideComments {
+  content: string
+  notes: Array<string>
 }
 
 /** Feature card for entry page. */
@@ -246,6 +273,12 @@ export interface JsOgImageData {
   author?: string
 }
 
+/** Parsed Markdown slide deck for JavaScript. */
+export interface JsParsedSlideDeck {
+  frontmatter: string
+  slides: Array<JsSlideSource>
+}
+
 /** Parser options for JavaScript. */
 export interface JsParserOptions {
   /** Enable GFM extensions. */
@@ -260,6 +293,14 @@ export interface JsParserOptions {
   strikethrough?: boolean
   /** Enable autolinks. */
   autolinks?: boolean
+}
+
+/** Print shell render data for a single slide. */
+export interface JsPrintSlideRenderData {
+  slideTitle: string
+  slideContentHtml: string
+  slideNumber: number
+  slideCount: number
 }
 
 /** Search document for JavaScript. */
@@ -304,6 +345,60 @@ export interface JsSearchResult {
   matches: Array<string>
   /** Content snippet. */
   snippet: string
+}
+
+/** Slide page render data for JavaScript. */
+export interface JsSlideRenderData {
+  deckTitle: string
+  slideTitle: string
+  slideDescription?: string
+  slideContentHtml: string
+  slideNotesHtml?: string
+  slideNumber: number
+  slideCount: number
+  homeHref: string
+  slideHref: string
+  presenterHref?: string
+  previousHref?: string
+  nextHref?: string
+  nextSlideHref?: string
+}
+
+/** A parsed slide source for JavaScript. */
+export interface JsSlideSource {
+  content: string
+  notes: Array<string>
+}
+
+/** Slide theme configuration for JavaScript. */
+export interface JsSlideTheme {
+  aspectRatio?: string
+  maxWidth?: string
+  maxHeight?: string
+  padding?: string
+  surfaceRadius?: string
+  codeBackground?: string
+  builtinAnimations?: boolean
+  canvasBackground?: string
+  surfaceBackground?: string
+  surfaceBorder?: string
+  surfaceShadow?: string
+  presenterSidebarBackground?: string
+  fontSans?: string
+  fontMono?: string
+  colorText?: string
+  colorTextMuted?: string
+  colorPrimary?: string
+  colorBorder?: string
+  darkCanvasBackground?: string
+  darkSurfaceBackground?: string
+  darkSurfaceBorder?: string
+  darkPresenterSidebarBackground?: string
+  darkCodeBackground?: string
+  darkColorText?: string
+  darkColorTextMuted?: string
+  darkColorPrimary?: string
+  darkColorBorder?: string
 }
 
 /** Social links for JavaScript. */
@@ -600,6 +695,9 @@ export declare function parseAndRender(source: string, options?: JsParserOptions
 
 /** Parses Markdown and renders to HTML asynchronously (runs on worker thread). */
 export declare function parseAndRenderAsync(source: string, options?: JsParserOptions | undefined | null): Promise<unknown>
+
+/** Parses a Markdown slide deck with optional frontmatter and `---` separators. */
+export declare function parseMarkdownSlideDeck(source: string, separator?: string | undefined | null): JsParsedSlideDeck
 
 /** Parse result containing the AST as JSON. */
 export interface ParseResult {

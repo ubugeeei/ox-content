@@ -12,119 +12,127 @@ export interface NavItem {
 
 export const apiNav: NavItem[] = [
   {
-    title: "Browser",
-    path: "/api/browser",
+    "title": "Browser",
+    "path": "/api/browser"
   },
   {
-    title: "Cache",
-    path: "/api/cache",
+    "title": "Cache",
+    "path": "/api/cache"
   },
   {
-    title: "Dev Server",
-    path: "/api/dev-server",
+    "title": "Dev Server",
+    "path": "/api/dev-server"
   },
   {
-    title: "Docs",
-    path: "/api/docs",
+    "title": "Docs",
+    "path": "/api/docs"
   },
   {
-    title: "Environment",
-    path: "/api/environment",
+    "title": "Environment",
+    "path": "/api/environment"
   },
   {
-    title: "Github",
-    path: "/api/github",
+    "title": "Github",
+    "path": "/api/github"
   },
   {
-    title: "Highlight",
-    path: "/api/highlight",
+    "title": "Highlight",
+    "path": "/api/highlight"
   },
   {
-    title: "I18n",
-    path: "/api/i18n",
+    "title": "I18n",
+    "path": "/api/i18n"
   },
   {
-    title: "Jsx Runtime",
-    path: "/api/jsx-runtime",
+    "title": "Jsx Runtime",
+    "path": "/api/jsx-runtime"
   },
   {
-    title: "Mermaid",
-    path: "/api/mermaid",
+    "title": "Lint",
+    "path": "/api/lint"
   },
   {
-    title: "Mermaid Protect",
-    path: "/api/mermaid-protect",
+    "title": "Lint Files",
+    "path": "/api/lint-files"
   },
   {
-    title: "Nav Generator",
-    path: "/api/nav-generator",
+    "title": "Mermaid",
+    "path": "/api/mermaid"
   },
   {
-    title: "Ogp",
-    path: "/api/ogp",
+    "title": "Mermaid Protect",
+    "path": "/api/mermaid-protect"
   },
   {
-    title: "Overview",
-    path: "/api/index",
+    "title": "Nav Generator",
+    "path": "/api/nav-generator"
   },
   {
-    title: "Overview",
-    path: "/api/index",
+    "title": "Ogp",
+    "path": "/api/ogp"
   },
   {
-    title: "Overview",
-    path: "/api/index",
+    "title": "Overview",
+    "path": "/api/index"
   },
   {
-    title: "Page Context",
-    path: "/api/page-context",
+    "title": "Overview",
+    "path": "/api/index"
   },
   {
-    title: "Parse",
-    path: "/api/parse",
+    "title": "Overview",
+    "path": "/api/index"
   },
   {
-    title: "Renderer",
-    path: "/api/renderer",
+    "title": "Page Context",
+    "path": "/api/page-context"
   },
   {
-    title: "Search",
-    path: "/api/search",
+    "title": "Parse",
+    "path": "/api/parse"
   },
   {
-    title: "Ssg",
-    path: "/api/ssg",
+    "title": "Renderer",
+    "path": "/api/renderer"
   },
   {
-    title: "Tabs",
-    path: "/api/tabs",
+    "title": "Search",
+    "path": "/api/search"
   },
   {
-    title: "Template",
-    path: "/api/template",
+    "title": "Ssg",
+    "path": "/api/ssg"
   },
   {
-    title: "Theme",
-    path: "/api/theme",
+    "title": "Tabs",
+    "path": "/api/tabs"
   },
   {
-    title: "Theme Renderer",
-    path: "/api/theme-renderer",
+    "title": "Template",
+    "path": "/api/template"
   },
   {
-    title: "Transform",
-    path: "/api/transform",
+    "title": "Theme",
+    "path": "/api/theme"
   },
   {
-    title: "Types",
-    path: "/api/types",
+    "title": "Theme Renderer",
+    "path": "/api/theme-renderer"
   },
   {
-    title: "Types",
-    path: "/api/types",
+    "title": "Transform",
+    "path": "/api/transform"
   },
   {
-    title: "Youtube",
-    path: "/api/youtube",
+    "title": "Types",
+    "path": "/api/types"
   },
+  {
+    "title": "Types",
+    "path": "/api/types"
+  },
+  {
+    "title": "Youtube",
+    "path": "/api/youtube"
+  }
 ] as const;
