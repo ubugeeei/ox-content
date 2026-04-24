@@ -507,19 +507,20 @@ The Vite plugin supports HMR for Markdown files:
 
 ### Parse and Render Speed
 
-Latest local benchmark sweep on 2026-04-22 with Node `v24.15.0` on Apple M5 Pro. The tables below show median results from 7 local runs of the benchmark harness for the large 48.7 KB case.
+Latest local benchmark sweep on 2026-04-24 with Node `v24.15.0` on Apple M5 Pro. The tables below show median results from 7 local runs of the benchmark harness for the large 48.7 KB case.
 
 | Library             | Parse Only (48.7 KB) | Parse + Render (48.7 KB) |
 | ------------------- | -------------------: | -----------------------: |
-| `@ox-content/napi`  |         2933 ops/sec |             3273 ops/sec |
-| `Bun.markdown.html` |                    - |             2848 ops/sec |
-| `md4w (md4c)`       |         1054 ops/sec |             2608 ops/sec |
-| `markdown-it`       |          807 ops/sec |              787 ops/sec |
-| `marked`            |          512 ops/sec |              489 ops/sec |
-| `micromark`         |                    - |               44 ops/sec |
-| `remark`            |           42 ops/sec |               36 ops/sec |
+| `@ox-content/napi`  |         2607 ops/sec |             3143 ops/sec |
+| `Bun.markdown.html` |                    - |             2879 ops/sec |
+| `md4x (napi)`       |          856 ops/sec |             2645 ops/sec |
+| `md4w (md4c)`       |          782 ops/sec |             1866 ops/sec |
+| `markdown-it`       |          629 ops/sec |              526 ops/sec |
+| `marked`            |          336 ops/sec |              305 ops/sec |
+| `micromark`         |                    - |               29 ops/sec |
+| `remark`            |           28 ops/sec |               24 ops/sec |
 
-This benchmark uses `node benchmarks/bundle-size/parse-benchmark.mjs`. The comparison set now includes `md4w (md4c)` by default, and `Bun.markdown.html` is measured automatically when `bun` is available on the host.
+This benchmark uses `node benchmarks/bundle-size/parse-benchmark.mjs`. The comparison set now includes `md4w (md4c)` and `md4x (napi)` by default, and `Bun.markdown.html` is measured automatically when `bun` is available on the host.
 
 ## Security Considerations
 
