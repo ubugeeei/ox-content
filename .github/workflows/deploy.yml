@@ -41,17 +41,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Build Rust documentation
-        run: cargo doc --workspace --no-deps
-
       - name: Install Chromium for mermaid-cli
         run: vp exec --filter @ox-content/vite-plugin -- puppeteer browsers install chrome-headless-shell
 
-      - name: Build documentation site
-        run: vp run dev-build
-
-      - name: Build playground
-        working-directory: examples/playground
+      - name: Build
         run: vp build
 
       - name: Prepare deployment directory

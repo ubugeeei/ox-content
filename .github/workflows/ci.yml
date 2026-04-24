@@ -10,11 +10,18 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  lint-rust:
-    name: Lint (Rust)
+  check:
+    name: Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: true
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -24,45 +31,11 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Check formatting
-        run: cargo fmt --all -- --check
+      - name: Check
+        run: vp check
 
-      - name: Run clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
-
-  check-ts:
-    name: Check (JS/TS)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: true
-
-      - name: Check (Vite+)
-        run: vp run check:ts
-
-  test-rust:
-    name: Test (Rust)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-
-      - name: Run tests
-        run: cargo test --workspace
-
-  test-ts:
-    name: Test (TypeScript)
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -79,15 +52,12 @@ jobs:
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
-
-      - name: Build NAPI
-        run: vp run build:napi
 
       - name: Install Playwright browsers
         run: vp exec --filter @ox-content/vite-plugin -- playwright install --with-deps chromium
 
       - name: Run tests
-        run: vp run test:ts
+        run: vp run test
 
   build:
     name: Build
@@ -111,8 +81,5 @@ jobs:
       - name: Install Chromium for mermaid-cli
         run: vp exec --filter @ox-content/vite-plugin -- puppeteer browsers install chrome-headless-shell
 
-      - name: Build documentation site
-        run: vp run dev-build
-
-      - name: Check JS/TS
-        run: vp run check:ts
+      - name: Build
+        run: vp build
