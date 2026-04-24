@@ -533,6 +533,18 @@ fn normalize_code_block_info(lang: Option<&str>, meta: Option<&str>) -> Normaliz
     NormalizedCodeBlockInfo { language, meta: meta_parts.join(" ") }
 }
 
+fn normalize_code_block_language(lang: Option<&str>) -> Option<&str> {
+    let raw_lang = lang.map(str::trim).filter(|value| !value.is_empty())?;
+    let (language, _) = split_code_block_language_token(raw_lang);
+    let language = language.trim();
+
+    if language.is_empty() {
+        None
+    } else {
+        Some(language)
+    }
+}
+
 fn apply_annotation_numbers(
     lines: &mut [CodeLineRenderState],
     line_numbers: &[usize],
@@ -1208,6 +1220,19 @@ impl<'a> Visit<'a> for HtmlRenderer {
     }
 
     fn visit_code_block(&mut self, code_block: &CodeBlock<'a>) {
+        if !self.options.code_annotations {
+            self.write("<pre><code");
+            if let Some(lang) = normalize_code_block_language(code_block.lang) {
+                self.write(" class=\"language-");
+                self.write_escaped(lang);
+                self.write("\"");
+            }
+            self.write(">");
+            self.write_escaped(code_block.value);
+            self.write("</code></pre>\n");
+            return;
+        }
+
         let state = self.build_code_block_state(code_block);
         let block_classes = state.block_classes();
 
@@ -1302,8 +1327,12 @@ impl<'a> Visit<'a> for HtmlRenderer {
 
     fn visit_link(&mut self, link: &Link<'a>) {
         self.write("<a href=\"");
-        let url = self.convert_md_url(link.url);
-        self.write_url_escaped(&url);
+        if self.options.convert_md_links {
+            let url = self.convert_md_url(link.url);
+            self.write_url_escaped(&url);
+        } else {
+            self.write_url_escaped(link.url);
+        }
         self.write("\"");
         // Add target="_blank" for external links (http:// or https://)
         if link.url.starts_with("http://") || link.url.starts_with("https://") {

@@ -156,38 +156,60 @@ impl<'a> Parser<'a> {
         }
 
         let start = self.position;
+        let line = self.remaining().lines().next().unwrap_or("");
+        let trimmed = line.trim_start();
+        let first = trimmed.as_bytes().first().copied();
 
         // Try to parse different block types
-        if self.try_parse_heading() {
-            return self.parse_heading(start);
+        match first {
+            Some(b'#') if self.try_parse_heading() => return self.parse_heading(start),
+            Some(b'-' | b'*') => {
+                if self.try_parse_thematic_break() {
+                    return self.parse_thematic_break(start);
+                }
+                if self.try_parse_list() {
+                    return self.parse_list(start);
+                }
+            }
+            Some(b'_') if self.try_parse_thematic_break() => {
+                return self.parse_thematic_break(start);
+            }
+            Some(b'>') => return self.parse_block_quote(start),
+            Some(b'`' | b'~') if self.try_parse_fenced_code() => {
+                return self.parse_fenced_code(start);
+            }
+            Some(b'<') if self.try_parse_html_block() => return self.parse_html_block(start),
+            Some(b'+' | b'0'..=b'9') if self.try_parse_list() => {
+                return self.parse_list(start);
+            }
+            _ => {}
         }
 
-        if self.try_parse_thematic_break() {
-            return self.parse_thematic_break(start);
-        }
-
-        if self.try_parse_block_quote() {
-            return self.parse_block_quote(start);
-        }
-
-        if self.try_parse_fenced_code() {
-            return self.parse_fenced_code(start);
-        }
-
-        if self.try_parse_html_block() {
-            return self.parse_html_block(start);
-        }
-
-        if self.options.tables && self.try_parse_table() {
+        if self.options.tables && line.contains('|') && self.try_parse_table() {
             return self.parse_table(start);
-        }
-
-        if self.try_parse_list() {
-            return self.parse_list(start);
         }
 
         // Default: parse as paragraph
         self.parse_paragraph(start)
+    }
+
+    fn line_starts_block(&self) -> bool {
+        let line = self.remaining().lines().next().unwrap_or("");
+        let trimmed = line.trim_start();
+        let first = trimmed.as_bytes().first().copied();
+
+        let starts_block = match first {
+            Some(b'#') => self.try_parse_heading(),
+            Some(b'-' | b'*') => self.try_parse_thematic_break() || self.try_parse_list(),
+            Some(b'_') => self.try_parse_thematic_break(),
+            Some(b'>') => self.try_parse_block_quote(),
+            Some(b'`' | b'~') => self.try_parse_fenced_code(),
+            Some(b'<') => self.try_parse_html_block(),
+            Some(b'+' | b'0'..=b'9') => self.try_parse_list(),
+            _ => false,
+        };
+
+        starts_block || (self.options.tables && line.contains('|') && self.try_parse_table())
     }
 
     fn try_parse_html_block(&self) -> bool {
@@ -913,14 +935,7 @@ impl<'a> Parser<'a> {
             self.position = line_start;
 
             // Check for block-level element that would end paragraph
-            if self.try_parse_heading()
-                || self.try_parse_thematic_break()
-                || self.try_parse_block_quote()
-                || self.try_parse_fenced_code()
-                || self.try_parse_html_block()
-                || (self.options.tables && self.try_parse_table())
-                || self.try_parse_list()
-            {
+            if self.line_starts_block() {
                 break;
             }
 
