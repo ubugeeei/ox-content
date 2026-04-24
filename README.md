@@ -188,11 +188,10 @@ The script now compares against `md4w (md4c)` by default and will include `Bun.m
 ```bash
 nix develop           # Enter the pinned dev shell
 vp install             # Install JS dependencies through Vite+
-vp run build:napi      # Build NAPI bindings
-vp run build:npm       # Build npm packages
-vp run build:wasm      # Build publish-ready @ox-content/wasm package
-cargo check -p ox_content_lsp
-vp run test            # Run tests
+vp fmt                 # Format Rust and JS/TS sources
+vp check               # Check Rust and JS/TS sources
+vp dev                 # Start the docs and playground dev servers
+vp build               # Build Rust, npm packages, docs, and playground
 ```
 
 The dev shell is pinned in `flake.nix`, the workspace task graph lives in `vite.config.ts`, and `.node-version` is kept for CI / non-Nix Node setup.
