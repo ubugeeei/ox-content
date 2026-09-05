@@ -7,6 +7,7 @@ import { build } from "vite";
 import { describe, expect, it } from "vite-plus/test";
 import packageJson from "../package.json" with { type: "json" };
 import {
+  createSolidHtmlHostDomRenderer,
   createSolidHtmlHostLazyHydrate,
   initSolidHtmlHost,
   readSolidHtmlHostSlot,
@@ -36,8 +37,13 @@ describe("Solid HTML host browser client", () => {
       await fs.writeFile(
         path.join(root, "entry.js"),
         [
-          'import { createSolidHtmlHostLazyHydrate } from "@ox-content/vite-plugin-solid/html-host/client";',
-          "console.log(typeof createSolidHtmlHostLazyHydrate);",
+          'import { createSolidHtmlHostDomRenderer, initSolidHtmlHost } from "@ox-content/vite-plugin-solid/html-host/client";',
+          "const controller = initSolidHtmlHost({",
+          "  initIslands: () => ({ destroy() {} }),",
+          "  modules: {},",
+          "  mount: { mode: 'render' },",
+          "});",
+          "console.log(typeof controller, typeof createSolidHtmlHostDomRenderer);",
         ].join("\n"),
       );
 
@@ -66,12 +72,17 @@ describe("Solid HTML host browser client", () => {
       const bundle = bundleCode(output);
 
       expect(bundle).not.toContain("@ox-content/vite-plugin");
-      expect(bundle).not.toContain("node:");
+      expect(bundle).not.toMatch(/\b(?:from|import)\s*\(?["']node:/);
       expect(bundle).not.toContain("fsevents");
       expect(bundle).not.toContain("resvg");
     } finally {
       await fs.rm(root, { force: true, recursive: true });
     }
+  });
+
+  it("creates explicit DOM renderers for fresh render and hydration", () => {
+    expect(typeof createSolidHtmlHostDomRenderer({ mode: "render" })).toBe("function");
+    expect(typeof createSolidHtmlHostDomRenderer({ mode: "hydrate" })).toBe("function");
   });
 
   it("loads distinct document-scoped modules for reused local component names", async () => {

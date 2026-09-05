@@ -47,7 +47,7 @@ export interface SolidHtmlHostClientContext<TRuntime = undefined> {
 
 export type SolidHtmlHostClientRenderer<TRuntime = undefined> = (
   context: SolidHtmlHostClientContext<TRuntime>,
-) => void | (() => void);
+) => void | (() => void) | PromiseLike<void | (() => void)>;
 
 export type SolidHtmlHostClientRuntimeLoader<TRuntime = undefined> = () =>
   | TRuntime
@@ -63,13 +63,43 @@ export type SolidHtmlHostExportNameResolver = (
   context: { componentName: string; moduleId: string; props: Record<string, unknown> },
 ) => string | undefined;
 
-export interface CreateSolidHtmlHostLazyHydrateInput<TRuntime = undefined> {
+export interface SolidHtmlHostClientBaseInput<TRuntime = undefined> {
   modules: SolidHtmlHostClientModules;
-  render: SolidHtmlHostClientRenderer<TRuntime>;
   loadRuntime?: SolidHtmlHostClientRuntimeLoader<TRuntime>;
   resolveModuleId?: SolidHtmlHostModuleIdResolver;
   resolveExportName?: SolidHtmlHostExportNameResolver;
   onError?: (error: SolidHtmlHostClientError) => void;
+}
+
+export interface CreateSolidHtmlHostLazyHydrateRenderInput<
+  TRuntime = undefined,
+> extends SolidHtmlHostClientBaseInput<TRuntime> {
+  render: SolidHtmlHostClientRenderer<TRuntime>;
+  mount?: never;
+}
+
+export interface CreateSolidHtmlHostLazyHydrateMountInput extends SolidHtmlHostClientBaseInput<SolidHtmlHostDomRuntime> {
+  mount: SolidHtmlHostDomRendererInput;
+  render?: never;
+}
+
+export type CreateSolidHtmlHostLazyHydrateInput<TRuntime = undefined> =
+  | CreateSolidHtmlHostLazyHydrateRenderInput<TRuntime>
+  | CreateSolidHtmlHostLazyHydrateMountInput;
+
+export type SolidHtmlHostDomMode = "render" | "hydrate";
+
+export interface SolidHtmlHostDomRendererInput {
+  mode: SolidHtmlHostDomMode;
+}
+
+export interface SolidHtmlHostDomRuntime {
+  createComponent: (
+    component: SolidHtmlHostClientComponentValue,
+    props: Record<string, unknown>,
+  ) => unknown;
+  render: (code: () => unknown, element: HTMLElement) => () => void;
+  hydrate: (code: () => unknown, element: HTMLElement) => () => void;
 }
 
 export type SolidHtmlHostInitIslands<TController = unknown> = (
@@ -77,9 +107,8 @@ export type SolidHtmlHostInitIslands<TController = unknown> = (
   options?: InitIslandsOptions,
 ) => TController;
 
-export interface InitSolidHtmlHostInput<
-  TRuntime = undefined,
-> extends CreateSolidHtmlHostLazyHydrateInput<TRuntime> {
-  initIslands: SolidHtmlHostInitIslands;
-  options?: InitIslandsOptions;
-}
+export type InitSolidHtmlHostInput<TRuntime = undefined> =
+  CreateSolidHtmlHostLazyHydrateInput<TRuntime> & {
+    initIslands: SolidHtmlHostInitIslands;
+    options?: InitIslandsOptions;
+  };

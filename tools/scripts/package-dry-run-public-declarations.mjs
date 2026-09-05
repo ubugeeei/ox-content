@@ -260,9 +260,14 @@ function valueUsage(entry, prefix) {
 
   return [
     `const hydrate = ${prefix}createSolidHtmlHostLazyHydrate({ modules: {}, render: () => {} });`,
+    `const domRenderer = ${prefix}createSolidHtmlHostDomRenderer({ mode: "render" });`,
+    `const domHydrate = ${prefix}createSolidHtmlHostLazyHydrate({ modules: {}, mount: { mode: "render" } });`,
+    `void ${prefix}loadSolidHtmlHostDomRuntime;`,
     `${prefix}readSolidHtmlHostSlot({ dataset: {}, innerHTML: "" });`,
     `${prefix}initSolidHtmlHost({ initIslands: () => undefined, modules: {}, render: () => {} });`,
     "void hydrate;",
+    "void domRenderer;",
+    "void domHydrate;",
   ].join("\n");
 }
 
