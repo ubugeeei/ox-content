@@ -5,7 +5,7 @@ import type {
   OxContentCustomHostRenderResult,
   OxContentCustomHostRoute,
 } from "./custom-host-types";
-import { resultBody, shouldTransformHtml } from "./custom-host-utils";
+import { dependencyPath, resultBody, shouldTransformHtml } from "./custom-host-utils";
 
 export async function responseFromResult(
   result: OxContentCustomHostRenderResult | Response,
@@ -31,14 +31,14 @@ export async function responseFromResult(
   const contentType = result.contentType ?? headers.get("content-type") ?? "text/html";
   headers.set("content-type", contentType);
   for (const dep of result.dependencies ?? []) {
-    headers.append("x-ox-content-dependencies", dep);
+    headers.append("x-ox-content-dependencies", dependencyPath(dep));
   }
 
   let body = resultBody(result);
   if (typeof body === "string" && shouldTransformHtml(contentType, transformHtml)) {
     body = await server.transformIndexHtml(routePath, body);
   }
-  return new Response(body, {
+  return new Response(responseBody(body), {
     headers,
     status: result.status ?? 200,
     statusText: result.statusText,
@@ -54,6 +54,13 @@ export async function renderRoute(
   const url = new URL(request.url);
   const result = await route.render({ ...baseContext, route, request, url });
   return result || undefined;
+}
+
+function responseBody(body: string | Uint8Array): BodyInit {
+  if (typeof body === "string") {
+    return body;
+  }
+  return body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer;
 }
 
 export async function normalizeRenderResult(

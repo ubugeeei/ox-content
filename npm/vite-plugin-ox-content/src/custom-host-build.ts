@@ -3,6 +3,7 @@ import * as path from "node:path";
 import type { ResolvedConfig, ViteDevServer } from "vite";
 import { writeSelfHostedAssets } from "./assets";
 import { createAssetsContext, readClientManifest, writeThemeTokens } from "./custom-host-assets";
+import { writeCustomHostCollectionAssets } from "./custom-host-collection-assets";
 import {
   createBaseContext,
   createHostLoaderServer,
@@ -62,7 +63,11 @@ export async function runCustomHostBuild(
     const rendered = await renderBuildRoutes(host, routes, baseContext, input, loaderServer);
 
     await writeThemeTokens(outDir, themeTokens);
-    await writeCoordinatedOutputs(rendered, options, rawOptions, root, outDir);
+    const collectionAssets = await writeCustomHostCollectionAssets(
+      input.collectionAssets,
+      baseContext,
+    );
+    await writeCoordinatedOutputs(rendered, options, rawOptions, root, outDir, collectionAssets);
   } finally {
     await loaderServer.close();
   }
@@ -106,6 +111,7 @@ async function writeCoordinatedOutputs(
   rawOptions: OxContentOptions,
   root: string,
   outDir: string,
+  collectionAssets: { files: string[] },
 ): Promise<void> {
   const pages = routes.flatMap((entry): SsgOutputPageInput[] => {
     if (!isHtmlContentType(entry.contentType)) {
@@ -122,6 +128,10 @@ async function writeCoordinatedOutputs(
         description: entry.result.description ?? entry.route.description,
         loc: entry.result.loc,
         lastUpdated: entry.result.lastUpdated,
+        lastUpdatedPaths: [
+          ...(entry.route.lastUpdatedPaths ?? []),
+          ...(entry.result.lastUpdatedPaths ?? []),
+        ],
         draft: entry.result.draft ?? entry.route.draft,
         unlisted: entry.result.unlisted ?? entry.route.unlisted,
         frontmatter: entry.result.frontmatter ?? entry.route.frontmatter,
@@ -184,6 +194,7 @@ async function writeCoordinatedOutputs(
     routes.length +
     selfHostedAssets.files.length +
     resources.files.length +
+    collectionAssets.files.length +
     redirects.files.length +
     markdown.files.length +
     feeds.files.length +

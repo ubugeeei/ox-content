@@ -1024,6 +1024,10 @@ export type {
   OxContentCustomHostAssetsContext,
   OxContentCustomHostBaseContext,
   OxContentCustomHostBuildOptions,
+  OxContentCustomHostCollectionAssetsContext,
+  OxContentCustomHostCollectionAssetsOptions,
+  OxContentCustomHostDependency,
+  OxContentCustomHostDependencyDescriptor,
   OxContentCustomHostDevOptions,
   OxContentCustomHostModule,
   OxContentCustomHostNotFoundContext,
@@ -1304,6 +1308,7 @@ export {
   writeFeedFiles,
   writeSiteMapFiles,
   resolveGitLastmod,
+  resolveGitLastmods,
 } from "./ssg-output";
 export type {
   PlanSsgOutputsInput,

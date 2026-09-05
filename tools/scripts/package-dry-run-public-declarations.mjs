@@ -240,19 +240,38 @@ function valueUsage(entry, prefix) {
       `const customPlugin = ${prefix}createOxContentCustomHostPlugin(customOptions);`,
       `const customOxOptions = ${prefix}customHostOxContentOptions();`,
       `const customStyles = customAssets.stylesheets({ modules: ["/src/Island.ts"] });`,
+      'const customDependency: OxContentCustomHostDependency = { path: "content/guide", kind: "directory" };',
+      'const customCollectionAssets: OxContentCustomHostCollectionAssetsOptions = { manifest: { assets: [] }, watch: [customDependency], ownedPrefixes: ["/assets/content"] };',
       "customAssets.document({ islandStyles: customStyles.stylesheets });",
+      "const customRoute: OxContentCustomHostRoute = {",
+      '  path: "/guide",',
+      '  inputPath: "content/guide.md",',
+      '  lastUpdatedPaths: ["src/site-owner.ts", "content/guide"],',
+      "  dependencies: [customDependency],",
+      '  render: () => ({ html: "<h1>Guide</h1>", lastUpdatedPaths: ["src/guide.ts"] }),',
+      "};",
+      'const customResult: OxContentCustomHostRenderResult = { html: "<h1>Guide</h1>", lastUpdatedPaths: ["src/guide.ts"] };',
       "const customDeps: string[] = customStyles.dependencies;",
+      "const customLastmodSources: readonly string[] | undefined = customRoute.lastUpdatedPaths;",
+      "void customResult.lastUpdatedPaths;",
+      "void customCollectionAssets;",
       "void customPlugin;",
       "void customOxOptions;",
       "void customDeps;",
+      "void customLastmodSources;",
     ].join("\n");
   }
 
   return [
     `const hydrate = ${prefix}createSolidHtmlHostLazyHydrate({ modules: {}, render: () => {} });`,
+    `const domRenderer = ${prefix}createSolidHtmlHostDomRenderer({ mode: "render" });`,
+    `const domHydrate = ${prefix}createSolidHtmlHostLazyHydrate({ modules: {}, mount: { mode: "render" } });`,
+    `void ${prefix}loadSolidHtmlHostDomRuntime;`,
     `${prefix}readSolidHtmlHostSlot({ dataset: {}, innerHTML: "" });`,
     `${prefix}initSolidHtmlHost({ initIslands: () => undefined, modules: {}, render: () => {} });`,
     "void hydrate;",
+    "void domRenderer;",
+    "void domHydrate;",
   ].join("\n");
 }
 

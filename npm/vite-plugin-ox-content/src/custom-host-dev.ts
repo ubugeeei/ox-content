@@ -1,15 +1,16 @@
 import type { ViteDevServer } from "vite";
 import { createAssetsContext, themeTokenMiddleware } from "./custom-host-assets";
+import { createCustomHostCollectionAssetsDevController } from "./custom-host-collection-assets";
 import {
   createBaseContext,
   loadHost,
   loadRoutes,
   normalizeHostModuleId,
 } from "./custom-host-loader";
-import { renderRoute, responseFromResult } from "./custom-host-render";
+import { createTrackedContext, devResponse } from "./custom-host-dev-response";
 import type {
   DevCacheEntry,
-  OxContentCustomHostBaseContext,
+  OxContentCustomHostDependency,
   OxContentCustomHostModule,
   OxContentCustomHostOptions,
   OxContentCustomHostRoute,
@@ -19,19 +20,21 @@ import {
   canonicalFilePath,
   clearKeyDeps,
   connectRequestToRequest,
-  deserializeResponse,
   invalidateViteModules,
-  normalizeDependencies,
-  normalizeRoutePath,
   patchServerClose,
-  resolveDependency,
   resolveOutDir,
-  serializeResponse,
-  stripBasePathname,
   versionedModuleId,
   writeConnectResponse,
 } from "./custom-host-utils";
 import type { ResolvedOptions } from "./types";
+import {
+  anyCustomHostDependencyMatches,
+  broadDependencies,
+  dependencyWatchPaths,
+  exactDependencyKeys,
+  normalizeCustomHostDependencies,
+  type NormalizedCustomHostDependency,
+} from "./custom-host-watch";
 
 export function configureDevServer(
   server: ViteDevServer,
@@ -56,9 +59,31 @@ export function configureDevServer(
   const cache = new Map<string, DevCacheEntry>();
   const keyDeps = new Map<string, Set<string>>();
   const depKeys = new Map<string, Set<string>>();
+  const keyBroadDeps = new Map<string, NormalizedCustomHostDependency[]>();
+  const globalDependencies = normalizeCustomHostDependencies(root, input.dev?.dependencies);
+  const configuredRouteDependencies = normalizeCustomHostDependencies(
+    root,
+    input.dev?.routeDependencies,
+  );
+  let routeCatalogueDependencies = [...configuredRouteDependencies];
   let hostPromise: Promise<OxContentCustomHostModule> | undefined;
   let routesPromise: Promise<readonly OxContentCustomHostRoute[]> | undefined;
+  let routesGeneration = 0;
   let reloadTimer: ReturnType<typeof setTimeout> | undefined;
+  const addedWatchPaths = new Set<string>();
+
+  const addWatchPaths = (paths: readonly string[]) => {
+    const nextPaths = paths.filter((watchPath) => !addedWatchPaths.has(watchPath));
+    if (nextPaths.length === 0) {
+      return;
+    }
+    server.watcher.add(nextPaths);
+    for (const watchPath of nextPaths) {
+      addedWatchPaths.add(watchPath);
+    }
+  };
+
+  addWatchPaths(dependencyWatchPaths([...globalDependencies, ...configuredRouteDependencies]));
 
   const scheduleReload = () => {
     const delay = input.dev?.reloadDebounceMs ?? 80;
@@ -73,46 +98,103 @@ export function configureDevServer(
 
   const clearKey = (key: string) => {
     cache.delete(key);
-    for (const dep of keyDeps.get(key) ?? []) {
-      const keys = depKeys.get(dep);
-      keys?.delete(key);
-      if (keys?.size === 0) {
-        depKeys.delete(dep);
-      }
-    }
-    keyDeps.delete(key);
+    clearKeyDeps(key, keyDeps, depKeys);
+    keyBroadDeps.delete(key);
   };
 
-  const rememberDeps = (key: string, dependencies: readonly string[]) => {
+  const clearResponses = () => {
+    cache.clear();
+    keyDeps.clear();
+    depKeys.clear();
+    keyBroadDeps.clear();
+  };
+
+  const rememberDeps = (key: string, dependencies: readonly OxContentCustomHostDependency[]) => {
     clearKeyDeps(key, keyDeps, depKeys);
-    const normalized = new Set(
-      dependencies.map((dependency) => resolveDependency(root, dependency)),
-    );
-    keyDeps.set(key, normalized);
-    for (const dep of normalized) {
+    keyBroadDeps.delete(key);
+
+    const normalized = normalizeCustomHostDependencies(root, dependencies);
+    addWatchPaths(dependencyWatchPaths(normalized));
+    const exact = new Set(exactDependencyKeys(normalized));
+    keyDeps.set(key, exact);
+    for (const dep of exact) {
       const keys = depKeys.get(dep) ?? new Set<string>();
       keys.add(key);
       depKeys.set(dep, keys);
+    }
+    const broad = broadDependencies(normalized);
+    if (broad.length > 0) {
+      keyBroadDeps.set(key, broad);
     }
   };
 
   const clearHost = () => {
     hostPromise = undefined;
     routesPromise = undefined;
-    cache.clear();
-    keyDeps.clear();
-    depKeys.clear();
+    routesGeneration += 1;
+    routeCatalogueDependencies = [...configuredRouteDependencies];
+    clearResponses();
+  };
+
+  const clearRoutes = () => {
+    routesPromise = undefined;
+    routesGeneration += 1;
+    routeCatalogueDependencies = [...configuredRouteDependencies];
+    clearResponses();
   };
 
   const loadCachedHost = async () => {
-    hostPromise ??= loadHost(input.host, loadModule, root);
+    if (!hostPromise) {
+      const current = loadHost(input.host, loadModule, root).catch((error) => {
+        if (hostPromise === current) {
+          hostPromise = undefined;
+        }
+        throw error;
+      });
+      hostPromise = current;
+    }
     return hostPromise;
   };
 
   const loadCachedRoutes = async () => {
-    routesPromise ??= loadCachedHost().then((host) => loadRoutes(host, baseContext));
+    if (!routesPromise) {
+      const generation = routesGeneration;
+      const trackedDependencies = new Set<OxContentCustomHostDependency>();
+      const context = createTrackedContext(baseContext, server, trackedDependencies);
+      const current = loadCachedHost()
+        .then((host) => loadRoutes(host, context))
+        .then((routes) => {
+          if (routesPromise === current && routesGeneration === generation) {
+            const inferred = normalizeCustomHostDependencies(root, [...trackedDependencies]);
+            routeCatalogueDependencies = [...configuredRouteDependencies, ...inferred];
+            addWatchPaths(dependencyWatchPaths(routeCatalogueDependencies));
+          }
+          return routes;
+        })
+        .catch((error) => {
+          if (routesPromise === current) {
+            routesPromise = undefined;
+          }
+          throw error;
+        });
+      routesPromise = current;
+    }
     return routesPromise;
   };
+
+  const collectionAssets = createCustomHostCollectionAssetsDevController({
+    server,
+    options: input.collectionAssets,
+    context: baseContext,
+    beforeReplan(file) {
+      ssrVersion += 1;
+      invalidateViteModules(server, file, true);
+    },
+    onReplanned() {
+      clearResponses();
+      scheduleReload();
+    },
+  });
 
   const onChange = (_event: string, file: string) => {
     const changed = canonicalFilePath(file);
@@ -124,10 +206,32 @@ export function configureDevServer(
       return;
     }
 
+    collectionAssets?.invalidate(changed);
+
+    if (anyCustomHostDependencyMatches(routeCatalogueDependencies, changed)) {
+      ssrVersion += 1;
+      invalidateViteModules(server, changed, true);
+      clearRoutes();
+      scheduleReload();
+      return;
+    }
+
     let invalidated = false;
-    for (const key of depKeys.get(changed) ?? []) {
+    if (anyCustomHostDependencyMatches(globalDependencies, changed)) {
+      clearResponses();
+      invalidated = true;
+    }
+    for (const key of [...(depKeys.get(changed) ?? [])]) {
       clearKey(key);
       invalidated = true;
+    }
+    for (const [key, dependencies] of [...keyBroadDeps]) {
+      if (
+        dependencies.some((dependency) => anyCustomHostDependencyMatches([dependency], changed))
+      ) {
+        clearKey(key);
+        invalidated = true;
+      }
     }
     if (invalidated) {
       ssrVersion += 1;
@@ -144,6 +248,9 @@ export function configureDevServer(
   server.watcher.on("change", onFileChange);
   server.watcher.on("unlink", onUnlink);
   server.middlewares.use(themeTokenMiddleware(themeTokens));
+  if (collectionAssets) {
+    server.middlewares.use(collectionAssets.middleware);
+  }
   server.middlewares.use(async (req, res, next) => {
     const request = connectRequestToRequest(req);
     if (!request || (request.method !== "GET" && request.method !== "HEAD")) {
@@ -184,90 +291,11 @@ export function configureDevServer(
     cache.clear();
     keyDeps.clear();
     depKeys.clear();
-  });
-}
-
-async function devResponse(input: {
-  request: Request;
-  server: ViteDevServer;
-  input: OxContentCustomHostOptions;
-  context: OxContentCustomHostBaseContext;
-  loadHost(): Promise<OxContentCustomHostModule>;
-  loadRoutes(): Promise<readonly OxContentCustomHostRoute[]>;
-  cache: Map<string, DevCacheEntry>;
-  rememberDeps(key: string, dependencies: readonly string[]): void;
-}): Promise<Response | undefined> {
-  const url = new URL(input.request.url);
-  const routePath = normalizeRoutePath(
-    stripBasePathname(url.pathname, input.context.base) ?? url.pathname,
-  );
-  const routes = await input.loadRoutes();
-  const route = routes.find((candidate) => normalizeRoutePath(candidate.path) === routePath);
-  const host = await input.loadHost();
-
-  if (!route) {
-    const result = await host.notFound?.({ ...input.context, request: input.request, url });
-    if (!result) {
-      return undefined;
+    keyBroadDeps.clear();
+    collectionAssets?.close();
+    if (addedWatchPaths.size > 0) {
+      server.watcher.unwatch([...addedWatchPaths]);
+      addedWatchPaths.clear();
     }
-    return responseFromResult(result, routePath, input.server, input.input.dev?.transformHtml);
-  }
-
-  const key = `${input.request.method}\0${routePath}\0${url.search}`;
-  let entry = input.cache.get(key);
-  if (!entry) {
-    const current: DevCacheEntry = {
-      promise: renderDevResponse(input, route, host, routePath)
-        .then((serialized) => {
-          if (serialized && input.cache.get(key) === current) {
-            input.rememberDeps(key, serialized.dependencies);
-          }
-          return serialized;
-        })
-        .catch((error) => {
-          if (input.cache.get(key) === current) {
-            input.cache.delete(key);
-          }
-          throw error;
-        }),
-    };
-    entry = current;
-    input.cache.set(key, entry);
-  }
-
-  const serialized = await entry.promise;
-  if (!serialized) {
-    return undefined;
-  }
-  return deserializeResponse(serialized, input.request.method === "HEAD");
-}
-
-async function renderDevResponse(
-  input: {
-    request: Request;
-    server: ViteDevServer;
-    input: OxContentCustomHostOptions;
-    context: OxContentCustomHostBaseContext;
-  },
-  route: OxContentCustomHostRoute,
-  host: OxContentCustomHostModule,
-  routePath: string,
-) {
-  const result = await renderRoute(host, route, input.context, input.request);
-  if (!result) {
-    return undefined;
-  }
-  const response = await responseFromResult(
-    result,
-    routePath,
-    input.server,
-    input.input.dev?.transformHtml,
-  );
-  const dependencies = [
-    ...normalizeDependencies(input.context.root, route.dependencies),
-    ...(result instanceof Response
-      ? []
-      : normalizeDependencies(input.context.root, result.dependencies)),
-  ];
-  return serializeResponse(response, dependencies);
+  });
 }

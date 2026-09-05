@@ -11,9 +11,9 @@ import type {
   WriteFeedFilesInput,
 } from "./feeds";
 import { writeMarkdownSourceFiles, type WriteMarkdownSourceFilesInput } from "./markdown-source";
-import { importNapiModuleSync } from "./napi";
 import { PageResourceError, createResourceDedupeStore, processPageResources } from "./resources";
 import type { WriteSiteMapFilesInput } from "./site-maps";
+import { resolveGitLastmod, resolveGitLastmods } from "./ssg-output-lastmod";
 import type { ResolvedResourcesOptions } from "./types";
 
 /** One host-rendered page that may receive resource fingerprinting. */
@@ -98,24 +98,6 @@ export function writeMarkdownCompanions(
   return writeMarkdownSourceFiles(input);
 }
 
-/**
- * Git last-commit time for `filePath` in milliseconds.
- *
- * Same lookup `buildSsg()` uses for `ssg.lastUpdated` and sitemap `<lastmod>`.
- * Returns `undefined` when `root` is missing, Git has no history, or NAPI is unavailable.
- */
-export function resolveGitLastmod(filePath: string, root?: string): number | undefined {
-  if (!root) {
-    return undefined;
-  }
-  try {
-    const value = importNapiModuleSync().getGitLastUpdated(filePath, root);
-    return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 export type {
   FeedItemInput,
   RenderedFeedFile,
@@ -125,6 +107,7 @@ export type {
   WriteMarkdownSourceFilesInput,
   WriteSiteMapFilesInput,
 };
+export { resolveGitLastmod, resolveGitLastmods };
 
 function clonePage(page: WriteResourceFilesPage): WriteResourceFilesPage {
   return { html: page.html, inputPath: page.inputPath, outputPath: page.outputPath };

@@ -70,6 +70,7 @@ fn javascript_wrapper_and_declarations_cover_expected_exports() {
         "generateSsgHtmlPages",
         "getGitContributors",
         "getGitLastUpdated",
+        "getGitLastUpdatedMany",
         "getSearchDocumentScopes",
         "getSsgHref",
         "getSsgOutputPath",

@@ -53,6 +53,7 @@ describe("public export surface", () => {
       "renderDocumentAssets",
       "renderMarkdown",
       "resolveGitLastmod",
+      "resolveGitLastmods",
       "resolveCollectionsOptions",
       "renderHtmlToReactCreateElement",
       "renderHtmlToVueH",

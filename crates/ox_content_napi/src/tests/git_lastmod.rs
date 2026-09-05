@@ -45,6 +45,13 @@ fn last_updated(file: &std::path::Path, root: &std::path::Path) -> Option<f64> {
     )
 }
 
+fn last_updated_many(paths: Vec<String>, root: &std::path::Path) -> HashMap<String, f64> {
+    get_git_last_updated_many(paths, Some(root.to_string_lossy().into_owned()))
+        .into_iter()
+        .map(|entry| (entry.path, entry.last_updated))
+        .collect()
+}
+
 /// What a per-file `git log -1` would have answered, which is what this
 /// lookup did before it was batched into one walk.
 fn per_file_log(root: &std::path::Path, relative: &str) -> Option<f64> {
@@ -144,6 +151,28 @@ fn lastmod_without_a_repository_is_none() {
         get_git_last_updated(root.join("page.md").to_string_lossy().into_owned(), None),
         None
     );
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn lastmod_many_resolves_files_directories_and_root_escapes() {
+    let root = repository("lastmod-many");
+
+    let first = root.join("docs/first.md").to_string_lossy().into_owned();
+    let docs = root.join("docs").to_string_lossy().into_owned();
+    let guide = root.join("docs/guide").to_string_lossy().into_owned();
+    let escaped = root.join("../outside.md").to_string_lossy().into_owned();
+    let results = last_updated_many(
+        vec![first.clone(), docs.clone(), guide.clone(), "docs/guide".to_string(), escaped.clone()],
+        &root,
+    );
+
+    assert_eq!(results.get(&first), Some(&2_000_000_000_000.0));
+    assert_eq!(results.get(&docs), Some(&2_000_000_000_000.0));
+    assert_eq!(results.get(&guide), Some(&1_000_000_000_000.0));
+    assert_eq!(results.get("docs/guide"), Some(&1_000_000_000_000.0));
+    assert!(!results.contains_key(&escaped));
 
     let _ = fs::remove_dir_all(root);
 }

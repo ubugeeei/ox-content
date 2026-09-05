@@ -1,11 +1,17 @@
 import type {
   CreateSolidHtmlHostLazyHydrateInput,
   InitSolidHtmlHostInput,
-  SolidHtmlHostClientDiagnosticCode,
-  SolidHtmlHostClientError,
   SolidHtmlHostClientModuleLoader,
   SolidHtmlHostClientModules,
+  SolidHtmlHostClientRenderer,
+  SolidHtmlHostClientRuntimeLoader,
 } from "./html-host-client-types";
+import {
+  createSolidHtmlHostDomRenderer,
+  loadSolidHtmlHostDomRuntime,
+  solidHtmlHostDomRendererMode,
+} from "./html-host-dom-renderer";
+import { clientError, reportError } from "./html-host-client-errors";
 
 export type {
   CreateSolidHtmlHostLazyHydrateInput,
@@ -19,10 +25,18 @@ export type {
   SolidHtmlHostClientModuleValue,
   SolidHtmlHostClientRenderer,
   SolidHtmlHostClientRuntimeLoader,
+  SolidHtmlHostDomMode,
+  SolidHtmlHostDomRendererInput,
+  SolidHtmlHostDomRuntime,
   SolidHtmlHostExportNameResolver,
   SolidHtmlHostInitIslands,
   SolidHtmlHostModuleIdResolver,
 } from "./html-host-client-types";
+export {
+  createSolidHtmlHostDomRenderer,
+  loadSolidHtmlHostDomRuntime,
+  type SolidHtmlHostDomRenderer,
+} from "./html-host-dom-renderer";
 
 const ISLAND_JSON_SCRIPT = /^\s*<script type="application\/json">[\s\S]*?<\/script>/;
 
@@ -35,6 +49,8 @@ export function initSolidHtmlHost<TRuntime = undefined>(
 export function createSolidHtmlHostLazyHydrate<TRuntime = undefined>(
   input: CreateSolidHtmlHostLazyHydrateInput<TRuntime>,
 ): (element: HTMLElement, props: Record<string, unknown>) => () => void {
+  const render = resolveRenderer(input);
+  const load = resolveRuntimeLoader(input, render);
   const moduleCache = new Map<string, Promise<unknown>>();
   let runtimeCache: Promise<TRuntime> | undefined;
 
@@ -101,7 +117,7 @@ export function createSolidHtmlHostLazyHydrate<TRuntime = undefined>(
 
       try {
         runtime = await loadRuntime(
-          input,
+          load,
           () => runtimeCache,
           (pending) => {
             runtimeCache = pending;
@@ -138,9 +154,11 @@ export function createSolidHtmlHostLazyHydrate<TRuntime = undefined>(
         return;
       }
 
-      element.innerHTML = "";
+      if (!preservesElementContents(input, render)) {
+        element.innerHTML = "";
+      }
       try {
-        const cleanup = input.render({
+        const cleanup = await render({
           component,
           componentName,
           element,
@@ -210,11 +228,10 @@ async function loadClientModule(
 }
 
 async function loadRuntime<TRuntime>(
-  input: CreateSolidHtmlHostLazyHydrateInput<TRuntime>,
+  load: SolidHtmlHostClientRuntimeLoader<TRuntime> | undefined,
   getCached: () => Promise<TRuntime> | undefined,
   setCached: (pending: Promise<TRuntime> | undefined) => void,
 ): Promise<TRuntime | undefined> {
-  const load = input.loadRuntime;
   if (!load) return undefined;
 
   const cached = getCached();
@@ -228,6 +245,39 @@ async function loadRuntime<TRuntime>(
     });
   setCached(pending);
   return pending;
+}
+
+function resolveRenderer<TRuntime>(
+  input: CreateSolidHtmlHostLazyHydrateInput<TRuntime>,
+): SolidHtmlHostClientRenderer<TRuntime> {
+  if (input.render) return input.render;
+  if (input.mount) {
+    return createSolidHtmlHostDomRenderer(input.mount) as SolidHtmlHostClientRenderer<TRuntime>;
+  }
+  throw new Error("initSolidHtmlHost requires either render or mount.");
+}
+
+function resolveRuntimeLoader<TRuntime>(
+  input: CreateSolidHtmlHostLazyHydrateInput<TRuntime>,
+  render: SolidHtmlHostClientRenderer<TRuntime>,
+): SolidHtmlHostClientRuntimeLoader<TRuntime> | undefined {
+  if (input.loadRuntime) {
+    return input.loadRuntime as SolidHtmlHostClientRuntimeLoader<TRuntime>;
+  }
+  if (input.mount || solidHtmlHostDomRendererMode(render as SolidHtmlHostClientRenderer<unknown>)) {
+    return loadSolidHtmlHostDomRuntime as SolidHtmlHostClientRuntimeLoader<TRuntime>;
+  }
+  return undefined;
+}
+
+function preservesElementContents<TRuntime>(
+  input: CreateSolidHtmlHostLazyHydrateInput<TRuntime>,
+  render: SolidHtmlHostClientRenderer<TRuntime>,
+): boolean {
+  const mode =
+    input.mount?.mode ??
+    solidHtmlHostDomRendererMode(render as unknown as SolidHtmlHostClientRenderer<unknown>);
+  return mode === "hydrate";
 }
 
 function moduleLoader(
@@ -251,79 +301,6 @@ function exportedValue(moduleExports: unknown, exportName: string): unknown {
     return undefined;
   }
   return (moduleExports as Record<string, unknown>)[exportName];
-}
-
-function reportError(
-  input: Pick<CreateSolidHtmlHostLazyHydrateInput, "onError">,
-  error: SolidHtmlHostClientError,
-): void {
-  error.element.classList?.add("ox-island-error");
-  error.element.dataset.oxError = error.message;
-  input.onError?.(error);
-
-  if (typeof CustomEvent === "function" && typeof error.element.dispatchEvent === "function") {
-    error.element.dispatchEvent(
-      new CustomEvent("ox-content-solid-html-host:error", { detail: error }),
-    );
-  }
-}
-
-function clientError(
-  code: SolidHtmlHostClientDiagnosticCode,
-  element: HTMLElement,
-  props: Record<string, unknown>,
-  context: {
-    componentName?: string;
-    moduleId?: string;
-    exportName?: string;
-    cause?: unknown;
-  } = {},
-): SolidHtmlHostClientError {
-  return {
-    code,
-    element,
-    props,
-    ...context,
-    message: clientErrorMessage(code, context),
-  };
-}
-
-function clientErrorMessage(
-  code: SolidHtmlHostClientDiagnosticCode,
-  context: { componentName?: string; moduleId?: string; exportName?: string; cause?: unknown },
-): string {
-  const component = context.componentName
-    ? `Solid island "${context.componentName}"`
-    : "Solid island";
-  const reason = causeMessage(context.cause);
-  switch (code) {
-    case "missing-island-name":
-      return "Solid island element is missing data-ox-island.";
-    case "missing-module-id":
-      return `${component} is missing data-ox-module.`;
-    case "unknown-module":
-      return `${component} references unknown module "${context.moduleId ?? ""}".`;
-    case "module-load-failed":
-      return `${component} module "${context.moduleId ?? ""}" failed to load: ${reason}`;
-    case "runtime-load-failed":
-      return `Solid runtime failed to load: ${reason}`;
-    case "missing-export":
-      return `${component} module "${context.moduleId ?? ""}" is missing export "${context.exportName ?? "default"}".`;
-    case "render-failed":
-      return `${component} failed to render: ${reason}`;
-  }
-}
-
-function causeMessage(cause: unknown): string {
-  if (cause == null) return "";
-  if (cause instanceof Error) return cause.message;
-  if (typeof cause === "string") return cause;
-  if (typeof cause === "number" || typeof cause === "boolean") return cause.toString();
-  try {
-    return JSON.stringify(cause);
-  } catch {
-    return Object.prototype.toString.call(cause);
-  }
 }
 
 function once(cleanup: () => void): () => void {

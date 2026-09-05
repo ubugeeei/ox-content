@@ -11,7 +11,7 @@ but Ox Content should own the Vite lifecycle.
 ```ts
 // vite.config.ts
 import { defineConfig } from "vite";
-import { oxContentCustomHost } from "@ox-content/vite-plugin";
+import { oxContentCustomHost, planCollectionAssets } from "@ox-content/vite-plugin";
 
 export default defineConfig({
   appType: "custom",
@@ -30,6 +30,23 @@ export default defineConfig({
       themeTokens: {
         theme: colorScheme,
         include: (name) => name.startsWith("syntax-"),
+      },
+      collectionAssets: {
+        manifest: (ctx) =>
+          planCollectionAssets({
+            root: ctx.root,
+            assets: [
+              {
+                sourcePath: "content/projects/cover.jpg",
+                publicPath: "/projects/cover.jpg",
+              },
+            ],
+          }),
+        watch: [{ path: "content/projects", kind: "directory" }],
+        ownedPrefixes: ["/assets/content"],
+      },
+      dev: {
+        routeDependencies: [{ path: "content/projects", kind: "directory" }],
       },
     }),
   ],
@@ -89,7 +106,15 @@ routes, preserves status and content type, applies `transformIndexHtml()` only
 to HTML, and falls through when no route or custom 404 handles the request.
 Route responses are cached as promises. Declared dependencies invalidate only
 the affected responses, reloads are debounced, failed renders retry, and an old
-in-flight render cannot delete a newer cache entry.
+in-flight render cannot delete a newer cache entry. Requests carrying
+`Cookie` or `Authorization` are rendered without storing their response, so
+request identities are not shared through the development cache.
+`dependencies` accepts file paths or `{ path, kind }` descriptors where `kind`
+is `"file"`, `"directory"`, or `"glob"`. `dev.dependencies` invalidates every
+response, while
+`dev.routeDependencies` also clears and reloads the route catalogue.
+Modules loaded through `ctx.loadModule()` and CSS returned by
+`ctx.assets.stylesheets()` are tracked automatically in development.
 
 In production, the plugin runs once from `closeBundle`, after Vite has emitted
 client assets and `.vite/manifest.json`. It opens a temporary middleware-mode
@@ -103,13 +128,54 @@ the default SSG:
 
 - `writeResourceFiles()` for resource fingerprinting and rewritten HTML.
 - `writeSelfHostedAssets()` for fonts and Iconify CSS.
+- `writeCollectionAssets()` from `collectionAssets.manifest`.
 - `writeMarkdownCompanions()` from route `source`.
 - `writeRedirectOutputs()` from route `aliases` / `redirect`.
 - `writeFeedFiles()` and `writeSiteMapFiles()` from selected route metadata.
 
+Use `lastUpdatedPaths` on a route or render result when sitemap freshness should
+consider shared metadata files or source directories in addition to `inputPath`.
+It is only used for git lastmod; dev invalidation still uses explicit
+`dependencies`.
+
 Duplicate route output paths fail the build with the conflicting owners. The
 host still owns publication selection; Ox Content only writes the routes the
 host returns.
+
+## Collection assets
+
+Use `collectionAssets` when the host owns files attached to collections, such
+as project images or downloadable artifacts, and wants Ox Content to serve and
+write them with the same manifest.
+
+```ts
+oxContentCustomHost({
+  host: "./src/site-host.ts",
+  collectionAssets: {
+    manifest: async (ctx) =>
+      planCollectionAssets({
+        root: ctx.root,
+        assets: [
+          {
+            sourcePath: "content/projects/cover.jpg",
+            publicPath: "/projects/cover.jpg",
+          },
+        ],
+      }),
+    watch: [{ path: "content/projects", kind: "directory" }],
+    ownedPrefixes: ["/assets/content"],
+  },
+});
+```
+
+In development, the middleware serves aliases and content-addressed targets
+before route rendering. A missing URL under an owned prefix returns 404 instead
+of falling through to the host router. When watched files or manifest source
+files change, Ox Content re-plans the manifest, clears cached route responses,
+and reloads after a successful plan. A failed re-plan is retryable and does not
+replace the last successful manifest. In production, collection assets are
+written with the coordinated output files unless `collectionAssets.write` is
+`false`.
 
 Solid HTML-string hosts can generate their browser island registry from that
 same selected route/document set. Use `createSolidHtmlHostIslandRegistry()` from

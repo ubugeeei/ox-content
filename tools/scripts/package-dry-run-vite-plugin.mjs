@@ -1,8 +1,13 @@
-const publicValues = ["resolveSelfHostedAssetManifest", "writeSelfHostedAssets"];
+const publicValues = [
+  "resolveGitLastmods",
+  "resolveSelfHostedAssetManifest",
+  "writeSelfHostedAssets",
+];
 const publicTypes = [
   "OxContentAssetManifest",
   "OxContentAssetPreload",
   "SelfHostedAssetOptions",
+  "SsgOutputPageInput",
   "WriteSelfHostedAssetsInput",
   "WriteSelfHostedAssetsResult",
 ];
