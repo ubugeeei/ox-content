@@ -24,30 +24,63 @@ afterEach(async () => {
 describe("resolveCustomHostStylesheets", () => {
   it("collects build CSS in dependency order and dev CSS dependencies", () => {
     const manifest = {
-      "src/Island.ts": { css: ["assets/island.css"], imports: ["_child.js"] },
-      "_child.js": { css: ["assets/child.css"] },
+      "src/Island.ts": {
+        file: "assets/Island.js",
+        imports: ["src/prose.css", "_child.js", "src/shared.css"],
+        css: ["assets/island.css"],
+      },
+      "src/Module.ts": { file: "assets/module.js", css: ["assets/module.css"] },
+      "src/Plain.ts": { file: "assets/plain.js" },
+      "_child.js": { file: "assets/child.js", css: ["assets/child.css"] },
+      "src/prose.css": { file: "assets/prose.css", src: "src/prose.css" },
+      "src/shared.css": { file: "assets/prose.css", src: "src/shared.css" },
     };
-    expect(
-      resolveCustomHostStylesheets({
-        modules: ["/src/Island.ts"],
-        manifest,
-        base: "/docs/",
-      }).stylesheets.map((style) => style.href),
-    ).toEqual(["/docs/assets/child.css", "/docs/assets/island.css"]);
+    const hrefs = (modules: readonly string[], base = "/") =>
+      resolveCustomHostStylesheets({ modules, manifest, base }).stylesheets.map(
+        (style) => style.href,
+      );
 
+    expect(hrefs(["src/prose.css"])).toEqual(["/assets/prose.css"]);
+    expect(hrefs(["src/prose.css"], "docs")).toEqual(["/docs/assets/prose.css"]);
+    expect(hrefs(["src/Module.ts"])).toEqual(["/assets/module.css"]);
+    expect(hrefs(["/src/Island.ts"], "/docs/")).toEqual([
+      "/docs/assets/prose.css",
+      "/docs/assets/child.css",
+      "/docs/assets/island.css",
+    ]);
+    expect(hrefs(["src/prose.css", "src/shared.css"])).toEqual(["/assets/prose.css"]);
+
+    const noStyle = resolveCustomHostStylesheets({
+      modules: ["src/Plain.ts", "src/Missing.ts"],
+      manifest,
+    });
+    expect(noStyle.stylesheets).toEqual([]);
+    expect(noStyle.diagnostics).toEqual([
+      expect.objectContaining({ code: "missing-module", moduleId: "src/Missing.ts" }),
+    ]);
+
+    const directCss = node("/src/prose.css", [], "/repo/src/prose.css");
     const childCss = node("/src/child.module.css?used", [], "/repo/src/child.module.css");
     const island = node("/src/Island.ts", [childCss], "/repo/src/Island.ts");
     const dev = resolveCustomHostStylesheets({
-      modules: ["/src/Island.ts", "/src/Missing.ts"],
-      moduleGraph: { getModuleById: (id) => (id === "/src/Island.ts" ? island : undefined) },
+      modules: ["/src/prose.css", "/src/Island.ts", "/src/Missing.ts"],
+      moduleGraph: {
+        getModuleById: (id) =>
+          id === "/src/prose.css" ? directCss : id === "/src/Island.ts" ? island : undefined,
+      },
       base: "/docs/",
       root: "/repo",
     });
 
     expect(dev.stylesheets).toEqual([
+      { kind: "style", href: "/docs/src/prose.css", moduleId: "/src/prose.css" },
       { kind: "style", href: "/docs/src/child.module.css?used", moduleId: "/src/Island.ts" },
     ]);
-    expect(dev.dependencies).toEqual(["/repo/src/Island.ts", "/repo/src/child.module.css"]);
+    expect(dev.dependencies).toEqual([
+      "/repo/src/prose.css",
+      "/repo/src/Island.ts",
+      "/repo/src/child.module.css",
+    ]);
     expect(dev.diagnostics).toEqual([
       expect.objectContaining({ code: "missing-module", moduleId: "/src/Missing.ts" }),
     ]);
@@ -79,6 +112,7 @@ describe("custom host island stylesheets", () => {
     const home = await read(listener.port, "/");
     expect(home.status).toBe(200);
     expect(home.text).toContain('data-render="1"');
+    expect(home.text).toContain('<link rel="stylesheet" href="/src/islands/prose.css">');
     expect(home.text).toContain('<link rel="stylesheet" href="/src/islands/child.css">');
     expect(home.text.match(/href="\/src\/islands\/island\.css"/g)).toHaveLength(1);
     expect(home.text.indexOf('href="/src/islands/child.css"')).toBeLessThan(
@@ -106,6 +140,7 @@ describe("custom host island stylesheets", () => {
     const html = await fs.readFile(path.join(root, "dist", "index.html"), "utf8");
     expect(html).toContain('data-render="1"');
     expect(html).toContain('href="/assets/');
+    expect(html).toMatch(/href="\/assets\/prose-[^"]+\.css"/u);
     expect(html).toContain('<script type="module" src="/assets/main-');
     expect(html.indexOf('href="/assets/')).toBeLessThan(
       html.indexOf('<script type="module" src="/assets/main-'),
@@ -115,6 +150,7 @@ describe("custom host island stylesheets", () => {
     const css = await readDistCss(root);
     expect(css).toContain(".island");
     expect(css).toContain(".child");
+    expect(css).toContain(".prose");
   });
 });
 
@@ -144,7 +180,12 @@ function viteConfig(root: string, dev: { reloadDebounceMs?: number } = {}): Inli
       outDir: "dist",
       emptyOutDir: true,
       manifest: true,
-      rollupOptions: { input: path.join(root, "src", "main.ts") },
+      rollupOptions: {
+        input: {
+          main: path.join(root, "src", "main.ts"),
+          prose: path.join(root, "src", "islands", "prose.css"),
+        },
+      },
     },
   };
 }
@@ -173,6 +214,7 @@ async function createProject(prefix: string): Promise<string> {
   );
   await fs.writeFile(path.join(root, "src", "islands", "island.css"), ".island{color:teal}\n");
   await fs.writeFile(path.join(root, "src", "islands", "child.css"), ".child{color:maroon}\n");
+  await fs.writeFile(path.join(root, "src", "islands", "prose.css"), ".prose{color:olive}\n");
   await fs.writeFile(path.join(root, "src", "host.ts"), hostModuleSource());
   return root;
 }
@@ -189,7 +231,7 @@ export default {
         renders += 1;
         const island = await ctx.loadModule("/src/islands/Island.ts");
         const styles = ctx.assets.stylesheets({
-          modules: ["/src/islands/client.ts", "/src/islands/client.ts"],
+          modules: ["/src/islands/prose.css", "/src/islands/client.ts", "/src/islands/client.ts"],
         });
         const assets = ctx.assets.document({
           sharedStyles: ctx.mode === "serve" ? ["/src/islands/island.css"] : [],
@@ -222,6 +264,11 @@ function installFixtureModuleGraph(server: ViteDevServer, root: string): void {
     [],
     path.join(root, "src", "islands", "island.css"),
   );
+  const proseCss = node(
+    "/src/islands/prose.css",
+    [],
+    path.join(root, "src", "islands", "prose.css"),
+  );
   const client = node(
     "/src/islands/client.ts",
     [childCss, islandCss],
@@ -231,11 +278,17 @@ function installFixtureModuleGraph(server: ViteDevServer, root: string): void {
   const originalGetModulesByFile = graph.getModulesByFile?.bind(graph);
 
   graph.getModuleById = (id: string) =>
-    id === "/src/islands/client.ts" ? client : originalGetModuleById(id);
+    id === "/src/islands/client.ts"
+      ? client
+      : id === "/src/islands/prose.css"
+        ? proseCss
+        : originalGetModuleById(id);
   graph.getModulesByFile = (file: string) =>
     file === path.join(root, "src", "islands", "client.ts")
       ? new Set([client])
-      : originalGetModulesByFile?.(file);
+      : file === path.join(root, "src", "islands", "prose.css")
+        ? new Set([proseCss])
+        : originalGetModulesByFile?.(file);
 }
 
 function node(

@@ -7,6 +7,7 @@ import type {
   OxContentCustomHostStylesheetsInput,
   OxContentCustomHostStylesheetsResult,
 } from "./custom-host-types";
+import { withBase } from "./custom-host-utils";
 
 export interface CustomHostDevModuleNode {
   id?: string | null;
@@ -60,6 +61,14 @@ function resolveBuildStylesheets(
   const visiting = new Set<string>();
   const visited = new Set<string>();
 
+  const addStylesheet = (css: string, requestedBy: string) => {
+    const href = joinBase(base, css);
+    if (!seenCss.has(href)) {
+      seenCss.add(href);
+      stylesheets.push({ kind: "style", href, moduleId: requestedBy });
+    }
+  };
+
   const visit = (key: string, requestedBy: string) => {
     if (visiting.has(key) || visited.has(key)) {
       return;
@@ -77,12 +86,11 @@ function resolveBuildStylesheets(
     for (const imported of chunk.imports ?? []) {
       visit(imported, requestedBy);
     }
+    if (chunk.file?.endsWith(".css")) {
+      addStylesheet(chunk.file, requestedBy);
+    }
     for (const css of chunk.css ?? []) {
-      const href = joinBase(base, css);
-      if (!seenCss.has(href)) {
-        seenCss.add(href);
-        stylesheets.push({ kind: "style", href, moduleId: requestedBy });
-      }
+      addStylesheet(css, requestedBy);
     }
     visiting.delete(key);
     visited.add(key);
@@ -315,14 +323,7 @@ function splitModuleSuffix(moduleId: string): [string, string?] {
 }
 
 function joinBase(base: string | undefined, href: string): string {
-  if (href.startsWith("#") || href.startsWith("//") || /^[a-z][a-z0-9+.-]*:/iu.test(href)) {
-    return href;
-  }
-  const normalizedBase = !base || base === "/" ? "/" : base.endsWith("/") ? base : `${base}/`;
-  if (normalizedBase !== "/" && href.startsWith(normalizedBase)) {
-    return href;
-  }
-  return `${normalizedBase}${href.replace(/^\/+/u, "")}`;
+  return withBase(base ?? "/", href);
 }
 
 function normalizeFilePath(file: string): string {
