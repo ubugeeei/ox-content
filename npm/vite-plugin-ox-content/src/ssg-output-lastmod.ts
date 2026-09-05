@@ -116,7 +116,10 @@ function normalizeGitLastmodPath(filePath: string, root: string | undefined): st
   const rootPath = path.resolve(root);
   const sourcePath = path.resolve(rootPath, filePath);
   const relative = path.relative(rootPath, sourcePath);
-  if (relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative))) {
+  if (
+    relative === "" ||
+    (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
+  ) {
     return sourcePath;
   }
   return undefined;

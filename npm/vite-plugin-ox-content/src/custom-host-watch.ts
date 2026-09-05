@@ -102,12 +102,16 @@ function watchPathForDependency(dependency: NormalizedCustomHostDependency): str
 }
 
 function globToRegExp(glob: string): RegExp {
-  let source = "^";
   const normalized = normalizeFilePath(glob);
-  for (let index = 0; index < normalized.length; index += 1) {
-    const character = normalized[index];
-    const next = normalized[index + 1];
-    const afterNext = normalized[index + 2];
+  return new RegExp(`^${globToRegExpSource(normalized)}$`, "u");
+}
+
+function globToRegExpSource(input: string): string {
+  let source = "";
+  for (let index = 0; index < input.length; index += 1) {
+    const character = input[index];
+    const next = input[index + 1];
+    const afterNext = input[index + 2];
     if (character === "*" && next === "*" && afterNext === "/") {
       source += "(?:.*/)?";
       index += 2;
@@ -118,11 +122,30 @@ function globToRegExp(glob: string): RegExp {
       source += "[^/]*";
     } else if (character === "?") {
       source += "[^/]";
+    } else if (character === "[") {
+      const end = findCharacterClassEnd(input, index + 1);
+      const characterClass =
+        end > index ? characterClassToRegExpSource(input.slice(index + 1, end)) : undefined;
+      if (characterClass) {
+        source += characterClass;
+        index = end;
+      } else {
+        source += escapeRegExp(character);
+      }
+    } else if (character === "{") {
+      const end = findBraceEnd(input, index + 1);
+      const alternatives = end > index ? splitBraceAlternatives(input.slice(index + 1, end)) : [];
+      if (alternatives.length > 1) {
+        source += `(?:${alternatives.map(globToRegExpSource).join("|")})`;
+        index = end;
+      } else {
+        source += escapeRegExp(character);
+      }
     } else {
       source += escapeRegExp(character);
     }
   }
-  return new RegExp(`${source}$`, "u");
+  return source;
 }
 
 function hasGlobSyntax(value: string): boolean {
@@ -138,6 +161,63 @@ function firstGlobIndex(value: string): number {
 
 function normalizeFilePath(file: string): string {
   return file.replace(/\\/g, "/");
+}
+
+function findCharacterClassEnd(input: string, start: number): number {
+  for (let index = start; index < input.length; index += 1) {
+    if (input[index] === "]" && index > start) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function characterClassToRegExpSource(input: string): string | undefined {
+  if (input.length === 0 || input.includes("/")) {
+    return undefined;
+  }
+  const negated = input[0] === "!" || input[0] === "^";
+  const body = negated ? input.slice(1) : input;
+  if (body.length === 0) {
+    return undefined;
+  }
+  const escaped = body.replace(/\\/gu, "\\\\").replace(/\]/gu, "\\]").replace(/\[/gu, "\\[");
+  return `[${negated ? "^" : ""}${escaped}]`;
+}
+
+function findBraceEnd(input: string, start: number): number {
+  let depth = 0;
+  for (let index = start; index < input.length; index += 1) {
+    const character = input[index];
+    if (character === "{") {
+      depth += 1;
+    } else if (character === "}") {
+      if (depth === 0) {
+        return index;
+      }
+      depth -= 1;
+    }
+  }
+  return -1;
+}
+
+function splitBraceAlternatives(input: string): string[] {
+  const alternatives: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < input.length; index += 1) {
+    const character = input[index];
+    if (character === "{") {
+      depth += 1;
+    } else if (character === "}") {
+      depth -= 1;
+    } else if (character === "," && depth === 0) {
+      alternatives.push(input.slice(start, index));
+      start = index + 1;
+    }
+  }
+  alternatives.push(input.slice(start));
+  return alternatives;
 }
 
 function isWithinDirectory(directory: string, file: string): boolean {

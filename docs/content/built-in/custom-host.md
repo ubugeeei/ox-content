@@ -106,9 +106,12 @@ routes, preserves status and content type, applies `transformIndexHtml()` only
 to HTML, and falls through when no route or custom 404 handles the request.
 Route responses are cached as promises. Declared dependencies invalidate only
 the affected responses, reloads are debounced, failed renders retry, and an old
-in-flight render cannot delete a newer cache entry. `dependencies` accepts file
-paths or `{ path, kind }` descriptors where `kind` is `"file"`, `"directory"`,
-or `"glob"`. `dev.dependencies` invalidates every response, while
+in-flight render cannot delete a newer cache entry. Requests carrying
+`Cookie` or `Authorization` are rendered without storing their response, so
+request identities are not shared through the development cache.
+`dependencies` accepts file paths or `{ path, kind }` descriptors where `kind`
+is `"file"`, `"directory"`, or `"glob"`. `dev.dependencies` invalidates every
+response, while
 `dev.routeDependencies` also clears and reloads the route catalogue.
 Modules loaded through `ctx.loadModule()` and CSS returned by
 `ctx.assets.stylesheets()` are tracked automatically in development.

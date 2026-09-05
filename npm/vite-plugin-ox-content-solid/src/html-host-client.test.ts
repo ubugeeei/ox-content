@@ -72,7 +72,7 @@ describe("Solid HTML host browser client", () => {
       const bundle = bundleCode(output);
 
       expect(bundle).not.toContain("@ox-content/vite-plugin");
-      expect(bundle).not.toMatch(/\b(?:from|import)\s*\(?["']node:/);
+      expect(bundle).not.toMatch(/\b(?:from|import|require)\s*\(?["']node:/);
       expect(bundle).not.toContain("fsevents");
       expect(bundle).not.toContain("resvg");
     } finally {

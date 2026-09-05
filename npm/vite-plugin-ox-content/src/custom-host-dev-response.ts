@@ -43,6 +43,15 @@ export async function devResponse(input: {
   }
 
   const key = `${input.request.method}\0${routePath}\0${url.search}`;
+  if (hasRequestIdentityHeaders(input.request)) {
+    const serialized = await renderDevResponse(input, route, host, routePath);
+    if (!serialized) {
+      return undefined;
+    }
+    input.rememberDeps(`${key}\0request-identity`, serialized.dependencies);
+    return deserializeResponse(serialized, input.request.method === "HEAD");
+  }
+
   let entry = input.cache.get(key);
   if (!entry) {
     const current: DevCacheEntry = {
@@ -69,6 +78,10 @@ export async function devResponse(input: {
     return undefined;
   }
   return deserializeResponse(serialized, input.request.method === "HEAD");
+}
+
+function hasRequestIdentityHeaders(request: Request): boolean {
+  return request.headers.has("authorization") || request.headers.has("cookie");
 }
 
 export function createTrackedContext(

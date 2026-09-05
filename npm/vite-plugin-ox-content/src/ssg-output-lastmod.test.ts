@@ -76,6 +76,13 @@ describe("SSG output git lastmod sources", () => {
     expect(lastmods.size).toBe(1);
     expect(lastmods.get(site.meta)).toBe(SECOND);
   });
+
+  it("accepts descendant names that begin with parent-directory markers", async () => {
+    const site = await createGitSite();
+    const lastmods = resolveGitLastmods([site.dotPrefixed], site.root);
+
+    expect(lastmods.get(site.dotPrefixed)).toBe(FIRST);
+  });
 });
 
 function planFor(
@@ -103,11 +110,14 @@ async function createGitSite() {
   const root = await makeTempDir("ox-content-lastmod-");
   const page = path.join(root, "content", "page.md");
   const article = path.join(root, "content", "articles", "guide", "body.md");
+  const dotPrefixed = path.join(root, "content", "..well-known", "feed.md");
   const meta = path.join(root, "src", "meta.ts");
   await fs.mkdir(path.dirname(article), { recursive: true });
+  await fs.mkdir(path.dirname(dotPrefixed), { recursive: true });
   await fs.mkdir(path.dirname(meta), { recursive: true });
   await fs.writeFile(page, "# Page\n");
   await fs.writeFile(article, "# Article\n");
+  await fs.writeFile(dotPrefixed, "# Feed\n");
   await fs.writeFile(meta, "export const owner = 'first';\n");
   git(root, ["init"], FIRST);
   git(root, ["add", "."], FIRST);
@@ -121,7 +131,7 @@ async function createGitSite() {
   git(root, ["add", "content/articles/guide/body.md"], THIRD);
   git(root, ["commit", "-m", "article"], THIRD);
 
-  return { root, page, article, meta };
+  return { root, page, article, dotPrefixed, meta };
 }
 
 async function makeTempDir(prefix: string): Promise<string> {
