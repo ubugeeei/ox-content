@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-beta.14] - 2026-09-05
+
+### Features
+
+- add native extension controls
+
 ## [3.0.0-beta.13] - 2026-09-05
 
 ### Features
