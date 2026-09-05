@@ -2,7 +2,11 @@ import * as fsSync from "node:fs";
 import * as path from "node:path";
 import type { Connect, ResolvedConfig, ViteDevServer } from "vite";
 import { HTML_CONTENT_TYPE_RE } from "./custom-host-constants";
-import type { OxContentCustomHostRenderResult, SerializedResponse } from "./custom-host-types";
+import type {
+  OxContentCustomHostDependency,
+  OxContentCustomHostRenderResult,
+  SerializedResponse,
+} from "./custom-host-types";
 import type { ResolvedOptions } from "./types";
 
 export function resultBody(result: OxContentCustomHostRenderResult): string | Uint8Array {
@@ -107,11 +111,16 @@ export function resolveInputPath(inputPath: string | undefined, root: string): s
 
 export function normalizeDependencies(
   root: string,
-  dependencies: readonly string[] | undefined,
+  dependencies: readonly OxContentCustomHostDependency[] | undefined,
 ): string[] {
   return (dependencies ?? [])
+    .map(dependencyPath)
     .filter((dependency) => dependency.length > 0)
     .map((dependency) => resolveDependency(root, dependency));
+}
+
+export function dependencyPath(dependency: OxContentCustomHostDependency): string {
+  return typeof dependency === "string" ? dependency : dependency.path;
 }
 
 export function versionedModuleId(moduleId: string, version: number): string {
@@ -171,7 +180,7 @@ export function clearKeyDeps(
 
 export async function serializeResponse(
   response: Response,
-  dependencies: readonly string[],
+  dependencies: readonly OxContentCustomHostDependency[],
 ): Promise<SerializedResponse> {
   return {
     status: response.status,
@@ -180,16 +189,20 @@ export async function serializeResponse(
       ([name]) => name !== "x-ox-content-dependencies",
     ),
     body: new Uint8Array(await response.arrayBuffer()),
-    dependencies: [...new Set(dependencies)],
+    dependencies: [...dependencies],
   };
 }
 
 export function deserializeResponse(serialized: SerializedResponse, head: boolean): Response {
-  return new Response(head ? null : serialized.body, {
+  return new Response(head ? null : uint8Body(serialized.body), {
     headers: serialized.headers,
     status: serialized.status,
     statusText: serialized.statusText,
   });
+}
+
+function uint8Body(body: Uint8Array): BodyInit {
+  return body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer;
 }
 
 export function connectRequestToRequest(

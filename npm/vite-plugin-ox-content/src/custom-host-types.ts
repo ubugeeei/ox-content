@@ -1,4 +1,5 @@
 import type { OxContentAssetManifest } from "./assets";
+import type { CollectionAssetManifest } from "./collection-assets";
 import type {
   DocumentAssetManifest,
   DocumentStyleDescriptor,
@@ -24,6 +25,8 @@ export interface OxContentCustomHostOptions {
   dev?: OxContentCustomHostDevOptions;
   /** Optional framework-owned theme token stylesheet. */
   themeTokens?: false | OxContentCustomHostThemeTokensOptions;
+  /** Optional custom-host-owned collection assets. */
+  collectionAssets?: false | OxContentCustomHostCollectionAssetsOptions;
 }
 
 export interface OxContentCustomHostBuildOptions {
@@ -42,6 +45,10 @@ export interface OxContentCustomHostDevOptions {
   transformHtml?: boolean;
   /** Debounce for full reloads after dependency invalidation. */
   reloadDebounceMs?: number;
+  /** Dependencies that invalidate every cached route response in development. */
+  dependencies?: readonly OxContentCustomHostDependency[];
+  /** Dependencies that invalidate the route catalogue in development. */
+  routeDependencies?: readonly OxContentCustomHostDependency[];
 }
 
 export interface OxContentCustomHostThemeTokensOptions extends RenderThemeTokenCssOptions {
@@ -52,6 +59,27 @@ export interface OxContentCustomHostThemeTokensOptions extends RenderThemeTokenC
    * @default "__ox_theme_tokens__/theme-tokens.css"
    */
   href?: string;
+}
+
+export type OxContentCustomHostDependency = string | OxContentCustomHostDependencyDescriptor;
+
+export interface OxContentCustomHostDependencyDescriptor {
+  path: string;
+  kind?: "file" | "directory" | "glob";
+}
+
+export interface OxContentCustomHostCollectionAssetsOptions {
+  manifest:
+    | CollectionAssetManifest
+    | ((
+        context: OxContentCustomHostCollectionAssetsContext,
+      ) => MaybePromise<CollectionAssetManifest>);
+  /** Extra sources that should re-plan collection assets in development. */
+  watch?: readonly OxContentCustomHostDependency[];
+  /** URL prefixes owned by the asset middleware even when a file is absent. */
+  ownedPrefixes?: readonly string[];
+  /** Write collection assets during custom-host builds. */
+  write?: boolean;
 }
 
 export interface OxContentCustomHostModule {
@@ -83,7 +111,7 @@ export interface OxContentCustomHostRoute {
   draft?: boolean;
   unlisted?: boolean;
   frontmatter?: Record<string, unknown>;
-  dependencies?: readonly string[];
+  dependencies?: readonly OxContentCustomHostDependency[];
 }
 
 export interface OxContentCustomHostRenderResult {
@@ -108,7 +136,7 @@ export interface OxContentCustomHostRenderResult {
   draft?: boolean;
   unlisted?: boolean;
   frontmatter?: Record<string, unknown>;
-  dependencies?: readonly string[];
+  dependencies?: readonly OxContentCustomHostDependency[];
 }
 
 export interface OxContentCustomHostAssetsContext {
@@ -158,6 +186,8 @@ export interface OxContentCustomHostBaseContext {
 
 export interface OxContentCustomHostRoutesContext extends OxContentCustomHostBaseContext {}
 
+export interface OxContentCustomHostCollectionAssetsContext extends OxContentCustomHostBaseContext {}
+
 export interface OxContentCustomHostRenderContext extends OxContentCustomHostBaseContext {
   route: OxContentCustomHostRoute;
   request: Request;
@@ -180,7 +210,7 @@ export interface SerializedResponse {
   statusText?: string;
   headers: [string, string][];
   body: Uint8Array;
-  dependencies: string[];
+  dependencies: OxContentCustomHostDependency[];
 }
 
 export interface DevCacheEntry {
