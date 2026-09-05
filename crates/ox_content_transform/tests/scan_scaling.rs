@@ -49,6 +49,7 @@ const SHAPES: &[(&str, &str)] = &[
     ("bracket per line", "[ \n"),
     ("brace per line", "{ \n"),
     ("angle per line", "< \n"),
+    ("definition list continuation", "Term\n: body\n    continuation\n"),
 ];
 
 /// Below this the run is too short for the clock to say anything useful, and
@@ -63,9 +64,13 @@ fn all_features() -> TransformOptions {
         tables: Some(true),
         strikethrough: Some(true),
         autolinks: Some(true),
+        superscript: Some(true),
+        subscript: Some(true),
+        smart_punctuation: Some(true),
         autolink_urls: Some(true),
         attributes: Some(AttrsOptions { enabled: Some(true) }),
         math: Some(MathOptions { enabled: Some(true) }),
+        definition_lists: Some(DefinitionListOptions { enabled: Some(true) }),
         abbreviations: Some(AbbreviationsOptions {
             enabled: Some(true),
             terms: None,

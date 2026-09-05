@@ -53,6 +53,13 @@ const KIND_MDX_JSX_TEXT = 24;
 const KIND_MDX_ESM = 25;
 const KIND_MDX_FLOW_EXPRESSION = 26;
 const KIND_MDX_TEXT_EXPRESSION = 27;
+const KIND_MATH = 28;
+const KIND_INLINE_MATH = 29;
+const KIND_DEFINITION_LIST = 30;
+const KIND_DEFINITION_TERM = 31;
+const KIND_DEFINITION_DESCRIPTION = 32;
+const KIND_SUPERSCRIPT = 33;
+const KIND_SUBSCRIPT = 34;
 
 const FLAG_ORDERED = 1 << 0;
 const FLAG_SPREAD = 1 << 1;
@@ -226,6 +233,8 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
         }
         return node;
       }
+      case KIND_MATH:
+        return { type: "math", value: str0 ?? "", position };
       case KIND_HTML:
         return { type: "html", value: str0 ?? "", position };
       case KIND_TABLE:
@@ -239,6 +248,12 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
         return { type: "tableRow", children: children ?? [], position };
       case KIND_TABLE_CELL:
         return { type: "tableCell", children: children ?? [], position };
+      case KIND_DEFINITION_LIST:
+        return { type: "definitionList", children: children ?? [], position };
+      case KIND_DEFINITION_TERM:
+        return { type: "definitionTerm", children: children ?? [], position };
+      case KIND_DEFINITION_DESCRIPTION:
+        return { type: "definitionDescription", children: children ?? [], position };
       case KIND_TEXT:
         return { type: "text", value: str0 ?? "", position };
       case KIND_EMPHASIS:
@@ -247,6 +262,8 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
         return { type: "strong", children: children ?? [], position };
       case KIND_INLINE_CODE:
         return { type: "inlineCode", value: str0 ?? "", position };
+      case KIND_INLINE_MATH:
+        return { type: "inlineMath", value: str0 ?? "", position };
       case KIND_BREAK:
         return { type: "break", position };
       case KIND_LINK: {
@@ -277,6 +294,10 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
       }
       case KIND_DELETE:
         return { type: "delete", children: children ?? [], position };
+      case KIND_SUPERSCRIPT:
+        return { type: "superscript", children: children ?? [], position };
+      case KIND_SUBSCRIPT:
+        return { type: "subscript", children: children ?? [], position };
       case KIND_FOOTNOTE_REFERENCE: {
         const node: MdastNode = {
           type: "footnoteReference",

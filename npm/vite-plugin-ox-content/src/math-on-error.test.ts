@@ -87,4 +87,16 @@ describe("math onError", () => {
     expect(html).not.toContain("katex-error");
     expect(html).toContain("mc");
   });
+
+  it("renders block math when source spans add attributes", async () => {
+    const options = createDocsResolvedOptions({
+      math: { enabled: true, onError: "literal" },
+      sourceSpans: true,
+    } as Partial<ResolvedOptions>);
+    const result = await transformMarkdown("$$\na + b\n$$\n", "docs/math.md", options);
+
+    expect(result.html).toContain('<div class="ox-math ox-math-block" data-source-span=');
+    expect(result.html).toContain("katex");
+    expect(result.html).not.toContain('data-ox-tex="');
+  });
 });

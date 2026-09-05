@@ -22,4 +22,6 @@ mod tests;
 
 pub use heading::{HEADING_PERMALINK_CLASS, slugify_heading};
 pub use options::{CodeAnnotationSyntax, HtmlRendererOptions};
-pub use renderer::HtmlRenderer;
+pub use renderer::{
+    HtmlRenderContext, HtmlRenderControl, HtmlRenderHooks, HtmlRenderer, NoHtmlRenderHooks,
+};

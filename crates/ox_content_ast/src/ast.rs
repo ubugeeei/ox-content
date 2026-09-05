@@ -41,10 +41,18 @@ pub enum Node<'a> {
     ListItem(Box<'a, ListItem<'a>>),
     /// Fenced or indented code block.
     CodeBlock(Box<'a, CodeBlock<'a>>),
+    /// Display math block.
+    MathBlock(Box<'a, MathBlock<'a>>),
     /// HTML block.
     Html(Html<'a>),
     /// Table (GFM extension).
     Table(Box<'a, Table<'a>>),
+    /// Definition list.
+    DefinitionList(Box<'a, DefinitionList<'a>>),
+    /// Term inside a definition list.
+    DefinitionListTerm(Box<'a, DefinitionListTerm<'a>>),
+    /// Definition body inside a definition list.
+    DefinitionListDefinition(Box<'a, DefinitionListDefinition<'a>>),
 
     // Inline nodes
     /// Plain text.
@@ -55,6 +63,8 @@ pub enum Node<'a> {
     Strong(Box<'a, Strong<'a>>),
     /// Inline code.
     InlineCode(InlineCode<'a>),
+    /// Inline math.
+    InlineMath(InlineMath<'a>),
     /// Line break.
     Break(Break),
     /// Link.
@@ -63,6 +73,10 @@ pub enum Node<'a> {
     Image(Box<'a, Image<'a>>),
     /// Strikethrough (GFM extension).
     Delete(Box<'a, Delete<'a>>),
+    /// Superscript (extension).
+    Superscript(Box<'a, Superscript<'a>>),
+    /// Subscript (extension).
+    Subscript(Box<'a, Subscript<'a>>),
     /// Footnote reference (GFM extension).
     FootnoteReference(Box<'a, FootnoteReference<'a>>),
 
@@ -164,6 +178,15 @@ pub struct CodeBlock<'a> {
     pub span: Span,
 }
 
+/// Display math block.
+#[derive(Debug)]
+pub struct MathBlock<'a> {
+    /// TeX source without delimiters.
+    pub value: &'a str,
+    /// Source span.
+    pub span: Span,
+}
+
 /// HTML block.
 #[derive(Debug)]
 pub struct Html<'a> {
@@ -215,6 +238,33 @@ pub enum AlignKind {
     Right,
 }
 
+/// Definition list.
+#[derive(Debug)]
+pub struct DefinitionList<'a> {
+    /// Definition list terms and definitions, in source order.
+    pub children: Vec<'a, Node<'a>>,
+    /// Source span.
+    pub span: Span,
+}
+
+/// Term inside a definition list.
+#[derive(Debug)]
+pub struct DefinitionListTerm<'a> {
+    /// Inline children.
+    pub children: Vec<'a, Node<'a>>,
+    /// Source span.
+    pub span: Span,
+}
+
+/// Definition body inside a definition list.
+#[derive(Debug)]
+pub struct DefinitionListDefinition<'a> {
+    /// Block children.
+    pub children: Vec<'a, Node<'a>>,
+    /// Source span.
+    pub span: Span,
+}
+
 // Inline nodes
 
 /// Plain text.
@@ -248,6 +298,15 @@ pub struct Strong<'a> {
 #[derive(Debug)]
 pub struct InlineCode<'a> {
     /// Code content.
+    pub value: &'a str,
+    /// Source span.
+    pub span: Span,
+}
+
+/// Inline math.
+#[derive(Debug)]
+pub struct InlineMath<'a> {
+    /// TeX source without delimiters.
     pub value: &'a str,
     /// Source span.
     pub span: Span,
@@ -289,6 +348,24 @@ pub struct Image<'a> {
 /// Strikethrough (GFM extension).
 #[derive(Debug)]
 pub struct Delete<'a> {
+    /// Inline children.
+    pub children: Vec<'a, Node<'a>>,
+    /// Source span.
+    pub span: Span,
+}
+
+/// Superscript.
+#[derive(Debug)]
+pub struct Superscript<'a> {
+    /// Inline children.
+    pub children: Vec<'a, Node<'a>>,
+    /// Source span.
+    pub span: Span,
+}
+
+/// Subscript.
+#[derive(Debug)]
+pub struct Subscript<'a> {
     /// Inline children.
     pub children: Vec<'a, Node<'a>>,
     /// Source span.
@@ -348,16 +425,23 @@ impl<'a> Node<'a> {
             Self::List(n) => n.span,
             Self::ListItem(n) => n.span,
             Self::CodeBlock(n) => n.span,
+            Self::MathBlock(n) => n.span,
             Self::Html(n) => n.span,
             Self::Table(n) => n.span,
+            Self::DefinitionList(n) => n.span,
+            Self::DefinitionListTerm(n) => n.span,
+            Self::DefinitionListDefinition(n) => n.span,
             Self::Text(n) => n.span,
             Self::Emphasis(n) => n.span,
             Self::Strong(n) => n.span,
             Self::InlineCode(n) => n.span,
+            Self::InlineMath(n) => n.span,
             Self::Break(n) => n.span,
             Self::Link(n) => n.span,
             Self::Image(n) => n.span,
             Self::Delete(n) => n.span,
+            Self::Superscript(n) => n.span,
+            Self::Subscript(n) => n.span,
             Self::FootnoteReference(n) => n.span,
             Self::Definition(n) => n.span,
             Self::FootnoteDefinition(n) => n.span,

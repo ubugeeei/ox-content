@@ -1,15 +1,16 @@
 use ox_content_ast::{
-    AlignKind, BlockQuote, CodeBlock, Heading, Html, List, ListItem, Paragraph, Table, TableCell,
-    TableRow, ThematicBreak,
+    AlignKind, BlockQuote, CodeBlock, DefinitionList, DefinitionListDefinition, DefinitionListTerm,
+    Heading, Html, List, ListItem, MathBlock, Paragraph, Table, TableCell, TableRow, ThematicBreak,
 };
 
 use crate::transfer::as_u32;
 
 use super::format::{
     ALIGN_CENTER, ALIGN_LEFT, ALIGN_NONE, ALIGN_RIGHT, FLAG_CHECKED_PRESENT, FLAG_CHECKED_VALUE,
-    FLAG_ORDERED, FLAG_SPREAD, KIND_BLOCKQUOTE, KIND_CODE, KIND_HEADING, KIND_HTML, KIND_LIST,
-    KIND_LIST_ITEM, KIND_PARAGRAPH, KIND_TABLE, KIND_TABLE_CELL, KIND_TABLE_ROW,
-    KIND_THEMATIC_BREAK, NONE_U32, RawNodeRecord,
+    FLAG_ORDERED, FLAG_SPREAD, KIND_BLOCKQUOTE, KIND_CODE, KIND_DEFINITION_DESCRIPTION,
+    KIND_DEFINITION_LIST, KIND_DEFINITION_TERM, KIND_HEADING, KIND_HTML, KIND_LIST, KIND_LIST_ITEM,
+    KIND_MATH, KIND_PARAGRAPH, KIND_TABLE, KIND_TABLE_CELL, KIND_TABLE_ROW, KIND_THEMATIC_BREAK,
+    NONE_U32, RawNodeRecord,
 };
 use super::serializer::MdastRawSerializer;
 
@@ -82,6 +83,15 @@ impl MdastRawSerializer {
         self.push_record(record)
     }
 
+    pub(super) fn write_math_block(
+        &mut self,
+        node: &MathBlock<'_>,
+    ) -> crate::transfer::Result<u32> {
+        let mut record = RawNodeRecord::new(KIND_MATH, node.span);
+        self.write_string_into_slot(&mut record, 0, Some(node.value))?;
+        self.push_record(record)
+    }
+
     pub(super) fn write_html(&mut self, node: &Html<'_>) -> crate::transfer::Result<u32> {
         let mut record = RawNodeRecord::new(KIND_HTML, node.span);
         self.write_string_into_slot(&mut record, 0, Some(node.value))?;
@@ -116,6 +126,33 @@ impl MdastRawSerializer {
         node: &TableCell<'_>,
     ) -> crate::transfer::Result<u32> {
         let mut record = RawNodeRecord::new(KIND_TABLE_CELL, node.span);
+        self.write_child_nodes(&mut record, &node.children)?;
+        self.push_record(record)
+    }
+
+    pub(super) fn write_definition_list(
+        &mut self,
+        node: &DefinitionList<'_>,
+    ) -> crate::transfer::Result<u32> {
+        let mut record = RawNodeRecord::new(KIND_DEFINITION_LIST, node.span);
+        self.write_child_nodes(&mut record, &node.children)?;
+        self.push_record(record)
+    }
+
+    pub(super) fn write_definition_list_term(
+        &mut self,
+        node: &DefinitionListTerm<'_>,
+    ) -> crate::transfer::Result<u32> {
+        let mut record = RawNodeRecord::new(KIND_DEFINITION_TERM, node.span);
+        self.write_child_nodes(&mut record, &node.children)?;
+        self.push_record(record)
+    }
+
+    pub(super) fn write_definition_list_definition(
+        &mut self,
+        node: &DefinitionListDefinition<'_>,
+    ) -> crate::transfer::Result<u32> {
+        let mut record = RawNodeRecord::new(KIND_DEFINITION_DESCRIPTION, node.span);
         self.write_child_nodes(&mut record, &node.children)?;
         self.push_record(record)
     }

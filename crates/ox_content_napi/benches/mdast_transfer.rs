@@ -122,6 +122,7 @@ fn gfm_parser_options() -> JsParserOptions {
         tables: Some(true),
         strikethrough: Some(true),
         autolinks: Some(true),
+        ..Default::default()
     }
 }
 

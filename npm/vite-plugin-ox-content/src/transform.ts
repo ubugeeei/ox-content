@@ -251,12 +251,33 @@ interface JsTransformOptions {
    * @default false
    */
   autolinks?: boolean;
+  superscript?: boolean;
+  subscript?: boolean;
+  smartPunctuation?: boolean;
 
   /**
    * Linkify bare URLs while rendering.
    * @default true
    */
   autolinkUrls?: boolean;
+
+  /**
+   * Add `target="_blank" rel="noopener noreferrer"` to linkified bare URLs.
+   * @default true
+   */
+  autolinkTargetBlank?: boolean;
+
+  /**
+   * Add `target="_blank" rel="noopener noreferrer"` to parsed http(s) Markdown links.
+   * @default true
+   */
+  linkTargetBlank?: boolean;
+
+  /**
+   * Emit `data-source-span="start-end"` on rendered block elements.
+   * @default false
+   */
+  sourceSpans?: boolean;
 
   /**
    * Parse YAML frontmatter before transforming.
@@ -690,7 +711,13 @@ export async function transformMarkdown(
     tables: options.tables,
     strikethrough: options.strikethrough,
     autolinks: options.autolinks,
+    superscript: options.superscript ?? false,
+    subscript: options.subscript ?? false,
+    smartPunctuation: options.smartPunctuation ?? false,
     autolinkUrls: options.autolinks,
+    autolinkTargetBlank: options.autolinkTargetBlank ?? true,
+    linkTargetBlank: options.linkTargetBlank ?? true,
+    sourceSpans: options.sourceSpans ?? false,
     frontmatter: options.frontmatter,
     tocMaxDepth: options.tocMaxDepth,
     headingPermalinks: options.headingPermalinks?.enabled ?? false,

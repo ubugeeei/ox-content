@@ -1,12 +1,12 @@
 use ox_content_ast::{
     Break, Definition, Delete, Emphasis, FootnoteDefinition, FootnoteReference, Image, InlineCode,
-    Link, Strong, Text,
+    InlineMath, Link, Strong, Subscript, Superscript, Text,
 };
 
 use super::format::{
     KIND_BREAK, KIND_DEFINITION, KIND_DELETE, KIND_EMPHASIS, KIND_FOOTNOTE_DEFINITION,
-    KIND_FOOTNOTE_REFERENCE, KIND_IMAGE, KIND_INLINE_CODE, KIND_LINK, KIND_STRONG, KIND_TEXT,
-    RawNodeRecord,
+    KIND_FOOTNOTE_REFERENCE, KIND_IMAGE, KIND_INLINE_CODE, KIND_INLINE_MATH, KIND_LINK,
+    KIND_STRONG, KIND_SUBSCRIPT, KIND_SUPERSCRIPT, KIND_TEXT, RawNodeRecord,
 };
 use super::serializer::MdastRawSerializer;
 
@@ -38,6 +38,15 @@ impl MdastRawSerializer {
         self.push_record(record)
     }
 
+    pub(super) fn write_inline_math(
+        &mut self,
+        node: &InlineMath<'_>,
+    ) -> crate::transfer::Result<u32> {
+        let mut record = RawNodeRecord::new(KIND_INLINE_MATH, node.span);
+        self.write_string_into_slot(&mut record, 0, Some(node.value))?;
+        self.push_record(record)
+    }
+
     pub(super) fn write_break(&mut self, node: &Break) -> crate::transfer::Result<u32> {
         self.push_record(RawNodeRecord::new(KIND_BREAK, node.span))
     }
@@ -60,6 +69,21 @@ impl MdastRawSerializer {
 
     pub(super) fn write_delete(&mut self, node: &Delete<'_>) -> crate::transfer::Result<u32> {
         let mut record = RawNodeRecord::new(KIND_DELETE, node.span);
+        self.write_child_nodes(&mut record, &node.children)?;
+        self.push_record(record)
+    }
+
+    pub(super) fn write_superscript(
+        &mut self,
+        node: &Superscript<'_>,
+    ) -> crate::transfer::Result<u32> {
+        let mut record = RawNodeRecord::new(KIND_SUPERSCRIPT, node.span);
+        self.write_child_nodes(&mut record, &node.children)?;
+        self.push_record(record)
+    }
+
+    pub(super) fn write_subscript(&mut self, node: &Subscript<'_>) -> crate::transfer::Result<u32> {
+        let mut record = RawNodeRecord::new(KIND_SUBSCRIPT, node.span);
         self.write_child_nodes(&mut record, &node.children)?;
         self.push_record(record)
     }

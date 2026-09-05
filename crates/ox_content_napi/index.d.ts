@@ -1934,6 +1934,36 @@ export interface JsParserOptions {
    * Default: `false`, or `true` when `gfm` is `true`.
    */
   autolinks?: boolean
+  /**
+   * Enable `^text^` superscript spans.
+   *
+   * Default: `false`.
+   */
+  superscript?: boolean
+  /**
+   * Enable `~text~` subscript spans.
+   *
+   * Default: `false`.
+   */
+  subscript?: boolean
+  /**
+   * Enable smart punctuation replacement.
+   *
+   * Default: `false`.
+   */
+  smartPunctuation?: boolean
+  /**
+   * Enable `$...$` inline math and `$$...$$` block math.
+   *
+   * Default: `false`.
+   */
+  math?: boolean
+  /**
+   * Enable definition list blocks.
+   *
+   * Default: `false`.
+   */
+  definitionLists?: boolean
 }
 
 /** Opt-in parameterized Markdown partials. */
@@ -2815,6 +2845,24 @@ export interface JsTransformOptions {
    */
   autolinks?: boolean
   /**
+   * Enable `^text^` superscript spans.
+   *
+   * Default: `false`.
+   */
+  superscript?: boolean
+  /**
+   * Enable `~text~` subscript spans.
+   *
+   * Default: `false`.
+   */
+  subscript?: boolean
+  /**
+   * Enable smart punctuation replacement.
+   *
+   * Default: `false`.
+   */
+  smartPunctuation?: boolean
+  /**
    * Parse YAML frontmatter before transforming.
    *
    * Default: `false`.
@@ -2889,6 +2937,18 @@ export interface JsTransformOptions {
    * Default: `true`; ignored when [`Self::autolink_urls`] is off.
    */
   autolinkTargetBlank?: boolean
+  /**
+   * Add `target="_blank" rel="noopener noreferrer"` to parsed http(s) links.
+   *
+   * Default: `true`.
+   */
+  linkTargetBlank?: boolean
+  /**
+   * Emit `data-source-span="start-end"` on rendered block elements.
+   *
+   * Default: `false`.
+   */
+  sourceSpans?: boolean
   /**
    * Opt-in visible heading permalinks (`<a class="header-anchor" href="#id">`).
    *

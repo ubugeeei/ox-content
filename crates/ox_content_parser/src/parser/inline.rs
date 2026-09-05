@@ -12,11 +12,15 @@ mod code_span;
 mod emphasis;
 mod entity;
 mod gfm_autolink;
+mod line_break;
 mod link_target;
 mod marker_scan;
 mod scan;
+mod script_span;
+mod smart_punctuation;
 
 use self::marker_scan::InlineMarkerScan;
+use self::script_span::same_marker_neighbor;
 
 pub(in crate::parser) use self::autolink::autolink_end;
 pub(in crate::parser) use self::link_target::{
@@ -44,6 +48,9 @@ impl<'a> Parser<'a> {
         if let Some(scan) = scan {
             self.apply_gfm_autolinks(&mut children, scan);
         }
+        if self.options.smart_punctuation {
+            self.apply_smart_punctuation(&mut children);
+        }
         Ok(children)
     }
 
@@ -58,7 +65,11 @@ impl<'a> Parser<'a> {
     ) -> ParseResult<Vec<'a, Node<'a>>> {
         profile_span!("parser::parse_inline");
         let bytes = content.as_bytes();
-        let mut markers = InlineMarkerScan::new(self.allows_mdx_text_expression());
+        let mut markers = InlineMarkerScan::new(
+            self.allows_mdx_text_expression(),
+            self.options.superscript,
+            self.options.math,
+        );
         let first_special = markers.next(bytes, 0);
 
         // Plain text is both the most common inline shape and exactly one AST
@@ -198,6 +209,15 @@ impl<'a> Parser<'a> {
             {
                 self.parse_strikethrough(content, offset, children, pos)?;
             }
+            b'~' if self.options.subscript && !same_marker_neighbor(bytes, *pos, b'~') => {
+                self.parse_subscript_span(content, offset, children, pos)?;
+            }
+            b'^' if self.options.superscript && !same_marker_neighbor(bytes, *pos, b'^') => {
+                self.parse_superscript_span(content, offset, children, pos)?;
+            }
+            b'$' if self.options.math => {
+                Self::parse_inline_math(content, offset, children, pos);
+            }
             b'*' | b'_' => {
                 self.push_delimiter_run(content, offset, children, delimiters, pos);
             }
@@ -215,52 +235,6 @@ impl<'a> Parser<'a> {
             }
         }
         Ok(())
-    }
-
-    /// Handles a newline inside inline content. Two or more trailing
-    /// spaces on the previous line make a hard break; otherwise the
-    /// newline is a soft break. Either way the spaces around the break —
-    /// trailing on the previous line, leading on the next — are stripped
-    /// (CommonMark "Hard line breaks" / "Soft line breaks").
-    fn parse_line_break(
-        content: &'a str,
-        offset: usize,
-        children: &mut Vec<'a, Node<'a>>,
-        pos: &mut usize,
-    ) {
-        profile_span_detail!("parser::inline_line_break");
-        let bytes = content.as_bytes();
-        let mut hard = false;
-        let mut trim_to = None;
-        if let Some(Node::Text(text)) = children.last() {
-            let trimmed_len = text.value.trim_end_matches(' ').len();
-            if trimmed_len < text.value.len() {
-                hard = text.value.len() - trimmed_len >= 2;
-                trim_to = Some(trimmed_len);
-            }
-        }
-        if let Some(new_len) = trim_to {
-            if new_len == 0 {
-                children.pop();
-            } else if let Some(Node::Text(text)) = children.last_mut() {
-                let removed = (text.value.len() - new_len) as u32;
-                text.value = &text.value[..new_len];
-                text.span = Span::new(text.span.start, text.span.end - removed);
-            }
-        }
-
-        let newline_pos = *pos;
-        *pos += 1;
-        while *pos < content.len() && matches!(bytes[*pos], b' ' | b'\t') {
-            *pos += 1;
-        }
-
-        let span = Span::new((offset + newline_pos) as u32, (offset + newline_pos + 1) as u32);
-        if hard {
-            children.push(Node::Break(ox_content_ast::Break { span }));
-        } else {
-            Self::push_text(children, "\n", offset + newline_pos, offset + newline_pos + 1);
-        }
     }
 
     fn parse_inline_html_or_text(

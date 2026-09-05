@@ -98,11 +98,17 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     tables: options.tables ?? true,
     taskLists: options.taskLists ?? true,
     strikethrough: options.strikethrough ?? true,
+    superscript: options.superscript ?? false,
+    subscript: options.subscript ?? false,
+    smartPunctuation: options.smartPunctuation ?? false,
     highlight: options.highlight ?? false,
     codeAnnotations: resolveCodeAnnotationsOptions(options.codeAnnotations),
     mermaid: options.mermaid ?? false,
     math:
       options.math === true || (typeof options.math === "object" && options.math.enabled !== false),
+    definitionLists:
+      options.definitionLists === true ||
+      (typeof options.definitionLists === "object" && options.definitionLists.enabled !== false),
     frontmatter: options.frontmatter ?? true,
     toc: options.toc ?? true,
     tocMaxDepth: options.tocMaxDepth ?? 3,

@@ -4,10 +4,12 @@ use ox_content_allocator::Allocator;
 use ox_content_parser::{Parser, ParserOptions};
 
 use super::format::{
-    FLAG_MDX_SELF_CLOSING, KIND_HEADING, KIND_MDX_ESM, KIND_MDX_FLOW_EXPRESSION, KIND_MDX_JSX_FLOW,
-    KIND_MDX_JSX_TEXT, KIND_MDX_TEXT_EXPRESSION, KIND_PARAGRAPH, KIND_ROOT, KIND_TEXT,
-    MDAST_PAYLOAD_VERSION, MDAST_SECTION_ALIGNS, MDAST_SECTION_CHILD_INDICES, MDAST_SECTION_NODES,
-    MDAST_SECTION_STRINGS, NODE_RECORD_LEN, NONE_U32,
+    FLAG_MDX_SELF_CLOSING, KIND_DEFINITION_DESCRIPTION, KIND_DEFINITION_LIST, KIND_DEFINITION_TERM,
+    KIND_HEADING, KIND_INLINE_MATH, KIND_MATH, KIND_MDX_ESM, KIND_MDX_FLOW_EXPRESSION,
+    KIND_MDX_JSX_FLOW, KIND_MDX_JSX_TEXT, KIND_MDX_TEXT_EXPRESSION, KIND_PARAGRAPH, KIND_ROOT,
+    KIND_SUBSCRIPT, KIND_SUPERSCRIPT, KIND_TEXT, MDAST_PAYLOAD_VERSION, MDAST_SECTION_ALIGNS,
+    MDAST_SECTION_CHILD_INDICES, MDAST_SECTION_NODES, MDAST_SECTION_STRINGS, NODE_RECORD_LEN,
+    NONE_U32,
 };
 use super::to_mdast_raw;
 use crate::transfer::{
@@ -170,4 +172,31 @@ fn serializes_every_mdx_kind_and_preserves_jsx_attributes() {
     assert_eq!(attributes[1]["value"]["value"], "count");
     assert_eq!(attributes[2]["type"], "mdxJsxExpressionAttribute");
     assert_eq!(attributes[2]["value"], "...props");
+}
+
+#[test]
+fn serializes_append_only_extension_kinds_without_bumping_payload_version() {
+    let bytes = parse_to_raw_bytes_with_options(
+        "Term\n: H~2~O, $E=mc^2$, and ^n^\n\n$$\nx^2\n$$\n",
+        ParserOptions {
+            definition_lists: true,
+            math: true,
+            superscript: true,
+            subscript: true,
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(read_u32(&bytes, 8), MDAST_PAYLOAD_VERSION);
+    for kind in [
+        KIND_DEFINITION_LIST,
+        KIND_DEFINITION_TERM,
+        KIND_DEFINITION_DESCRIPTION,
+        KIND_SUBSCRIPT,
+        KIND_INLINE_MATH,
+        KIND_SUPERSCRIPT,
+        KIND_MATH,
+    ] {
+        find_node_base(&bytes, kind);
+    }
 }

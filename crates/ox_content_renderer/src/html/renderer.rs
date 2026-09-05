@@ -8,7 +8,9 @@
 mod blocks;
 mod callout;
 mod code_block;
+mod definition_list;
 mod footnotes;
+mod hooks;
 mod incremental;
 mod inlines;
 mod links;
@@ -25,6 +27,8 @@ use super::escape::{write_escaped_into, write_url_escaped_into};
 use super::options::{HtmlRendererOptions, RendererOptions};
 use super::toc::{InlineTocEntry, collect_inline_toc_entries, scan_document_for_render};
 use crate::render::{RenderResult, Renderer};
+
+pub use hooks::{HtmlRenderContext, HtmlRenderControl, HtmlRenderHooks, NoHtmlRenderHooks};
 
 /// Stateful HTML renderer for Markdown AST documents.
 ///
@@ -165,6 +169,12 @@ impl HtmlRenderer {
 
     fn render_into_output(&mut self, document: &Document<'_>) {
         crate::profile_span!("renderer::render");
+        self.prepare_render(document);
+        self.render_document(document);
+        self.finish_render();
+    }
+
+    pub(in crate::html::renderer) fn prepare_render(&mut self, document: &Document<'_>) {
         self.output.clear();
         self.in_mdx_island_children = false;
         // Renderer setup is intentionally split into a cheap structural scan
@@ -204,7 +214,9 @@ impl HtmlRenderer {
         if self.output.capacity() < estimated_len {
             self.output.reserve(estimated_len - self.output.capacity());
         }
-        self.render_document(document);
+    }
+
+    pub(in crate::html::renderer) fn finish_render(&mut self) {
         self.finish_semantic_footnotes();
     }
 
@@ -225,16 +237,23 @@ impl HtmlRenderer {
             Node::List(node) => self.render_list(node),
             Node::ListItem(node) => self.render_list_item(node),
             Node::CodeBlock(node) => self.render_code_block(node),
+            Node::MathBlock(node) => self.render_math_block(node),
             Node::Html(node) => self.render_html(node),
             Node::Table(node) => self.render_table(node),
+            Node::DefinitionList(node) => self.render_definition_list(node),
+            Node::DefinitionListTerm(node) => self.render_definition_list_term(node),
+            Node::DefinitionListDefinition(node) => self.render_definition_list_definition(node),
             Node::Text(node) => self.render_text(node),
             Node::Emphasis(node) => self.render_emphasis(node),
             Node::Strong(node) => self.render_strong(node),
             Node::InlineCode(node) => self.render_inline_code(node),
+            Node::InlineMath(node) => self.render_inline_math(node),
             Node::Break(node) => self.render_break(node),
             Node::Link(node) => self.render_link(node),
             Node::Image(node) => self.render_image(node),
             Node::Delete(node) => self.render_delete(node),
+            Node::Superscript(node) => self.render_superscript(node),
+            Node::Subscript(node) => self.render_subscript(node),
             Node::FootnoteReference(node) => self.render_footnote_reference(node),
             Node::Definition(_) => {}
             Node::FootnoteDefinition(node) => self.render_footnote_definition(node),

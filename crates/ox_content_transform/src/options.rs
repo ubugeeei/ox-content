@@ -9,6 +9,9 @@ pub struct TransformOptions {
     pub tables: Option<bool>,
     pub strikethrough: Option<bool>,
     pub autolinks: Option<bool>,
+    pub superscript: Option<bool>,
+    pub subscript: Option<bool>,
+    pub smart_punctuation: Option<bool>,
     pub frontmatter: Option<bool>,
     pub toc_max_depth: Option<u8>,
     pub convert_md_links: Option<bool>,
@@ -21,6 +24,8 @@ pub struct TransformOptions {
     pub autolink_urls: Option<bool>,
     pub autolink_patterns: Option<Vec<String>>,
     pub autolink_target_blank: Option<bool>,
+    pub link_target_blank: Option<bool>,
+    pub source_spans: Option<bool>,
     pub semantic_footnotes: Option<bool>,
     /// Opt-in visible heading permalinks. Disabled when omitted.
     pub heading_permalinks: Option<bool>,

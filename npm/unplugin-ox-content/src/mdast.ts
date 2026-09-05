@@ -1,5 +1,7 @@
 import { createRequire } from "node:module";
 import { deserializeMdastFromRaw } from "./mdast-raw";
+import { resolveMdastOptions } from "./mdast-options";
+import type { NapiBindings, OxContentMdastOptions } from "./mdast-options";
 import type {
   MdastNode,
   MdastPluginContext,
@@ -10,85 +12,15 @@ import type {
   TocEntry,
 } from "./types";
 
+export type { OxContentMdastOptions } from "./mdast-options";
+
 const require = createRequire(import.meta.url);
-
-interface NapiBindings {
-  parseTransferRaw: (
-    source: string,
-    kind: string,
-    options?: {
-      gfm?: boolean;
-      mdx?: boolean;
-      footnotes?: boolean;
-      taskLists?: boolean;
-      tables?: boolean;
-      strikethrough?: boolean;
-      autolinks?: boolean;
-    },
-  ) => Uint8Array;
-}
-
-/**
- * Parser options for the Ox Content mdast unified plugin.
- */
-export interface OxContentMdastOptions {
-  /**
-   * Enable GitHub Flavored Markdown extensions.
-   * @default true
-   */
-  gfm?: boolean;
-
-  /**
-   * Enable MDX JSX, ESM, and expression nodes.
-   * @default false
-   */
-  mdx?: boolean;
-
-  /**
-   * Enable footnotes.
-   * @default true
-   */
-  footnotes?: boolean;
-
-  /**
-   * Enable task lists.
-   * @default true
-   */
-  taskLists?: boolean;
-
-  /**
-   * Enable tables.
-   * @default true
-   */
-  tables?: boolean;
-
-  /**
-   * Enable strikethrough.
-   * @default true
-   */
-  strikethrough?: boolean;
-
-  /**
-   * Enable autolinks.
-   * @default true
-   */
-  autolinks?: boolean;
-}
 
 type ProcessorWithParser = {
   parser?: (document: string) => MdastRoot;
 };
 
 let cachedNapiBindings: NapiBindings | null | undefined;
-const DEFAULT_MDAST_OPTIONS: Required<OxContentMdastOptions> = {
-  gfm: true,
-  mdx: false,
-  footnotes: true,
-  taskLists: true,
-  tables: true,
-  strikethrough: true,
-  autolinks: true,
-};
 
 /**
  * Unified parser plugin backed by Ox Content's native mdast parser.
@@ -127,6 +59,11 @@ export function parseMarkdownToMdast(
     tables: resolvedOptions.tables,
     strikethrough: resolvedOptions.strikethrough,
     autolinks: resolvedOptions.autolinks,
+    superscript: resolvedOptions.superscript,
+    subscript: resolvedOptions.subscript,
+    smartPunctuation: resolvedOptions.smartPunctuation,
+    math: resolvedOptions.math,
+    definitionLists: resolvedOptions.definitionLists,
   };
   const buffer = requireNapiMethod(napi.parseTransferRaw, "parseTransferRaw")(
     source,
@@ -234,18 +171,6 @@ function requireNapiMethod<T extends (...args: never[]) => unknown>(
     `[ox-content] @ox-content/napi is too old for mdast interop: missing ${name}(). ` +
       "Rebuild the NAPI module with `vp run build:napi`.",
   );
-}
-
-function resolveMdastOptions(options: OxContentMdastOptions): Required<OxContentMdastOptions> {
-  return {
-    gfm: options.gfm ?? DEFAULT_MDAST_OPTIONS.gfm,
-    mdx: options.mdx ?? DEFAULT_MDAST_OPTIONS.mdx,
-    footnotes: options.footnotes ?? DEFAULT_MDAST_OPTIONS.footnotes,
-    taskLists: options.taskLists ?? DEFAULT_MDAST_OPTIONS.taskLists,
-    tables: options.tables ?? DEFAULT_MDAST_OPTIONS.tables,
-    strikethrough: options.strikethrough ?? DEFAULT_MDAST_OPTIONS.strikethrough,
-    autolinks: options.autolinks ?? DEFAULT_MDAST_OPTIONS.autolinks,
-  };
 }
 
 function buildTocTree(entries: TocEntry[]): TocEntry[] {

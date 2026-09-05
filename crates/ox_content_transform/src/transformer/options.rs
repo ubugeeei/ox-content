@@ -22,11 +22,26 @@ pub(super) fn transform_options_to_parser_options(opts: &TransformOptions) -> Pa
     if let Some(v) = opts.autolinks {
         options.autolinks = v;
     }
+    if let Some(v) = opts.superscript {
+        options.superscript = v;
+    }
+    if let Some(v) = opts.subscript {
+        options.subscript = v;
+    }
+    if let Some(v) = opts.smart_punctuation {
+        options.smart_punctuation = v;
+    }
     if let Some(v) = opts.mdx {
         options.mdx = v;
     }
     if let Some(v) = opts.cjk_emphasis {
         options.cjk_emphasis = v;
+    }
+    if opts.math.as_ref().is_some_and(|options| options.enabled != Some(false)) {
+        options.math = true;
+    }
+    if opts.definition_lists.as_ref().is_some_and(|options| options.enabled != Some(false)) {
+        options.definition_lists = true;
     }
 
     options
@@ -72,6 +87,12 @@ pub(super) fn transform_options_to_renderer_options(
     }
     if let Some(v) = opts.autolink_target_blank {
         options.autolink_target_blank = v;
+    }
+    if let Some(v) = opts.link_target_blank {
+        options.link_target_blank = v;
+    }
+    if let Some(v) = opts.source_spans {
+        options.source_spans = v;
     }
     if let Some(v) = opts.semantic_footnotes {
         options.semantic_footnotes = v;

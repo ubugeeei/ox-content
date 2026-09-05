@@ -44,6 +44,16 @@ fn collect_node_text(node: &Node<'_>, text: &mut String) {
                 collect_node_text(child, text);
             }
         }
+        Node::Superscript(value) => {
+            for child in &value.children {
+                collect_node_text(child, text);
+            }
+        }
+        Node::Subscript(value) => {
+            for child in &value.children {
+                collect_node_text(child, text);
+            }
+        }
         Node::Link(value) => {
             for child in &value.children {
                 collect_node_text(child, text);
@@ -139,6 +149,8 @@ fn node_has_permalink_marker(node: &Node<'_>, id: &str) -> bool {
         Node::Emphasis(value) => heading_has_permalink_marker(&value.children, id),
         Node::Strong(value) => heading_has_permalink_marker(&value.children, id),
         Node::Delete(value) => heading_has_permalink_marker(&value.children, id),
+        Node::Superscript(value) => heading_has_permalink_marker(&value.children, id),
+        Node::Subscript(value) => heading_has_permalink_marker(&value.children, id),
         _ => false,
     }
 }

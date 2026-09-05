@@ -7,7 +7,7 @@
 use std::fmt::{Display, Write as _};
 
 use compact_str::CompactString;
-use ox_content_ast::{Heading, Node};
+use ox_content_ast::{Heading, Node, Span};
 
 use super::super::autolink::find_autolink_match;
 use super::super::escape::{write_escaped_into, write_url_escaped_into};
@@ -46,6 +46,17 @@ impl HtmlRenderer {
                 _ => self.output.push(ch),
             }
         }
+    }
+
+    pub(in crate::html::renderer) fn write_source_span_attr(&mut self, span: Span) {
+        if !self.options.source_spans || span.start == span.end {
+            return;
+        }
+        self.write(" data-source-span=\"");
+        self.write_display(span.start);
+        self.write("-");
+        self.write_display(span.end);
+        self.write("\"");
     }
 
     /// Walks `s` and emits an `<a>` tag for each registered URL pattern match.

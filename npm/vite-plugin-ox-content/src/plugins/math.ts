@@ -23,7 +23,10 @@ type KatexModule = {
 };
 
 const MATH_TAG =
-  /<(span|div) class="ox-math ox-math-(inline|block)" data-ox-tex="([^"]*)">[\s\S]*?<\/\1>/g;
+  /<(span|div)\b(?=[^>]*\bclass="[^"]*\box-math\b[^"]*")(?=[^>]*\bdata-ox-tex="[^"]*")[^>]*>[\s\S]*?<\/\1>/g;
+const CLASS_ATTR = /\bclass="([^"]*)"/;
+const SOURCE_SPAN_ATTR = /\sdata-source-span="[^"]*"/;
+const TEX_ATTR = /\bdata-ox-tex="([^"]*)"/;
 
 let missingWarned = false;
 
@@ -65,7 +68,20 @@ export async function renderKatexMath(
     return html;
   }
 
-  return html.replace(MATH_TAG, (_match, tag: string, kind: string, encoded: string) => {
+  return html.replace(MATH_TAG, (match, tag: string) => {
+    const openTag = match.slice(0, match.indexOf(">"));
+    const className = CLASS_ATTR.exec(openTag)?.[1] ?? "";
+    const classes = className.split(/\s+/);
+    const kind = classes.includes("ox-math-block")
+      ? "block"
+      : classes.includes("ox-math-inline")
+        ? "inline"
+        : undefined;
+    const encoded = TEX_ATTR.exec(openTag)?.[1];
+    if (kind === undefined || encoded === undefined) {
+      return match;
+    }
+    const sourceSpan = SOURCE_SPAN_ATTR.exec(openTag)?.[0] ?? "";
     const block = kind === "block";
     const tex = decodeHtmlAttr(encoded);
     const options = {
@@ -90,7 +106,7 @@ export async function renderKatexMath(
       }
       rendered = katex.renderToString(tex, { ...options, throwOnError: false });
     }
-    return `<${tag} class="ox-math ox-math-${kind}">${rendered}</${tag}>`;
+    return `<${tag} class="ox-math ox-math-${kind}"${sourceSpan}>${rendered}</${tag}>`;
   });
 }
 

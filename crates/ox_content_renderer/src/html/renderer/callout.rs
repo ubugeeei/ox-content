@@ -16,7 +16,9 @@ impl HtmlRenderer {
         mut skip_chars: usize,
     ) {
         let paragraph_start = self.output.len();
-        self.write("<p>");
+        self.write("<p");
+        self.write_source_span_attr(paragraph.span);
+        self.write(">");
         let body_start = self.output.len();
 
         // The former temporary renderer had no initialized autolink index,
@@ -62,7 +64,9 @@ impl HtmlRenderer {
         }
     }
 
-    fn detect_callout<'a>(paragraph: &Paragraph<'a>) -> Option<(CalloutKind, usize)> {
+    pub(in crate::html::renderer) fn detect_callout<'a>(
+        paragraph: &Paragraph<'a>,
+    ) -> Option<(CalloutKind, usize)> {
         // Fast bail: a callout marker is `[!KIND]...` so the very first
         // text byte must be `[`. The previous version unconditionally
         // allocated a `String prefix` and pushed Text values into it
@@ -136,7 +140,9 @@ impl HtmlRenderer {
 
         self.write("<blockquote class=\"ox-callout ox-callout--");
         self.write(kind.class_name());
-        self.write("\">\n");
+        self.write("\"");
+        self.write_source_span_attr(block_quote.span);
+        self.write(">\n");
         self.write("<p class=\"ox-callout-title\">");
         self.write(kind.label());
         self.write("</p>\n");

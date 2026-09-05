@@ -33,7 +33,13 @@ type NativeTransformOptions = {
   tables?: boolean;
   strikethrough?: boolean;
   autolinks?: boolean;
+  superscript?: boolean;
+  subscript?: boolean;
+  smartPunctuation?: boolean;
   autolinkUrls?: boolean;
+  autolinkTargetBlank?: boolean;
+  linkTargetBlank?: boolean;
+  sourceSpans?: boolean;
   frontmatter?: boolean;
   tocMaxDepth?: number;
   headingPermalinks?: boolean;
@@ -229,7 +235,13 @@ function createNativeTransformOptions(options: ResolvedOptions): NativeTransform
     tables: options.tables,
     strikethrough: options.strikethrough,
     autolinks: options.autolinks,
+    superscript: options.superscript ?? false,
+    subscript: options.subscript ?? false,
+    smartPunctuation: options.smartPunctuation ?? false,
     autolinkUrls: options.autolinks,
+    autolinkTargetBlank: options.autolinkTargetBlank ?? true,
+    linkTargetBlank: options.linkTargetBlank ?? true,
+    sourceSpans: options.sourceSpans ?? false,
     frontmatter: options.frontmatter,
     tocMaxDepth: options.tocMaxDepth,
     headingPermalinks: options.headingPermalinks?.enabled ?? false,

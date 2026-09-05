@@ -58,6 +58,16 @@ fn collect_text(node: &Node, text: &mut String) {
                 collect_text(child, text);
             }
         }
+        Node::Superscript(s) => {
+            for child in &s.children {
+                collect_text(child, text);
+            }
+        }
+        Node::Subscript(s) => {
+            for child in &s.children {
+                collect_text(child, text);
+            }
+        }
         Node::Link(l) => {
             for child in &l.children {
                 collect_text(child, text);

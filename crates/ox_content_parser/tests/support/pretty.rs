@@ -74,6 +74,13 @@ fn format_node(node: &Node<'_>, source: &str, depth: usize, out: &mut String) {
                 ),
             );
         }
+        Node::MathBlock(m) => {
+            line(
+                out,
+                depth,
+                format_args!("MathBlock value={:?} {}", m.value, span(m.span, source)),
+            );
+        }
         Node::Html(h) => {
             line(out, depth, format_args!("Html value={:?} {}", h.value, span(h.span, source)));
         }
@@ -88,6 +95,24 @@ fn format_node(node: &Node<'_>, source: &str, depth: usize, out: &mut String) {
                         format_node(child, source, depth + 3, out);
                     }
                 }
+            }
+        }
+        Node::DefinitionList(d) => {
+            line(out, depth, format_args!("DefinitionList {}", span(d.span, source)));
+            for child in &d.children {
+                format_node(child, source, depth + 1, out);
+            }
+        }
+        Node::DefinitionListTerm(t) => {
+            line(out, depth, format_args!("DefinitionListTerm {}", span(t.span, source)));
+            for child in &t.children {
+                format_node(child, source, depth + 1, out);
+            }
+        }
+        Node::DefinitionListDefinition(d) => {
+            line(out, depth, format_args!("DefinitionListDefinition {}", span(d.span, source)));
+            for child in &d.children {
+                format_node(child, source, depth + 1, out);
             }
         }
         Node::Text(t) => {
@@ -107,6 +132,9 @@ fn format_node(node: &Node<'_>, source: &str, depth: usize, out: &mut String) {
         }
         Node::InlineCode(c) => {
             line(out, depth, format_args!("InlineCode {:?} {}", c.value, span(c.span, source)));
+        }
+        Node::InlineMath(m) => {
+            line(out, depth, format_args!("InlineMath {:?} {}", m.value, span(m.span, source)));
         }
         Node::Break(b) => {
             line(out, depth, format_args!("Break {}", span(b.span, source)));
@@ -137,6 +165,18 @@ fn format_node(node: &Node<'_>, source: &str, depth: usize, out: &mut String) {
         Node::Delete(d) => {
             line(out, depth, format_args!("Delete {}", span(d.span, source)));
             for child in &d.children {
+                format_node(child, source, depth + 1, out);
+            }
+        }
+        Node::Superscript(s) => {
+            line(out, depth, format_args!("Superscript {}", span(s.span, source)));
+            for child in &s.children {
+                format_node(child, source, depth + 1, out);
+            }
+        }
+        Node::Subscript(s) => {
+            line(out, depth, format_args!("Subscript {}", span(s.span, source)));
+            for child in &s.children {
                 format_node(child, source, depth + 1, out);
             }
         }

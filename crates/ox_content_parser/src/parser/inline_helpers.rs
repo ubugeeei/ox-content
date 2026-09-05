@@ -150,6 +150,26 @@ impl<'a> Parser<'a> {
         count
     }
 
+    /// Returns the byte after a closed code span that opens at `start`.
+    ///
+    /// Inline constructs outside code spans use this to skip over backtick
+    /// regions while scanning for their own closing delimiter. An unmatched
+    /// opener stays literal and therefore is not skipped.
+    pub(super) fn closed_code_span_end(bytes: &[u8], start: usize) -> Option<usize> {
+        let open_len = Self::marker_run_len(bytes, start, b'`');
+        let mut cursor = start + open_len;
+        while cursor < bytes.len() {
+            let relative = memchr::memchr(b'`', &bytes[cursor..])?;
+            cursor += relative;
+            let close_len = Self::marker_run_len(bytes, cursor, b'`');
+            if close_len == open_len {
+                return Some(cursor + close_len);
+            }
+            cursor += close_len;
+        }
+        None
+    }
+
     /// Reports whether `closer` occurs at or after `from` in `content`.
     ///
     /// The balanced scans (`scan_balanced` for `]`, `skip_braces` for `}`)
@@ -244,6 +264,8 @@ fn flatten_inline_text(nodes: &[Node<'_>], out: &mut ox_content_allocator::Strin
             Node::Emphasis(n) => flatten_inline_text(&n.children, out),
             Node::Strong(n) => flatten_inline_text(&n.children, out),
             Node::Delete(n) => flatten_inline_text(&n.children, out),
+            Node::Superscript(n) => flatten_inline_text(&n.children, out),
+            Node::Subscript(n) => flatten_inline_text(&n.children, out),
             Node::Link(n) => flatten_inline_text(&n.children, out),
             Node::Image(n) => out.push_str(n.alt),
             Node::Break(_) => out.push('\n'),

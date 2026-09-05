@@ -36,6 +36,11 @@ describe("framework Markdown utilities", () => {
     expect(options.i18n).toBe(false);
     expect(options.highlight).toBe(false);
     expect(options.frontmatter).toBe(false);
+    expect(options.superscript).toBe(false);
+    expect(options.subscript).toBe(false);
+    expect(options.smartPunctuation).toBe(false);
+    expect(options.linkTargetBlank).toBe(true);
+    expect(options.sourceSpans).toBe(false);
     expect(options.codeAnnotations).toMatchObject({
       enabled: true,
       notation: "attribute",
@@ -45,6 +50,29 @@ describe("framework Markdown utilities", () => {
     expect(options.embeds.openGraph).toEqual({ timeout: 500 });
     expect(options.embeds.pm).toBe(false);
     expect(options.math.enabled).toBe(false);
+  });
+
+  it("forwards opt-in native Markdown toggles", () => {
+    const options = createFrameworkMarkdownOptions({
+      srcDir: "docs",
+      outDir: "dist",
+      base: "/",
+      extensions: [".md"],
+      gfm: true,
+      superscript: true,
+      subscript: true,
+      smartPunctuation: true,
+      linkTargetBlank: false,
+      sourceSpans: true,
+      toc: false,
+      tocMaxDepth: 2,
+    });
+
+    expect(options.superscript).toBe(true);
+    expect(options.subscript).toBe(true);
+    expect(options.smartPunctuation).toBe(true);
+    expect(options.linkTargetBlank).toBe(false);
+    expect(options.sourceSpans).toBe(true);
   });
 
   it("forwards math into resolved Markdown options", () => {

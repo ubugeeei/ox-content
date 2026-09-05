@@ -65,6 +65,7 @@ pub(super) fn remap_node_spans<'a>(node: &mut Node<'a>, source_offset: u32, offs
         }
         Node::ListItem(node) => remap_list_item_spans(node, source_offset, offsets),
         Node::CodeBlock(node) => remap_span(&mut node.span, source_offset, offsets),
+        Node::MathBlock(node) => remap_span(&mut node.span, source_offset, offsets),
         Node::Html(node) => remap_span(&mut node.span, source_offset, offsets),
         Node::Table(node) => {
             remap_span(&mut node.span, source_offset, offsets);
@@ -76,6 +77,24 @@ pub(super) fn remap_node_spans<'a>(node: &mut Node<'a>, source_offset: u32, offs
                         remap_node_spans(child, source_offset, offsets);
                     }
                 }
+            }
+        }
+        Node::DefinitionList(node) => {
+            remap_span(&mut node.span, source_offset, offsets);
+            for child in &mut node.children {
+                remap_node_spans(child, source_offset, offsets);
+            }
+        }
+        Node::DefinitionListTerm(node) => {
+            remap_span(&mut node.span, source_offset, offsets);
+            for child in &mut node.children {
+                remap_node_spans(child, source_offset, offsets);
+            }
+        }
+        Node::DefinitionListDefinition(node) => {
+            remap_span(&mut node.span, source_offset, offsets);
+            for child in &mut node.children {
+                remap_node_spans(child, source_offset, offsets);
             }
         }
         Node::Text(node) => remap_span(&mut node.span, source_offset, offsets),
@@ -92,6 +111,7 @@ pub(super) fn remap_node_spans<'a>(node: &mut Node<'a>, source_offset: u32, offs
             }
         }
         Node::InlineCode(node) => remap_span(&mut node.span, source_offset, offsets),
+        Node::InlineMath(node) => remap_span(&mut node.span, source_offset, offsets),
         Node::Break(node) => remap_span(&mut node.span, source_offset, offsets),
         Node::Link(node) => {
             remap_span(&mut node.span, source_offset, offsets);
@@ -101,6 +121,18 @@ pub(super) fn remap_node_spans<'a>(node: &mut Node<'a>, source_offset: u32, offs
         }
         Node::Image(node) => remap_span(&mut node.span, source_offset, offsets),
         Node::Delete(node) => {
+            remap_span(&mut node.span, source_offset, offsets);
+            for child in &mut node.children {
+                remap_node_spans(child, source_offset, offsets);
+            }
+        }
+        Node::Superscript(node) => {
+            remap_span(&mut node.span, source_offset, offsets);
+            for child in &mut node.children {
+                remap_node_spans(child, source_offset, offsets);
+            }
+        }
+        Node::Subscript(node) => {
             remap_span(&mut node.span, source_offset, offsets);
             for child in &mut node.children {
                 remap_node_spans(child, source_offset, offsets);

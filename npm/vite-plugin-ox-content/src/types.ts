@@ -1714,6 +1714,42 @@ export interface OxContentOptions {
   autolinks?: boolean;
 
   /**
+   * Enable `^text^` superscript spans.
+   * @default false
+   */
+  superscript?: boolean;
+
+  /**
+   * Enable `~text~` subscript spans.
+   * @default false
+   */
+  subscript?: boolean;
+
+  /**
+   * Enable smart punctuation replacement.
+   * @default false
+   */
+  smartPunctuation?: boolean;
+
+  /**
+   * Add `target="_blank" rel="noopener noreferrer"` to linkified bare URLs.
+   * @default true
+   */
+  autolinkTargetBlank?: boolean;
+
+  /**
+   * Add `target="_blank" rel="noopener noreferrer"` to parsed http(s) Markdown links.
+   * @default true
+   */
+  linkTargetBlank?: boolean;
+
+  /**
+   * Emit `data-source-span="start-end"` on rendered block elements.
+   * @default false
+   */
+  sourceSpans?: boolean;
+
+  /**
    * Enable syntax highlighting for code blocks.
    *
    * When true, fenced and language-tagged inline code is highlighted with the
@@ -2278,6 +2314,12 @@ export interface ResolvedOptions {
   taskLists: boolean;
   strikethrough: boolean;
   autolinks: boolean;
+  superscript: boolean;
+  subscript: boolean;
+  smartPunctuation: boolean;
+  autolinkTargetBlank?: boolean;
+  linkTargetBlank?: boolean;
+  sourceSpans?: boolean;
   highlight: boolean;
   codeAnnotations: ResolvedCodeAnnotationsOptions;
   wikiLinks: ResolvedWikiLinkOptions;

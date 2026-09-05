@@ -1,6 +1,7 @@
 use ox_content_allocator::Vec;
 use ox_content_ast::{List, ListItem, Node, Span};
 
+use self::item_source::ListItemSource;
 use super::Parser;
 use super::list_item::ParsedListItem;
 use crate::error::ParseResult;
@@ -60,8 +61,9 @@ impl<'a> Parser<'a> {
                 self.parse_inline_list_item_children(item.content, item.content_offset, item_end)?
             } else {
                 let item_source = item_source
-                    .unwrap_or_else(|| self.init_list_item_source(item.content, consumed_newline))
-                    .into_bump_str();
+                    .unwrap_or_else(|| self.init_list_item_source(&item, consumed_newline));
+                let source_map = item_source.source_map;
+                let item_source = item_source.text.into_bump_str();
                 let sub_parser = self.sub_parser_with_lazy_lines(item_source, lazy_lines);
                 let sub_doc = sub_parser.parse()?;
                 // The item directly contains blank-separated blocks iff a
@@ -70,7 +72,7 @@ impl<'a> Parser<'a> {
                 content_spread = item_content_has_blank_gap(item_source, &sub_doc.children);
                 let mut item_children = sub_doc.children;
                 for child in &mut item_children {
-                    Self::offset_node_spans(child, item.content_offset as u32);
+                    source_map.remap_node_spans(child);
                 }
                 item_children
             };
@@ -123,7 +125,7 @@ impl<'a> Parser<'a> {
         baseline_indent: usize,
         consumed_newline: bool,
         lazy_lines: &mut rustc_hash::FxHashSet<u32>,
-    ) -> (bool, usize, Option<ox_content_allocator::String<'a>>, Option<ParsedListItem<'a>>) {
+    ) -> (bool, usize, Option<ListItemSource<'a>>, Option<ParsedListItem<'a>>) {
         profile_span_detail!("parser::list_item_continuation");
         let content_indent = item.content_indent;
         let item_is_empty = item.content.trim().is_empty();
@@ -165,11 +167,20 @@ impl<'a> Parser<'a> {
                 // blank line, but its list may (`* a\n*\n\n* c`).
                 if next_indent >= content_indent && !(item_is_empty && item_source.is_none()) {
                     // Interior blank line(s): the item continues below.
-                    let item_source = item_source.get_or_insert_with(|| {
-                        self.init_list_item_source(item.content, consumed_newline)
-                    });
+                    let item_source = item_source
+                        .get_or_insert_with(|| self.init_list_item_source(item, consumed_newline));
+                    let mut blank_start = continuation_start;
                     for _ in 0..blank_count {
-                        item_source.push('\n');
+                        let blank_next = self.next_line_start(blank_start);
+                        let generated_start = item_source.text.len();
+                        item_source.text.push('\n');
+                        item_source.source_map.push_line(
+                            generated_start,
+                            1,
+                            blank_start,
+                            blank_next.saturating_sub(blank_start),
+                        );
+                        blank_start = blank_next;
                     }
                     self.position = lookahead;
                     item_end = self.position;
@@ -196,11 +207,23 @@ impl<'a> Parser<'a> {
             let current_indent = self.calc_indentation(continuation_start);
             if current_indent >= content_indent {
                 // Indented continuation content.
-                let item_source = item_source.get_or_insert_with(|| {
-                    self.init_list_item_source(item.content, consumed_newline)
-                });
-                Self::push_line_without_indent(item_source, continuation_line, content_indent);
-                item_source.push('\n');
+                let item_source = item_source
+                    .get_or_insert_with(|| self.init_list_item_source(item, consumed_newline));
+                let generated_start = item_source.text.len();
+                let source_offset_in_line = Self::push_line_without_indent(
+                    &mut item_source.text,
+                    continuation_line,
+                    content_indent,
+                );
+                item_source.text.push('\n');
+                let source_start = continuation_start + source_offset_in_line;
+                item_source.source_map.push_line_with_block_start(
+                    generated_start,
+                    item_source.text.len() - generated_start,
+                    continuation_start,
+                    source_start,
+                    continuation_next.saturating_sub(source_start),
+                );
                 self.position = continuation_next;
                 item_end = self.position;
                 after_blank = false;
@@ -234,14 +257,21 @@ impl<'a> Parser<'a> {
                 break;
             }
             let source = item_source
-                .get_or_insert_with(|| self.init_list_item_source(item.content, consumed_newline));
+                .get_or_insert_with(|| self.init_list_item_source(item, consumed_newline));
             // Keep the lazy line's own indentation: the sub-parse then
             // treats it as paragraph continuation even when it looks like
             // an (over-indented) marker, e.g. `- e` five columns deep.
             // Recording the offset stops setext reinterpretation.
-            lazy_lines.insert(source.len() as u32);
-            source.push_str(continuation_line);
-            source.push('\n');
+            let generated_start = source.text.len();
+            lazy_lines.insert(source.text.len() as u32);
+            source.text.push_str(continuation_line);
+            source.text.push('\n');
+            source.source_map.push_line(
+                generated_start,
+                source.text.len() - generated_start,
+                continuation_start,
+                continuation_next.saturating_sub(continuation_start),
+            );
             self.position = continuation_next;
             item_end = self.position;
         }
@@ -269,8 +299,10 @@ fn block_span(node: &Node<'_>) -> Span {
         Node::BlockQuote(n) => n.span,
         Node::List(n) => n.span,
         Node::CodeBlock(n) => n.span,
+        Node::MathBlock(n) => n.span,
         Node::Html(n) => n.span,
         Node::Table(n) => n.span,
+        Node::DefinitionList(n) => n.span,
         Node::Definition(n) => n.span,
         Node::FootnoteDefinition(n) => n.span,
         _ => Span::new(0, 0),

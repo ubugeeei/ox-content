@@ -1659,6 +1659,7 @@ dependencies = [
  "ox_content_profiler",
  "ox_content_renderer",
  "rustc-hash",
+ "smallvec",
  "thiserror",
 ]
 
