@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.0.0-beta.15] - 2026-09-05
+
+### Features
+
+- own dev assets and dependencies
+- add slot-preserving html host renderer
+- support multi-source git lastmod
+
+### Bug Fixes
+
+- harden dev dependency cache
+- resolve css-only stylesheet assets
+
 ## [3.0.0-beta.14] - 2026-09-05
 
 ### Features
