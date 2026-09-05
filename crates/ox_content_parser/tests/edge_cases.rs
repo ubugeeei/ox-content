@@ -6,6 +6,8 @@ use ox_content_parser::{Parser, ParserOptions};
 mod autolinks;
 #[path = "edge_cases/blocks.rs"]
 mod blocks;
+#[path = "edge_cases/extensions.rs"]
+mod extensions;
 #[path = "edge_cases/html.rs"]
 mod html;
 #[path = "edge_cases/inline.rs"]
@@ -14,6 +16,8 @@ mod inline;
 mod lists;
 #[path = "edge_cases/prepass.rs"]
 mod prepass;
+#[path = "edge_cases/spans.rs"]
+mod spans;
 #[path = "edge_cases/tables.rs"]
 mod tables;
 
@@ -33,6 +37,8 @@ fn first_text<'a>(node: &'a Node<'a>) -> Option<&'a str> {
         Node::Emphasis(emphasis) => emphasis.children.iter().find_map(first_text),
         Node::Strong(strong) => strong.children.iter().find_map(first_text),
         Node::Delete(delete) => delete.children.iter().find_map(first_text),
+        Node::Superscript(superscript) => superscript.children.iter().find_map(first_text),
+        Node::Subscript(subscript) => subscript.children.iter().find_map(first_text),
         Node::Link(link) => link.children.iter().find_map(first_text),
         Node::List(list) => {
             list.children.iter().flat_map(|item| item.children.iter()).find_map(first_text)
@@ -54,6 +60,16 @@ fn flatten_text(node: &Node<'_>) -> String {
         Node::Emphasis(emphasis) => emphasis.children.iter().map(flatten_text).collect(),
         Node::Strong(strong) => strong.children.iter().map(flatten_text).collect(),
         Node::Delete(delete) => delete.children.iter().map(flatten_text).collect(),
+        Node::InlineCode(inline_code) => inline_code.value.to_string(),
+        Node::Superscript(superscript) => superscript.children.iter().map(flatten_text).collect(),
+        Node::Subscript(subscript) => subscript.children.iter().map(flatten_text).collect(),
+        Node::InlineMath(inline_math) => inline_math.value.to_string(),
+        Node::MathBlock(math) => math.value.to_string(),
+        Node::DefinitionList(list) => list.children.iter().map(flatten_text).collect(),
+        Node::DefinitionListTerm(term) => term.children.iter().map(flatten_text).collect(),
+        Node::DefinitionListDefinition(definition) => {
+            definition.children.iter().map(flatten_text).collect()
+        }
         Node::Link(link) => link.children.iter().map(flatten_text).collect(),
         Node::List(list) => {
             list.children.iter().flat_map(|item| item.children.iter()).map(flatten_text).collect()

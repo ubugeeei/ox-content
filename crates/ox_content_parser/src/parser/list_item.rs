@@ -11,6 +11,7 @@ pub(super) struct ParsedListItem<'a> {
     pub(super) start: Option<u32>,
     pub(super) content: &'a str,
     pub(super) content_offset: usize,
+    pub(super) content_source_end: usize,
     /// Column (relative to the marker line's start) where continuation
     /// lines must be indented to belong to this item: marker indent +
     /// marker width + following spaces (one column when the item is
@@ -173,6 +174,7 @@ impl<'a> Parser<'a> {
                 start,
                 content,
                 content_offset: trimmed_offset + marker_width + 1,
+                content_source_end: line_start + line.len(),
                 content_indent: marker_end_col + 1,
                 checked: None,
             });
@@ -199,6 +201,7 @@ impl<'a> Parser<'a> {
             start,
             content,
             content_offset,
+            content_source_end: line_start + line.len(),
             content_indent,
             checked,
         })
@@ -211,18 +214,28 @@ impl<'a> Parser<'a> {
         out: &mut ox_content_allocator::String<'a>,
         line: &str,
         columns: usize,
-    ) {
+    ) -> usize {
         let bytes = line.as_bytes();
         let mut col = 0usize;
         let mut i = 0usize;
+        let mut source_start = 0usize;
         while i < bytes.len() {
             match bytes[i] {
                 b' ' => {
                     col += 1;
                     i += 1;
+                    if col <= columns {
+                        source_start = i;
+                    }
                 }
                 b'\t' => {
-                    col = (col / 4 + 1) * 4;
+                    let next_col = (col / 4 + 1) * 4;
+                    if next_col <= columns {
+                        source_start = i + 1;
+                    } else if col < columns {
+                        source_start = i;
+                    }
+                    col = next_col;
                     i += 1;
                 }
                 _ => break,
@@ -232,6 +245,7 @@ impl<'a> Parser<'a> {
             out.push(' ');
         }
         out.push_str(&line[i..]);
+        source_start
     }
 
     pub(super) fn strip_indent_columns(line: &str, columns: usize) -> &str {

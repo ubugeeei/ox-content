@@ -51,6 +51,13 @@ pub(super) const KIND_MDX_JSX_TEXT: u8 = 24;
 pub(super) const KIND_MDX_ESM: u8 = 25;
 pub(super) const KIND_MDX_FLOW_EXPRESSION: u8 = 26;
 pub(super) const KIND_MDX_TEXT_EXPRESSION: u8 = 27;
+pub(super) const KIND_MATH: u8 = 28;
+pub(super) const KIND_INLINE_MATH: u8 = 29;
+pub(super) const KIND_DEFINITION_LIST: u8 = 30;
+pub(super) const KIND_DEFINITION_TERM: u8 = 31;
+pub(super) const KIND_DEFINITION_DESCRIPTION: u8 = 32;
+pub(super) const KIND_SUPERSCRIPT: u8 = 33;
+pub(super) const KIND_SUBSCRIPT: u8 = 34;
 
 #[derive(Clone, Copy)]
 pub(super) struct RawNodeRecord {

@@ -58,6 +58,7 @@ impl<'a> Parser<'a> {
         let mut align: Vec<'a, AlignKind> = self.allocator.new_vec();
 
         // Parse header row
+        let header_start = self.position;
         let header_line = self.consume_line();
 
         // Parse delimiter row to get alignment
@@ -74,7 +75,7 @@ impl<'a> Parser<'a> {
         // arena-backed cells immediately, which keeps the table path linear in
         // the input and avoids throwaway row containers.
         let mut children: Vec<'a, TableRow<'a>> = self.allocator.new_vec();
-        children.push(self.parse_table_row(header_line, column_count)?);
+        children.push(self.parse_table_row(header_line, header_start, column_count)?);
 
         // Parse body rows
         loop {
@@ -91,8 +92,9 @@ impl<'a> Parser<'a> {
                 break;
             }
 
+            let row_start = self.position;
             let row_line = self.consume_line();
-            children.push(self.parse_table_row(row_line, column_count)?);
+            children.push(self.parse_table_row(row_line, row_start, column_count)?);
         }
 
         let span = Span::new(start as u32, self.position as u32);
@@ -108,19 +110,29 @@ impl<'a> Parser<'a> {
     pub(super) fn parse_table_row(
         &self,
         line: &'a str,
+        line_start: usize,
         column_count: usize,
     ) -> ParseResult<TableRow<'a>> {
         profile_span_detail!("parser::table_row");
         let mut cells: Vec<'a, TableCell<'a>> = self.allocator.new_vec();
-        for cell_content in Self::table_row_cells(line).take(column_count) {
+        let line_end = line_start + line.len();
+        for (cell_content, cell_start, cell_end) in
+            Self::table_row_cells_with_offsets(line).take(column_count)
+        {
             let cell_content = self.unescape_table_pipes(cell_content);
-            let cell_children = self.parse_inline_block(cell_content, 0)?;
-            cells.push(TableCell { children: cell_children, span: Span::new(0, 0) });
+            let cell_children = self.parse_inline_block(cell_content, line_start + cell_start)?;
+            cells.push(TableCell {
+                children: cell_children,
+                span: Span::new((line_start + cell_start) as u32, (line_start + cell_end) as u32),
+            });
         }
         while cells.len() < column_count {
-            cells.push(TableCell { children: self.allocator.new_vec(), span: Span::new(0, 0) });
+            cells.push(TableCell {
+                children: self.allocator.new_vec(),
+                span: Span::new(line_end as u32, line_end as u32),
+            });
         }
-        Ok(TableRow { children: cells, span: Span::new(0, 0) })
+        Ok(TableRow { children: cells, span: Span::new(line_start as u32, line_end as u32) })
     }
 
     /// Removes the table-level escape from pipes before inline parsing.
@@ -160,16 +172,30 @@ impl<'a> Parser<'a> {
     /// Leading/trailing pipes are syntax delimiters, not empty cells in this
     /// parser's table model, so they are stripped once before splitting.
     pub(super) fn table_row_cells(line: &'a str) -> impl Iterator<Item = &'a str> {
+        Self::table_row_cells_with_offsets(line).map(|(cell, _, _)| cell)
+    }
+
+    fn table_row_cells_with_offsets(
+        line: &'a str,
+    ) -> impl Iterator<Item = (&'a str, usize, usize)> {
         let trimmed = line.trim();
-        let trimmed = trimmed.strip_prefix('|').unwrap_or(trimmed);
-        let trimmed = if trimmed.ends_with('|')
-            && !is_escaped_table_pipe(trimmed.as_bytes(), trimmed.len() - 1)
+        let trimmed_start = line.len() - line.trim_start().len();
+        let mut content_start = trimmed_start;
+        let mut content_end = trimmed_start + trimmed.len();
+        if line[content_start..content_end].starts_with('|') {
+            content_start += 1;
+        }
+        if content_start < content_end
+            && line[content_start..content_end].ends_with('|')
+            && !is_escaped_table_pipe(
+                &line.as_bytes()[content_start..content_end],
+                content_end - content_start - 1,
+            )
         {
-            &trimmed[..trimmed.len() - 1]
-        } else {
-            trimmed
-        };
-        let bytes = trimmed.as_bytes();
+            content_end -= 1;
+        }
+        let content = &line[content_start..content_end];
+        let bytes = content.as_bytes();
         let mut cell_start = 0;
 
         std::iter::from_fn(move || {
@@ -181,18 +207,27 @@ impl<'a> Parser<'a> {
             while let Some(relative) = memchr(b'|', &bytes[search_start..]) {
                 let pipe = search_start + relative;
                 if !is_escaped_table_pipe(bytes, pipe) {
-                    let cell = trimmed[cell_start..pipe].trim();
+                    let raw = &content[cell_start..pipe];
+                    let (cell, start, end) = trim_cell(raw, content_start + cell_start);
                     cell_start = pipe + 1;
-                    return Some(cell);
+                    return Some((cell, start, end));
                 }
                 search_start = pipe + 1;
             }
 
-            let cell = trimmed[cell_start..].trim();
+            let raw = &content[cell_start..];
+            let (cell, start, end) = trim_cell(raw, content_start + cell_start);
             cell_start = bytes.len() + 1;
-            Some(cell)
+            Some((cell, start, end))
         })
     }
+}
+
+fn trim_cell(cell: &str, offset: usize) -> (&str, usize, usize) {
+    let trimmed = cell.trim();
+    let start = offset + cell.len() - cell.trim_start().len();
+    let end = start + trimmed.len();
+    (trimmed, start, end)
 }
 
 fn is_escaped_table_pipe(bytes: &[u8], pipe: usize) -> bool {

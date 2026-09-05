@@ -52,6 +52,8 @@ fn flatten(source: &str, nodes: &[Node<'_>], buf: &mut String) {
             Node::Emphasis(e) => flatten(source, &e.children, buf),
             Node::Strong(s) => flatten(source, &s.children, buf),
             Node::Delete(d) => flatten(source, &d.children, buf),
+            Node::Superscript(s) => flatten(source, &s.children, buf),
+            Node::Subscript(s) => flatten(source, &s.children, buf),
             Node::Link(l) => flatten(source, &l.children, buf),
             _ => {
                 let span = node.span();

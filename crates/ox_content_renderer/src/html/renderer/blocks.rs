@@ -5,8 +5,8 @@
 //! glue keeps each file small while preserving the visitor behavior exactly.
 
 use ox_content_ast::{
-    BlockQuote, CodeBlock, Heading, Html, List, ListItem, Paragraph, Table, TableCell, TableRow,
-    ThematicBreak,
+    BlockQuote, CodeBlock, Heading, Html, List, ListItem, MathBlock, Paragraph, Table, TableCell,
+    TableRow, ThematicBreak,
 };
 
 use super::super::code_annotations::normalize_code_block_language;
@@ -27,7 +27,9 @@ impl HtmlRenderer {
             return;
         }
 
-        self.output.push_str("<p>");
+        self.output.push_str("<p");
+        self.write_source_span_attr(paragraph.span);
+        self.output.push('>');
         for child in &paragraph.children {
             self.visit_inline_node(child);
         }
@@ -49,7 +51,9 @@ impl HtmlRenderer {
         // skip materializing the id as a return-value `String`; it's
         // written straight into `self.output`.
         self.write_heading_id(heading);
-        self.output.push_str("\">");
+        self.output.push('"');
+        self.write_source_span_attr(heading.span);
+        self.output.push('>');
         for child in &heading.children {
             self.visit_inline_node(child);
         }
@@ -61,13 +65,15 @@ impl HtmlRenderer {
 
     pub(in crate::html::renderer) fn render_thematic_break(
         &mut self,
-        _thematic_break: &ThematicBreak,
+        thematic_break: &ThematicBreak,
     ) {
         crate::profile_span_detail!("renderer::visit_thematic_break");
+        self.write("<hr");
+        self.write_source_span_attr(thematic_break.span);
         if self.options.xhtml {
-            self.write("<hr />\n");
+            self.write(" />\n");
         } else {
-            self.write("<hr>\n");
+            self.write(">\n");
         }
     }
 
@@ -77,7 +83,9 @@ impl HtmlRenderer {
             return;
         }
 
-        self.write("<blockquote>\n");
+        self.write("<blockquote");
+        self.write_source_span_attr(block_quote.span);
+        self.write(">\n");
         for child in &block_quote.children {
             self.render_node(child);
         }
@@ -91,16 +99,18 @@ impl HtmlRenderer {
                 if start != 1 {
                     self.write("<ol start=\"");
                     self.write_display(start);
-                    self.write("\">\n");
+                    self.write("\"");
                 } else {
-                    self.write("<ol>\n");
+                    self.write("<ol");
                 }
             } else {
-                self.write("<ol>\n");
+                self.write("<ol");
             }
         } else {
-            self.write("<ul>\n");
+            self.write("<ul");
         }
+        self.write_source_span_attr(list.span);
+        self.write(">\n");
 
         // A tight list renders item paragraphs without <p> wrappers
         // (CommonMark "Lists": loose lists are the ones whose items are
@@ -127,7 +137,9 @@ impl HtmlRenderer {
         tight: bool,
     ) {
         crate::profile_span_detail!("renderer::visit_list_item");
-        self.write("<li>");
+        self.write("<li");
+        self.write_source_span_attr(list_item.span);
+        self.write(">");
 
         if let Some(checked) = list_item.checked {
             if checked {
@@ -160,7 +172,9 @@ impl HtmlRenderer {
     pub(in crate::html::renderer) fn render_code_block(&mut self, code_block: &CodeBlock<'_>) {
         crate::profile_span!("renderer::visit_code_block");
         if !self.options.code_annotations {
-            self.write("<pre><code");
+            self.write("<pre");
+            self.write_source_span_attr(code_block.span);
+            self.write("><code");
             if let Some(lang) = normalize_code_block_language(code_block.lang) {
                 self.write(" class=\"language-");
                 self.write_escaped(lang);
@@ -182,6 +196,7 @@ impl HtmlRenderer {
             self.write(&block_classes.join(" "));
             self.write("\"");
         }
+        self.write_source_span_attr(code_block.span);
         if let Some(title) = state.title.as_deref() {
             self.write(" data-code-title=\"");
             self.write_attribute_escaped(title);
@@ -217,6 +232,17 @@ impl HtmlRenderer {
         self.write("</code></pre>\n");
     }
 
+    pub(in crate::html::renderer) fn render_math_block(&mut self, math: &MathBlock<'_>) {
+        crate::profile_span!("renderer::visit_math_block");
+        self.write("<div class=\"ox-math ox-math-block\"");
+        self.write_source_span_attr(math.span);
+        self.write(" data-ox-tex=\"");
+        self.write_attribute_escaped(math.value);
+        self.write("\"><math display=\"block\"><mtext>");
+        self.write_escaped(math.value);
+        self.write("</mtext></math></div>\n");
+    }
+
     pub(in crate::html::renderer) fn render_html(&mut self, html: &Html<'_>) {
         crate::profile_span!("renderer::visit_html_block");
         self.write_html_value(html.value);
@@ -229,7 +255,9 @@ impl HtmlRenderer {
 
     pub(in crate::html::renderer) fn render_table(&mut self, table: &Table<'_>) {
         crate::profile_span!("renderer::visit_table");
-        self.write("<table>\n");
+        self.write("<table");
+        self.write_source_span_attr(table.span);
+        self.write(">\n");
         for (i, row) in table.children.iter().enumerate() {
             if i == 0 {
                 self.write("<thead>\n");
@@ -253,7 +281,9 @@ impl HtmlRenderer {
         align: &ox_content_allocator::Vec<'_, ox_content_ast::AlignKind>,
     ) {
         crate::profile_span_detail!("renderer::table_row");
-        self.write("<tr>\n");
+        self.write("<tr");
+        self.write_source_span_attr(row.span);
+        self.write(">\n");
         let tag = if is_header { "th" } else { "td" };
         for (idx, cell) in row.children.iter().enumerate() {
             self.write("<");
@@ -264,6 +294,7 @@ impl HtmlRenderer {
                 ox_content_ast::AlignKind::Right => self.write(" align=\"right\""),
                 ox_content_ast::AlignKind::None => {}
             }
+            self.write_source_span_attr(cell.span);
             self.write(">");
             self.visit_table_cell(cell);
             self.write("</");

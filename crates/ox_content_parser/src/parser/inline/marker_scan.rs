@@ -46,23 +46,47 @@ impl ForwardScan {
 /// repeat.
 pub(super) struct InlineMarkerScan {
     brace: ForwardScan,
+    caret: ForwardScan,
+    dollar: ForwardScan,
+    math: bool,
     mdx: bool,
     special: ForwardScan,
+    superscript: bool,
 }
 
 impl InlineMarkerScan {
-    pub(super) const fn new(mdx: bool) -> Self {
-        Self { brace: ForwardScan::new(), mdx, special: ForwardScan::new() }
+    pub(super) const fn new(mdx: bool, superscript: bool, math: bool) -> Self {
+        Self {
+            brace: ForwardScan::new(),
+            caret: ForwardScan::new(),
+            dollar: ForwardScan::new(),
+            math,
+            mdx,
+            special: ForwardScan::new(),
+            superscript,
+        }
     }
 
     pub(super) fn next(&mut self, bytes: &[u8], from: usize) -> usize {
-        let special = self.special.hit(from, |at| next_inline_special(bytes, at));
-        if !self.mdx {
-            return special;
+        let mut special = self.special.hit(from, |at| next_inline_special(bytes, at));
+        if self.mdx {
+            let brace = self
+                .brace
+                .hit(from, |at| memchr(b'{', &bytes[at..]).map_or(bytes.len(), |rel| at + rel));
+            special = special.min(brace);
         }
-        let brace = self
-            .brace
-            .hit(from, |at| memchr(b'{', &bytes[at..]).map_or(bytes.len(), |rel| at + rel));
-        special.min(brace)
+        if self.superscript {
+            let caret = self
+                .caret
+                .hit(from, |at| memchr(b'^', &bytes[at..]).map_or(bytes.len(), |rel| at + rel));
+            special = special.min(caret);
+        }
+        if self.math {
+            let dollar = self
+                .dollar
+                .hit(from, |at| memchr(b'$', &bytes[at..]).map_or(bytes.len(), |rel| at + rel));
+            special = special.min(dollar);
+        }
+        special
     }
 }

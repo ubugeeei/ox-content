@@ -154,6 +154,12 @@ impl<'a> Parser<'a> {
                 let trimmed = &line[trimmed_start - line_start..];
                 Self::try_parse_fenced_code_at(line, trimmed)
             }
+            b'$' if self.options.math => {
+                let line = self.line_at(line_start);
+                let trimmed = &line[trimmed_start - line_start..];
+                self.try_parse_math_block_at(line_start, line, trimmed)
+            }
+            b':' => self.starts_definition_body_at(line_start),
             b'{' => {
                 // `looks_like_flow_expression` walks to the end of the
                 // source to report that nothing closed, so a run of lines

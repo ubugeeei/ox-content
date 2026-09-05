@@ -16,6 +16,33 @@ fn external_links_get_security_attributes() {
 }
 
 #[test]
+fn parsed_links_can_skip_target_blank_security_attributes() {
+    let html = render(
+        "[site](https://example.com)",
+        ParserOptions::default(),
+        HtmlRendererOptions { link_target_blank: false, ..Default::default() },
+    );
+
+    assert_eq!(html, "<p><a href=\"https://example.com\">site</a></p>\n");
+}
+
+#[test]
+fn link_target_blank_does_not_disable_renderer_autolink_attributes() {
+    let html = render(
+        "Visit https://example.com",
+        ParserOptions::default(),
+        HtmlRendererOptions { link_target_blank: false, ..Default::default() },
+    );
+
+    assert!(
+        html.contains(
+            "<a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\">"
+        ),
+        "{html}"
+    );
+}
+
+#[test]
 fn relative_links_do_not_get_external_attributes() {
     let html =
         render("[guide](./guide.md)", ParserOptions::default(), HtmlRendererOptions::default());
@@ -87,6 +114,22 @@ fn xhtml_images_self_close() {
     );
 
     insta::assert_snapshot!(html);
+}
+
+#[test]
+fn script_and_smart_punctuation_extensions_render_when_enabled() {
+    let html = render(
+        "\"Smart\" H~2~O x^2^",
+        ParserOptions {
+            smart_punctuation: true,
+            subscript: true,
+            superscript: true,
+            ..ParserOptions::default()
+        },
+        HtmlRendererOptions::default(),
+    );
+
+    assert_eq!(html, "<p>“Smart” H<sub>2</sub>O x<sup>2</sup></p>\n");
 }
 
 #[test]

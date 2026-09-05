@@ -17,6 +17,7 @@ mod code_imports;
 mod conditional_blocks;
 mod containers;
 mod data_tables;
+#[allow(dead_code)]
 mod definition_lists;
 mod edit;
 mod emoji;
@@ -28,6 +29,7 @@ mod images;
 mod includes;
 mod keyboard_keys;
 mod magic;
+#[allow(dead_code)]
 mod math;
 mod not_by_ai;
 mod option_resolve;
@@ -76,6 +78,7 @@ pub struct TransformFeatureOptions {
     code_groups: Option<ResolvedCodeGroupOptions>,
     file_tree: Option<ResolvedFileTreeOptions>,
     data_tables: Option<ResolvedDataTableOptions>,
+    #[allow(dead_code)]
     definition_lists: Option<definition_lists::ResolvedDefinitionLists>,
     badges: bool,
     not_by_ai: Option<not_by_ai::ResolvedNotByAi>,
@@ -86,6 +89,7 @@ pub struct TransformFeatureOptions {
     image_galleries: Option<ResolvedImageGalleryOptions>,
     timelines: Option<timelines::ResolvedTimelineOptions>,
     conditional_blocks: Option<ResolvedConditionalBlockOptions>,
+    #[allow(dead_code)]
     math: bool,
     attributes: bool,
     edit_this_page: Option<ResolvedEditThisPageOptions>,
@@ -181,7 +185,6 @@ impl TransformFeatureOptions {
             || self.code_groups.is_some()
             || self.file_tree.is_some()
             || self.data_tables.is_some()
-            || self.definition_lists.is_some()
             || self.badges
             || self.not_by_ai.is_some()
             || self.keyboard_keys.is_some()
@@ -191,7 +194,6 @@ impl TransformFeatureOptions {
             || self.image_galleries.is_some()
             || self.timelines.is_some()
             || self.conditional_blocks.is_some()
-            || self.math
     }
 
     pub fn has_postprocess(&self) -> bool {
@@ -274,9 +276,6 @@ pub fn preprocess_markdown_with_frontmatter<'a, S: BuildHasher>(
     if let Some(tables) = &options.data_tables {
         current = Cow::Owned(data_tables::transform(&current, tables, &mut errors));
     }
-    if options.definition_lists.is_some() && current.contains("\n:") {
-        current = Cow::Owned(definition_lists::transform(&current));
-    }
     if options.badges && current.contains("{badge:") {
         let replaced = transform_markdown_text_segments(&current, |segment, out| {
             badges::replace(segment, out);
@@ -299,7 +298,6 @@ pub fn preprocess_markdown_with_frontmatter<'a, S: BuildHasher>(
         current = Cow::Owned(replaced);
     }
 
-    math::apply(&mut current, options.math);
     abbreviations::apply(&mut current, options.abbreviations.as_ref());
 
     PreprocessResult { source: current, errors }

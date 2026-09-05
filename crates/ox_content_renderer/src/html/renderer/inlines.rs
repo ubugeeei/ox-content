@@ -4,7 +4,10 @@
 //! and image URL sanitization so URL escaping and Markdown link conversion happen in a
 //! single place.
 
-use ox_content_ast::{Break, Delete, Emphasis, Image, InlineCode, Link, Strong, Text};
+use ox_content_ast::{
+    Break, Delete, Emphasis, Image, InlineCode, InlineMath, Link, Strong, Subscript, Superscript,
+    Text,
+};
 
 use super::HtmlRenderer;
 
@@ -45,6 +48,15 @@ impl HtmlRenderer {
         self.write("</code>");
     }
 
+    pub(in crate::html::renderer) fn render_inline_math(&mut self, inline_math: &InlineMath<'_>) {
+        crate::profile_span_detail!("renderer::visit_inline_math");
+        self.write("<span class=\"ox-math ox-math-inline\" data-ox-tex=\"");
+        self.write_attribute_escaped(inline_math.value);
+        self.write("\"><math><mtext>");
+        self.write_escaped(inline_math.value);
+        self.write("</mtext></math></span>");
+    }
+
     pub(in crate::html::renderer) fn render_break(&mut self, _break_node: &Break) {
         crate::profile_span_detail!("renderer::visit_break");
         self.output.push_str(self.options.hard_break());
@@ -59,7 +71,9 @@ impl HtmlRenderer {
         self.write_url_escaped(href);
         self.write("\"");
         // Add target="_blank" for external links (http:// or https://)
-        if href.starts_with("http://") || href.starts_with("https://") {
+        if self.options.link_target_blank
+            && (href.starts_with("http://") || href.starts_with("https://"))
+        {
             self.write(" target=\"_blank\" rel=\"noopener noreferrer\"");
         }
         if let Some(title) = link.title {
@@ -108,5 +122,23 @@ impl HtmlRenderer {
             self.visit_inline_node(child);
         }
         self.write("</del>");
+    }
+
+    pub(in crate::html::renderer) fn render_superscript(&mut self, superscript: &Superscript<'_>) {
+        crate::profile_span_detail!("renderer::visit_superscript");
+        self.write("<sup>");
+        for child in &superscript.children {
+            self.visit_inline_node(child);
+        }
+        self.write("</sup>");
+    }
+
+    pub(in crate::html::renderer) fn render_subscript(&mut self, subscript: &Subscript<'_>) {
+        crate::profile_span_detail!("renderer::visit_subscript");
+        self.write("<sub>");
+        for child in &subscript.children {
+            self.visit_inline_node(child);
+        }
+        self.write("</sub>");
     }
 }

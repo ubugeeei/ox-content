@@ -358,6 +358,24 @@ export interface OxContentOptions {
   strikethrough?: boolean;
 
   /**
+   * Enable `^text^` superscript spans.
+   * @default false
+   */
+  superscript?: boolean;
+
+  /**
+   * Enable `~text~` subscript spans.
+   * @default false
+   */
+  subscript?: boolean;
+
+  /**
+   * Enable smart punctuation replacement.
+   * @default false
+   */
+  smartPunctuation?: boolean;
+
+  /**
    * Enable syntax highlighting for code blocks.
    * @default false
    */
@@ -390,6 +408,12 @@ export interface OxContentOptions {
    * @default false
    */
   math?: boolean | { enabled?: boolean };
+
+  /**
+   * Enable definition list blocks.
+   * @default false
+   */
+  definitionLists?: boolean | { enabled?: boolean };
 
   /**
    * Parse YAML frontmatter.
@@ -472,10 +496,14 @@ export interface ResolvedOptions {
   tables: boolean;
   taskLists: boolean;
   strikethrough: boolean;
+  superscript: boolean;
+  subscript: boolean;
+  smartPunctuation: boolean;
   highlight: boolean;
   codeAnnotations: ResolvedCodeAnnotationsOptions;
   mermaid: boolean;
   math: boolean;
+  definitionLists: boolean;
   frontmatter: boolean;
   toc: boolean;
   tocMaxDepth: number;

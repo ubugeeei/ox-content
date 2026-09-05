@@ -88,3 +88,12 @@ fn a_definition_list_around_raw_html_keeps_both() {
     assert_eq!(html.matches("<dl class=\"ox-definition-list\">").count(), 2, "{html}");
     assert!(html.contains("<pre>code</pre>"), "{html}");
 }
+
+#[test]
+fn definition_lists_are_native_ast_nodes_in_transform_path() {
+    let html = transform("term\n: **def**\n\nnext");
+
+    assert!(html.contains("<dt>term</dt>"), "{html}");
+    assert!(html.contains("<dd><strong>def</strong></dd>"), "{html}");
+    assert!(html.contains("<p>next</p>"), "{html}");
+}

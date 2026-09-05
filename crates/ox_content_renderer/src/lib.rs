@@ -77,7 +77,7 @@ pub use frameworks::{
     render_framework_component_code,
 };
 pub use html::{
-    CodeAnnotationSyntax, HEADING_PERMALINK_CLASS, HtmlRenderer, HtmlRendererOptions,
-    slugify_heading,
+    CodeAnnotationSyntax, HEADING_PERMALINK_CLASS, HtmlRenderContext, HtmlRenderControl,
+    HtmlRenderHooks, HtmlRenderer, HtmlRendererOptions, NoHtmlRenderHooks, slugify_heading,
 };
 pub use render::{RenderError, RenderResult, Renderer};

@@ -12,6 +12,11 @@ export interface FrameworkMarkdownOptions {
   extensions: string[];
   gfm: boolean;
   frontmatter?: boolean;
+  superscript?: boolean;
+  subscript?: boolean;
+  smartPunctuation?: boolean;
+  linkTargetBlank?: boolean;
+  sourceSpans?: boolean;
   toc: boolean;
   tocMaxDepth: number;
   codeAnnotations?: {
@@ -77,6 +82,12 @@ export function createFrameworkMarkdownOptions(options: FrameworkMarkdownOptions
     frontmatter: options.frontmatter ?? false,
     toc: options.toc,
     tocMaxDepth: options.tocMaxDepth,
+    superscript: options.superscript ?? false,
+    subscript: options.subscript ?? false,
+    smartPunctuation: options.smartPunctuation ?? false,
+    autolinkTargetBlank: true,
+    linkTargetBlank: options.linkTargetBlank ?? true,
+    sourceSpans: options.sourceSpans ?? false,
     codeAnnotations: {
       enabled: options.codeAnnotations?.enabled ?? false,
       notation: "attribute",

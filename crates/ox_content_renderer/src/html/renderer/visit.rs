@@ -5,10 +5,11 @@
 //! split by block and inline responsibilities.
 
 use ox_content_ast::{
-    BlockQuote, Break, CodeBlock, Definition, Delete, Document, Emphasis, FootnoteDefinition,
-    FootnoteReference, Heading, Html, Image, InlineCode, Link, List, ListItem, MdxFlowExpression,
+    BlockQuote, Break, CodeBlock, Definition, DefinitionList, DefinitionListDefinition,
+    DefinitionListTerm, Delete, Document, Emphasis, FootnoteDefinition, FootnoteReference, Heading,
+    Html, Image, InlineCode, InlineMath, Link, List, ListItem, MathBlock, MdxFlowExpression,
     MdxJsxFlowElement, MdxJsxTextElement, MdxTextExpression, MdxjsEsm, Node, Paragraph, Strong,
-    Table, Text, ThematicBreak, Visit,
+    Subscript, Superscript, Table, Text, ThematicBreak, Visit,
 };
 
 use super::HtmlRenderer;
@@ -50,12 +51,31 @@ impl<'a> Visit<'a> for HtmlRenderer {
         self.render_code_block(code_block);
     }
 
+    fn visit_math_block(&mut self, math_block: &MathBlock<'a>) {
+        self.render_math_block(math_block);
+    }
+
     fn visit_html(&mut self, html: &Html<'a>) {
         self.render_html(html);
     }
 
     fn visit_table(&mut self, table: &Table<'a>) {
         self.render_table(table);
+    }
+
+    fn visit_definition_list(&mut self, definition_list: &DefinitionList<'a>) {
+        self.render_definition_list(definition_list);
+    }
+
+    fn visit_definition_list_term(&mut self, definition_list_term: &DefinitionListTerm<'a>) {
+        self.render_definition_list_term(definition_list_term);
+    }
+
+    fn visit_definition_list_definition(
+        &mut self,
+        definition_list_definition: &DefinitionListDefinition<'a>,
+    ) {
+        self.render_definition_list_definition(definition_list_definition);
     }
 
     fn visit_text(&mut self, text: &Text<'a>) {
@@ -74,6 +94,10 @@ impl<'a> Visit<'a> for HtmlRenderer {
         self.render_inline_code(inline_code);
     }
 
+    fn visit_inline_math(&mut self, inline_math: &InlineMath<'a>) {
+        self.render_inline_math(inline_math);
+    }
+
     fn visit_break(&mut self, break_node: &Break) {
         self.render_break(break_node);
     }
@@ -88,6 +112,14 @@ impl<'a> Visit<'a> for HtmlRenderer {
 
     fn visit_delete(&mut self, delete: &Delete<'a>) {
         self.render_delete(delete);
+    }
+
+    fn visit_superscript(&mut self, superscript: &Superscript<'a>) {
+        self.render_superscript(superscript);
+    }
+
+    fn visit_subscript(&mut self, subscript: &Subscript<'a>) {
+        self.render_subscript(subscript);
     }
 
     fn visit_footnote_reference(&mut self, footnote_ref: &FootnoteReference<'a>) {

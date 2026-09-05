@@ -62,6 +62,31 @@ pub struct JsParserOptions {
     ///
     /// Default: `false`, or `true` when `gfm` is `true`.
     pub autolinks: Option<bool>,
+
+    /// Enable `^text^` superscript spans.
+    ///
+    /// Default: `false`.
+    pub superscript: Option<bool>,
+
+    /// Enable `~text~` subscript spans.
+    ///
+    /// Default: `false`.
+    pub subscript: Option<bool>,
+
+    /// Enable smart punctuation replacement.
+    ///
+    /// Default: `false`.
+    pub smart_punctuation: Option<bool>,
+
+    /// Enable `$...$` inline math and `$$...$$` block math.
+    ///
+    /// Default: `false`.
+    pub math: Option<bool>,
+
+    /// Enable definition list blocks.
+    ///
+    /// Default: `false`.
+    pub definition_lists: Option<bool>,
 }
 
 impl From<JsParserOptions> for ParserOptions {
@@ -86,6 +111,21 @@ impl From<JsParserOptions> for ParserOptions {
         }
         if let Some(v) = opts.mdx {
             options.mdx = v;
+        }
+        if let Some(v) = opts.superscript {
+            options.superscript = v;
+        }
+        if let Some(v) = opts.subscript {
+            options.subscript = v;
+        }
+        if let Some(v) = opts.smart_punctuation {
+            options.smart_punctuation = v;
+        }
+        if let Some(v) = opts.math {
+            options.math = v;
+        }
+        if let Some(v) = opts.definition_lists {
+            options.definition_lists = v;
         }
 
         options
@@ -144,6 +184,11 @@ impl FromNapiValue for JsParserOptions {
             tables: unsafe { read_flag(env, napi_val, c"tables") }?,
             strikethrough: unsafe { read_flag(env, napi_val, c"strikethrough") }?,
             autolinks: unsafe { read_flag(env, napi_val, c"autolinks") }?,
+            superscript: unsafe { read_flag(env, napi_val, c"superscript") }?,
+            subscript: unsafe { read_flag(env, napi_val, c"subscript") }?,
+            smart_punctuation: unsafe { read_flag(env, napi_val, c"smartPunctuation") }?,
+            math: unsafe { read_flag(env, napi_val, c"math") }?,
+            definition_lists: unsafe { read_flag(env, napi_val, c"definitionLists") }?,
         })
     }
 }

@@ -54,6 +54,11 @@ interface NapiBindings {
       tables?: boolean;
       strikethrough?: boolean;
       autolinks?: boolean;
+      superscript?: boolean;
+      subscript?: boolean;
+      smartPunctuation?: boolean;
+      math?: boolean;
+      definitionLists?: boolean;
     },
   ) => Uint8Array;
   transformMdastRaw: (
@@ -66,12 +71,17 @@ interface NapiBindings {
       tables?: boolean;
       strikethrough?: boolean;
       autolinks?: boolean;
+      superscript?: boolean;
+      subscript?: boolean;
+      smartPunctuation?: boolean;
       frontmatter?: boolean;
       tocMaxDepth?: number;
       codeAnnotations?: boolean;
       codeAnnotationMetaKey?: string;
       codeAnnotationSyntax?: string;
       codeAnnotationDefaultLineNumbers?: boolean;
+      math?: boolean;
+      definitionLists?: { enabled?: boolean };
     },
   ) => Uint8Array;
   transform: (
@@ -85,6 +95,9 @@ interface NapiBindings {
       tables?: boolean;
       strikethrough?: boolean;
       autolinks?: boolean;
+      superscript?: boolean;
+      subscript?: boolean;
+      smartPunctuation?: boolean;
       frontmatter?: boolean;
       tocMaxDepth?: number;
       codeAnnotations?: boolean;
@@ -92,6 +105,7 @@ interface NapiBindings {
       codeAnnotationSyntax?: string;
       codeAnnotationDefaultLineNumbers?: boolean;
       math?: boolean;
+      definitionLists?: { enabled?: boolean };
     },
   ) => {
     html: string;
@@ -244,11 +258,15 @@ function createNapiTransformOptions(
   tables: boolean;
   strikethrough: boolean;
   autolinks: boolean;
+  superscript: boolean;
+  subscript: boolean;
+  smartPunctuation: boolean;
   frontmatter: boolean;
   tocMaxDepth: number;
   codeAnnotations: boolean;
   codeAnnotationMetaKey: string;
   math?: boolean;
+  definitionLists?: boolean;
 } {
   const codeAnnotations = options.codeAnnotations ?? {
     enabled: false,
@@ -264,11 +282,15 @@ function createNapiTransformOptions(
     tables: options.tables,
     strikethrough: options.strikethrough,
     autolinks: options.gfm,
+    superscript: options.superscript,
+    subscript: options.subscript,
+    smartPunctuation: options.smartPunctuation,
     frontmatter: options.frontmatter,
     tocMaxDepth: options.tocMaxDepth,
     codeAnnotations: codeAnnotations.enabled,
     codeAnnotationMetaKey: codeAnnotations.metaKey,
     math: options.math,
+    definitionLists: options.definitionLists ? { enabled: true } : undefined,
   };
 }
 
@@ -767,6 +789,11 @@ function installUnifiedParser(
     tables: options.tables,
     strikethrough: options.strikethrough,
     autolinks: options.gfm,
+    superscript: options.superscript,
+    subscript: options.subscript,
+    smartPunctuation: options.smartPunctuation,
+    math: options.math,
+    definitionLists: options.definitionLists,
   });
 }
 

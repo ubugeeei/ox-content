@@ -87,6 +87,13 @@ impl<'a> Parser<'a> {
                     return self.parse_fenced_code(start);
                 }
             }
+            b'$' if self.options.math => {
+                let line = self.line_at(start);
+                let trimmed = &line[trimmed_start - start..];
+                if self.try_parse_math_block_at(start, line, trimmed) {
+                    return self.parse_math_block(start);
+                }
+            }
             b'{' => {
                 if self.options.mdx
                     && let Some(node) = self.try_parse_mdx_flow_expression(start, trimmed_start)?
@@ -167,6 +174,10 @@ impl<'a> Parser<'a> {
         if bytes[trimmed_start] == b'['
             && let Some(node) = self.try_parse_definition_node()
         {
+            return Ok(Some(node));
+        }
+
+        if let Some(node) = self.parse_definition_list(start)? {
             return Ok(Some(node));
         }
 

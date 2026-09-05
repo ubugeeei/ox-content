@@ -102,11 +102,17 @@ pub struct HtmlRendererOptions {
     pub autolink_patterns: Vec<String>,
 
     /// When auto-linking, emit `target="_blank" rel="noopener noreferrer"`.
-    /// Independent from the existing markdown-link behaviour, which always
-    /// adds the attributes for http/https hrefs.
+    /// Independent from markdown-link behaviour; use
+    /// [`Self::link_target_blank`] for parsed `Link` nodes.
     ///
     /// Default: `true`.
     pub autolink_target_blank: bool,
+
+    /// When rendering Markdown `Link` nodes with http(s) hrefs, emit
+    /// `target="_blank" rel="noopener noreferrer"`.
+    ///
+    /// Default: `true`.
+    pub link_target_blank: bool,
 
     /// Render footnotes as one ordered section with numeric display markers.
     ///
@@ -133,6 +139,15 @@ pub struct HtmlRendererOptions {
     /// (always vs hover/focus-visible) is CSS-only and does not change this
     /// markup.
     pub heading_permalinks: bool,
+
+    /// Emit `data-source-span="start-end"` on rendered block elements.
+    ///
+    /// Values are byte offsets into the original Markdown source, matching
+    /// the AST [`ox_content_ast::Span`] contract. Raw HTML nodes are left
+    /// untouched.
+    ///
+    /// Default: `false`.
+    pub source_spans: bool,
 }
 
 const DEFAULT_SOFT_BREAK: &str = "\n";
@@ -163,8 +178,10 @@ pub(super) struct RendererOptions {
     pub(super) autolink_urls: bool,
     autolink_patterns: Option<Vec<String>>,
     pub(super) autolink_target_blank: bool,
+    pub(super) link_target_blank: bool,
     pub(super) semantic_footnotes: bool,
     pub(super) heading_permalinks: bool,
+    pub(super) source_spans: bool,
 }
 
 impl RendererOptions {
@@ -185,8 +202,10 @@ impl RendererOptions {
             autolink_urls: true,
             autolink_patterns: None,
             autolink_target_blank: true,
+            link_target_blank: true,
             semantic_footnotes: false,
             heading_permalinks: false,
+            source_spans: false,
         }
     }
 
@@ -232,8 +251,10 @@ impl From<HtmlRendererOptions> for RendererOptions {
             autolink_urls: options.autolink_urls,
             autolink_patterns: Some(options.autolink_patterns),
             autolink_target_blank: options.autolink_target_blank,
+            link_target_blank: options.link_target_blank,
             semantic_footnotes: options.semantic_footnotes,
             heading_permalinks: options.heading_permalinks,
+            source_spans: options.source_spans,
         }
     }
 }
@@ -275,8 +296,10 @@ impl HtmlRendererOptions {
             autolink_urls: true,
             autolink_patterns: DEFAULT_AUTOLINK_PATTERNS.iter().map(ToString::to_string).collect(),
             autolink_target_blank: true,
+            link_target_blank: true,
             semantic_footnotes: false,
             heading_permalinks: false,
+            source_spans: false,
         }
     }
 }

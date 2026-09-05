@@ -182,6 +182,8 @@ fn contains_link(nodes: &[Node<'_>]) -> bool {
         Node::Emphasis(n) => contains_link(&n.children),
         Node::Strong(n) => contains_link(&n.children),
         Node::Delete(n) => contains_link(&n.children),
+        Node::Superscript(n) => contains_link(&n.children),
+        Node::Subscript(n) => contains_link(&n.children),
         _ => false,
     })
 }

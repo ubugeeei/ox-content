@@ -2,7 +2,13 @@ use ox_content_allocator::Vec;
 use ox_content_ast::{Node, Paragraph, Span};
 
 use super::super::Parser;
+use super::super::spans::SourceMap;
 use crate::error::ParseResult;
+
+pub(super) struct ListItemSource<'a> {
+    pub(super) text: ox_content_allocator::String<'a>,
+    pub(super) source_map: SourceMap,
+}
 
 impl<'a> Parser<'a> {
     /// Builds the synthetic source used when a list item needs block parsing.
@@ -15,22 +21,30 @@ impl<'a> Parser<'a> {
     /// arena copy.
     pub(super) fn init_list_item_source(
         &self,
-        content: &'a str,
+        item: &super::super::list_item::ParsedListItem<'a>,
         consumed_newline: bool,
-    ) -> ox_content_allocator::String<'a> {
+    ) -> ListItemSource<'a> {
         // Bump-allocate the per-item buffer so we don't go System → arena.
         // This is now only paid for list items that actually need block
         // parsing: multi-line items, nested blocks, or block-looking
         // single-line contents such as `# heading`.
         let mut source = ox_content_allocator::String::with_capacity_in(
-            content.len() + usize::from(consumed_newline),
+            item.content.len() + usize::from(consumed_newline),
             self.allocator.bump(),
         );
-        source.push_str(content);
+        let mut source_map = SourceMap::default();
+        source.push_str(item.content);
         if consumed_newline {
             source.push('\n');
         }
-        source
+        source_map.push_line(
+            0,
+            item.content.len() + usize::from(consumed_newline),
+            item.content_offset,
+            item.content_source_end.saturating_sub(item.content_offset)
+                + usize::from(consumed_newline),
+        );
+        ListItemSource { text: source, source_map }
     }
 
     /// Returns true when a single-line list item can bypass the sub-parser.

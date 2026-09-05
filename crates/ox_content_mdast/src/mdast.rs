@@ -1,10 +1,11 @@
-use ox_content_allocator::Vec as ArenaVec;
 use ox_content_ast::{
-    AlignKind, BlockQuote, CodeBlock, Definition, Delete, Document, Emphasis, FootnoteDefinition,
-    FootnoteReference, Heading, Html, Image, InlineCode, Link, List, ListItem, Node, Paragraph,
-    Strong, Table, TableCell, TableRow, Text, ThematicBreak,
+    BlockQuote, CodeBlock, Definition, DefinitionList, DefinitionListDefinition,
+    DefinitionListTerm, Delete, Document, Emphasis, FootnoteDefinition, FootnoteReference, Heading,
+    Html, Image, InlineCode, InlineMath, Link, List, ListItem, MathBlock, Node, Paragraph, Strong,
+    Subscript, Superscript, Table, TableCell, TableRow, Text, ThematicBreak,
 };
 
+mod collections;
 mod escape;
 mod mdx;
 
@@ -33,50 +34,6 @@ impl MdastJsonSerializer {
         self.output.push('}');
     }
 
-    fn write_nodes<'a>(&mut self, nodes: &ArenaVec<'a, Node<'a>>) {
-        self.output.push('[');
-        for (idx, node) in nodes.iter().enumerate() {
-            if idx > 0 {
-                self.output.push(',');
-            }
-            self.write_node(node);
-        }
-        self.output.push(']');
-    }
-
-    fn write_list_items<'a>(&mut self, items: &ArenaVec<'a, ListItem<'a>>) {
-        self.output.push('[');
-        for (idx, item) in items.iter().enumerate() {
-            if idx > 0 {
-                self.output.push(',');
-            }
-            self.write_list_item(item);
-        }
-        self.output.push(']');
-    }
-
-    fn write_table_rows<'a>(&mut self, rows: &ArenaVec<'a, TableRow<'a>>) {
-        self.output.push('[');
-        for (idx, row) in rows.iter().enumerate() {
-            if idx > 0 {
-                self.output.push(',');
-            }
-            self.write_table_row(row);
-        }
-        self.output.push(']');
-    }
-
-    fn write_table_cells<'a>(&mut self, cells: &ArenaVec<'a, TableCell<'a>>) {
-        self.output.push('[');
-        for (idx, cell) in cells.iter().enumerate() {
-            if idx > 0 {
-                self.output.push(',');
-            }
-            self.write_table_cell(cell);
-        }
-        self.output.push(']');
-    }
-
     fn write_node(&mut self, node: &Node<'_>) {
         match node {
             Node::Paragraph(node) => self.write_paragraph(node),
@@ -86,16 +43,23 @@ impl MdastJsonSerializer {
             Node::List(node) => self.write_list(node),
             Node::ListItem(node) => self.write_list_item(node),
             Node::CodeBlock(node) => self.write_code_block(node),
+            Node::MathBlock(node) => self.write_math_block(node),
             Node::Html(node) => self.write_html(node),
             Node::Table(node) => self.write_table(node),
+            Node::DefinitionList(node) => self.write_definition_list(node),
+            Node::DefinitionListTerm(node) => self.write_definition_list_term(node),
+            Node::DefinitionListDefinition(node) => self.write_definition_list_definition(node),
             Node::Text(node) => self.write_text(node),
             Node::Emphasis(node) => self.write_emphasis(node),
             Node::Strong(node) => self.write_strong(node),
             Node::InlineCode(node) => self.write_inline_code(node),
+            Node::InlineMath(node) => self.write_inline_math(node),
             Node::Break(_) => self.output.push_str("{\"type\":\"break\"}"),
             Node::Link(node) => self.write_link(node),
             Node::Image(node) => self.write_image(node),
             Node::Delete(node) => self.write_delete(node),
+            Node::Superscript(node) => self.write_superscript(node),
+            Node::Subscript(node) => self.write_subscript(node),
             Node::FootnoteReference(node) => self.write_footnote_reference(node),
             Node::Definition(node) => self.write_definition(node),
             Node::FootnoteDefinition(node) => self.write_footnote_definition(node),
@@ -172,6 +136,12 @@ impl MdastJsonSerializer {
         self.output.push('}');
     }
 
+    fn write_math_block(&mut self, math: &MathBlock<'_>) {
+        self.output.push_str("{\"type\":\"math\",\"value\":");
+        self.write_string(math.value);
+        self.output.push('}');
+    }
+
     fn write_html(&mut self, html: &Html<'_>) {
         self.output.push_str("{\"type\":\"html\",\"value\":");
         self.write_string(html.value);
@@ -198,6 +168,24 @@ impl MdastJsonSerializer {
         self.output.push('}');
     }
 
+    fn write_definition_list(&mut self, list: &DefinitionList<'_>) {
+        self.output.push_str("{\"type\":\"definitionList\",\"children\":");
+        self.write_nodes(&list.children);
+        self.output.push('}');
+    }
+
+    fn write_definition_list_term(&mut self, term: &DefinitionListTerm<'_>) {
+        self.output.push_str("{\"type\":\"definitionTerm\",\"children\":");
+        self.write_nodes(&term.children);
+        self.output.push('}');
+    }
+
+    fn write_definition_list_definition(&mut self, definition: &DefinitionListDefinition<'_>) {
+        self.output.push_str("{\"type\":\"definitionDescription\",\"children\":");
+        self.write_nodes(&definition.children);
+        self.output.push('}');
+    }
+
     fn write_text(&mut self, text: &Text<'_>) {
         self.output.push_str("{\"type\":\"text\",\"value\":");
         self.write_string(text.value);
@@ -219,6 +207,12 @@ impl MdastJsonSerializer {
     fn write_inline_code(&mut self, inline_code: &InlineCode<'_>) {
         self.output.push_str("{\"type\":\"inlineCode\",\"value\":");
         self.write_string(inline_code.value);
+        self.output.push('}');
+    }
+
+    fn write_inline_math(&mut self, inline_math: &InlineMath<'_>) {
+        self.output.push_str("{\"type\":\"inlineMath\",\"value\":");
+        self.write_string(inline_math.value);
         self.output.push('}');
     }
 
@@ -249,6 +243,18 @@ impl MdastJsonSerializer {
     fn write_delete(&mut self, delete: &Delete<'_>) {
         self.output.push_str("{\"type\":\"delete\",\"children\":");
         self.write_nodes(&delete.children);
+        self.output.push('}');
+    }
+
+    fn write_superscript(&mut self, superscript: &Superscript<'_>) {
+        self.output.push_str("{\"type\":\"superscript\",\"children\":");
+        self.write_nodes(&superscript.children);
+        self.output.push('}');
+    }
+
+    fn write_subscript(&mut self, subscript: &Subscript<'_>) {
+        self.output.push_str("{\"type\":\"subscript\",\"children\":");
+        self.write_nodes(&subscript.children);
         self.output.push('}');
     }
 
@@ -288,30 +294,6 @@ impl MdastJsonSerializer {
         self.output.push_str(",\"children\":");
         self.write_nodes(&footnote_definition.children);
         self.output.push('}');
-    }
-
-    fn write_align(&mut self, align: &ArenaVec<'_, AlignKind>) {
-        self.output.push('[');
-        for (idx, item) in align.iter().enumerate() {
-            if idx > 0 {
-                self.output.push(',');
-            }
-            match item {
-                AlignKind::None => self.output.push_str("null"),
-                AlignKind::Left => self.write_string("left"),
-                AlignKind::Center => self.write_string("center"),
-                AlignKind::Right => self.write_string("right"),
-            }
-        }
-        self.output.push(']');
-    }
-
-    fn write_string(&mut self, value: &str) {
-        escape::write_json_string(&mut self.output, value);
-    }
-
-    fn write_u32(&mut self, n: u32) {
-        escape::write_u32(&mut self.output, n);
     }
 }
 

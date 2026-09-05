@@ -3,6 +3,7 @@ use ox_content_ast::{BlockQuote, Node, Span};
 
 use super::Parser;
 use super::reference::{closes_paragraph_context, fence_open, is_fence_close};
+use super::spans::SourceMap;
 use crate::error::ParseResult;
 #[allow(unused_imports)]
 use crate::profile_span;
@@ -31,6 +32,7 @@ impl<'a> Parser<'a> {
         let mut fence: Option<(u8, usize)> = None;
         let mut paragraph_open = false;
         let mut lazy_lines = rustc_hash::FxHashSet::default();
+        let mut source_map = SourceMap::default();
 
         loop {
             if self.position >= bytes.len() {
@@ -81,12 +83,23 @@ impl<'a> Parser<'a> {
                 } else {
                     0
                 };
+                let generated_start = inner.len();
                 for _ in 0..indent_columns {
                     inner.push(' ');
                 }
                 let stripped_trimmed = &after_gt[ws_len..];
                 inner.push_str(stripped_trimmed);
                 inner.push('\n');
+                let content_start =
+                    line_start + trimmed_offset + 1 + Self::quote_marker_space_bytes(after_gt);
+                let source_len =
+                    line_end.saturating_sub(content_start) + usize::from(line_end < bytes.len());
+                source_map.push_line(
+                    generated_start,
+                    indent_columns + stripped_trimmed.len() + 1,
+                    content_start,
+                    source_len,
+                );
 
                 match fence {
                     Some((fence_byte, fence_len)) => {
@@ -118,9 +131,16 @@ impl<'a> Parser<'a> {
                 // original indentation means the re-parse still sees it as
                 // paragraph continuation (an indented `- x` stays text),
                 // and recording the offset stops setext reinterpretation.
+                let generated_start = inner.len();
                 lazy_lines.insert(inner.len() as u32);
                 inner.push_str(line);
                 inner.push('\n');
+                source_map.push_line(
+                    generated_start,
+                    line.len() + 1,
+                    line_start,
+                    line.len() + usize::from(line_end < bytes.len()),
+                );
                 self.position = if line_end < bytes.len() { line_end + 1 } else { line_end };
             } else {
                 // Line doesn't start with `>`, block quote ends
@@ -132,11 +152,13 @@ impl<'a> Parser<'a> {
         let inner_str = inner.into_bump_str();
         let sub_parser = self.sub_parser_with_lazy_lines(inner_str, lazy_lines);
         let sub_doc = sub_parser.parse()?;
+        let mut children = sub_doc.children;
+        for child in &mut children {
+            source_map.remap_node_spans(child);
+        }
 
         let span = Span::new(start as u32, self.position as u32);
-        Ok(Some(Node::BlockQuote(
-            self.allocator.boxed(BlockQuote { children: sub_doc.children, span }),
-        )))
+        Ok(Some(Node::BlockQuote(self.allocator.boxed(BlockQuote { children, span }))))
     }
 
     /// Lines that must not lazily continue a block quote paragraph even
@@ -149,5 +171,9 @@ impl<'a> Parser<'a> {
             let after_marker = after_digits.trim_start_matches(['-', '*', '+', '.', ')']);
             after_marker.trim().is_empty()
         }
+    }
+
+    fn quote_marker_space_bytes(after_gt: &str) -> usize {
+        usize::from(after_gt.as_bytes().first() == Some(&b' '))
     }
 }

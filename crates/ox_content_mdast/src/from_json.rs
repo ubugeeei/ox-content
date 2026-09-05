@@ -9,10 +9,11 @@
 
 use ox_content_allocator::{Allocator, Vec as ArenaVec};
 use ox_content_ast::{
-    AlignKind, BlockQuote, Break, CodeBlock, Definition, Delete, Document, Emphasis,
-    FootnoteDefinition, FootnoteReference, Heading, Html, Image, InlineCode, Link, List, ListItem,
-    MdxFlowExpression, MdxJsxFlowElement, MdxJsxTextElement, MdxTextExpression, MdxjsEsm, Node,
-    Paragraph, Span, Strong, Table, TableCell, TableRow, Text, ThematicBreak,
+    AlignKind, BlockQuote, Break, CodeBlock, Definition, DefinitionList, DefinitionListDefinition,
+    DefinitionListTerm, Delete, Document, Emphasis, FootnoteDefinition, FootnoteReference, Heading,
+    Html, Image, InlineCode, InlineMath, Link, List, ListItem, MathBlock, MdxFlowExpression,
+    MdxJsxFlowElement, MdxJsxTextElement, MdxTextExpression, MdxjsEsm, Node, Paragraph, Span,
+    Strong, Subscript, Superscript, Table, TableCell, TableRow, Text, ThematicBreak,
 };
 use serde_json::Value;
 
@@ -124,12 +125,29 @@ fn node<'a>(allocator: &'a Allocator, value: &Value) -> Result<Node<'a>, MdastJs
             value: required_str(allocator, value, "value")?,
             span,
         })),
+        "math" => Node::MathBlock(
+            allocator.boxed(MathBlock { value: required_str(allocator, value, "value")?, span }),
+        ),
         "html" => Node::Html(Html { value: required_str(allocator, value, "value")?, span }),
         "table" => Node::Table(allocator.boxed(Table {
             align: align(allocator, value.get("align")),
             children: table_rows(allocator, value.get("children"))?,
             span,
         })),
+        "definitionList" => Node::DefinitionList(
+            allocator
+                .boxed(DefinitionList { children: nodes(allocator, value.get("children"))?, span }),
+        ),
+        "definitionTerm" => Node::DefinitionListTerm(allocator.boxed(DefinitionListTerm {
+            children: nodes(allocator, value.get("children"))?,
+            span,
+        })),
+        "definitionDescription" => {
+            Node::DefinitionListDefinition(allocator.boxed(DefinitionListDefinition {
+                children: nodes(allocator, value.get("children"))?,
+                span,
+            }))
+        }
         "text" => Node::Text(Text { value: required_str(allocator, value, "value")?, span }),
         "emphasis" => Node::Emphasis(
             allocator.boxed(Emphasis { children: nodes(allocator, value.get("children"))?, span }),
@@ -139,6 +157,9 @@ fn node<'a>(allocator: &'a Allocator, value: &Value) -> Result<Node<'a>, MdastJs
         ),
         "inlineCode" => {
             Node::InlineCode(InlineCode { value: required_str(allocator, value, "value")?, span })
+        }
+        "inlineMath" => {
+            Node::InlineMath(InlineMath { value: required_str(allocator, value, "value")?, span })
         }
         "break" => Node::Break(Break { span }),
         "link" => Node::Link(allocator.boxed(Link {
@@ -155,6 +176,13 @@ fn node<'a>(allocator: &'a Allocator, value: &Value) -> Result<Node<'a>, MdastJs
         })),
         "delete" => Node::Delete(
             allocator.boxed(Delete { children: nodes(allocator, value.get("children"))?, span }),
+        ),
+        "superscript" => Node::Superscript(
+            allocator
+                .boxed(Superscript { children: nodes(allocator, value.get("children"))?, span }),
+        ),
+        "subscript" => Node::Subscript(
+            allocator.boxed(Subscript { children: nodes(allocator, value.get("children"))?, span }),
         ),
         "footnoteReference" => Node::FootnoteReference(allocator.boxed(FootnoteReference {
             identifier: required_str(allocator, value, "identifier")?,

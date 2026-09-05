@@ -1,6 +1,5 @@
 use napi::bindgen_prelude::Either;
 use napi_derive::napi;
-use ox_content_transform::{MathOptions, TransformOptions};
 
 use super::{
     JsAbbreviationsOptions, JsAttrsOptions, JsBadgeOptions, JsCardOptions, JsCodeGroupOptions,
@@ -10,6 +9,8 @@ use super::{
     JsMagicLinkOptions, JsMathOptions, JsNotByAiOptions, JsPartialsOptions, JsSanitizeOptions,
     JsStepsOptions, JsTimelineOptions, JsWikiLinkOptions,
 };
+
+mod convert;
 
 /// Transform options for JavaScript.
 ///
@@ -57,6 +58,21 @@ pub struct JsTransformOptions {
     ///
     /// Default: `false`, or `true` when `gfm` is `true`.
     pub autolinks: Option<bool>,
+
+    /// Enable `^text^` superscript spans.
+    ///
+    /// Default: `false`.
+    pub superscript: Option<bool>,
+
+    /// Enable `~text~` subscript spans.
+    ///
+    /// Default: `false`.
+    pub subscript: Option<bool>,
+
+    /// Enable smart punctuation replacement.
+    ///
+    /// Default: `false`.
+    pub smart_punctuation: Option<bool>,
 
     /// Parse YAML frontmatter before transforming.
     ///
@@ -120,6 +136,16 @@ pub struct JsTransformOptions {
     ///
     /// Default: `true`; ignored when [`Self::autolink_urls`] is off.
     pub autolink_target_blank: Option<bool>,
+
+    /// Add `target="_blank" rel="noopener noreferrer"` to parsed http(s) links.
+    ///
+    /// Default: `true`.
+    pub link_target_blank: Option<bool>,
+
+    /// Emit `data-source-span="start-end"` on rendered block elements.
+    ///
+    /// Default: `false`.
+    pub source_spans: Option<bool>,
 
     /// Opt-in visible heading permalinks (`<a class="header-anchor" href="#id">`).
     ///
@@ -269,62 +295,4 @@ pub struct JsTransformOptions {
     ///
     /// Default: disabled.
     pub data_tables: Option<JsDataTableOptions>,
-}
-
-impl From<JsTransformOptions> for TransformOptions {
-    fn from(value: JsTransformOptions) -> Self {
-        Self {
-            gfm: value.gfm,
-            mdx: value.mdx,
-            footnotes: value.footnotes,
-            semantic_footnotes: value.semantic_footnotes,
-            task_lists: value.task_lists,
-            tables: value.tables,
-            strikethrough: value.strikethrough,
-            autolinks: value.autolinks,
-            frontmatter: value.frontmatter,
-            toc_max_depth: value.toc_max_depth,
-            convert_md_links: value.convert_md_links,
-            base_url: value.base_url,
-            source_path: value.source_path,
-            code_annotations: value.code_annotations,
-            code_annotation_meta_key: value.code_annotation_meta_key,
-            code_annotation_syntax: value.code_annotation_syntax,
-            code_annotation_default_line_numbers: value.code_annotation_default_line_numbers,
-            autolink_urls: value.autolink_urls,
-            autolink_patterns: value.autolink_patterns,
-            autolink_target_blank: value.autolink_target_blank,
-            heading_permalinks: value.heading_permalinks,
-            wiki_links: value.wiki_links.map(Into::into),
-            emoji_shortcodes: value.emoji_shortcodes.map(Into::into),
-            attributes: value.attributes.map(Into::into),
-            cjk_emphasis: value.cjk_emphasis,
-            code_imports: value.code_imports.map(Into::into),
-            sanitize: value.sanitize.map(Into::into),
-            edit_this_page: value.edit_this_page.map(Into::into),
-            containers: value.containers.map(Into::into),
-            includes: value.includes.map(Into::into),
-            partials: value.partials.map(Into::into),
-            steps: value.steps.map(Into::into),
-            code_groups: value.code_groups.map(Into::into),
-            badges: value.badges.map(Into::into),
-            not_by_ai: value.not_by_ai.map(Into::into),
-            keyboard_keys: value.keyboard_keys.map(Into::into),
-            abbreviations: value.abbreviations.map(Into::into),
-            definition_lists: value.definition_lists.map(Into::into),
-            magic_links: value.magic_links.map(Into::into),
-            images: value.images.map(Into::into),
-            image_galleries: value.image_galleries.map(Into::into),
-            timelines: value.timelines.map(Into::into),
-            conditional_blocks: value.conditional_blocks.map(Into::into),
-            cards: value.cards.map(Into::into),
-            math: match value.math {
-                Some(Either::A(enabled)) => Some(MathOptions { enabled: Some(enabled) }),
-                Some(Either::B(options)) => Some(options.into()),
-                None => None,
-            },
-            file_tree: value.file_tree.map(Into::into),
-            data_tables: value.data_tables.map(Into::into),
-        }
-    }
 }

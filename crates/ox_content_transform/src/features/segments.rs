@@ -68,6 +68,7 @@ pub(crate) fn transform_markdown_text_segments(
 /// Like [`transform_markdown_text_segments`], but feeds consecutive prose
 /// (including newlines) to `transform` as one chunk so delimiters can span
 /// lines. Fenced and indented code still pass through unchanged.
+#[allow(dead_code)]
 pub(crate) fn transform_markdown_prose_segments(
     source: &str,
     mut transform: impl FnMut(&str, &mut String),

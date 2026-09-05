@@ -13,7 +13,7 @@
 use std::fmt::Write as _;
 
 use compact_str::CompactString;
-use ox_content_ast::{FootnoteDefinition, FootnoteReference};
+use ox_content_ast::{FootnoteDefinition, FootnoteReference, Span};
 
 use super::super::escape::write_escaped_into;
 use super::super::heading::slugify_heading_into;
@@ -27,6 +27,7 @@ pub(super) struct FootnoteRecord {
     pub(super) slug: CompactString,
     pub(super) ref_count: usize,
     pub(super) body_html: Option<String>,
+    pub(super) span: Option<Span>,
 }
 
 impl HtmlRenderer {
@@ -71,7 +72,11 @@ impl HtmlRenderer {
             let ref_count = self.footnote_records[index].ref_count;
             self.write("<li id=\"fn-");
             self.write_footnote_slug(index);
-            self.write("\">\n");
+            self.write("\"");
+            if let Some(span) = self.footnote_records[index].span {
+                self.write_source_span_attr(span);
+            }
+            self.write(">\n");
             self.write(&body);
             self.write_semantic_backlinks(index, display, ref_count);
             self.write("</li>\n");
@@ -114,7 +119,9 @@ impl HtmlRenderer {
     fn render_legacy_footnote_definition(&mut self, footnote_def: &FootnoteDefinition<'_>) {
         self.write("<div id=\"fn-");
         self.write_escaped(footnote_def.identifier);
-        self.write("\" class=\"footnote\">\n");
+        self.write("\" class=\"footnote\"");
+        self.write_source_span_attr(footnote_def.span);
+        self.write(">\n");
         for child in &footnote_def.children {
             self.render_node(child);
         }
@@ -154,6 +161,7 @@ impl HtmlRenderer {
             self.render_node(child);
         }
         self.footnote_records[index].body_html = Some(self.output.split_off(start));
+        self.footnote_records[index].span = Some(footnote_def.span);
     }
 
     fn write_semantic_backlinks(&mut self, index: usize, display: usize, ref_count: usize) {
@@ -188,7 +196,12 @@ impl HtmlRenderer {
         let index = self.footnote_records.len();
         let slug = self.assign_footnote_slug(identifier, index);
         self.footnote_index.insert(CompactString::from(identifier), index as u32);
-        self.footnote_records.push(FootnoteRecord { slug, ref_count: 0, body_html: None });
+        self.footnote_records.push(FootnoteRecord {
+            slug,
+            ref_count: 0,
+            body_html: None,
+            span: None,
+        });
         index
     }
 

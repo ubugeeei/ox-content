@@ -130,6 +130,12 @@ export function createDocsResolvedOptions(
     taskLists: true,
     strikethrough: true,
     autolinks: true,
+    superscript: false,
+    subscript: false,
+    smartPunctuation: false,
+    autolinkTargetBlank: true,
+    linkTargetBlank: true,
+    sourceSpans: false,
     highlight: true,
     codeAnnotations: {
       enabled: false,

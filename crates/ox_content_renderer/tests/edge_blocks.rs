@@ -77,3 +77,85 @@ fn html_type6_details_allows_markdown_after_blank_line() {
 
     insta::assert_snapshot!(html);
 }
+
+#[test]
+fn source_span_attributes_are_opt_in_for_block_elements() {
+    let source = concat!(
+        "# Title\n\n",
+        "Text.\n\n",
+        "- one\n",
+        "- two\n\n",
+        "| a | b |\n",
+        "| - | - |\n",
+        "| c | d |\n\n",
+        "> quote\n",
+    );
+
+    let without_spans = render(source, ParserOptions::gfm(), HtmlRendererOptions::default());
+    assert!(!without_spans.contains("data-source-span="), "{without_spans}");
+
+    let html = render(
+        source,
+        ParserOptions::gfm(),
+        HtmlRendererOptions { source_spans: true, ..Default::default() },
+    );
+
+    assert!(html.contains("<h1 id=\"title\" data-source-span=\"0-8\">Title</h1>"), "{html}");
+    assert!(html.contains("<p data-source-span=\"9-15\">Text.</p>"), "{html}");
+    assert!(html.contains("<ul data-source-span="), "{html}");
+    assert!(html.contains("<li data-source-span="), "{html}");
+    assert!(html.contains("<table data-source-span="), "{html}");
+    assert!(html.contains("<tr data-source-span="), "{html}");
+    assert!(html.contains("<td data-source-span="), "{html}");
+    assert!(html.contains("<blockquote data-source-span="), "{html}");
+}
+
+#[test]
+fn source_span_attributes_do_not_mutate_raw_html_blocks() {
+    let html = render(
+        "<div>\nraw\n</div>\n",
+        ParserOptions::default(),
+        HtmlRendererOptions { source_spans: true, ..Default::default() },
+    );
+
+    assert_eq!(html, "<div>\nraw\n</div>\n");
+    assert!(!html.contains("data-source-span="), "{html}");
+}
+
+#[test]
+fn math_nodes_render_transform_compatible_markup() {
+    let html = render(
+        "Energy: $E=mc^2$\n\n$$\na + b\n$$\n",
+        ParserOptions { math: true, ..ParserOptions::default() },
+        HtmlRendererOptions::default(),
+    );
+
+    assert_eq!(
+        html,
+        concat!(
+            "<p>Energy: <span class=\"ox-math ox-math-inline\" data-ox-tex=\"E=mc^2\"><math><mtext>E=mc^2</mtext></math></span></p>\n",
+            "<div class=\"ox-math ox-math-block\" data-ox-tex=\"&#10;a + b&#10;\"><math display=\"block\"><mtext>\na + b\n</mtext></math></div>\n",
+        )
+    );
+}
+
+#[test]
+fn definition_lists_render_native_dl_nodes() {
+    let html = render(
+        "HTTP\n: Hypertext **Transfer** Protocol\n\nTCP\n: Transmission\n    - reliable\n",
+        ParserOptions { definition_lists: true, ..ParserOptions::default() },
+        HtmlRendererOptions::default(),
+    );
+
+    assert_eq!(
+        html,
+        concat!(
+            "<dl class=\"ox-definition-list\">\n",
+            "<dt>HTTP</dt>\n",
+            "<dd>Hypertext <strong>Transfer</strong> Protocol</dd>\n",
+            "<dt>TCP</dt>\n",
+            "<dd>\n<p>Transmission</p>\n<ul>\n<li>reliable</li>\n</ul>\n</dd>\n",
+            "</dl>\n",
+        )
+    );
+}
