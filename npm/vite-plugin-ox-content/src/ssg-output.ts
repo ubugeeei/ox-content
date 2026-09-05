@@ -20,11 +20,13 @@ import {
 } from "./assets";
 import {
   resolveGitLastmod,
+  resolveGitLastmods,
   writeMarkdownCompanions,
   writeResourceFiles,
   type WriteResourceFilesInput,
   type WriteResourceFilesPage,
 } from "./ssg-output-write";
+import { resolvePageGitLastmods } from "./ssg-output-lastmod";
 import type {
   FeedsOptions,
   IconsOptions,
@@ -43,6 +45,7 @@ import type {
 
 export {
   resolveGitLastmod,
+  resolveGitLastmods,
   renderFeedFiles,
   writeFeedFiles,
   writeMarkdownCompanions,
@@ -262,28 +265,15 @@ function sitemapPages(
   base: string,
   resolveLastmod: boolean,
 ): SiteMapPageInput[] {
+  const lastmods = resolvePageGitLastmods(input.pages, input.root, resolveLastmod);
   return input.pages.map((page) => ({
     loc: page.loc || canonicalPageLoc(siteUrl, base, page.urlPath),
     title: page.title ?? "",
     description: page.description,
-    lastUpdated: pageLastUpdated(page, input.root, resolveLastmod),
+    lastUpdated: lastmods.get(page),
     draft: page.draft === true || page.frontmatter?.draft === true,
     unlisted: page.unlisted === true || page.frontmatter?.unlisted === true,
   }));
-}
-
-function pageLastUpdated(
-  page: SsgOutputPageInput,
-  root: string | undefined,
-  resolveLastmod: boolean,
-): number | undefined {
-  if (page.lastUpdated != null) {
-    return page.lastUpdated;
-  }
-  if (!resolveLastmod || !page.inputPath) {
-    return undefined;
-  }
-  return resolveGitLastmod(page.inputPath, root);
 }
 
 function canonicalPageLoc(siteUrl: string | undefined, base: string, urlPath: string): string {

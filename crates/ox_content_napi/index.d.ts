@@ -231,6 +231,9 @@ export declare function getGitContributors(filePath: string, root?: string | und
 /** Returns the last git commit timestamp for a file in milliseconds. */
 export declare function getGitLastUpdated(filePath: string, root?: string | undefined | null): number | null
 
+/** Returns last git commit timestamps for files or directories in one lookup. */
+export declare function getGitLastUpdatedMany(filePaths: Array<string>, root?: string | undefined | null): Array<JsGitLastmodResult>
+
 /** Derives hierarchical search scopes from a document id or URL. */
 export declare function getSearchDocumentScopes(id: string, url: string): Array<string>
 
@@ -1188,6 +1191,14 @@ export interface JsGitContributor {
   email?: string
   /** Number of commits attributed to this author on the file. */
   commits?: number
+}
+
+/** One successful git lastmod lookup from `getGitLastUpdatedMany`. */
+export interface JsGitLastmodResult {
+  /** Input path supplied by the caller. */
+  path: string
+  /** Latest git commit timestamp in milliseconds. */
+  lastUpdated: number
 }
 
 /** Export graph resolution options. */

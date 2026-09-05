@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Component, Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 
 use napi_derive::napi;
@@ -12,6 +12,15 @@ type HeadCache = Mutex<HashMap<String, (std::time::Instant, Option<String>)>>;
 
 /// How long a HEAD reading is reused before git is asked again.
 const HEAD_FRESHNESS: std::time::Duration = std::time::Duration::from_secs(1);
+
+/// One successful git lastmod lookup from `getGitLastUpdatedMany`.
+#[napi(object)]
+pub struct JsGitLastmodResult {
+    /// Input path supplied by the caller.
+    pub path: String,
+    /// Latest git commit timestamp in milliseconds.
+    pub last_updated: f64,
+}
 
 fn head_cache() -> &'static HeadCache {
     static CACHE: OnceLock<HeadCache> = OnceLock::new();
@@ -122,10 +131,33 @@ fn lastmod_map(root: &std::path::Path) -> Option<Arc<HashMap<String, f64>>> {
 /// Returns the last git commit timestamp for a file in milliseconds.
 #[napi]
 pub fn get_git_last_updated(file_path: String, root: Option<String>) -> Option<f64> {
-    let root = root.filter(|root| !root.is_empty()).map(PathBuf::from)?;
-    let pathspec = git_pathspec(&file_path, &root);
-    let seconds = *lastmod_map(&root)?.get(pathspec)?;
+    let root = git_root(root)?;
+    let pathspec = git_pathspec(&file_path, &root)?;
+    let seconds = *lastmod_map(&root)?.get(&pathspec)?;
     Some(seconds * 1_000.0)
+}
+
+/// Returns last git commit timestamps for files or directories in one lookup.
+#[napi]
+pub fn get_git_last_updated_many(
+    file_paths: Vec<String>,
+    root: Option<String>,
+) -> Vec<JsGitLastmodResult> {
+    let Some(root) = git_root(root) else {
+        return Vec::new();
+    };
+    let Some(lastmods) = lastmod_map(&root) else {
+        return Vec::new();
+    };
+
+    file_paths
+        .into_iter()
+        .filter_map(|path| {
+            let pathspec = git_pathspec(&path, &root)?;
+            let seconds = pathspec_lastmod(&lastmods, &pathspec)?;
+            Some(JsGitLastmodResult { path, last_updated: seconds * 1_000.0 })
+        })
+        .collect()
 }
 
 fn contributors_cache() -> &'static ContributorCache {
@@ -148,9 +180,73 @@ fn git_head(root: &std::path::Path) -> Option<String> {
     if head.is_empty() { None } else { Some(head.to_string()) }
 }
 
-fn git_pathspec<'a>(file_path: &'a str, root: &std::path::Path) -> &'a str {
-    let file = std::path::Path::new(file_path);
-    file.strip_prefix(root).ok().and_then(|path| path.to_str()).unwrap_or(file_path)
+fn git_root(root: Option<String>) -> Option<PathBuf> {
+    let root = root.filter(|root| !root.is_empty()).map(PathBuf::from)?;
+    let absolute = if root.is_absolute() { root } else { std::env::current_dir().ok()?.join(root) };
+    Some(normalize_path(&absolute))
+}
+
+fn git_pathspec(file_path: &str, root: &Path) -> Option<String> {
+    if file_path.is_empty() || file_path.contains('\0') {
+        return None;
+    }
+    let file = Path::new(file_path);
+    let absolute = if file.is_absolute() { file.to_path_buf() } else { root.join(file) };
+    let normalized = normalize_path(&absolute);
+    let relative = normalized.strip_prefix(root).ok()?;
+    pathspec_from_relative(relative)
+}
+
+fn pathspec_from_relative(path: &Path) -> Option<String> {
+    if path.as_os_str().is_empty() {
+        return Some(".".to_string());
+    }
+    let mut parts = Vec::new();
+    for component in path.components() {
+        let Component::Normal(part) = component else {
+            return None;
+        };
+        parts.push(part.to_str()?);
+    }
+    Some(parts.join("/"))
+}
+
+fn pathspec_lastmod(lastmods: &HashMap<String, f64>, pathspec: &str) -> Option<f64> {
+    if pathspec == "." {
+        return lastmods.values().copied().fold(None, newest_seconds);
+    }
+
+    let mut newest = lastmods.get(pathspec).copied();
+    let prefix = format!("{pathspec}/");
+    for (path, seconds) in lastmods {
+        if path.starts_with(&prefix) {
+            newest = newest_seconds(newest, *seconds);
+        }
+    }
+    newest
+}
+
+fn newest_seconds(current: Option<f64>, next: f64) -> Option<f64> {
+    match current {
+        Some(current) if current >= next => Some(current),
+        _ => Some(next),
+    }
+}
+
+fn normalize_path(path: &Path) -> PathBuf {
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::Prefix(prefix) => normalized.push(prefix.as_os_str()),
+            Component::RootDir => normalized.push(component.as_os_str()),
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            Component::Normal(part) => normalized.push(part),
+        }
+    }
+    normalized
 }
 
 fn parse_git_contributors(stdout: &[u8]) -> Vec<JsGitContributor> {
@@ -194,10 +290,12 @@ fn parse_git_contributors(stdout: &[u8]) -> Vec<JsGitContributor> {
 /// Returns unique git authors for a file. Empty when git is missing or fails.
 #[napi]
 pub fn get_git_contributors(file_path: String, root: Option<String>) -> Vec<JsGitContributor> {
-    let Some(root) = root.filter(|root| !root.is_empty()).map(PathBuf::from) else {
+    let Some(root) = git_root(root) else {
         return Vec::new();
     };
-    let spec = git_pathspec(&file_path, &root).to_string();
+    let Some(spec) = git_pathspec(&file_path, &root) else {
+        return Vec::new();
+    };
     let head = cached_git_head(&root);
     if let Some(head) = head.as_ref() {
         let cache = contributors_cache().lock().unwrap_or_else(PoisonError::into_inner);

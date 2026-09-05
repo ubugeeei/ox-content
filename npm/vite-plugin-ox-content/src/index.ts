@@ -1304,6 +1304,7 @@ export {
   writeFeedFiles,
   writeSiteMapFiles,
   resolveGitLastmod,
+  resolveGitLastmods,
 } from "./ssg-output";
 export type {
   PlanSsgOutputsInput,

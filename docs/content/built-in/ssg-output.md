@@ -202,9 +202,16 @@ that already owns those files should merge or choose one owner before writing.
 | `writeFeedFiles`                   | Write RSS / Atom / JSON feeds, including [named feeds](./feeds.md).                     |
 | `writeSiteMapFiles`                | Write `sitemap.xml`, `robots.txt`, and `llms.txt`.                                      |
 | `resolveGitLastmod`                | Return a file's latest git commit time in milliseconds, or `undefined`.                 |
+| `resolveGitLastmods`               | Return batched file/directory git commit times keyed by normalized absolute path.       |
 
 `lastUpdated` on a page is used as-is. When it is omitted and `ssg.lastUpdated`
-or `siteMaps` is on, the planner calls `resolveGitLastmod(inputPath, root)`.
+or `siteMaps` is on, the planner resolves the newest git timestamp across
+`inputPath` and optional `lastUpdatedPaths`. Directory entries use Git pathspec
+descendant semantics, not filesystem mtimes. Duplicate relative/absolute paths
+are normalized against `root` before lookup. Missing or untracked paths,
+repositories without usable history, shallow checkouts that cannot answer the
+query, root escapes, and unavailable NAPI/Git backends are non-fatal and simply
+omit the lastmod value.
 
 Hosts can skip the planner and call a writer with the same resolved option
 objects `buildSsg()` already uses (`resolveResourcesOptions`,

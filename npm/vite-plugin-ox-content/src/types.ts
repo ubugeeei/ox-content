@@ -5281,8 +5281,10 @@ export interface ResolvedI18nOptions {
  * companions, feeds, and sitemap metadata from these fields.
  */
 export interface SsgOutputPageInput {
-  /** Source file used for git lastmod and companion identity. */
+  /** Canonical source file used for companion identity and as a git lastmod source. */
   inputPath: string;
+  /** Additional files or directories used only for git lastmod freshness. */
+  lastUpdatedPaths?: readonly string[];
   /** Published URL path (`guide` or `/`). */
   urlPath: string;
   /** Filesystem path of the host-rendered HTML page. */
@@ -5295,7 +5297,7 @@ export interface SsgOutputPageInput {
   description?: string;
   /** Absolute page URL. When omitted, `siteUrl` + `base` + `urlPath` is used. */
   loc?: string;
-  /** Git commit time in milliseconds, or a host-supplied timestamp. */
+  /** Explicit timestamp in milliseconds. When present, this wins over Git. */
   lastUpdated?: number;
   draft?: boolean;
   unlisted?: boolean;

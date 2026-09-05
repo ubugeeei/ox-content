@@ -107,6 +107,11 @@ the default SSG:
 - `writeRedirectOutputs()` from route `aliases` / `redirect`.
 - `writeFeedFiles()` and `writeSiteMapFiles()` from selected route metadata.
 
+Use `lastUpdatedPaths` on a route or render result when sitemap freshness should
+consider shared metadata files or source directories in addition to `inputPath`.
+It is only used for git lastmod; dev invalidation still uses explicit
+`dependencies`.
+
 Duplicate route output paths fail the build with the conflicting owners. The
 host still owns publication selection; Ox Content only writes the routes the
 host returns.

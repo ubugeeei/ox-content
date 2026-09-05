@@ -51,6 +51,7 @@ generateSsgHtml
 generateSsgHtmlPages
 getGitContributors
 getGitLastUpdated
+getGitLastUpdatedMany
 getSearchDocumentScopes
 getSsgHref
 getSsgOutputPath

@@ -122,6 +122,10 @@ async function writeCoordinatedOutputs(
         description: entry.result.description ?? entry.route.description,
         loc: entry.result.loc,
         lastUpdated: entry.result.lastUpdated,
+        lastUpdatedPaths: [
+          ...(entry.route.lastUpdatedPaths ?? []),
+          ...(entry.result.lastUpdatedPaths ?? []),
+        ],
         draft: entry.result.draft ?? entry.route.draft,
         unlisted: entry.result.unlisted ?? entry.route.unlisted,
         frontmatter: entry.result.frontmatter ?? entry.route.frontmatter,

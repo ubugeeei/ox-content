@@ -72,6 +72,8 @@ export interface OxContentCustomHostRoute {
   ) => MaybePromise<OxContentCustomHostRenderResult | Response | undefined | void>;
   /** Source file used for resource resolution, Markdown companions, and git lastmod. */
   inputPath?: string;
+  /** Additional files or directories used only for git lastmod freshness. */
+  lastUpdatedPaths?: readonly string[];
   /** Source bytes used for Markdown companion output. */
   source?: string;
   title?: string;
@@ -99,6 +101,8 @@ export interface OxContentCustomHostRenderResult {
   description?: string;
   loc?: string;
   lastUpdated?: number;
+  /** Additional files or directories used only for git lastmod freshness. */
+  lastUpdatedPaths?: readonly string[];
   aliases?: readonly string[];
   redirect?: string;
   draft?: boolean;

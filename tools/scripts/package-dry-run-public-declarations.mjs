@@ -241,10 +241,20 @@ function valueUsage(entry, prefix) {
       `const customOxOptions = ${prefix}customHostOxContentOptions();`,
       `const customStyles = customAssets.stylesheets({ modules: ["/src/Island.ts"] });`,
       "customAssets.document({ islandStyles: customStyles.stylesheets });",
+      "const customRoute: OxContentCustomHostRoute = {",
+      '  path: "/guide",',
+      '  inputPath: "content/guide.md",',
+      '  lastUpdatedPaths: ["src/site-owner.ts", "content/guide"],',
+      '  render: () => ({ html: "<h1>Guide</h1>", lastUpdatedPaths: ["src/guide.ts"] }),',
+      "};",
+      'const customResult: OxContentCustomHostRenderResult = { html: "<h1>Guide</h1>", lastUpdatedPaths: ["src/guide.ts"] };',
       "const customDeps: string[] = customStyles.dependencies;",
+      "const customLastmodSources: readonly string[] | undefined = customRoute.lastUpdatedPaths;",
+      "void customResult.lastUpdatedPaths;",
       "void customPlugin;",
       "void customOxOptions;",
       "void customDeps;",
+      "void customLastmodSources;",
     ].join("\n");
   }
 
