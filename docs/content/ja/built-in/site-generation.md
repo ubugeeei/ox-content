@@ -57,6 +57,7 @@ export default defineConfig({
 | `routePrefix`          | —              | `base` や `outDir` を変えずにページルートをマウントする。                                                            |
 | `transformConcurrency` | `1`            | 決定的な render/write 段階の前に同時変換する Markdown ページ数。                                                     |
 | `clean`                | `false`        | 書き出す前に生成物を消す。                                                                                           |
+| `minifyHtml`           | `false`        | production HTML を最終 write 境界で minify する。                                                                    |
 | `bare`                 | `false`        | ナビなしの、テーマなし HTML を出す。                                                                                 |
 | `render`               | —              | 文書全体を所有する JSX コンポーネント。                                                                              |
 | `lang`                 | `"en"`         | `<html>` の `lang` 属性（bare モード）。                                                                             |
@@ -86,6 +87,13 @@ export default defineConfig({
 | `navigation`           | 派生           | ファイルツリーの代わりに明示的なナビグループ。                                                                       |
 
 `transformConcurrency` は独立した Markdown 変換を重ねます。ビルド時の埋め込み fetch もここで重なります。値は整数に切り捨てられたあと `1..32` の範囲に制限されます。独自 transformer や埋め込み provider を直列に保つ既定値は `1` です。並行実行しても安全な場合にのみ `1` より大きい値を指定してください。独自 `ssg.render` テーマは collection のあと、決定的なページ render 段階で動きます。
+
+`ssg.minifyHtml` は production HTML の policy です。Vite の JavaScript/CSS
+`build.minify` や転送時圧縮とは別です。有効にすると、framework transform、
+resource rewrite、PWA tag、shared asset 外部化が終わったあと、生成 HTML document
+だけを minify します。RSS、Atom、JSON feed、sitemap、Markdown companion、text output、
+binary asset はこの option では書き換えません。inline JavaScript/CSS の minify error は
+部分的に変換した HTML を公開せず build を失敗させます。
 
 `ssg.routePrefix` はデプロイの `base` やルートのホストファイルを動かさずに、Markdown ページルートを `/blog` のようなパスへマウントします。`blog`、`/blog`、`/blog/` はどれも `/blog` 配下になります。ページ HTML とページ単位のアセットはプレフィックスに従い、`_redirects`、`_headers`、ルートのフィード、サイトマップ index は `outDir` に残ります。`base` は公開 URL のプレフィックスのままです。[パーマリンク](./permalinks.md) がオンのとき、frontmatter の `permalink` が勝ちます。
 

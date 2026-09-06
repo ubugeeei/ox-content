@@ -101,6 +101,7 @@ export function createDocsResolvedOptions(
       enabled: true,
       extension: ".html",
       clean: false,
+      minifyHtml: false,
       bare: false,
       siteName: "Ox Content",
       generateOgImage: false,

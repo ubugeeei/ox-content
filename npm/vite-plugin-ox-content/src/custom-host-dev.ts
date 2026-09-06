@@ -3,6 +3,8 @@ import { createAssetsContext, themeTokenMiddleware } from "./custom-host-assets"
 import { createCustomHostCollectionAssetsDevController } from "./custom-host-collection-assets";
 import {
   createBaseContext,
+  createContextMemo,
+  createRoutesContext,
   loadHost,
   loadRoutes,
   normalizeHostModuleId,
@@ -159,8 +161,13 @@ export function configureDevServer(
   const loadCachedRoutes = async () => {
     if (!routesPromise) {
       const generation = routesGeneration;
+      const memo = createContextMemo();
       const trackedDependencies = new Set<OxContentCustomHostDependency>();
-      const context = createTrackedContext(baseContext, server, trackedDependencies);
+      const context = createTrackedContext(
+        createRoutesContext(baseContext, memo),
+        server,
+        trackedDependencies,
+      );
       const current = loadCachedHost()
         .then((host) => loadRoutes(host, context))
         .then((routes) => {

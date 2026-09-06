@@ -247,6 +247,7 @@ function options(root: string, enabled: boolean): ResolvedOptions {
       enabled: true,
       extension: ".html",
       clean: false,
+      minifyHtml: false,
       bare: false,
       generateOgImage: false,
       lastUpdated: false,

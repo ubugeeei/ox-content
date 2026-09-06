@@ -253,6 +253,17 @@ export interface SsgOptions {
   clean?: boolean;
 
   /**
+   * Minify generated production HTML immediately before files are written.
+   *
+   * This is separate from Vite's JavaScript/CSS bundle minification and does
+   * not affect development responses, XML feeds, JSON feeds, Markdown
+   * companions, command output, or binary assets.
+   *
+   * @default false
+   */
+  minifyHtml?: boolean;
+
+  /**
    * Emit bare HTML with only the rendered Markdown body.
    *
    * This skips the default navigation, layout shell, and theme styles. It is
@@ -659,6 +670,7 @@ export interface ResolvedSsgOptions {
   routePrefix?: string;
   transformConcurrency?: number;
   clean: boolean;
+  minifyHtml: boolean;
   bare: boolean;
   render?: ThemeComponent;
   lang?: string;

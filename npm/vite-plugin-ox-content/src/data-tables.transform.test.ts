@@ -40,6 +40,7 @@ function createResolvedOptions(overrides: Partial<ResolvedOptions> = {}): Resolv
       enabled: true,
       extension: ".html",
       clean: false,
+      minifyHtml: false,
       bare: false,
       generateOgImage: false,
       lastUpdated: false,

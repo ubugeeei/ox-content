@@ -5,7 +5,10 @@ import { LOAD_ENV } from "./custom-host-constants";
 import type {
   OxContentCustomHostAssetsContext,
   OxContentCustomHostBaseContext,
+  OxContentCustomHostMemo,
   OxContentCustomHostModule,
+  OxContentCustomHostOutputData,
+  OxContentCustomHostOutputsContext,
   OxContentCustomHostRoute,
   OxContentCustomHostRoutesContext,
 } from "./custom-host-types";
@@ -66,6 +69,17 @@ export async function loadRoutes(
   return typeof host.routes === "function" ? await host.routes(context) : host.routes;
 }
 
+export async function loadOutputs(
+  host: OxContentCustomHostModule,
+  context: OxContentCustomHostOutputsContext,
+): Promise<OxContentCustomHostOutputData | undefined> {
+  if (!host.outputs) {
+    return undefined;
+  }
+  const output = typeof host.outputs === "function" ? await host.outputs(context) : host.outputs;
+  return output || undefined;
+}
+
 export function createBaseContext(
   mode: "build" | "serve",
   root: string,
@@ -83,6 +97,41 @@ export function createBaseContext(
     loadModule,
     assets,
   };
+}
+
+export function createContextMemo(): OxContentCustomHostMemo {
+  const values = new Map<string, Promise<unknown>>();
+  return async <T>(key: string, load: () => Promise<T> | T): Promise<T> => {
+    const existing = values.get(key);
+    if (existing) {
+      return existing as Promise<T>;
+    }
+    const current = Promise.resolve().then(load);
+    values.set(key, current);
+    try {
+      return await current;
+    } catch (error) {
+      if (values.get(key) === current) {
+        values.delete(key);
+      }
+      throw error;
+    }
+  };
+}
+
+export function createRoutesContext(
+  base: OxContentCustomHostBaseContext,
+  memo = createContextMemo(),
+): OxContentCustomHostRoutesContext {
+  return { ...base, memo };
+}
+
+export function createOutputsContext(
+  base: OxContentCustomHostBaseContext,
+  routes: readonly OxContentCustomHostRoute[],
+  memo: OxContentCustomHostMemo,
+): OxContentCustomHostOutputsContext {
+  return { ...base, routes, memo };
 }
 
 function normalizeHostExports(exports: unknown, moduleId: string): OxContentCustomHostModule {

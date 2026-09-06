@@ -105,6 +105,7 @@ import {
   writeSnapshotSearchIndex,
 } from "./versions";
 import { PageResourceError, createResourceDedupeStore, processPageResources } from "./resources";
+import { minifyHtmlOutput } from "./html-minify";
 import {
   createVersionNavigationContext,
   rewriteVersionedHeaderNavItems,
@@ -321,6 +322,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
       extension: ".html",
       transformConcurrency: resolveSsgTransformConcurrency(undefined),
       clean: false,
+      minifyHtml: false,
       bare: false,
       generateOgImage: false,
       lastUpdated: false,
@@ -347,6 +349,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
       extension: ".html",
       transformConcurrency: resolveSsgTransformConcurrency(undefined),
       clean: false,
+      minifyHtml: false,
       bare: false,
       generateOgImage: false,
       lastUpdated: false,
@@ -374,6 +377,7 @@ export function resolveSsgOptions(ssg: SsgOptions | boolean | undefined): Resolv
     ...resolvedRoutePrefix(ssg.routePrefix),
     transformConcurrency: resolveSsgTransformConcurrency(ssg.transformConcurrency),
     clean: ssg.clean ?? false,
+    minifyHtml: ssg.minifyHtml ?? false,
     bare: ssg.bare ?? false,
     render: ssg.render,
     lang: ssg.lang,
@@ -2315,8 +2319,9 @@ async function writeGeneratedPages(
 
   await Promise.all(
     optimizedOutput.pages.map(async (page) => {
+      const html = context.ssgOptions.minifyHtml ? await minifyHtmlOutput(page.html) : page.html;
       await fs.mkdir(path.dirname(page.outputPath), { recursive: true });
-      await fs.writeFile(page.outputPath, page.html, "utf-8");
+      await fs.writeFile(page.outputPath, html, "utf-8");
     }),
   );
   generatedFiles.push(...optimizedOutput.pages.map((page) => page.outputPath));
