@@ -124,12 +124,24 @@ describe("published component styles", () => {
         expect(packedCss(tarball, name)).toBe(sources.map(crateCss).join(""));
       }
 
+      const social = packedCss(tarball, "social.css");
+      expect(social).toMatch(
+        /\.ox-tweet \.ox-tweet__avatar--circle \{\n  border-radius: 9999px;\n\}/,
+      );
+      expect(social).toMatch(/\.ox-tweet \.ox-tweet__avatar--square \{\n  border-radius: 4px;\n\}/);
+
       const twitterFull = packedCss(tarball, "twitter-full.css");
       expect(twitterFull).toContain("react-tweet");
       expect(twitterFull).toContain("sveltweet");
       expect(twitterFull).toContain("Copyright (c) 2023 Luis Alvarez");
       expect(twitterFull).toContain("Copyright (c) 2024 ryoppippi");
       expect(twitterFull).toContain("Permission is hereby granted");
+      expect(twitterFull).toMatch(
+        /\.ox-tweet\.ox-tweet--full \.ox-tweet__avatar--circle \{\n  border-radius: 9999px;\n\}/,
+      );
+      expect(twitterFull).toMatch(
+        /\.ox-tweet\.ox-tweet--full \.ox-tweet__avatar--square \{\n  border-radius: 4px;\n\}/,
+      );
 
       const allCss = packedCss(tarball, "all.css");
       for (const name of Object.keys(CRATE_SOURCES)) {

@@ -16,5 +16,6 @@ export type {
   TweetData,
   TweetEntity,
   TweetMedia,
+  TweetProfileImageShape,
   TwitterEmbedOptions,
 } from "./types";

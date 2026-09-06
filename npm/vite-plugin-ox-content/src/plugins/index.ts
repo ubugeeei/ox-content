@@ -37,6 +37,7 @@ import {
   createSyndicationToken,
   parseTweetReference,
   type TweetData,
+  type TweetProfileImageShape,
   type TwitterEmbedOptions,
 } from "./twitter";
 import {
@@ -147,6 +148,7 @@ export type {
   YouTubeOptions,
   MediaEmbedOptions,
   TweetData,
+  TweetProfileImageShape,
   TwitterEmbedOptions,
   GitHubRepoData,
   GitHubResourceData,

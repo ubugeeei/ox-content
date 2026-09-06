@@ -33,6 +33,14 @@
   margin: 0;
 }
 
+.ox-tweet.ox-tweet--full .ox-tweet__avatar--circle {
+  border-radius: 9999px;
+}
+
+.ox-tweet.ox-tweet--full .ox-tweet__avatar--square {
+  border-radius: 4px;
+}
+
 .ox-tweet.ox-tweet--full :where(p, ul, ol, li, dl, dd, dt, hr, h1, h2, h3, h4, h5, h6) {
   margin: 0;
   padding: 0;

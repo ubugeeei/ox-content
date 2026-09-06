@@ -1,4 +1,5 @@
 import { renderFullTweet } from "./full";
+import { renderAvatar } from "./avatar";
 import { escapeAttribute, escapeHtml } from "./html";
 import { renderMedia } from "./markup";
 import { renderTweetMetrics } from "./metrics";
@@ -50,9 +51,7 @@ function renderHeader(
 ): string {
   const screen = sanitizeScreenName(user.screen_name) ?? user.screen_name;
   const profile = href ?? `https://x.com/${encodeURIComponent(screen)}`;
-  const avatar = avatarSrc
-    ? `<img class="ox-tweet__avatar" src="${escapeAttribute(avatarSrc)}" alt="" width="48" height="48" loading="lazy" decoding="async">`
-    : "";
+  const avatar = renderAvatar(avatarSrc, 48, user.profile_image_shape);
   return [
     `<header class="${headerClass}">`,
     `<a class="ox-tweet__profile" href="${escapeAttribute(profile)}" target="_blank" rel="noopener noreferrer">`,
