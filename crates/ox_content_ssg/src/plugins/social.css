@@ -170,6 +170,14 @@
   background: var(--octc-color-bg-alt);
 }
 
+.ox-tweet .ox-tweet__avatar--circle {
+  border-radius: 9999px;
+}
+
+.ox-tweet .ox-tweet__avatar--square {
+  border-radius: 4px;
+}
+
 .ox-tweet__author-name {
   display: block;
   font-weight: 600;

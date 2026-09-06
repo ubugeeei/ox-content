@@ -84,11 +84,11 @@ function hasRequestIdentityHeaders(request: Request): boolean {
   return request.headers.has("authorization") || request.headers.has("cookie");
 }
 
-export function createTrackedContext(
-  context: OxContentCustomHostBaseContext,
+export function createTrackedContext<T extends OxContentCustomHostBaseContext>(
+  context: T,
   server: ViteDevServer,
   dependencies: Set<OxContentCustomHostDependency>,
-): OxContentCustomHostBaseContext {
+): T {
   return {
     ...context,
     loadModule: async (moduleId) => {
@@ -112,7 +112,7 @@ export function createTrackedContext(
         return result;
       },
     },
-  };
+  } as T;
 }
 
 async function renderDevResponse(

@@ -35,7 +35,7 @@ const PROSE_CSS = `
 .prose ol, .prose ul { margin-top: 1.25em; margin-bottom: 1.25em; padding-inline-start: 1.625em; }
 .prose ol { list-style-type: decimal; }
 .prose ul { list-style-type: disc; }
-.prose img { margin-top: 2em; margin-bottom: 2em; }
+.prose img { margin-top: 2em; margin-bottom: 2em; border-radius: 0.25rem; }
 .prose video { margin-top: 2em; margin-bottom: 2em; }
 .prose figure { margin-top: 2em; margin-bottom: 2em; }
 .prose figure > * { margin-top: 0; margin-bottom: 0; }
@@ -62,7 +62,7 @@ const CARD_HTML = `
 <figure class="ox-tweet ox-tweet--fetched ox-tweet--full">
   <div class="ox-tweet__header">
     <a class="ox-tweet__avatar-link" href="https://x.com/probe">
-      <img class="ox-tweet__avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="48" height="48">
+      <img class="ox-tweet__avatar ox-tweet__avatar--circle" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="48" height="48">
     </a>
     <div class="ox-tweet__author">
       <a class="ox-tweet__author-name" href="https://x.com/probe">Probe</a>
@@ -75,7 +75,7 @@ const CARD_HTML = `
   </div>
   <blockquote class="ox-tweet__quote">
     <div class="ox-tweet__quote-header">
-      <img class="ox-tweet__avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="20" height="20">
+      <img class="ox-tweet__avatar ox-tweet__avatar--square" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="20" height="20">
       <span class="ox-tweet__author-handle">@quoted</span>
     </div>
     <p class="ox-tweet__quote-body">Quoted post text.</p>
@@ -104,6 +104,10 @@ test.describe("Twitter full cards inside prose", () => {
           top: "0px",
           bottom: "0px",
         });
+        await expect(borderRadius(page, ".ox-tweet__header .ox-tweet__avatar")).resolves.toBe(
+          "9999px",
+        );
+        await expect(borderRadius(page, ".ox-tweet__quote .ox-tweet__avatar")).resolves.toBe("4px");
 
         // The quoted post keeps full-card typography, not article quotation
         // styling, and gets no generated quotation marks.
@@ -159,6 +163,21 @@ test.describe("Twitter full cards inside prose", () => {
     // 30px-per-side prose image margin produced.
     expect(header.header).toBeLessThanOrEqual(60);
   });
+
+  for (const scheme of ["light", "dark"] as const) {
+    for (const width of [1280, 380]) {
+      test(`preserves compact avatar shapes (${scheme}, ${width}px)`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.emulateMedia({ colorScheme: scheme });
+        await renderCompact(page);
+
+        await expect(borderRadius(page, ".ox-tweet__header .ox-tweet__avatar")).resolves.toBe(
+          "9999px",
+        );
+        await expect(borderRadius(page, ".ox-tweet__quote .ox-tweet__avatar")).resolves.toBe("4px");
+      });
+    }
+  }
 });
 
 async function renderInProse(page: Page): Promise<void> {
@@ -183,6 +202,40 @@ async function renderInProse(page: Page): Promise<void> {
   );
 }
 
+async function renderCompact(page: Page): Promise<void> {
+  const componentCss = await concat(SOCIAL_SOURCES);
+  await page.setContent(
+    `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>${componentCss}</style>
+  </head>
+  <body>
+    <figure class="ox-tweet ox-tweet--fetched">
+      <header class="ox-tweet__header">
+        <a class="ox-tweet__profile" href="https://x.com/probe">
+          <img class="ox-tweet__avatar ox-tweet__avatar--circle" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="48" height="48">
+          <span class="ox-tweet__author-name">Probe</span>
+          <span class="ox-tweet__author-handle">@probe</span>
+        </a>
+      </header>
+      <blockquote class="ox-tweet__quote">
+        <header class="ox-tweet__quote-header">
+          <a class="ox-tweet__profile" href="https://x.com/quoted">
+            <img class="ox-tweet__avatar ox-tweet__avatar--square" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="48" height="48">
+            <span class="ox-tweet__author-name">Quoted</span>
+            <span class="ox-tweet__author-handle">@quoted</span>
+          </a>
+        </header>
+      </blockquote>
+    </figure>
+  </body>
+</html>`,
+    { waitUntil: "load" },
+  );
+}
+
 /** Host stylesheets last, which is the order that used to lose. */
 async function concat(files: string[]): Promise<string> {
   const parts = await Promise.all(
@@ -199,4 +252,11 @@ async function margins(page: Page, selector: string): Promise<{ top: string; bot
       const style = getComputedStyle(node);
       return { top: style.marginTop, bottom: style.marginBottom };
     });
+}
+
+async function borderRadius(page: Page, selector: string): Promise<string> {
+  return page
+    .locator(selector)
+    .first()
+    .evaluate((node) => getComputedStyle(node).borderTopLeftRadius);
 }

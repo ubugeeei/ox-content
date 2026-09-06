@@ -66,6 +66,8 @@ Markdown 属性とリッチなソーシャル埋め込みの見た目の同等�
   module identity を持つ browser-only lazy client contract が必要だと報告しました。
 - first-paint theme bootstrap、typed document asset renderer、downstream の plugin
   orchestration を外す framework-owned custom-host Vite lifecycle を要望しました。
+- ryoppippi.com の移行中に、独自ホストの協調 feed data、production HTML
+  minification、Twitter / X profile avatar shape parity を要望・報告しました。
 
 ### bulebrainbrand
 

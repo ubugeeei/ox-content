@@ -84,10 +84,13 @@ export interface TweetUser {
   name: string;
   screen_name: string;
   profile_image_url_https?: string;
+  profile_image_shape?: TweetProfileImageShape;
   verified?: boolean;
   is_blue_verified?: boolean;
   verified_type?: string;
 }
+
+export type TweetProfileImageShape = "Circle" | "Square" | (string & {});
 
 /** Root or quoted post body. Nested `quoted_tweet` is stripped during normalize. */
 export interface TweetBodyData {

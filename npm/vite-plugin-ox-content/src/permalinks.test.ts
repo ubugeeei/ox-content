@@ -17,7 +17,6 @@ const tempDirs: string[] = [];
 afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true })));
 });
-
 describe("resolvePermalinksOptions / resolveCascadeOptions", () => {
   it("treats omitted and false as off", () => {
     expect(resolvePermalinksOptions(undefined)).toEqual({ enabled: false });
@@ -33,7 +32,6 @@ describe("resolvePermalinksOptions / resolveCascadeOptions", () => {
     expect(resolveCascadeOptions({ enabled: false })).toEqual({ enabled: false });
   });
 });
-
 describe("resolvePageRoutes", () => {
   it("keeps file-tree URLs when disabled", () => {
     const output = resolvePageRoutes({
@@ -133,6 +131,7 @@ describe("SSG and collections", () => {
           enabled: true,
           extension: ".html",
           clean: false,
+          minifyHtml: false,
           bare: true,
           generateOgImage: false,
           lastUpdated: false,
@@ -262,6 +261,7 @@ function ssgOptions(overrides: Partial<ResolvedOptions> = {}): ResolvedOptions {
       enabled: true,
       extension: ".html",
       clean: false,
+      minifyHtml: false,
       bare: true,
       generateOgImage: false,
       lastUpdated: false,

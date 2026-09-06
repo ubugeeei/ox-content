@@ -6,14 +6,19 @@ import { createAssetsContext, readClientManifest, writeThemeTokens } from "./cus
 import { writeCustomHostCollectionAssets } from "./custom-host-collection-assets";
 import {
   createBaseContext,
+  createContextMemo,
+  createOutputsContext,
+  createRoutesContext,
   createHostLoaderServer,
   loadHost,
+  loadOutputs,
   loadRoutes,
 } from "./custom-host-loader";
 import { normalizeRenderResult, renderRoute } from "./custom-host-render";
 import type {
   OxContentCustomHostBaseContext,
   OxContentCustomHostModule,
+  OxContentCustomHostOutputData,
   OxContentCustomHostOptions,
   OxContentCustomHostRoute,
   RenderedBuildRoute,
@@ -32,6 +37,7 @@ import {
   shouldTransformHtml,
   ssgUrlPath,
 } from "./custom-host-utils";
+import { minifyHtmlOutput } from "./html-minify";
 import { writeRedirectOutputs } from "./redirect-outputs";
 import {
   planSsgOutputs,
@@ -59,7 +65,11 @@ export async function runCustomHostBuild(
   try {
     const baseContext = createBaseContext("build", root, outDir, options, loadModule, assets);
     const host = await loadHost(input.host, loadModule, root);
-    const routes = await loadRoutes(host, baseContext);
+    const memo = createContextMemo();
+    const routes = await loadRoutes(host, createRoutesContext(baseContext, memo));
+    const outputData = options.feeds?.enabled
+      ? await loadOutputs(host, createOutputsContext(baseContext, routes, memo))
+      : undefined;
     const rendered = await renderBuildRoutes(host, routes, baseContext, input, loaderServer);
 
     await writeThemeTokens(outDir, themeTokens);
@@ -67,7 +77,16 @@ export async function runCustomHostBuild(
       input.collectionAssets,
       baseContext,
     );
-    await writeCoordinatedOutputs(rendered, options, rawOptions, root, outDir, collectionAssets);
+    await writeCoordinatedOutputs(
+      rendered,
+      options,
+      rawOptions,
+      root,
+      outDir,
+      collectionAssets,
+      outputData,
+      input.build?.minifyHtml ?? options.ssg.minifyHtml,
+    );
   } finally {
     await loaderServer.close();
   }
@@ -112,6 +131,8 @@ async function writeCoordinatedOutputs(
   root: string,
   outDir: string,
   collectionAssets: { files: string[] },
+  outputData: OxContentCustomHostOutputData | undefined,
+  minifyHtml: boolean,
 ): Promise<void> {
   const pages = routes.flatMap((entry): SsgOutputPageInput[] => {
     if (!isHtmlContentType(entry.contentType)) {
@@ -145,6 +166,10 @@ async function writeCoordinatedOutputs(
     root,
     srcDir: path.resolve(root, options.srcDir),
     options: rawOptions,
+    siteDescription: outputData?.siteDescription,
+    collections: outputData?.collections,
+    collectionNames: outputData?.collectionNames,
+    items: outputData?.items,
   });
 
   const selfHostedAssets = await writeSelfHostedAssets(plan.selfHostedAssets);
@@ -162,7 +187,12 @@ async function writeCoordinatedOutputs(
 
   await Promise.all(
     routes.map(async (entry) => {
-      const body = rewrittenHtml.get(path.resolve(entry.outputPath)) ?? entry.body;
+      let body: string | Uint8Array =
+        rewrittenHtml.get(path.resolve(entry.outputPath)) ?? entry.body;
+      if (minifyHtml && isHtmlContentType(entry.contentType)) {
+        const html = typeof body === "string" ? body : new TextDecoder().decode(body);
+        body = await minifyHtmlOutput(html);
+      }
       await fs.mkdir(path.dirname(entry.outputPath), { recursive: true });
       await fs.writeFile(entry.outputPath, body);
     }),

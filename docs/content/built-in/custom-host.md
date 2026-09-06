@@ -95,6 +95,17 @@ export default {
         }),
     },
   ],
+  async outputs(ctx) {
+    const content = await ctx.memo("content", () => ctx.loadModule("/src/content.ts"));
+    return {
+      siteDescription: content.siteDescription,
+      collectionNames: ["blog", "media"],
+      collections: {
+        blog: content.blogFeedItems,
+        media: content.mediaFeedItems,
+      },
+    };
+  },
   notFound() {
     return { text: "Not Found", status: 404, contentType: "text/plain" };
   },
@@ -120,6 +131,12 @@ In production, the plugin runs once from `closeBundle`, after Vite has emitted
 client assets and `.vite/manifest.json`. It opens a temporary middleware-mode
 Vite server only to SSR-load the host and site modules, passes `ctx.loadModule`
 instead of the raw server, and closes the temporary server in `finally`.
+`outputs(ctx)` is build-only and is called only when `feeds` is enabled.
+
+`ctx.memo(key, load)` shares one expensive route-catalogue load inside a build
+or development route-catalogue pass. Use the same key from `routes(ctx)` and
+`outputs(ctx)` to reuse a host-owned content artifact without module-global
+mutable state. Rejected loaders are evicted so the next call can retry.
 
 ## Coordinated outputs
 
@@ -132,6 +149,21 @@ the default SSG:
 - `writeMarkdownCompanions()` from route `source`.
 - `writeRedirectOutputs()` from route `aliases` / `redirect`.
 - `writeFeedFiles()` and `writeSiteMapFiles()` from selected route metadata.
+
+Route metadata belongs on the route or render result: `title`, `description`,
+`source`, `aliases`, `redirect`, `lastUpdatedPaths`, and publish-state fields
+describe that HTML page. Site-output data that is not itself a page belongs in
+`outputs(ctx)`: programmatic default `items`, named feed `collections`,
+`collectionNames`, and `siteDescription`. Ox Content passes that data through
+`planSsgOutputs()` and the existing feed writers, so publish-state filtering,
+validation, output paths, and diagnostics stay shared with the built-in SSG.
+
+Set `ssg.minifyHtml: true` for built-in SSG pages or
+`build.minifyHtml: true` on the custom-host plugin to minify production HTML.
+When the custom-host build option is omitted, it follows `oxContent.ssg.minifyHtml`.
+Minification runs after `transformIndexHtml()` and resource URL rewriting,
+immediately before HTML files are written. It does not transform XML feeds,
+JSON feeds, Markdown companions, text outputs, or binary assets.
 
 Use `lastUpdatedPaths` on a route or render result when sitemap freshness should
 consider shared metadata files or source directories in addition to `inputPath`.

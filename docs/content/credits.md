@@ -71,6 +71,8 @@ Contribution summary:
 - Requested the first-paint theme bootstrap, typed document asset renderer, and
   framework-owned custom-host Vite lifecycle that removes downstream plugin
   orchestration.
+- Requested custom-host coordinated feed data, production HTML minification,
+  and Twitter/X profile avatar shape parity during the ryoppippi.com migration.
 
 ### bulebrainbrand
 

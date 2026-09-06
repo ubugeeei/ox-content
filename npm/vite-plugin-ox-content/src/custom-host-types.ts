@@ -7,7 +7,7 @@ import type {
   RenderDocumentAssetsResult,
 } from "./document-assets";
 import type { RenderThemeTokenCssOptions, ThemeTokenSource } from "./theme-tokens";
-import type { OxContentOptions, ResolvedOptions } from "./types";
+import type { FeedItemInput, OxContentOptions, ResolvedOptions } from "./types";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -36,6 +36,12 @@ export interface OxContentCustomHostBuildOptions {
   runInTest?: boolean;
   /** Apply Vite `transformIndexHtml` to HTML outputs. */
   transformHtml?: boolean;
+  /**
+   * Minify production HTML outputs immediately before writing them.
+   *
+   * Defaults to `oxContent.ssg.minifyHtml`.
+   */
+  minifyHtml?: boolean;
 }
 
 export interface OxContentCustomHostDevOptions {
@@ -88,9 +94,30 @@ export interface OxContentCustomHostModule {
     | ((
         context: OxContentCustomHostRoutesContext,
       ) => MaybePromise<readonly OxContentCustomHostRoute[]>);
+  /**
+   * Build-only data for coordinated outputs such as feeds.
+   *
+   * This hook is not called in development and is skipped when `feeds` is off.
+   */
+  outputs?:
+    | OxContentCustomHostOutputData
+    | ((
+        context: OxContentCustomHostOutputsContext,
+      ) => MaybePromise<OxContentCustomHostOutputData | undefined | void>);
   notFound?: (
     context: OxContentCustomHostNotFoundContext,
   ) => MaybePromise<OxContentCustomHostRenderResult | Response | undefined | void>;
+}
+
+export interface OxContentCustomHostOutputData {
+  /** Default feed items for a programmatic single-feed source. */
+  items?: readonly FeedItemInput[];
+  /** Named feed collections keyed by collection name. */
+  collections?: Record<string, readonly FeedItemInput[]>;
+  /** Collection order used by default feed collection resolution. */
+  collectionNames?: readonly string[];
+  /** Site description shared with feed documents and crawl manifests. */
+  siteDescription?: string;
 }
 
 export interface OxContentCustomHostRoute {
@@ -184,7 +211,25 @@ export interface OxContentCustomHostBaseContext {
   assets: OxContentCustomHostAssetsContext;
 }
 
-export interface OxContentCustomHostRoutesContext extends OxContentCustomHostBaseContext {}
+export interface OxContentCustomHostMemo {
+  <T>(key: string, load: () => MaybePromise<T>): Promise<T>;
+}
+
+export interface OxContentCustomHostRoutesContext extends OxContentCustomHostBaseContext {
+  /**
+   * Memoize expensive route-catalogue work for this build or route-catalogue
+   * generation pass. Failed loaders are evicted so the next call can retry.
+   */
+  memo: OxContentCustomHostMemo;
+}
+
+export interface OxContentCustomHostOutputsContext extends OxContentCustomHostBaseContext {
+  routes: readonly OxContentCustomHostRoute[];
+  /**
+   * Shares the same memo store as `routes(context)` during production builds.
+   */
+  memo: OxContentCustomHostMemo;
+}
 
 export interface OxContentCustomHostCollectionAssetsContext extends OxContentCustomHostBaseContext {}
 

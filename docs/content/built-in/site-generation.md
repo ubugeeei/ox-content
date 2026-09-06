@@ -61,6 +61,7 @@ export default defineConfig({
 | `routePrefix`          | —              | Mount page routes under a path without changing `base` or `outDir`.                                        |
 | `transformConcurrency` | `1`            | Markdown pages transformed at once before deterministic render/write stages.                               |
 | `clean`                | `false`        | Remove generated output before writing.                                                                    |
+| `minifyHtml`           | `false`        | Minify production HTML at the final write boundary.                                                        |
 | `bare`                 | `false`        | Emit unthemed HTML without navigation.                                                                     |
 | `render`               | —              | JSX component that owns the whole document.                                                                |
 | `lang`                 | `"en"`         | `lang` attribute on `<html>` (bare mode).                                                                  |
@@ -95,6 +96,14 @@ build-time embed fetches. Finite values are truncated and then clamped to
 opt into concurrency when custom transformers and embed
 providers are safe to run concurrently. Custom `ssg.render` themes still run
 after collection in the deterministic page-render stage.
+
+`ssg.minifyHtml` is a production HTML policy, not Vite's JavaScript/CSS
+`build.minify` switch and not transport compression. When enabled, Ox Content
+minifies only the generated HTML documents after framework transforms, resource
+rewrites, PWA tags, and shared asset externalization have settled. RSS, Atom,
+JSON feeds, sitemaps, Markdown companions, text outputs, and binary assets are
+not rewritten by this option. Inline JavaScript/CSS minification failures fail
+the build instead of publishing partially transformed HTML.
 
 `ssg.routePrefix` mounts Markdown page routes under a path such as `/blog`
 without changing the deployment `base` or moving root host files. `blog`,

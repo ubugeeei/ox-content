@@ -72,6 +72,17 @@ export default {
       },
     },
   ],
+  async outputs(ctx) {
+    const content = await ctx.memo("content", () => ctx.loadModule("/src/content.ts"));
+    return {
+      siteDescription: content.siteDescription,
+      collectionNames: ["blog", "media"],
+      collections: {
+        blog: content.blogFeedItems,
+        media: content.mediaFeedItems,
+      },
+    };
+  },
 };
 ```
 
@@ -86,6 +97,12 @@ production では Vite が client asset と `.vite/manifest.json` を出した�
 `closeBundle` から一度だけ走ります。host と site module を SSR load するためだけに
 一時的な middleware-mode Vite server を開き、raw server ではなく `ctx.loadModule` を
 渡し、`finally` で必ず閉じます。
+`outputs(ctx)` は build 専用で、`feeds` が有効なときだけ呼ばれます。
+
+`ctx.memo(key, load)` は、1 回の build または development route catalogue 生成中に
+高価な読み込みを共有します。`routes(ctx)` と `outputs(ctx)` で同じ key を使えば、
+module-global mutable state なしで host-owned content artifact を再利用できます。
+失敗した loader は memo から消えるので次回 retry できます。
 
 ## 協調する出力
 
@@ -96,6 +113,20 @@ production では Vite が client asset と `.vite/manifest.json` を出した�
 - route `source` からの `writeMarkdownCompanions()`。
 - route `aliases` / `redirect` からの `writeRedirectOutputs()`。
 - 選択された route metadata からの `writeFeedFiles()` と `writeSiteMapFiles()`。
+
+route metadata は route または render result に置きます。`title`、`description`、
+`source`、`aliases`、`redirect`、`lastUpdatedPaths`、publish-state field はその HTML
+page を説明します。page ではない site-output data は `outputs(ctx)` に置きます。
+programmatic default `items`、名前付き feed `collections`、`collectionNames`、
+`siteDescription` がそれです。Ox Content はその data を `planSsgOutputs()` と既存の
+feed writer に流すので、publish-state filtering、validation、output path、diagnostic は
+組み込み SSG と共有されます。
+
+組み込み SSG page には `ssg.minifyHtml: true`、独自ホスト plugin には
+`build.minifyHtml: true` を指定すると production HTML を minify します。独自ホストの
+build option を省略したときは `oxContent.ssg.minifyHtml` に従います。minify は
+`transformIndexHtml()` と resource URL rewrite のあと、HTML file を書く直前に走ります。
+XML feed、JSON feed、Markdown companion、text output、binary asset は変換しません。
 
 route の出力 path が重複すると、どの route 同士が衝突したかを示して build を
 失敗させます。公開対象の選択はホストが持ち、Ox Content はホストが返した route

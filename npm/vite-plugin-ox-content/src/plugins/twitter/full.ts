@@ -1,6 +1,7 @@
 // Static HTML for appearance: "full". Visual contract follows MIT-licensed
 // react-tweet (Copyright (c) 2023 Luis Alvarez) and sveltweet (Copyright (c)
 // 2024 ryoppippi). Notices live in social-tweet-full.css and docs/content/credits.md.
+import { renderAvatar } from "./avatar";
 import { formatFullDate } from "./date-utils";
 import { escapeAttribute, escapeHtml } from "./html";
 import { renderMedia } from "./markup";
@@ -54,7 +55,7 @@ function renderFullHeader(
   return [
     '<header class="ox-tweet__header">',
     `<a class="ox-tweet__avatar-link" href="${escapeAttribute(profile)}" target="_blank" rel="noopener noreferrer">`,
-    avatar(avatarSrc, 48),
+    renderAvatar(avatarSrc, 48, user.profile_image_shape),
     "</a>",
     '<div class="ox-tweet__author">',
     `<a class="ox-tweet__author-name" href="${escapeAttribute(profile)}" target="_blank" rel="noopener noreferrer">${escapeHtml(user.name)}${verifiedBadge(user)}</a>`,
@@ -78,7 +79,7 @@ function renderQuoteHeader(
   return [
     '<header class="ox-tweet__quote-header">',
     `<a class="ox-tweet__profile" href="${escapeAttribute(href)}" target="_blank" rel="noopener noreferrer">`,
-    avatar(avatarSrc, 20),
+    renderAvatar(avatarSrc, 20, user.profile_image_shape),
     `<span class="ox-tweet__author-name">${escapeHtml(user.name)}${verifiedBadge(user)}</span>`,
     `<span class="ox-tweet__author-handle">@${escapeHtml(user.screen_name)}</span>`,
     "</a></header>",
@@ -115,12 +116,6 @@ function renderActions(permalink: string, data: TweetData): string {
 
 function renderReplies(permalink: string, conversationCount: unknown): string {
   return `<p class="ox-tweet__replies"><a class="ox-tweet__replies-link" href="${escapeAttribute(permalink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(repliesLabel(conversationCount))}</a></p>`;
-}
-
-function avatar(src: string | undefined, size: number): string {
-  return src
-    ? `<img class="ox-tweet__avatar" src="${escapeAttribute(src)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`
-    : "";
 }
 
 function verifiedBadge(user: TweetUser): string {
