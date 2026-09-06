@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0-beta.17] - 2026-09-06
+
+### Features
+
+- add output data and html minification
+
+### Bug Fixes
+
+- preserve profile avatar shapes
+
 ## [3.0.0-beta.16] - 2026-09-06
 
 ### Bug Fixes
