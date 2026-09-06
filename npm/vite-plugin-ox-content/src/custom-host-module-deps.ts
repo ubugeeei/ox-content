@@ -98,11 +98,20 @@ function moduleFileCandidates(moduleId: string, root: string): string[] {
 }
 
 function devDependency(node: CustomHostDevModuleNode, root: string): string | undefined {
-  const raw = node.file ?? node.id ?? node.url;
-  if (!raw) {
+  for (const raw of [node.file, node.id, node.url]) {
+    const dependency = raw ? normalizeDevDependency(raw, root) : undefined;
+    if (dependency) {
+      return dependency;
+    }
+  }
+  return undefined;
+}
+
+function normalizeDevDependency(raw: string, root: string): string | undefined {
+  const clean = cleanModulePath(raw);
+  if (!isFilesystemModulePath(clean)) {
     return undefined;
   }
-  const clean = cleanModulePath(raw);
   if (clean.startsWith("/@fs/")) {
     return normalizeFilePath(clean.slice("/@fs".length));
   }
@@ -112,7 +121,23 @@ function devDependency(node: CustomHostDevModuleNode, root: string): string | un
   if (clean.startsWith("/")) {
     return normalizeFilePath(path.join(root, clean.slice(1)));
   }
-  return clean ? normalizeFilePath(path.join(root, clean)) : undefined;
+  return normalizeFilePath(path.join(root, clean));
+}
+
+function isFilesystemModulePath(value: string): boolean {
+  if (
+    value.includes("\0") ||
+    value.includes("__x00__") ||
+    value.startsWith("virtual:") ||
+    value.startsWith("/@id/") ||
+    value.startsWith("/@vite/")
+  ) {
+    return false;
+  }
+  if (value.startsWith("/@fs/") || path.isAbsolute(value) || value.startsWith(".")) {
+    return true;
+  }
+  return value.includes("/") && !!path.extname(value);
 }
 
 function rootRelativeId(value: string, root: string): boolean {
