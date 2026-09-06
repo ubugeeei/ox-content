@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-beta.16] - 2026-09-06
+
+### Bug Fixes
+
+- handle beta autolink and watcher regressions (#1310)
+
 ## [3.0.0-beta.15] - 2026-09-05
 
 ### Features
