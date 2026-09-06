@@ -28,6 +28,16 @@ describe("custom host module dependency inference", () => {
     expect(dependencies.every((dependency) => !dependency.includes("\0"))).toBe(true);
     expect(dependencies.every((dependency) => !dependency.includes("__x00__"))).toBe(true);
   });
+
+  it("keeps real files whose names contain Vite escape text", () => {
+    const root = path.resolve("fixtures/custom-host");
+    const file = path.join(root, "src", "__x00__literal.ts");
+    const moduleGraph = graph([node({ file })]);
+
+    const dependencies = collectDevModuleDependencies(moduleGraph, file, root);
+
+    expect(dependencies).toEqual([normalize(file)]);
+  });
 });
 
 function node(input: {

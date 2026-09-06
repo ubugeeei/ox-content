@@ -127,7 +127,6 @@ function normalizeDevDependency(raw: string, root: string): string | undefined {
 function isFilesystemModulePath(value: string): boolean {
   if (
     value.includes("\0") ||
-    value.includes("__x00__") ||
     value.startsWith("virtual:") ||
     value.startsWith("/@id/") ||
     value.startsWith("/@vite/")
