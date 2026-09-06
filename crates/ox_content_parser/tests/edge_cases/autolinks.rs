@@ -146,3 +146,71 @@ fn gfm_autolink_keeps_non_ascii_iri_paths() {
         other => panic!("expected paragraph, got {other:?}"),
     }
 }
+
+#[test]
+fn smart_punctuation_output_stays_outside_following_gfm_autolink() {
+    let cases = [
+        (
+            r#"The URL "https://example.com" is valid."#,
+            "The URL “",
+            "https://example.com",
+            "” is valid.",
+        ),
+        (
+            "The URL 'https://example.com' is valid.",
+            "The URL ‘",
+            "https://example.com",
+            "’ is valid.",
+        ),
+        ("See https://example.com...", "See ", "https://example.com", "…"),
+    ];
+
+    for (source, before, href, after) in cases {
+        let allocator = Allocator::new();
+        let doc = parse_with_options(
+            &allocator,
+            source,
+            ParserOptions { autolinks: true, smart_punctuation: true, ..Default::default() },
+        );
+
+        let Node::Paragraph(paragraph) = &doc.children[0] else {
+            panic!("expected paragraph, got {:?}", doc.children[0]);
+        };
+        let [Node::Text(prefix), Node::Link(link), Node::Text(suffix)] =
+            paragraph.children.as_slice()
+        else {
+            panic!("expected text, autolink, text for {source:?}, got {:?}", paragraph.children);
+        };
+
+        assert_eq!(prefix.value, before, "prefix for {source:?}");
+        assert_eq!(link.url, href, "href for {source:?}");
+        assert_eq!(link.children.iter().map(super::flatten_text).collect::<String>(), href);
+        assert_eq!(suffix.value, after, "suffix for {source:?}");
+    }
+}
+
+#[test]
+fn literal_unicode_punctuation_stays_inside_gfm_autolink() {
+    for (source, expected) in [
+        ("https://example.com”", "https://example.com”"),
+        ("https://example.com’", "https://example.com’"),
+        ("https://example.com…", "https://example.com…"),
+    ] {
+        let allocator = Allocator::new();
+        let doc = parse_with_options(
+            &allocator,
+            source,
+            ParserOptions { autolinks: true, smart_punctuation: true, ..Default::default() },
+        );
+
+        let Node::Paragraph(paragraph) = &doc.children[0] else {
+            panic!("expected paragraph, got {:?}", doc.children[0]);
+        };
+        let Node::Link(link) = &paragraph.children[0] else {
+            panic!("expected autolink for {source:?}, got {:?}", paragraph.children);
+        };
+
+        assert_eq!(link.url, expected);
+        assert_eq!(link.children.iter().map(super::flatten_text).collect::<String>(), expected);
+    }
+}

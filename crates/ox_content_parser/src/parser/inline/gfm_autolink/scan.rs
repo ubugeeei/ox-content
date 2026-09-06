@@ -95,13 +95,13 @@ pub(super) fn scheme_prefix_len(bytes: &[u8], at: usize) -> Option<usize> {
     SCHEMES.iter().find(|name| bytes[..at].ends_with(name.as_bytes())).map(|name| name.len() + 3)
 }
 
-/// Start-of-text, whitespace, or `*`, `_`, `~`, `(` may precede an
+/// Start-of-text, whitespace, or common delimiter punctuation may precede an
 /// autolink.
 fn valid_boundary(value: &str, start: usize) -> bool {
     value[..start]
         .chars()
         .next_back()
-        .is_none_or(|ch| ch.is_whitespace() || matches!(ch, '*' | '_' | '~' | '('))
+        .is_none_or(|ch| ch.is_whitespace() || matches!(ch, '*' | '_' | '~' | '(' | '\'' | '"'))
 }
 
 pub(super) fn validate_url(value: &str, start: usize, prefix_len: usize) -> Option<Candidate> {

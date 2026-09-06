@@ -133,6 +133,32 @@ fn script_and_smart_punctuation_extensions_render_when_enabled() {
 }
 
 #[test]
+fn smart_punctuation_delimiters_stay_outside_gfm_autolink_rendering() {
+    let parser_options =
+        ParserOptions { autolinks: true, smart_punctuation: true, ..ParserOptions::default() };
+    let renderer_options = HtmlRendererOptions { link_target_blank: false, ..Default::default() };
+
+    for (source, expected) in [
+        (
+            r#"The URL "https://example.com" is valid."#,
+            "<p>The URL “<a href=\"https://example.com\">https://example.com</a>” is valid.</p>\n",
+        ),
+        (
+            "The URL 'https://example.com' is valid.",
+            "<p>The URL ‘<a href=\"https://example.com\">https://example.com</a>’ is valid.</p>\n",
+        ),
+        (
+            "See https://example.com...",
+            "<p>See <a href=\"https://example.com\">https://example.com</a>…</p>\n",
+        ),
+    ] {
+        let html = render(source, parser_options.clone(), renderer_options.clone());
+
+        assert_eq!(html, expected, "source: {source}");
+    }
+}
+
+#[test]
 fn markdown_urls_on_another_origin_are_left_alone() {
     // A `.md` on another origin is not a page this build generates, so there
     // is no `index.html` route to rewrite it to. It must stay verbatim — and
