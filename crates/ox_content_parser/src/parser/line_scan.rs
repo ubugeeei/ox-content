@@ -258,19 +258,19 @@ mod tests {
 
     #[test]
     fn recognizes_crlf_and_lone_cr_line_endings() {
-        for (source, expected) in [
-            ("a\r\nb\nc\rd", Vec::from(["a", "b", "c", "d"])),
-            ("\r\n\n\r", Vec::from(["", "", ""])),
-        ] {
+        for (source, expected) in
+            [("a\r\nb\nc\rd", &["a", "b", "c", "d"][..]), ("\r\n\n\r", &["", "", ""][..])]
+        {
             let bytes = source.as_bytes();
             let mut pos = 0;
-            let mut lines = Vec::new();
+            let mut line_index = 0;
             while pos < bytes.len() {
                 let end = line_end(bytes, pos);
-                lines.push(&source[pos..end]);
+                assert_eq!(&source[pos..end], expected[line_index]);
+                line_index += 1;
                 pos = next_line_start(bytes, pos);
             }
-            assert_eq!(lines, expected);
+            assert_eq!(line_index, expected.len());
         }
     }
 }

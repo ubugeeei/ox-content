@@ -158,7 +158,7 @@ impl<'a> Parser<'a> {
                 }
             }
             byte if is_line_ending_byte(byte) => {
-                Self::parse_line_break(content, offset, children, pos)
+                Self::parse_line_break(content, offset, children, pos);
             }
             b'&' => {
                 profile_span_detail!("parser::inline_entity");
