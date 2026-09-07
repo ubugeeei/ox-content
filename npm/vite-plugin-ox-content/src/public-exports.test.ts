@@ -46,6 +46,7 @@ describe("public export surface", () => {
       "oxContent",
       "oxContentCustomHost",
       "planCollectionAssets",
+      "planCollectionAssetsFromDocuments",
       "planRedirectOutputs",
       "planSsgOutputs",
       "createMarkdownProcessor",

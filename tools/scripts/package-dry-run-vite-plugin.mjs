@@ -6,11 +6,19 @@ import { fileURLToPath } from "node:url";
 const publicValues = [
   "resolveGitLastmods",
   "resolveSelfHostedAssetManifest",
+  "planCollectionAssetsFromDocuments",
   "writeSelfHostedAssets",
 ];
 const publicTypes = [
+  "CollectionAssetDocumentDiagnostic",
+  "CollectionAssetDocumentDiagnosticCode",
+  "CollectionAssetDocumentInput",
+  "CollectionAssetDocumentReference",
+  "CollectionAssetResolvedDocumentReference",
   "OxContentAssetManifest",
   "OxContentAssetPreload",
+  "PlanCollectionAssetsFromDocumentsInput",
+  "PlanCollectionAssetsFromDocumentsResult",
   "SelfHostedAssetOptions",
   "SsgOutputPageInput",
   "WriteSelfHostedAssetsInput",
@@ -113,7 +121,8 @@ function linkPackageDependency(consumerRoot, packageDir, dependency) {
 function collectionsFixture() {
   return [
     'import api, { collectionNames, collections, getCollection, queryCollection } from "virtual:ox-content/collections";',
-    'import type { CollectionEntry, CollectionQueryBuilder } from "@ox-content/vite-plugin";',
+    'import { planCollectionAssetsFromDocuments } from "@ox-content/vite-plugin";',
+    'import type { CollectionAssetDocumentDiagnostic, CollectionEntry, CollectionQueryBuilder, PlanCollectionAssetsFromDocumentsInput } from "@ox-content/vite-plugin";',
     "",
     "interface PostEntry extends CollectionEntry {",
     "  title: string;",
@@ -130,19 +139,32 @@ function collectionsFixture() {
     "  const first = await selected.first();",
     "  return first?.frontmatter.rank ?? 0;",
     "}",
+    "async function useDocumentAssets(): Promise<CollectionAssetDocumentDiagnostic[]> {",
+    "  const input: PlanCollectionAssetsFromDocumentsInput = {",
+    '    contentRoot: "content",',
+    '    documents: [{ documentPath: "content/posts/hello.md", pagePath: "/posts/hello" }],',
+    "    publicPath: (reference) => [reference.publicPath],",
+    "  };",
+    "  const result = await planCollectionAssetsFromDocuments(input);",
+    "  return result.diagnostics;",
+    "}",
     "",
     "void api;",
     "void names;",
     "void rows;",
     "void useTypedQuery;",
+    "void useDocumentAssets;",
   ].join("\n");
 }
 
 function cjsCollectionsFixture() {
   return [
     'import collectionsApi = require("virtual:ox-content/collections");',
+    'import vitePlugin = require("@ox-content/vite-plugin");',
+    'type CollectionAssetDocumentDiagnostic = import("@ox-content/vite-plugin").CollectionAssetDocumentDiagnostic;',
     'type CollectionEntry = import("@ox-content/vite-plugin").CollectionEntry;',
     'type CollectionQueryBuilder<T extends CollectionEntry = CollectionEntry> = import("@ox-content/vite-plugin").CollectionQueryBuilder<T>;',
+    'type PlanCollectionAssetsFromDocumentsInput = import("@ox-content/vite-plugin").PlanCollectionAssetsFromDocumentsInput;',
     "",
     "interface PostEntry extends CollectionEntry {",
     "  title: string;",
@@ -155,10 +177,18 @@ function cjsCollectionsFixture() {
     '  const entries = await builder.where("frontmatter.draft", false).all();',
     "  return entries.some((entry) => entry.frontmatter.draft === false);",
     "}",
+    "async function useDocumentAssets(): Promise<CollectionAssetDocumentDiagnostic[]> {",
+    "  const input: PlanCollectionAssetsFromDocumentsInput = {",
+    '    documents: [{ documentPath: "content/posts/hello.md", pagePath: "/posts/hello" }],',
+    "  };",
+    "  const result = await vitePlugin.planCollectionAssetsFromDocuments(input);",
+    "  return result.diagnostics;",
+    "}",
     "",
     "void collectionsApi.default;",
     "void names;",
     "void useTypedQuery;",
+    "void useDocumentAssets;",
   ].join("\n");
 }
 
