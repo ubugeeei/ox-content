@@ -2,6 +2,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { Connect } from "vite";
 import { resolveSelfHostedAssetManifest } from "./assets";
+import type { CollectionAssetManifest } from "./collection-assets";
 import { DEFAULT_THEME_TOKEN_HREF } from "./custom-host-constants";
 import { resolveCustomHostStylesheetContent } from "./custom-host-stylesheet-content";
 import {
@@ -29,12 +30,14 @@ export function createAssetsContext(
   themeTokens: ResolvedThemeTokens | undefined,
   moduleGraph?: CustomHostDevModuleGraph,
   root?: string,
+  collectionManifest: () => Promise<CollectionAssetManifest | undefined> = async () => undefined,
 ): OxContentCustomHostAssetsContext {
   const selfHosted = resolveSelfHostedAssetManifest(options);
   return {
     selfHosted,
     clientManifest,
     themeTokens,
+    collectionManifest,
     stylesheets(input) {
       return resolveCustomHostStylesheets({
         ...input,

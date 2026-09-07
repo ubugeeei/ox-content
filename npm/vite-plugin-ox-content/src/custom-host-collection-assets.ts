@@ -2,8 +2,7 @@ import * as fs from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import * as path from "node:path";
 import type { Connect, ViteDevServer } from "vite";
-import type { CollectionAssetManifest, WriteCollectionAssetsResult } from "./collection-assets";
-import { writeCollectionAssets } from "./collection-assets";
+import type { CollectionAssetManifest } from "./collection-assets";
 import type {
   OxContentCustomHostBaseContext,
   OxContentCustomHostCollectionAssetsOptions,
@@ -18,25 +17,16 @@ import {
 
 export interface CustomHostCollectionAssetsDevController {
   middleware: Connect.NextHandleFunction;
+  manifest(): Promise<CollectionAssetManifest | undefined>;
   invalidate(file: string): boolean;
   close(): void;
 }
 
 interface CollectionAssetsSnapshot {
+  manifest: CollectionAssetManifest;
   sources: Map<string, string>;
   ownedPrefixes: string[];
   sourceDependencies: NormalizedCustomHostDependency[];
-}
-
-export async function writeCustomHostCollectionAssets(
-  options: false | OxContentCustomHostCollectionAssetsOptions | undefined,
-  context: OxContentCustomHostBaseContext,
-): Promise<WriteCollectionAssetsResult> {
-  if (!options || options.write === false) {
-    return { files: [] };
-  }
-  const manifest = await resolveCollectionAssetManifest(options, context);
-  return writeCollectionAssets({ manifest, outDir: context.outDir });
 }
 
 export function createCustomHostCollectionAssetsDevController(input: {
@@ -106,6 +96,9 @@ export function createCustomHostCollectionAssetsDevController(input: {
   };
 
   return {
+    async manifest() {
+      return (await loadSnapshot()).manifest;
+    },
     middleware: async (req, res, next) => {
       if (req.method !== "GET" && req.method !== "HEAD") {
         next();
@@ -168,7 +161,7 @@ function planSnapshot(input: {
   return promise;
 }
 
-async function resolveCollectionAssetManifest(
+export async function resolveCollectionAssetManifest(
   options: OxContentCustomHostCollectionAssetsOptions,
   context: OxContentCustomHostBaseContext,
 ): Promise<CollectionAssetManifest> {
@@ -199,6 +192,7 @@ function createSnapshot(
   }
 
   return {
+    manifest,
     sources,
     ownedPrefixes: [...ownedPrefixes],
     sourceDependencies: normalizeCustomHostDependencies(root, sourceDependencies),

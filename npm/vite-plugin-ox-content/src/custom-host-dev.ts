@@ -1,6 +1,9 @@
 import type { ViteDevServer } from "vite";
 import { createAssetsContext, themeTokenMiddleware } from "./custom-host-assets";
-import { createCustomHostCollectionAssetsDevController } from "./custom-host-collection-assets";
+import {
+  createCustomHostCollectionAssetsDevController,
+  type CustomHostCollectionAssetsDevController,
+} from "./custom-host-collection-assets";
 import {
   createBaseContext,
   createContextMemo,
@@ -46,6 +49,7 @@ export function configureDevServer(
 ): void {
   const root = server.config.root;
   const outDir = resolveOutDir(server.config, options, root);
+  let collectionAssets: CustomHostCollectionAssetsDevController | undefined;
   const assets = createAssetsContext(
     options,
     outDir,
@@ -53,6 +57,7 @@ export function configureDevServer(
     themeTokens,
     server.moduleGraph,
     root,
+    async () => collectionAssets?.manifest(),
   );
   let ssrVersion = 0;
   const loadModule = (moduleId: string) =>
@@ -189,7 +194,7 @@ export function configureDevServer(
     return routesPromise;
   };
 
-  const collectionAssets = createCustomHostCollectionAssetsDevController({
+  collectionAssets = createCustomHostCollectionAssetsDevController({
     server,
     options: input.collectionAssets,
     context: baseContext,
@@ -228,11 +233,11 @@ export function configureDevServer(
       clearResponses();
       invalidated = true;
     }
-    for (const key of [...(depKeys.get(changed) ?? [])]) {
+    for (const key of Array.from(depKeys.get(changed) ?? [])) {
       clearKey(key);
       invalidated = true;
     }
-    for (const [key, dependencies] of [...keyBroadDeps]) {
+    for (const [key, dependencies] of Array.from(keyBroadDeps)) {
       if (
         dependencies.some((dependency) => anyCustomHostDependencyMatches([dependency], changed))
       ) {

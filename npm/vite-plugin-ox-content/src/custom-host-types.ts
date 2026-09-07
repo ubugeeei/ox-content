@@ -170,6 +170,12 @@ export interface OxContentCustomHostAssetsContext {
   selfHosted: OxContentAssetManifest;
   clientManifest?: DocumentAssetManifest;
   themeTokens?: ResolvedThemeTokens;
+  /**
+   * Configured custom-host collection asset manifest, when collection assets
+   * are enabled. The build writer and development middleware consume this same
+   * lifecycle snapshot.
+   */
+  collectionManifest(): Promise<CollectionAssetManifest | undefined>;
   stylesheets(input: OxContentCustomHostStylesheetsInput): OxContentCustomHostStylesheetsResult;
   stylesheetContent(
     input: OxContentCustomHostStylesheetContentInput,

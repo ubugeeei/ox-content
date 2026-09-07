@@ -209,6 +209,23 @@ replace the last successful manifest. In production, collection assets are
 written with the coordinated output files unless `collectionAssets.write` is
 `false`.
 
+Route, render, and output hooks can read the same configured snapshot through
+`ctx.assets.collectionManifest()`. Use it when the host needs the manifest for
+HTML rewriting or structured page-data aliases; the writer and development
+middleware reuse that resolved manifest instead of calling
+`collectionAssets.manifest` again.
+
+```ts
+const manifest = await ctx.assets.collectionManifest();
+const body = manifest
+  ? rewriteCollectionAssetUrls({
+      html,
+      base: ctx.base,
+      manifest,
+    }).html
+  : html;
+```
+
 Solid HTML-string hosts can generate their browser island registry from that
 same selected route/document set. Use `createSolidHtmlHostIslandRegistry()` from
 `@ox-content/vite-plugin-solid` and import

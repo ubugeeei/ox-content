@@ -2,8 +2,9 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { ResolvedConfig, ViteDevServer } from "vite";
 import { writeSelfHostedAssets } from "./assets";
+import type { CollectionAssetManifest } from "./collection-assets";
 import { createAssetsContext, readClientManifest, writeThemeTokens } from "./custom-host-assets";
-import { writeCustomHostCollectionAssets } from "./custom-host-collection-assets";
+import { createCustomHostCollectionAssetsBuildController } from "./custom-host-collection-assets-build";
 import {
   createBaseContext,
   createContextMemo,
@@ -59,11 +60,26 @@ export async function runCustomHostBuild(
   const outDir = resolveOutDir(config, options, root);
   const loaderServer = await createHostLoaderServer(config);
   const clientManifest = await readClientManifest(outDir);
-  const assets = createAssetsContext(options, outDir, clientManifest, themeTokens, undefined, root);
+  let loadCollectionManifest: () => Promise<CollectionAssetManifest | undefined> = async () =>
+    undefined;
+  const assets = createAssetsContext(
+    options,
+    outDir,
+    clientManifest,
+    themeTokens,
+    undefined,
+    root,
+    () => loadCollectionManifest(),
+  );
   const loadModule = (moduleId: string) => loaderServer.ssrLoadModule(moduleId);
 
   try {
     const baseContext = createBaseContext("build", root, outDir, options, loadModule, assets);
+    const collectionAssets = createCustomHostCollectionAssetsBuildController({
+      options: input.collectionAssets,
+      context: baseContext,
+    });
+    loadCollectionManifest = () => collectionAssets.manifest();
     const host = await loadHost(input.host, loadModule, root);
     const memo = createContextMemo();
     const routes = await loadRoutes(host, createRoutesContext(baseContext, memo));
@@ -73,17 +89,14 @@ export async function runCustomHostBuild(
     const rendered = await renderBuildRoutes(host, routes, baseContext, input, loaderServer);
 
     await writeThemeTokens(outDir, themeTokens);
-    const collectionAssets = await writeCustomHostCollectionAssets(
-      input.collectionAssets,
-      baseContext,
-    );
+    const collectionAssetFiles = await collectionAssets.write();
     await writeCoordinatedOutputs(
       rendered,
       options,
       rawOptions,
       root,
       outDir,
-      collectionAssets,
+      collectionAssetFiles,
       outputData,
       input.build?.minifyHtml ?? options.ssg.minifyHtml,
     );
