@@ -17,6 +17,7 @@ use ox_content_ast::{FootnoteDefinition, Node, Span};
 use rustc_hash::FxHashSet;
 
 use super::Parser;
+use super::spans::SourceMap;
 use crate::error::ParseResult;
 #[allow(unused_imports)]
 use crate::{profile_span, profile_span_detail};
@@ -105,33 +106,61 @@ fn indent_columns(line: &str) -> usize {
     columns
 }
 
+struct DedentedBody<'a> {
+    text: &'a str,
+    source_map: SourceMap,
+}
+
 /// Strips up to four columns of indentation from every line but the first,
 /// which the caller has already positioned past the `[^label]:` opener.
-fn dedent_body<'a>(allocator: &'a ox_content_allocator::Allocator, body: &str) -> &'a str {
+fn dedent_body<'a>(
+    allocator: &'a ox_content_allocator::Allocator,
+    body: &str,
+    source_offset: usize,
+) -> DedentedBody<'a> {
     // Arena-owned like the block quote / list item sub-sources, so the
     // dedented copy lives as long as the AST that borrows from it.
     let mut out = ox_content_allocator::String::with_capacity_in(body.len(), allocator.bump());
+    let mut source_map = SourceMap::default();
+    let mut generated_start = 0usize;
+    let mut source_line_start = source_offset;
+
     for (index, line) in body.split_inclusive('\n').enumerate() {
-        if index == 0 {
-            out.push_str(line.trim_start_matches([' ', '\t']));
-            continue;
-        }
-        let mut columns = 0;
-        let mut consumed = 0;
-        for byte in line.bytes() {
-            if columns >= 4 {
-                break;
-            }
-            match byte {
-                b' ' => columns += 1,
-                b'\t' => columns += 4 - (columns % 4),
-                _ => break,
-            }
-            consumed += 1;
-        }
-        out.push_str(&line[consumed..]);
+        let consumed = if index == 0 { first_line_indent_len(line) } else { dedent_len(line) };
+        let dedented = &line[consumed..];
+        out.push_str(dedented);
+        source_map.push_line(
+            generated_start,
+            dedented.len(),
+            source_line_start + consumed,
+            dedented.len(),
+        );
+        generated_start += dedented.len();
+        source_line_start += line.len();
     }
-    out.into_bump_str()
+
+    DedentedBody { text: out.into_bump_str(), source_map }
+}
+
+fn first_line_indent_len(line: &str) -> usize {
+    line.len() - line.trim_start_matches([' ', '\t']).len()
+}
+
+fn dedent_len(line: &str) -> usize {
+    let mut columns = 0;
+    let mut consumed = 0;
+    for byte in line.bytes() {
+        if columns >= 4 {
+            break;
+        }
+        match byte {
+            b' ' => columns += 1,
+            b'\t' => columns += 4 - (columns % 4),
+            _ => break,
+        }
+        consumed += 1;
+    }
+    consumed
 }
 
 impl<'a> Parser<'a> {
@@ -152,18 +181,21 @@ impl<'a> Parser<'a> {
             self.allocator.alloc_str(normalize_footnote_label(label).as_str()) as &'a str;
         let content_start = start + after_colon;
         let body_len = definition_body_len(self.source, content_start);
-        let body =
-            dedent_body(self.allocator, &self.source[content_start..content_start + body_len]);
+        let body = dedent_body(
+            self.allocator,
+            &self.source[content_start..content_start + body_len],
+            content_start,
+        );
 
         // The body is a full block context (paragraphs, lists, code), so
         // hand it to a sub-parser rather than treating it as inline text.
         let sub_doc =
-            self.sub_parser_with_lazy_lines(body, rustc_hash::FxHashSet::default()).parse()?;
+            self.sub_parser_with_lazy_lines(body.text, rustc_hash::FxHashSet::default()).parse()?;
         let mut children = sub_doc.children;
-        // Sub-parser spans are relative to `body`; shift them back onto
-        // the original source so downstream tooling keeps working ranges.
+        // Sub-parser spans are relative to the dedented body; map them
+        // back onto the original source so downstream tooling keeps ranges.
         for child in &mut children {
-            Self::offset_node_spans(child, content_start as u32);
+            body.source_map.remap_node_spans(child);
         }
         let end = content_start + body_len;
         self.position = end;
