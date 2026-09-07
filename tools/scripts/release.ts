@@ -5,6 +5,7 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
+import { categorizeCommits, generateChangelog, getCommitsSinceTag } from "./release-changelog.ts";
 import { verifyPublishWorkflow } from "./verify-publish-targets.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -169,75 +170,12 @@ function isValidVersion(v: string): boolean {
   return /^\d+\.\d+\.\d+(-[\w.]+)?$/.test(v);
 }
 
-function getCommitsSinceTag(tag?: string): string[] {
-  try {
-    const range = tag ? `${tag}..HEAD` : "HEAD";
-    const log = exec(`git log ${range} --pretty=format:"%s" --no-merges`);
-    return log.trim().split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-
 function getLatestTag(): string | undefined {
   try {
     return exec("git describe --tags --abbrev=0").trim();
   } catch {
     return undefined;
   }
-}
-
-function categorizeCommits(commits: string[]): Record<string, string[]> {
-  const categories: Record<string, string[]> = {
-    feat: [],
-    fix: [],
-    perf: [],
-    refactor: [],
-    docs: [],
-    chore: [],
-    other: [],
-  };
-
-  for (const commit of commits) {
-    // Skip generated commits
-    if (commit.includes("Generated with [Claude Code]")) continue;
-
-    const match = commit.match(/^(\w+)(?:\([^)]+\))?:\s*(.+)/);
-    if (match) {
-      const [, type, message] = match;
-      const category = categories[type] ? type : "other";
-      categories[category].push(message);
-    } else {
-      categories.other.push(commit);
-    }
-  }
-
-  return categories;
-}
-
-function generateChangelog(version: string, commits: Record<string, string[]>): string {
-  const date = new Date().toISOString().split("T")[0];
-  let changelog = `## [${version}] - ${date}\n\n`;
-
-  const sections: [string, string][] = [
-    ["feat", "Features"],
-    ["fix", "Bug Fixes"],
-    ["perf", "Performance"],
-    ["refactor", "Refactoring"],
-    ["docs", "Documentation"],
-  ];
-
-  for (const [key, title] of sections) {
-    if (commits[key]?.length) {
-      changelog += `### ${title}\n\n`;
-      for (const msg of commits[key]) {
-        changelog += `- ${msg}\n`;
-      }
-      changelog += "\n";
-    }
-  }
-
-  return changelog;
 }
 
 function updateChangelogFile(content: string): void {
@@ -312,7 +250,10 @@ async function main(): Promise<void> {
 
   console.log("\nGenerating changelog...");
   const latestTag = getLatestTag();
-  const commits = getCommitsSinceTag(latestTag);
+  const commits = getCommitsSinceTag(exec, latestTag, {
+    root: ROOT,
+    npmPackages: NPM_PACKAGES,
+  });
   const categorized = categorizeCommits(commits);
   const changelogContent = generateChangelog(newVersion, categorized);
   updateChangelogFile(changelogContent);
