@@ -65,7 +65,7 @@ function resolveBuildStylesheets(
     const href = joinBase(base, css);
     if (!seenCss.has(href)) {
       seenCss.add(href);
-      stylesheets.push({ kind: "style", href, moduleId: requestedBy });
+      stylesheets.push({ kind: "style", href, moduleId: requestedBy, outputPath: css });
     }
   };
 

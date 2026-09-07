@@ -241,6 +241,7 @@ function valueUsage(entry, prefix) {
       `const customPlugin = ${prefix}createOxContentCustomHostPlugin(customOptions);`,
       `const customOxOptions = ${prefix}customHostOxContentOptions();`,
       `const customStyles = customAssets.stylesheets({ modules: ["/src/Island.ts"] });`,
+      "void customAssets.stylesheetContent({ stylesheets: customStyles.stylesheets });",
       'const customDependency: OxContentCustomHostDependency = { path: "content/guide", kind: "directory" };',
       'const customCollectionAssets: OxContentCustomHostCollectionAssetsOptions = { manifest: { assets: [] }, watch: [customDependency], ownedPrefixes: ["/assets/content"] };',
       "customAssets.document({ islandStyles: customStyles.stylesheets });",

@@ -3,6 +3,7 @@ import * as path from "node:path";
 import type { Connect } from "vite";
 import { resolveSelfHostedAssetManifest } from "./assets";
 import { DEFAULT_THEME_TOKEN_HREF } from "./custom-host-constants";
+import { resolveCustomHostStylesheetContent } from "./custom-host-stylesheet-content";
 import {
   resolveCustomHostStylesheets,
   type CustomHostDevModuleGraph,
@@ -23,7 +24,7 @@ import type { ResolvedOptions } from "./types";
 
 export function createAssetsContext(
   options: ResolvedOptions,
-  _outDir: string,
+  outDir: string,
   clientManifest: DocumentAssetManifest | undefined,
   themeTokens: ResolvedThemeTokens | undefined,
   moduleGraph?: CustomHostDevModuleGraph,
@@ -41,6 +42,13 @@ export function createAssetsContext(
         manifest: clientManifest,
         moduleGraph,
         root,
+      });
+    },
+    stylesheetContent(input) {
+      return resolveCustomHostStylesheetContent({
+        ...input,
+        build: !!clientManifest,
+        outDir,
       });
     },
     document(input: RenderDocumentAssetsInput = {}) {
