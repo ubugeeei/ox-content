@@ -1,7 +1,7 @@
-use memchr::memchr;
 use ox_content_ast::{BlockQuote, Node, Span};
 
 use super::Parser;
+use super::line_scan::{line_end as scan_line_end, next_line_start as scan_next_line_start};
 use super::reference::{closes_paragraph_context, fence_open, is_fence_close};
 use super::spans::SourceMap;
 use crate::error::ParseResult;
@@ -46,12 +46,11 @@ impl<'a> Parser<'a> {
             }
 
             // Blank line ends the block quote
-            if ws_cursor >= bytes.len() || bytes[ws_cursor] == b'\n' {
+            if ws_cursor >= bytes.len() || matches!(bytes[ws_cursor], b'\n' | b'\r') {
                 break;
             }
 
-            let line_end =
-                memchr(b'\n', &bytes[line_start..]).map_or(bytes.len(), |off| line_start + off);
+            let line_end = scan_line_end(bytes, line_start);
             let line = &self.source[line_start..line_end];
             let trimmed_offset = ws_cursor - line_start;
             let trimmed = &line[trimmed_offset..];
@@ -92,8 +91,9 @@ impl<'a> Parser<'a> {
                 inner.push('\n');
                 let content_start =
                     line_start + trimmed_offset + 1 + Self::quote_marker_space_bytes(after_gt);
+                let line_next = scan_next_line_start(bytes, line_start);
                 let source_len =
-                    line_end.saturating_sub(content_start) + usize::from(line_end < bytes.len());
+                    line_end.saturating_sub(content_start) + line_next.saturating_sub(line_end);
                 source_map.push_line(
                     generated_start,
                     indent_columns + stripped_trimmed.len() + 1,
@@ -120,7 +120,7 @@ impl<'a> Parser<'a> {
                     && !closes_paragraph_context(stripped_trimmed);
 
                 // Advance past this line (and the trailing newline if any).
-                self.position = if line_end < bytes.len() { line_end + 1 } else { line_end };
+                self.position = line_next;
             } else if fence.is_none()
                 && paragraph_open
                 && !Self::quote_lazy_blocked(trimmed)
@@ -135,13 +135,14 @@ impl<'a> Parser<'a> {
                 lazy_lines.insert(inner.len() as u32);
                 inner.push_str(line);
                 inner.push('\n');
+                let line_next = scan_next_line_start(bytes, line_start);
                 source_map.push_line(
                     generated_start,
                     line.len() + 1,
                     line_start,
-                    line.len() + usize::from(line_end < bytes.len()),
+                    line.len() + line_next.saturating_sub(line_end),
                 );
-                self.position = if line_end < bytes.len() { line_end + 1 } else { line_end };
+                self.position = line_next;
             } else {
                 // Line doesn't start with `>`, block quote ends
                 break;

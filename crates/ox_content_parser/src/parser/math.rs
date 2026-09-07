@@ -5,6 +5,7 @@ use ox_content_allocator::Vec;
 use ox_content_ast::{InlineMath, MathBlock, Node, Span};
 
 use super::Parser;
+use super::line_scan::{is_line_ending_byte, next_line_start};
 use crate::error::ParseResult;
 #[allow(unused_imports)]
 use crate::profile_span_detail;
@@ -32,8 +33,7 @@ impl<'a> Parser<'a> {
             return self.parse_paragraph(start, None);
         };
         let close_end = close + 2;
-        let line_end = line_end_after(self.source.as_bytes(), close_end);
-        self.position = if line_end < self.source.len() { line_end + 1 } else { line_end };
+        self.position = next_line_start(self.source.as_bytes(), close_end);
         let value = &self.source[open + 2..close];
         Ok(Some(Node::MathBlock(
             self.allocator
@@ -179,10 +179,13 @@ fn is_escaped_marker(bytes: &[u8], pos: usize) -> bool {
 }
 
 fn is_line_end(bytes: &[u8], index: usize) -> bool {
-    index >= bytes.len()
-        || bytes[index..].iter().take_while(|byte| **byte != b'\n').all(u8::is_ascii_whitespace)
-}
-
-fn line_end_after(bytes: &[u8], index: usize) -> usize {
-    memchr(b'\n', &bytes[index..]).map_or(bytes.len(), |relative| index + relative)
+    let mut cursor = index;
+    while let Some(&byte) = bytes.get(cursor) {
+        match byte {
+            b' ' | b'\t' => cursor += 1,
+            byte if is_line_ending_byte(byte) => return true,
+            _ => return false,
+        }
+    }
+    true
 }

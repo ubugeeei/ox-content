@@ -57,6 +57,17 @@ fn hard_breaks_render_inside_paragraphs() {
 }
 
 #[test]
+fn crlf_and_lone_cr_render_like_lf_line_endings() {
+    let lf = "Paragraph.\n\n---\n\nAfter.\n";
+    let expected = render(lf, ParserOptions::default(), HtmlRendererOptions::default());
+
+    for source in [lf.replace('\n', "\r\n"), lf.replace('\n', "\r")] {
+        let html = render(&source, ParserOptions::default(), HtmlRendererOptions::default());
+        assert_eq!(html, expected);
+    }
+}
+
+#[test]
 fn inline_raw_html_renders_without_extra_newline() {
     let html = render(
         "- <input type=\"checkbox\"> task",

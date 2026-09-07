@@ -4,17 +4,19 @@
 //! locate line boundaries, strip block quote markers, and recognize the
 //! fence and paragraph-closing markers the collection pre-pass needs.
 
+use super::super::line_scan::{is_line_ending_byte, line_end, line_terminator_end};
+
 pub(super) fn skip_ws_one_newline(bytes: &[u8], mut i: usize) -> Option<usize> {
     let mut newlines = 0;
     while let Some(&byte) = bytes.get(i) {
         match byte {
             b' ' | b'\t' => i += 1,
-            b'\n' => {
+            byte if is_line_ending_byte(byte) => {
                 newlines += 1;
                 if newlines > 1 {
                     return None;
                 }
-                i += 1;
+                i = line_terminator_end(bytes, i);
             }
             _ => break,
         }
@@ -28,7 +30,7 @@ pub(super) fn line_end_if_blank_after(bytes: &[u8], mut i: usize) -> Option<usiz
     while let Some(&byte) = bytes.get(i) {
         match byte {
             b' ' | b'\t' => i += 1,
-            b'\n' => return Some(i + 1),
+            byte if is_line_ending_byte(byte) => return Some(line_terminator_end(bytes, i)),
             _ => return None,
         }
     }
@@ -37,11 +39,11 @@ pub(super) fn line_end_if_blank_after(bytes: &[u8], mut i: usize) -> Option<usiz
 
 pub(super) fn next_blank_line(bytes: &[u8], mut pos: usize) -> usize {
     while pos < bytes.len() {
-        let line_end = memchr::memchr(b'\n', &bytes[pos..]).map_or(bytes.len(), |o| pos + o);
+        let line_end = line_end(bytes, pos);
         if bytes[pos..line_end].iter().all(|byte| matches!(byte, b' ' | b'\t')) {
             return pos;
         }
-        pos = line_end + 1;
+        pos = line_terminator_end(bytes, line_end);
     }
     bytes.len()
 }

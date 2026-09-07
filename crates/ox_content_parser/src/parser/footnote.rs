@@ -17,6 +17,7 @@ use ox_content_ast::{FootnoteDefinition, Node, Span};
 use rustc_hash::FxHashSet;
 
 use super::Parser;
+use super::line_scan::{line_end, next_line_start};
 use super::spans::SourceMap;
 use crate::error::ParseResult;
 #[allow(unused_imports)]
@@ -44,7 +45,7 @@ pub(super) fn parse_footnote_opener(text: &str) -> Option<(&str, usize)> {
     loop {
         match bytes.get(j)? {
             b']' => break,
-            b'[' | b'\n' => return None,
+            b'[' | b'\n' | b'\r' => return None,
             byte if byte.is_ascii_whitespace() => return None,
             _ => j += 1,
         }
@@ -66,20 +67,19 @@ pub(super) fn normalize_footnote_label(label: &str) -> CompactString {
 /// the remainder of the opening line plus indented continuation lines.
 fn definition_body_len(source: &str, content_start: usize) -> usize {
     let bytes = source.as_bytes();
-    let mut cursor = memchr::memchr(b'\n', &bytes[content_start..])
-        .map_or(source.len(), |offset| content_start + offset + 1);
+    let mut cursor = next_line_start(bytes, content_start);
     // Trailing blank lines only belong to the definition when an indented
     // line follows, so remember where the last real content ended.
     let mut end = cursor;
 
     while cursor < source.len() {
-        let line_end =
-            memchr::memchr(b'\n', &bytes[cursor..]).map_or(source.len(), |o| cursor + o + 1);
-        let line = &source[cursor..line_end];
+        let current_line_end = line_end(bytes, cursor);
+        let next_line = next_line_start(bytes, cursor);
+        let line = &source[cursor..current_line_end];
         let trimmed = line.trim_start_matches([' ', '\t']);
 
         if trimmed.trim_end().is_empty() {
-            cursor = line_end;
+            cursor = next_line;
             continue;
         }
         // Four columns of indent continue the definition; anything less
@@ -87,8 +87,8 @@ fn definition_body_len(source: &str, content_start: usize) -> usize {
         if indent_columns(line) < 4 {
             break;
         }
-        cursor = line_end;
-        end = line_end;
+        cursor = next_line;
+        end = next_line;
     }
 
     end - content_start
@@ -122,21 +122,30 @@ fn dedent_body<'a>(
     // dedented copy lives as long as the AST that borrows from it.
     let mut out = ox_content_allocator::String::with_capacity_in(body.len(), allocator.bump());
     let mut source_map = SourceMap::default();
-    let mut generated_start = 0usize;
-    let mut source_line_start = source_offset;
+    let bytes = body.as_bytes();
+    let mut line_start = 0usize;
+    let mut index = 0usize;
 
-    for (index, line) in body.split_inclusive('\n').enumerate() {
+    while line_start < body.len() {
+        let current_line_end = line_end(bytes, line_start);
+        let next_line = next_line_start(bytes, line_start);
+        let line = &body[line_start..current_line_end];
         let consumed = if index == 0 { first_line_indent_len(line) } else { dedent_len(line) };
         let dedented = &line[consumed..];
+        let generated_start = out.len();
         out.push_str(dedented);
+        if current_line_end < body.len() {
+            out.push('\n');
+        }
         source_map.push_line(
             generated_start,
-            dedented.len(),
-            source_line_start + consumed,
-            dedented.len(),
+            dedented.len() + usize::from(current_line_end < body.len()),
+            source_offset + line_start + consumed,
+            current_line_end.saturating_sub(line_start + consumed)
+                + next_line.saturating_sub(current_line_end),
         );
-        generated_start += dedented.len();
-        source_line_start += line.len();
+        line_start = next_line;
+        index += 1;
     }
 
     DedentedBody { text: out.into_bump_str(), source_map }

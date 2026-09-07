@@ -17,11 +17,11 @@
 use std::rc::Rc;
 use std::sync::LazyLock;
 
-use memchr::{memchr, memmem, memrchr};
+use memchr::{memchr, memmem, memrchr2};
 
 use super::Parser;
 use super::footnote::{FootnoteLabels, normalize_footnote_label, parse_footnote_opener};
-use super::line_scan::{line_end as scan_line_end, next_line_start};
+use super::line_scan::{line_end as scan_line_end, line_terminator_end, next_line_start};
 use super::reference::{
     ReferenceDef, ReferenceMap, closes_paragraph_context, fence_open, is_fence_close,
     strip_quote_markers,
@@ -49,7 +49,7 @@ fn next_fence_run_line(bytes: &[u8], from: usize, fence_byte: u8) -> Option<usiz
     let finder = if fence_byte == b'`' { &*BACKTICK_RUN } else { &*TILDE_RUN };
     let at = from + finder.find(&bytes[from..])?;
     // `from` is a line start, so the match's line starts at or after it.
-    Some(memrchr(b'\n', &bytes[from..at]).map_or(from, |off| from + off + 1))
+    Some(memrchr2(b'\n', b'\r', &bytes[from..at]).map_or(from, |off| from + off + 1))
 }
 
 /// Whether the source contains the minimum shape of a definition opener.
@@ -70,14 +70,14 @@ fn has_definition_candidate(source: &str, footnotes: bool) -> bool {
         return false;
     }
 
-    let mut line_start = memrchr(b'\n', &bytes[..open]).map_or(0, |off| off + 1);
+    let mut line_start = previous_line_start(bytes, open);
     loop {
         let prefix = strip_quote_markers(&source[line_start..open]);
         if prefix.len() <= 3 && prefix.as_bytes().iter().all(|&byte| byte == b' ') {
             let candidate_end = if footnotes && bytes.get(open + 1) == Some(&b'^') {
                 // Footnote labels cannot span lines, but unlike reference
                 // labels their parser deliberately has no length cap.
-                memchr(b'\n', &bytes[open + 2..]).map_or(bytes.len(), |off| open + 2 + off)
+                scan_line_end(bytes, open + 2)
             } else {
                 // label_start..=closing bracket spans at most 1,001 bytes,
                 // with one final byte needed for the colon after it.
@@ -93,10 +93,14 @@ fn has_definition_candidate(source: &str, footnotes: bool) -> bool {
             return false;
         };
         open = search_start + next;
-        if let Some(newline) = memrchr(b'\n', &bytes[search_start..open]) {
-            line_start = search_start + newline + 1;
+        if memrchr2(b'\n', b'\r', &bytes[search_start..open]).is_some() {
+            line_start = previous_line_start(bytes, open);
         }
     }
+}
+
+fn previous_line_start(bytes: &[u8], before: usize) -> usize {
+    memrchr2(b'\n', b'\r', &bytes[..before]).map_or(0, |off| off + 1)
 }
 
 impl<'a> Parser<'a> {
@@ -133,11 +137,11 @@ impl<'a> Parser<'a> {
 
             // Blank line: closes any open paragraph and is invisible to
             // both fence trackers and both collectors.
-            if first == b'\n' {
+            if matches!(first, b'\n' | b'\r') {
                 if def_fence.is_none() {
                     paragraph_open = false;
                 }
-                pos += 1;
+                pos = line_terminator_end(bytes, pos);
                 continue;
             }
 
@@ -182,7 +186,7 @@ impl<'a> Parser<'a> {
             if let Some((fence_byte, fence_len)) = def_fence {
                 if is_fence_close(trimmed, fence_byte, fence_len) {
                     def_fence = None;
-                    pos = line_end + 1;
+                    pos = line_terminator_end(bytes, line_end);
                     continue;
                 }
                 // Nothing inside a fence is collected and `paragraph_open`
@@ -198,10 +202,10 @@ impl<'a> Parser<'a> {
                 // `[^` at all, so the skip still applies to almost every
                 // real document.
                 if collect_footnotes {
-                    pos = line_end + 1;
+                    pos = line_terminator_end(bytes, line_end);
                     continue;
                 }
-                match next_fence_run_line(bytes, line_end + 1, fence_byte) {
+                match next_fence_run_line(bytes, line_terminator_end(bytes, line_end), fence_byte) {
                     Some(next) => pos = next,
                     // An unterminated fence swallows the rest of the
                     // document, so there is nothing left to collect.
@@ -212,12 +216,12 @@ impl<'a> Parser<'a> {
             if let Some(open) = fence_open(trimmed) {
                 def_fence = Some(open);
                 paragraph_open = false;
-                pos = line_end + 1;
+                pos = line_terminator_end(bytes, line_end);
                 continue;
             }
             if trimmed.is_empty() {
                 paragraph_open = false;
-                pos = line_end + 1;
+                pos = line_terminator_end(bytes, line_end);
                 continue;
             }
 
@@ -242,7 +246,7 @@ impl<'a> Parser<'a> {
                     // it must still see the definition's continuation lines
                     // the reference side jumps over.
                     if collect_footnotes {
-                        let mut foot_pos = line_end + 1;
+                        let mut foot_pos = line_terminator_end(bytes, line_end);
                         while foot_pos < next_pos {
                             let foot_line_end = scan_line_end(bytes, foot_pos);
                             footnote_scan_line(
@@ -251,7 +255,7 @@ impl<'a> Parser<'a> {
                                 &mut foot_fence,
                                 &mut labels,
                             );
-                            foot_pos = foot_line_end + 1;
+                            foot_pos = line_terminator_end(bytes, foot_line_end);
                         }
                     }
                     pos = next_pos;
@@ -260,7 +264,7 @@ impl<'a> Parser<'a> {
             }
 
             paragraph_open = !closes_paragraph_context(trimmed);
-            pos = line_end + 1;
+            pos = line_terminator_end(bytes, line_end);
         }
 
         (

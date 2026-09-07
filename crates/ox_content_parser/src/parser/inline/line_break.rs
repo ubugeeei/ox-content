@@ -1,6 +1,7 @@
 use ox_content_allocator::Vec;
 use ox_content_ast::{Node, Span};
 
+use super::super::line_scan::line_terminator_end;
 use super::Parser;
 #[allow(unused_imports)]
 use crate::profile_span_detail;
@@ -35,12 +36,13 @@ impl<'a> Parser<'a> {
         }
 
         let newline_pos = *pos;
-        *pos += 1;
+        let newline_end = line_terminator_end(bytes, newline_pos);
+        *pos = newline_end;
         while *pos < content.len() && matches!(bytes[*pos], b' ' | b'\t') {
             *pos += 1;
         }
 
-        let span = Span::new((offset + newline_pos) as u32, (offset + newline_pos + 1) as u32);
+        let span = Span::new((offset + newline_pos) as u32, (offset + newline_end) as u32);
         if hard {
             children.push(Node::Break(ox_content_ast::Break { span }));
         } else {

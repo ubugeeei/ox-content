@@ -3,6 +3,7 @@ use ox_content_allocator::Vec;
 use ox_content_ast::{AlignKind, Node, Span, Table, TableCell, TableRow};
 
 use super::Parser;
+use super::line_scan::{line_end, next_line_start};
 use crate::error::ParseResult;
 #[allow(unused_imports)]
 use crate::{profile_span, profile_span_detail};
@@ -18,15 +19,15 @@ impl<'a> Parser<'a> {
         profile_span_detail!("parser::table_probe");
         let bytes = self.source.as_bytes();
         let p0 = self.position;
-        let nl0 = match memchr(b'\n', &bytes[p0..]) {
-            Some(off) => p0 + off,
-            None => return false,
-        };
-        let p1 = nl0 + 1;
+        let nl0 = line_end(bytes, p0);
+        if nl0 == bytes.len() {
+            return false;
+        }
+        let p1 = next_line_start(bytes, p0);
         if p1 >= bytes.len() {
             return false;
         }
-        let nl1 = memchr(b'\n', &bytes[p1..]).map_or(bytes.len(), |off| p1 + off);
+        let nl1 = line_end(bytes, p1);
 
         let first_line = self.source[p0..nl0].trim();
         if memchr(b'|', first_line.as_bytes()).is_none() {
