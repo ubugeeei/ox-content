@@ -180,36 +180,41 @@ runtime entirely and compiles to a single `innerHTML` binding.
 
 Hosts that call `renderMarkdown()` and then place the returned HTML inside their
 own Solid page shell can use the Solid adapter without importing each Markdown
-document as a Vite module. `renderSolidHtmlHost()` resolves document-local MDX
-imports, loads the matching server modules through a host-supplied loader, and
-replaces island bodies with Solid SSR HTML.
+document as a Vite module. `createSolidHtmlHostRenderer()` prepares the common
+document-local MDX import resolution, server module loading, diagnostics policy,
+and client module id mapping for that host.
 
 ```ts
-import { renderSolidHtmlHost, type MdxImport } from "@ox-content/vite-plugin-solid";
+import { createSolidHtmlHostRenderer, type MdxImport } from "@ox-content/vite-plugin-solid";
 
 const imports: MdxImport[] = [
   { source: "./Chart.tsx", specifiers: [{ imported: "default", local: "Chart", kind: "default" }] },
 ];
-
-const rendered = await renderSolidHtmlHost({
-  html: markdown.html,
-  documentPath: "/repo/docs/report.mdx",
+const renderIslands = createSolidHtmlHostRenderer({
   root: "/repo",
   srcDir: "docs",
+  loadModule: (moduleId) => viteDevServer.ssrLoadModule(moduleId),
+});
+
+const rendered = await renderIslands(markdown.html, {
+  documentPath: "/repo/docs/report.mdx",
   imports,
   components: { Badge: "./src/components/Badge.tsx" },
-  loadModule: (moduleId) => viteDevServer.ssrLoadModule(moduleId),
-  resolveClientModule: (module) =>
-    module.source === "document" ? `./docs/${module.name}.tsx` : `./components/${module.name}.tsx`,
 });
 ```
 
-The module cache is scoped to one render call, so development edits should
-trigger a fresh call after the host invalidates its page state.
-`resolveClientModule()` writes the returned identity to each island as
-`data-ox-module`, along with `data-ox-export`. Use the same keys in the browser
-loader map so two documents can reuse a local component name without downstream
-HTML replacement.
+The factory keeps the module cache scoped to one render call, so development
+edits should trigger a fresh call after the host invalidates its page state. By
+default it maps server module ids through `toSolidHtmlHostClientModuleId()` and
+throws `SolidHtmlHostRenderError` when diagnostics are produced. Use
+`diagnostics: "collect"` to return diagnostics without throwing, or pass
+`resolveClientModule()` / `renderComponent()` when a host needs custom browser
+ids or SSR rendering.
+
+The resolved client identity is written to each island as `data-ox-module`,
+along with `data-ox-export`. Use the same keys in the browser loader map so two
+documents can reuse a local component name without downstream HTML replacement.
+For unusual integrations, call the lower-level `renderSolidHtmlHost()` directly.
 
 Diagnostics report missing components, module load failures, missing exports,
 SSR errors, and unsupported document-local import forms with document/component
@@ -258,7 +263,7 @@ export default defineConfig({
 ```ts
 // src/site-host.ts
 import { renderMarkdown, type MdxImport } from "@ox-content/vite-plugin";
-import { renderSolidHtmlHost, toSolidHtmlHostClientModuleId } from "@ox-content/vite-plugin-solid";
+import { createSolidHtmlHostRenderer } from "@ox-content/vite-plugin-solid";
 import { selectedDocuments } from "./site-content";
 
 export default {
@@ -271,15 +276,14 @@ export default {
         const markdown = await renderMarkdown(document.source, document.file, {
           srcDir: "content",
         });
-        const rendered = await renderSolidHtmlHost({
-          html: markdown.html,
-          imports: markdown.imports as MdxImport[],
-          documentPath: document.file,
+        const renderIslands = createSolidHtmlHostRenderer({
           root: ctx.root,
           srcDir: "content",
           loadModule: ctx.loadModule,
-          resolveClientModule: (module) =>
-            toSolidHtmlHostClientModuleId(module.serverModuleId, ctx.root),
+        });
+        const rendered = await renderIslands(markdown.html, {
+          imports: markdown.imports as MdxImport[],
+          documentPath: document.file,
         });
         return { html: rendered.html, source: document.source };
       },

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
-import { createSolidHtmlHostHydrate, renderSolidHtmlHost, type MdxImport } from ".";
+import {
+  SolidHtmlHostRenderError,
+  createSolidHtmlHostHydrate,
+  createSolidHtmlHostRenderer,
+  renderSolidHtmlHost,
+  type MdxImport,
+} from ".";
 
 describe("renderSolidHtmlHost", () => {
   it("renders HTML-string islands through document-local and registered modules", async () => {
@@ -183,6 +189,71 @@ describe("renderSolidHtmlHost", () => {
     expect(loads).toBe(2);
     expect(first.html).toContain("<strong>v1</strong>");
     expect(second.html).toContain("<strong>v2</strong>");
+  });
+});
+
+describe("createSolidHtmlHostRenderer", () => {
+  it("creates the standard custom-host renderer with canonical client module ids", async () => {
+    const renderIslands = createSolidHtmlHostRenderer({
+      root: "/repo",
+      srcDir: "docs",
+      loadModule: async () => ({ default: "chart" }),
+      renderComponent: (component, props, slotHtml, context) =>
+        `<strong data-component="${context.component}">${component as string}:${
+          props.title as string
+        }:${slotHtml ?? ""}</strong>`,
+    });
+
+    const result = await renderIslands(
+      [
+        '<div data-ox-island="Chart">',
+        '<script type="application/json">{"props":{"title":"Revenue"},"expressions":{},"spreads":[]}</script>',
+        "<p>slot</p>",
+        "</div>",
+      ].join(""),
+      {
+        documentPath: "/repo/docs/report.mdx",
+        imports: [defaultImport("Chart", "./Chart.tsx")],
+      },
+    );
+
+    expect(result.diagnostics).toEqual([]);
+    expect(result.clientModules).toEqual([
+      { name: "Chart", moduleId: "/docs/Chart.tsx", exportName: "default" },
+    ]);
+    expect(result.html).toContain('data-ox-module="/docs/Chart.tsx"');
+    expect(result.html).toContain(
+      '<strong data-component="Chart">chart:Revenue:<p>slot</p></strong>',
+    );
+  });
+
+  it("throws diagnostics by default and can collect them for custom policies", async () => {
+    const input = {
+      root: "/repo",
+      srcDir: "docs",
+      loadModule: async () => ({}),
+    };
+    const context = {
+      documentPath: "/repo/docs/report.mdx",
+      components: { Missing: "./src/Missing.tsx" },
+    };
+
+    await expect(
+      createSolidHtmlHostRenderer(input)('<div data-ox-island="Missing"></div>', context),
+    ).rejects.toMatchObject({
+      name: "SolidHtmlHostRenderError",
+      diagnostics: [expect.objectContaining({ code: "missing-export", component: "Missing" })],
+    });
+
+    const collected = await createSolidHtmlHostRenderer({
+      ...input,
+      diagnostics: "collect",
+    })('<div data-ox-island="Missing"></div>', context);
+
+    expect(collected.diagnostics).toEqual([
+      expect.objectContaining({ code: "missing-export", component: "Missing" }),
+    ]);
+    expect(new SolidHtmlHostRenderError(collected.diagnostics).message).toContain("missing-export");
   });
 });
 

@@ -56,6 +56,14 @@ export {
   type SolidServerModuleLoader,
 } from "./html-host";
 export {
+  SolidHtmlHostRenderError,
+  createSolidHtmlHostRenderer,
+  type CreateSolidHtmlHostRendererInput,
+  type SolidHtmlHostRenderer,
+  type SolidHtmlHostRendererContext,
+  type SolidHtmlHostRendererDiagnosticPolicy,
+} from "./html-host-renderer";
+export {
   createSolidHtmlHostDomRenderer,
   createSolidHtmlHostLazyHydrate,
   initSolidHtmlHost,
