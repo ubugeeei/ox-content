@@ -26,6 +26,20 @@ fn mdx_flag_reaches_parse_and_transform_bindings() {
 }
 
 #[test]
+fn wiki_links_flag_reaches_parse_binding() {
+    let parsed = crate::parse(
+        "[[README|Back to **index**]]\n".to_string(),
+        Some(crate::JsParserOptions { wiki_links: Some(true), ..Default::default() }),
+    );
+    assert!(parsed.errors.is_empty());
+    let ast: serde_json::Value = serde_json::from_str(&parsed.ast).unwrap();
+    let link = &ast["children"][0]["children"][0];
+    assert_eq!(link["type"], "link");
+    assert_eq!(link["url"], "README");
+    assert_eq!(link["children"][1]["type"], "strong");
+}
+
+#[test]
 fn mdx_transform_exports_module_metadata() {
     let transformed = crate::transform(
         concat!(

@@ -55,15 +55,19 @@ fn repeat_to(unit: &str, bytes: usize) -> String {
 /// time instead of hanging it. Best of two, so one scheduling stall on a
 /// busy runner cannot fail the build.
 fn parse_within_budget(source: &str) -> Duration {
+    parse_within_budget_with_options(source, ParserOptions::gfm())
+}
+
+fn parse_within_budget_with_options(source: &str, options: ParserOptions) -> Duration {
     let mut best = BUDGET;
     for _ in 0..2 {
         let owned = source.to_string();
+        let options = options.clone();
         let (sender, receiver) = mpsc::channel();
         thread::spawn(move || {
             let started = Instant::now();
             let allocator = Allocator::new();
-            let parsed =
-                Parser::with_options(&allocator, &owned, ParserOptions::gfm()).parse().is_ok();
+            let parsed = Parser::with_options(&allocator, &owned, options).parse().is_ok();
             let _ = sender.send((parsed, started.elapsed()));
         });
         let (parsed, elapsed) = receiver
@@ -73,6 +77,23 @@ fn parse_within_budget(source: &str) -> Duration {
         best = best.min(elapsed);
     }
     best
+}
+
+#[test]
+fn wiki_links_do_not_scan_unclosed_double_brackets_quadratically() {
+    let options = ParserOptions { wiki_links: true, ..ParserOptions::default() };
+
+    for unit in ["[[", "[[ ", "[[Page|Label "] {
+        let small = parse_within_budget_with_options(&repeat_to(unit, 32 * 1024), options.clone());
+        let large = parse_within_budget_with_options(&repeat_to(unit, 128 * 1024), options.clone());
+
+        let ratio = large.as_secs_f64() / small.as_secs_f64().max(1e-9);
+        assert!(
+            ratio < 8.0,
+            "{unit:?}: 128 KiB took {large:?} against {small:?} for 32 KiB (x{ratio:.1}); \
+             linear is about x4, quadratic about x16"
+        );
+    }
 }
 
 #[test]

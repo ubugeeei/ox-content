@@ -16,6 +16,7 @@ export interface NapiBindings {
       math?: boolean;
       definitionLists?: boolean;
       headingAttributes?: boolean;
+      wikiLinks?: boolean;
     },
   ) => Uint8Array;
 }
@@ -101,6 +102,12 @@ export interface OxContentMdastOptions {
    * @default false
    */
   headingAttributes?: boolean;
+
+  /**
+   * Enable Obsidian-style wiki links as link nodes.
+   * @default false
+   */
+  wikiLinks?: boolean;
 }
 
 const DEFAULT_MDAST_OPTIONS: Required<OxContentMdastOptions> = {
@@ -117,6 +124,7 @@ const DEFAULT_MDAST_OPTIONS: Required<OxContentMdastOptions> = {
   math: false,
   definitionLists: false,
   headingAttributes: false,
+  wikiLinks: false,
 };
 
 export function resolveMdastOptions(
@@ -136,5 +144,6 @@ export function resolveMdastOptions(
     math: options.math ?? DEFAULT_MDAST_OPTIONS.math,
     definitionLists: options.definitionLists ?? DEFAULT_MDAST_OPTIONS.definitionLists,
     headingAttributes: options.headingAttributes ?? DEFAULT_MDAST_OPTIONS.headingAttributes,
+    wikiLinks: options.wikiLinks ?? DEFAULT_MDAST_OPTIONS.wikiLinks,
   };
 }

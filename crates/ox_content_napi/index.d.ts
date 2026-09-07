@@ -1981,6 +1981,12 @@ export interface JsParserOptions {
    * Default: `false`.
    */
   headingAttributes?: boolean
+  /**
+   * Enable Obsidian-style wiki links as link nodes.
+   *
+   * Default: `false`.
+   */
+  wikiLinks?: boolean
 }
 
 /** Opt-in parameterized Markdown partials. */

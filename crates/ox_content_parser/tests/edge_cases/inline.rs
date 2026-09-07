@@ -23,6 +23,87 @@ fn inline_link_handles_nested_parentheses() {
 }
 
 #[test]
+fn wiki_links_are_opt_in_and_use_raw_targets() {
+    let allocator = Allocator::new();
+    let doc = parse_with_options(
+        &allocator,
+        "See [[README]] and [[Guide Page#Install|the **guide**]].",
+        ParserOptions { wiki_links: true, ..ParserOptions::default() },
+    );
+
+    match &doc.children[0] {
+        Node::Paragraph(paragraph) => {
+            assert_eq!(first_text(&paragraph.children[1]), Some("README"));
+            match &paragraph.children[1] {
+                Node::Link(link) => {
+                    assert_eq!(link.url, "README");
+                    assert_eq!(link.title, None);
+                }
+                other => panic!("expected wiki link, got {other:?}"),
+            }
+            match &paragraph.children[3] {
+                Node::Link(link) => {
+                    assert_eq!(link.url, "Guide Page#Install");
+                    assert!(link.children.iter().any(|node| matches!(node, Node::Strong(_))));
+                }
+                other => panic!("expected labelled wiki link, got {other:?}"),
+            }
+        }
+        other => panic!("expected paragraph, got {other:?}"),
+    }
+}
+
+#[test]
+fn wiki_links_stay_literal_without_the_option_or_in_gfm() {
+    for options in [ParserOptions::default(), ParserOptions::gfm()] {
+        let allocator = Allocator::new();
+        let doc = parse_with_options(&allocator, "[[README]]", options);
+        match &doc.children[0] {
+            Node::Paragraph(paragraph) => {
+                assert!(paragraph.children.iter().all(|node| !matches!(node, Node::Link(_))));
+                assert_eq!(
+                    paragraph.children.iter().map(super::flatten_text).collect::<String>(),
+                    "[[README]]"
+                );
+            }
+            other => panic!("expected paragraph, got {other:?}"),
+        }
+    }
+}
+
+#[test]
+fn wiki_links_reject_empty_targets_and_nested_links() {
+    let allocator = Allocator::new();
+    let options = ParserOptions { wiki_links: true, ..ParserOptions::default() };
+
+    let empty = parse_with_options(&allocator, "[[ |Label]]", options.clone());
+    match &empty.children[0] {
+        Node::Paragraph(paragraph) => {
+            assert!(paragraph.children.iter().all(|node| !matches!(node, Node::Link(_))));
+            assert_eq!(
+                paragraph.children.iter().map(super::flatten_text).collect::<String>(),
+                "[[ |Label]]"
+            );
+        }
+        other => panic!("expected paragraph, got {other:?}"),
+    }
+
+    let nested = parse_with_options(&allocator, "[outer [[README]]](https://example.com)", options);
+    match &nested.children[0] {
+        Node::Paragraph(paragraph) => {
+            assert!(matches!(&paragraph.children[0], Node::Text(text) if text.value == "["));
+            assert!(
+                paragraph
+                    .children
+                    .iter()
+                    .any(|node| matches!(node, Node::Link(link) if link.url == "README"))
+            );
+        }
+        other => panic!("expected paragraph, got {other:?}"),
+    }
+}
+
+#[test]
 fn inline_raw_html_is_preserved_as_html_node() {
     let allocator = Allocator::new();
     let doc = parse_with_options(

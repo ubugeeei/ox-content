@@ -72,6 +72,16 @@ pub struct ParserOptions {
     /// Default: `false`; not enabled by [`ParserOptions::gfm`].
     pub heading_attributes: bool,
 
+    /// Enable Obsidian-style wiki links as link nodes.
+    ///
+    /// When set, `[[target]]` and `[[target|label]]` parse as
+    /// [`ox_content_ast::Link`] with the raw target stored in
+    /// [`ox_content_ast::Link::url`]. The renderer then sees the construct
+    /// as a normal link and consumers can rewrite the target in link hooks.
+    ///
+    /// Default: `false`; not enabled by [`ParserOptions::gfm`].
+    pub wiki_links: bool,
+
     /// Recognize emphasis whose delimiters sit against East Asian punctuation.
     ///
     /// CommonMark decides whether a `*`/`_` run may open or close from the
@@ -133,6 +143,7 @@ impl Default for ParserOptions {
             math: false,
             definition_lists: false,
             heading_attributes: false,
+            wiki_links: false,
             cjk_emphasis: false,
             mdx: false,
             // Not `0`: an unbounded parse of hostile input overflows the
@@ -167,6 +178,7 @@ impl ParserOptions {
             math: false,
             definition_lists: false,
             heading_attributes: false,
+            wiki_links: false,
             // Not part of GFM: GitHub renders these runs per CommonMark too.
             cjk_emphasis: false,
             mdx: false,

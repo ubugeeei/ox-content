@@ -65,6 +65,7 @@ export function parseMarkdownToMdast(
     math: resolvedOptions.math,
     definitionLists: resolvedOptions.definitionLists,
     headingAttributes: resolvedOptions.headingAttributes,
+    wikiLinks: resolvedOptions.wikiLinks,
   };
   const buffer = requireNapiMethod(napi.parseTransferRaw, "parseTransferRaw")(
     source,

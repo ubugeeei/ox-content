@@ -23,6 +23,21 @@ fn test_render_strikethrough() {
 }
 
 #[test]
+fn test_render_wiki_link_parser_option() {
+    let allocator = Allocator::new();
+    let doc = Parser::with_options(
+        &allocator,
+        "See [[Guide Page#Install|the guide]]",
+        ox_content_parser::ParserOptions { wiki_links: true, ..Default::default() },
+    )
+    .parse()
+    .unwrap();
+    let mut renderer = HtmlRenderer::new();
+    let html = renderer.render(&doc);
+    assert_eq!(html, "<p>See <a href=\"Guide%20Page#Install\">the guide</a></p>\n");
+}
+
+#[test]
 fn test_render_hard_break() {
     let allocator = Allocator::new();
     let doc = Parser::new(&allocator, "line 1\\\nline 2").parse().unwrap();
