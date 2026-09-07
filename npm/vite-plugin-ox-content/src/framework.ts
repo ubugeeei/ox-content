@@ -15,6 +15,7 @@ export interface FrameworkMarkdownOptions {
   superscript?: boolean;
   subscript?: boolean;
   smartPunctuation?: boolean;
+  headingAttributes?: boolean;
   linkTargetBlank?: boolean;
   sourceSpans?: boolean;
   toc: boolean;
@@ -85,6 +86,7 @@ export function createFrameworkMarkdownOptions(options: FrameworkMarkdownOptions
     superscript: options.superscript ?? false,
     subscript: options.subscript ?? false,
     smartPunctuation: options.smartPunctuation ?? false,
+    headingAttributes: options.headingAttributes ?? false,
     autolinkTargetBlank: true,
     linkTargetBlank: options.linkTargetBlank ?? true,
     sourceSpans: options.sourceSpans ?? false,

@@ -1975,6 +1975,12 @@ export interface JsParserOptions {
    * Default: `false`.
    */
   definitionLists?: boolean
+  /**
+   * Enable Pandoc-style `{#id .class}` heading attribute blocks.
+   *
+   * Default: `false`.
+   */
+  headingAttributes?: boolean
 }
 
 /** Opt-in parameterized Markdown partials. */
@@ -2873,6 +2879,12 @@ export interface JsTransformOptions {
    * Default: `false`.
    */
   smartPunctuation?: boolean
+  /**
+   * Enable Pandoc-style `{#id .class}` heading attribute blocks.
+   *
+   * Default: `false`.
+   */
+  headingAttributes?: boolean
   /**
    * Parse YAML frontmatter before transforming.
    *

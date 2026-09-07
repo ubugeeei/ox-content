@@ -31,6 +31,20 @@ fn serializes_gfm_nodes() {
 }
 
 #[test]
+fn serializes_heading_attributes_as_h_properties() {
+    let json = parse_json(
+        "## Custom identifier {#custom-heading-id .highlight .wide}\n",
+        ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+    );
+    let heading = &json["children"][0];
+
+    assert_eq!(heading["children"][0]["value"], "Custom identifier");
+    assert_eq!(heading["data"]["hProperties"]["id"], "custom-heading-id");
+    assert_eq!(heading["data"]["hProperties"]["className"][0], "highlight");
+    assert_eq!(heading["data"]["hProperties"]["className"][1], "wide");
+}
+
+#[test]
 fn serializes_mdx_nodes_and_attributes() {
     let json = parse_json(
         "import Alert from './Alert'\n\n<Alert title=\"Hi\" count={count} {...props}>Hello {name}</Alert>\n",

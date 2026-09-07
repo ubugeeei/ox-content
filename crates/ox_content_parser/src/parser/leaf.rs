@@ -1,3 +1,4 @@
+use ox_content_allocator::Vec as ArenaVec;
 use ox_content_ast::{Node, Span};
 
 use super::Parser;
@@ -119,6 +120,8 @@ impl<'a> Parser<'a> {
 
         let span = Span::new(start as u32, self.position as u32);
 
+        let (content, id, classes) = self.split_heading_attributes(content);
+
         // Parse inline content
         let children = if !content.is_empty() {
             self.parse_inline_block(content, content_start)?
@@ -128,9 +131,56 @@ impl<'a> Parser<'a> {
 
         Ok(Some(Node::Heading(self.allocator.boxed(ox_content_ast::Heading {
             depth,
+            id,
+            classes,
             children,
             span,
         }))))
+    }
+
+    pub(super) fn split_heading_attributes(
+        &self,
+        content: &'a str,
+    ) -> (&'a str, Option<&'a str>, ArenaVec<'a, &'a str>) {
+        let mut classes = self.allocator.new_vec();
+        if !self.options.heading_attributes {
+            return (content, None, classes);
+        }
+
+        let trimmed = content.trim_end_matches(char::is_whitespace);
+        if !trimmed.ends_with('}') {
+            return (content, None, classes);
+        }
+
+        let Some(open) = trimmed.rfind('{') else {
+            return (content, None, classes);
+        };
+        if open > 0 && !ends_with_whitespace(&trimmed[..open]) {
+            return (content, None, classes);
+        }
+
+        let mut id = None;
+        let mut has_attribute = false;
+        let attrs = &trimmed[open + 1..trimmed.len() - 1];
+        for token in attrs.split_whitespace() {
+            if let Some(name) = token.strip_prefix('#') {
+                if !name.is_empty() && id.is_none() {
+                    id = Some(name);
+                    has_attribute = true;
+                }
+            } else if let Some(name) = token.strip_prefix('.')
+                && !name.is_empty()
+            {
+                classes.push(name);
+                has_attribute = true;
+            }
+        }
+
+        if !has_attribute {
+            return (content, None, classes);
+        }
+
+        (trimmed[..open].trim_end_matches(char::is_whitespace), id, classes)
     }
 
     /// Parses a thematic break.
@@ -144,6 +194,10 @@ impl<'a> Parser<'a> {
         let span = Span::new(start as u32, self.position as u32);
         Ok(Some(Node::ThematicBreak(ox_content_ast::ThematicBreak { span })))
     }
+}
+
+fn ends_with_whitespace(value: &str) -> bool {
+    value.chars().next_back().is_some_and(char::is_whitespace)
 }
 
 fn is_atx_heading_prefix(bytes: &[u8]) -> bool {

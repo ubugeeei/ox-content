@@ -144,6 +144,19 @@ fn preserves_utf8_spans_as_byte_offsets() {
 }
 
 #[test]
+fn serializes_heading_attributes() {
+    let bytes = parse_to_raw_bytes_with_options(
+        "## Custom identifier {#custom-heading-id .highlight .wide}\n",
+        ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+    );
+
+    let heading_base = find_node_base(&bytes, KIND_HEADING);
+
+    assert_eq!(read_node_string(&bytes, heading_base, 0), Some("custom-heading-id"));
+    assert_eq!(read_node_string(&bytes, heading_base, 1), Some("highlight wide"));
+}
+
+#[test]
 fn serializes_every_mdx_kind_and_preserves_jsx_attributes() {
     let source = "import Alert from './Alert'\n\n{count}\n\n<Alert title=\"Hi\" count={count} {...props} />\n\nHello <Badge /> {name}\n";
     let bytes = parse_to_raw_bytes_with_options(source, ParserOptions::mdx());

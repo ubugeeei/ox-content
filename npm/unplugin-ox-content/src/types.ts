@@ -50,6 +50,7 @@ export interface MdastNode {
   align?: Array<"left" | "center" | "right" | null>;
   identifier?: string;
   label?: string;
+  data?: Record<string, unknown>;
   [key: string]: unknown;
 }
 
@@ -376,6 +377,12 @@ export interface OxContentOptions {
   smartPunctuation?: boolean;
 
   /**
+   * Enable Pandoc-style heading attribute blocks.
+   * @default false
+   */
+  headingAttributes?: boolean;
+
+  /**
    * Enable syntax highlighting for code blocks.
    * @default false
    */
@@ -499,6 +506,7 @@ export interface ResolvedOptions {
   superscript: boolean;
   subscript: boolean;
   smartPunctuation: boolean;
+  headingAttributes: boolean;
   highlight: boolean;
   codeAnnotations: ResolvedCodeAnnotationsOptions;
   mermaid: boolean;

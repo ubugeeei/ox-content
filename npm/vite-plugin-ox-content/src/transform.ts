@@ -254,6 +254,7 @@ interface JsTransformOptions {
   superscript?: boolean;
   subscript?: boolean;
   smartPunctuation?: boolean;
+  headingAttributes?: boolean;
 
   /**
    * Linkify bare URLs while rendering.
@@ -714,6 +715,7 @@ export async function transformMarkdown(
     superscript: options.superscript ?? false,
     subscript: options.subscript ?? false,
     smartPunctuation: options.smartPunctuation ?? false,
+    headingAttributes: options.headingAttributes ?? false,
     autolinkUrls: options.autolinks,
     autolinkTargetBlank: options.autolinkTargetBlank ?? true,
     linkTargetBlank: options.linkTargetBlank ?? true,

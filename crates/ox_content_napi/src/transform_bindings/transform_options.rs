@@ -74,6 +74,11 @@ pub struct JsTransformOptions {
     /// Default: `false`.
     pub smart_punctuation: Option<bool>,
 
+    /// Enable Pandoc-style `{#id .class}` heading attribute blocks.
+    ///
+    /// Default: `false`.
+    pub heading_attributes: Option<bool>,
+
     /// Parse YAML frontmatter before transforming.
     ///
     /// Default: `false`.

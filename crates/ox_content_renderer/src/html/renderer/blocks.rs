@@ -52,6 +52,16 @@ impl HtmlRenderer {
         // written straight into `self.output`.
         self.write_heading_id(heading);
         self.output.push('"');
+        if !heading.classes.is_empty() {
+            self.output.push_str(" class=\"");
+            for (index, class_name) in heading.classes.iter().enumerate() {
+                if index > 0 {
+                    self.output.push(' ');
+                }
+                self.write_attribute_escaped(class_name);
+            }
+            self.output.push('"');
+        }
         self.write_source_span_attr(heading.span);
         self.output.push('>');
         for child in &heading.children {

@@ -17,8 +17,10 @@ use ox_content_ast::{
 };
 use serde_json::Value;
 
+mod heading_properties;
 mod mdx;
 
+use heading_properties::{heading_classes, heading_id};
 use mdx::mdx_attributes;
 
 /// Why an mdast payload could not be turned back into a document.
@@ -103,6 +105,8 @@ fn node<'a>(allocator: &'a Allocator, value: &Value) -> Result<Node<'a>, MdastJs
         ),
         "heading" => Node::Heading(allocator.boxed(Heading {
             depth: depth(value)?,
+            id: heading_id(allocator, value),
+            classes: heading_classes(allocator, value),
             children: nodes(allocator, value.get("children"))?,
             span,
         })),

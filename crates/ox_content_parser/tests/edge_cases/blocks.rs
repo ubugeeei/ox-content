@@ -25,6 +25,90 @@ fn heading_trims_closing_hashes() {
 }
 
 #[test]
+fn heading_attributes_default_off_stay_literal() {
+    let allocator = Allocator::new();
+    let doc = parse_with_options(
+        &allocator,
+        "### Custom identifier {#custom-heading-id .highlight}\n",
+        ParserOptions::default(),
+    );
+
+    match &doc.children[0] {
+        Node::Heading(heading) => {
+            assert_eq!(heading.id, None);
+            assert!(heading.classes.is_empty());
+            assert_eq!(
+                first_text_in_nodes(heading.children.iter()),
+                Some("Custom identifier {#custom-heading-id .highlight}")
+            );
+        }
+        other => panic!("expected heading, got {other:?}"),
+    }
+}
+
+#[test]
+fn heading_attributes_parse_id_classes_and_strip_text() {
+    let allocator = Allocator::new();
+    let doc = parse_with_options(
+        &allocator,
+        "### Custom identifier {#custom-heading-id .highlight .wide ignored}\n",
+        ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+    );
+
+    match &doc.children[0] {
+        Node::Heading(heading) => {
+            assert_eq!(heading.id, Some("custom-heading-id"));
+            assert_eq!(heading.classes.iter().copied().collect::<Vec<_>>(), ["highlight", "wide"]);
+            assert_eq!(first_text_in_nodes(heading.children.iter()), Some("Custom identifier"));
+        }
+        other => panic!("expected heading, got {other:?}"),
+    }
+}
+
+#[test]
+fn heading_attributes_leave_unusable_blocks_as_prose() {
+    let allocator = Allocator::new();
+    for source in ["## A sentence {like this}\n", "## A sentence {}\n"] {
+        let doc = parse_with_options(
+            &allocator,
+            source,
+            ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+        );
+
+        match &doc.children[0] {
+            Node::Heading(heading) => {
+                assert_eq!(heading.id, None);
+                assert!(heading.classes.is_empty());
+                assert!(first_text_in_nodes(heading.children.iter()).is_some_and(|text| {
+                    text == "A sentence {like this}" || text == "A sentence {}"
+                }));
+            }
+            other => panic!("expected heading, got {other:?}"),
+        }
+    }
+}
+
+#[test]
+fn heading_attributes_apply_to_setext_headings() {
+    let allocator = Allocator::new();
+    let doc = parse_with_options(
+        &allocator,
+        "Custom identifier {#custom-heading-id .highlight}\n---\n",
+        ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+    );
+
+    match &doc.children[0] {
+        Node::Heading(heading) => {
+            assert_eq!(heading.depth, 2);
+            assert_eq!(heading.id, Some("custom-heading-id"));
+            assert_eq!(heading.classes.iter().copied().collect::<Vec<_>>(), ["highlight"]);
+            assert_eq!(first_text_in_nodes(heading.children.iter()), Some("Custom identifier"));
+        }
+        other => panic!("expected heading, got {other:?}"),
+    }
+}
+
+#[test]
 fn invalid_atx_heading_without_space_stays_paragraph() {
     let allocator = Allocator::new();
     let doc = parse_with_options(&allocator, "#Title", ParserOptions::default());

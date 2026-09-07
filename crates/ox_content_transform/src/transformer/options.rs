@@ -31,6 +31,9 @@ pub(super) fn transform_options_to_parser_options(opts: &TransformOptions) -> Pa
     if let Some(v) = opts.smart_punctuation {
         options.smart_punctuation = v;
     }
+    if let Some(v) = opts.heading_attributes {
+        options.heading_attributes = v;
+    }
     if let Some(v) = opts.mdx {
         options.mdx = v;
     }

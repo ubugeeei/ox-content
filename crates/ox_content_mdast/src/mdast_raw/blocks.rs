@@ -25,6 +25,11 @@ impl MdastRawSerializer {
         let mut record = RawNodeRecord::new(KIND_HEADING, node.span);
         self.write_child_nodes(&mut record, &node.children)?;
         record.num0 = u32::from(node.depth);
+        self.write_string_into_slot(&mut record, 0, node.id)?;
+        if !node.classes.is_empty() {
+            let joined = node.classes.iter().copied().collect::<Vec<_>>().join(" ");
+            self.write_string_into_slot(&mut record, 1, Some(&joined))?;
+        }
         self.push_record(record)
     }
 

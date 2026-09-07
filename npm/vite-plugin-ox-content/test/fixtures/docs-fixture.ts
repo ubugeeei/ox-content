@@ -134,6 +134,7 @@ export function createDocsResolvedOptions(
     superscript: false,
     subscript: false,
     smartPunctuation: false,
+    headingAttributes: false,
     autolinkTargetBlank: true,
     linkTargetBlank: true,
     sourceSpans: false,

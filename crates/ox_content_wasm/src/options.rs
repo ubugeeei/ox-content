@@ -24,6 +24,7 @@ pub struct WasmParserOptions {
     pub(crate) smart_punctuation: bool,
     pub(crate) math: bool,
     pub(crate) definition_lists: bool,
+    pub(crate) heading_attributes: bool,
     pub(crate) toc_max_depth: u8,
     pub(crate) autolink_urls: bool,
     pub(crate) autolink_patterns: Vec<String>,
@@ -59,6 +60,7 @@ impl WasmParserOptions {
             smart_punctuation: false,
             math: false,
             definition_lists: false,
+            heading_attributes: false,
             toc_max_depth: 3,
             autolink_urls: true,
             autolink_patterns: vec!["http://".to_string(), "https://".to_string()],
@@ -142,6 +144,12 @@ impl WasmParserOptions {
         self.definition_lists = value;
     }
 
+    /// Enables Pandoc-style `{#id .class}` heading attribute blocks.
+    #[wasm_bindgen(setter = headingAttributes)]
+    pub fn set_heading_attributes(&mut self, value: bool) {
+        self.heading_attributes = value;
+    }
+
     /// Sets the maximum heading depth included in inline TOCs.
     #[wasm_bindgen(setter = tocMaxDepth)]
     pub fn set_toc_max_depth(&mut self, value: u8) {
@@ -216,6 +224,7 @@ impl From<&WasmParserOptions> for ParserOptions {
         options.smart_punctuation = opts.smart_punctuation;
         options.math = opts.math;
         options.definition_lists = opts.definition_lists;
+        options.heading_attributes = opts.heading_attributes;
 
         options
     }

@@ -115,6 +115,10 @@ pub struct Paragraph<'a> {
 pub struct Heading<'a> {
     /// Heading depth (1-6).
     pub depth: u8,
+    /// Explicit heading id from a trailing attribute block.
+    pub id: Option<&'a str>,
+    /// Explicit heading classes from a trailing attribute block.
+    pub classes: Vec<'a, &'a str>,
     /// Inline children.
     pub children: Vec<'a, Node<'a>>,
     /// Source span.
