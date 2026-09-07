@@ -166,6 +166,28 @@ fn math_nodes_are_opt_in_and_preserve_escaped_dollars() {
 }
 
 #[test]
+fn digit_prefixed_inline_math_preserves_emphasis_markers_as_tex() {
+    let allocator = Allocator::new();
+    let options = ParserOptions { math: true, ..ParserOptions::default() };
+
+    for (source, expected) in
+        [("$2*3*4 = 24$", "2*3*4 = 24"), ("$2_3_4$", "2_3_4"), ("$a_1 * b_2$", "a_1 * b_2")]
+    {
+        let doc = parse_with_options(&allocator, source, options.clone());
+        let Node::Paragraph(paragraph) = &doc.children[0] else {
+            panic!("expected paragraph for {source}");
+        };
+        assert!(matches!(
+            &paragraph.children[0],
+            Node::InlineMath(math) if math.value == expected
+        ));
+    }
+
+    let money = parse_with_options(&allocator, "Costs $5 today", options);
+    assert_eq!(flatten_text(&money.children[0]), "Costs $5 today");
+}
+
+#[test]
 fn inline_math_closing_delimiters_ignore_code_spans() {
     let allocator = Allocator::new();
     let options = ParserOptions { math: true, ..ParserOptions::default() };

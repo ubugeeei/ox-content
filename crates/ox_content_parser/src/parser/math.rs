@@ -50,7 +50,9 @@ impl<'a> Parser<'a> {
         profile_span_detail!("parser::inline_math");
         let bytes = content.as_bytes();
         let open_len = if bytes.get(*pos + 1) == Some(&b'$') { 2 } else { 1 };
-        if !can_open_inline(bytes, *pos, open_len) {
+        if !can_open_inline(bytes, *pos, open_len)
+            && !can_open_digit_prefixed_inline_math(bytes, *pos, open_len)
+        {
             Self::push_text(children, &content[*pos..*pos + 1], offset + *pos, offset + *pos + 1);
             *pos += 1;
             return;
@@ -117,6 +119,37 @@ fn can_open_inline(bytes: &[u8], index: usize, open_len: usize) -> bool {
     let prev = index.checked_sub(1).and_then(|prev| bytes.get(prev).copied());
     !matches!(next, None | Some(b' ' | b'\t' | b'\n' | b'0'..=b'9'))
         && !matches!(prev, Some(b'0'..=b'9'))
+}
+
+fn can_open_digit_prefixed_inline_math(bytes: &[u8], index: usize, open_len: usize) -> bool {
+    let next = bytes.get(index + open_len).copied();
+    let prev = index.checked_sub(1).and_then(|prev| bytes.get(prev).copied());
+    matches!(next, Some(b'0'..=b'9'))
+        && !matches!(prev, Some(b'0'..=b'9'))
+        && has_closing_inline_math(bytes, index, open_len)
+}
+
+fn has_closing_inline_math(bytes: &[u8], index: usize, open_len: usize) -> bool {
+    let mut cursor = index + open_len;
+    while let Some(relative) = memchr2(b'$', b'`', &bytes[cursor..]) {
+        let candidate = cursor + relative;
+        if bytes[candidate] == b'`' {
+            if let Some(end) = Parser::closed_code_span_end(bytes, candidate) {
+                cursor = end;
+            } else {
+                cursor = candidate + Parser::marker_run_len(bytes, candidate, b'`');
+            }
+            continue;
+        }
+        if !is_escaped_marker(bytes, candidate)
+            && marker_len_at(bytes, candidate) >= open_len
+            && can_close_inline(bytes, candidate, open_len)
+        {
+            return true;
+        }
+        cursor = candidate + 1;
+    }
+    false
 }
 
 fn can_close_inline(bytes: &[u8], index: usize, close_len: usize) -> bool {
