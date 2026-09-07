@@ -73,10 +73,7 @@ impl<'a> Parser<'a> {
                     1,
                     if state.is_opening_quote_context() { "\u{201c}" } else { "\u{201d}" },
                 )),
-                b'\'' => Some((
-                    1,
-                    if state.is_opening_quote_context() { "\u{2018}" } else { "\u{2019}" },
-                )),
+                b'\'' => Some((1, single_quote_replacement(value, pos, state))),
                 _ => None,
             };
 
@@ -158,4 +155,47 @@ fn is_gfm_autolink_like(link: &Link<'_>) -> bool {
     text.value == link.url
         || link.url.strip_prefix("http://") == Some(text.value)
         || link.url.strip_prefix("mailto:") == Some(text.value)
+}
+
+fn single_quote_replacement(
+    value: &str,
+    pos: usize,
+    state: &SmartPunctuationState,
+) -> &'static str {
+    if state.is_opening_quote_context() && !is_elision_apostrophe(value, pos) {
+        "\u{2018}"
+    } else {
+        "\u{2019}"
+    }
+}
+
+fn is_elision_apostrophe(value: &str, pos: usize) -> bool {
+    let after = &value[pos + 1..];
+    let Some(next) = after.chars().next() else {
+        return false;
+    };
+    if next.is_ascii_digit() {
+        return true;
+    }
+    if is_single_letter_elision(after) {
+        return true;
+    }
+    if starts_common_elision(after) {
+        return true;
+    }
+    next.is_alphabetic() && !after.contains('\'')
+}
+
+fn is_single_letter_elision(after: &str) -> bool {
+    let mut chars = after.chars();
+    matches!(chars.next(), Some('n' | 'N')) && chars.next() == Some('\'')
+}
+
+fn starts_common_elision(after: &str) -> bool {
+    const ELISIONS: &[&str] = &["cause", "em", "gainst", "round", "til", "tis", "twas", "twere"];
+    let Some(word_end) = after.find(|ch: char| !ch.is_alphabetic()) else {
+        return ELISIONS.iter().any(|elision| after.eq_ignore_ascii_case(elision));
+    };
+    let word = &after[..word_end];
+    ELISIONS.iter().any(|elision| word.eq_ignore_ascii_case(elision))
 }

@@ -105,6 +105,19 @@ fn smart_punctuation_is_opt_in_and_leaves_code_literal() {
 }
 
 #[test]
+fn smart_punctuation_curls_elision_apostrophes_as_closing_quotes() {
+    let allocator = Allocator::new();
+    let options = ParserOptions { smart_punctuation: true, ..ParserOptions::default() };
+    let doc =
+        parse_with_options(&allocator, "the '90s\n'tis\nrock 'n' roll\ndon't\n'quoted'\n", options);
+
+    assert_eq!(
+        flatten_text(&doc.children[0]),
+        "the \u{2019}90s\n\u{2019}tis\nrock \u{2019}n\u{2019} roll\ndon\u{2019}t\n\u{2018}quoted\u{2019}"
+    );
+}
+
+#[test]
 fn smart_punctuation_skips_bare_autolink_text() {
     let allocator = Allocator::new();
     let options =
