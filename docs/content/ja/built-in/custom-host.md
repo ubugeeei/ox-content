@@ -132,6 +132,55 @@ route の出力 path が重複すると、どの route 同士が衝突したか�
 失敗させます。公開対象の選択はホストが持ち、Ox Content はホストが返した route
 だけを書きます。
 
+## Collection asset
+
+collection に付随する project image や download file を host が所有し、それを同じ manifest で
+Ox Content に dev 配信 / build 書き出しさせたい場合は `collectionAssets` を使います。
+
+```ts
+oxContentCustomHost({
+  host: "./src/site-host.ts",
+  collectionAssets: {
+    manifest: async (ctx) =>
+      planCollectionAssets({
+        root: ctx.root,
+        assets: [
+          {
+            sourcePath: "content/projects/cover.jpg",
+            publicPath: "/projects/cover.jpg",
+          },
+        ],
+      }),
+    watch: [{ path: "content/projects", kind: "directory" }],
+    ownedPrefixes: ["/assets/content"],
+  },
+});
+```
+
+development では middleware が route rendering より前に alias と content-addressed target を
+配信します。owned prefix 配下で file が見つからない URL は host router に fallthrough せず
+404 になります。watch 対象 file や manifest source file が変わると、Ox Content は manifest を
+re-plan し、成功した plan のあとで cached route response を消して reload します。失敗した
+re-plan は retry 可能で、最後に成功した manifest を置き換えません。production では
+`collectionAssets.write` が `false` でない限り、collection asset は協調 output file と一緒に
+書き出されます。
+
+route、render、output hook は、同じ configured snapshot を
+`ctx.assets.collectionManifest()` から読めます。HTML rewrite や structured page data の alias
+解決が必要な場合に使います。writer と development middleware はその resolved manifest を
+再利用するため、`collectionAssets.manifest` を二度呼びません。
+
+```ts
+const manifest = await ctx.assets.collectionManifest();
+const body = manifest
+  ? rewriteCollectionAssetUrls({
+      html,
+      base: ctx.base,
+      manifest,
+    }).html
+  : html;
+```
+
 Solid HTML-string host は、同じ選択済み route / document set から browser island registry を
 生成できます。`@ox-content/vite-plugin-solid` の
 `createSolidHtmlHostIslandRegistry()` を使い、client entry では directory 全体の
