@@ -145,7 +145,9 @@ fn has_closing_inline_math(bytes: &[u8], index: usize, open_len: usize) -> bool 
             && marker_len_at(bytes, candidate) >= open_len
             && can_close_inline(bytes, candidate, open_len)
         {
-            return true;
+            return bytes[index + open_len..candidate]
+                .iter()
+                .any(|byte| matches!(byte, b'*' | b'_'));
         }
         cursor = candidate + 1;
     }
