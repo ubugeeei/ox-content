@@ -49,6 +49,8 @@ export interface OxContentCustomHostDevOptions {
   enabled?: boolean;
   /** Apply Vite `transformIndexHtml` to HTML responses. */
   transformHtml?: boolean;
+  /** Serve feed files from the host `outputs(ctx)` lifecycle in development. */
+  feedOutputs?: boolean;
   /** Debounce for full reloads after dependency invalidation. */
   reloadDebounceMs?: number;
   /** Dependencies that invalidate every cached route response in development. */

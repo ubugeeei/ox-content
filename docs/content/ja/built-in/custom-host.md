@@ -97,12 +97,19 @@ production では Vite が client asset と `.vite/manifest.json` を出した�
 `closeBundle` から一度だけ走ります。host と site module を SSR load するためだけに
 一時的な middleware-mode Vite server を開き、raw server ではなく `ctx.loadModule` を
 渡し、`finally` で必ず閉じます。
-`outputs(ctx)` は build 専用で、`feeds` が有効なときだけ呼ばれます。
+`outputs(ctx)` は `feeds` が有効なときだけ呼ばれます。開発 server が
+`dev.feedOutputs` に opt-in しない限り build 専用です。
 
 `ctx.memo(key, load)` は、1 回の build または development route catalogue 生成中に
 高価な読み込みを共有します。`routes(ctx)` と `outputs(ctx)` で同じ key を使えば、
 module-global mutable state なしで host-owned content artifact を再利用できます。
 失敗した loader は memo から消えるので次回 retry できます。
+
+`dev.feedOutputs: true` を設定すると、開発中も `outputs(ctx)` から設定済みの
+RSS、Atom、JSON feed file を配信します。同じ path の明示 route がある場合は host
+route が優先されます。存在しない feed path は host の `notFound()` か Vite へ fall
+through し、失敗した feed render は cache しないため、source や module error を
+直したあとの次の一致リクエストで再試行できます。
 
 ## 協調する出力
 
@@ -121,6 +128,10 @@ programmatic default `items`、名前付き feed `collections`、`collectionName
 `siteDescription` がそれです。Ox Content はその data を `planSsgOutputs()` と既存の
 feed writer に流すので、publish-state filtering、validation、output path、diagnostic は
 組み込み SSG と共有されます。
+`dev.feedOutputs: true` のときは、同じ feed channel と `outputs(ctx)` の data を
+file へ書かずにオンデマンドで render します。1 つの feed を配信するために全 page
+を render することはありません。feed 専用の data は、host が `outputs(ctx)` から
+feed collection か programmatic `items` として返してください。
 
 組み込み SSG page には `ssg.minifyHtml: true`、独自ホスト plugin には
 `build.minifyHtml: true` を指定すると production HTML を minify します。独自ホストの
