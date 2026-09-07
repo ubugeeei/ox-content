@@ -3,6 +3,7 @@ import { LOAD_ENV } from "./custom-host-constants";
 import { runCustomHostBuild } from "./custom-host-build";
 import { configureDevServer } from "./custom-host-dev";
 import { resolveThemeTokens } from "./custom-host-assets";
+import { createCustomHostSsrStylesheetController } from "./custom-host-ssr-stylesheets";
 import type { OxContentCustomHostOptions } from "./custom-host-types";
 import { resolveOptions } from "./resolve-options";
 import type { OxContentOptions } from "./types";
@@ -41,6 +42,10 @@ export type {
   OxContentCustomHostStylesheetContentInput,
   OxContentCustomHostStylesheetContentResult,
   OxContentCustomHostStylesheetDiagnostic,
+  OxContentCustomHostSsrStylesheetDescriptor,
+  OxContentCustomHostSsrStylesheetsInput,
+  OxContentCustomHostSsrStylesheetsOptions,
+  OxContentCustomHostSsrStylesheetsResult,
   OxContentCustomHostStylesheetsInput,
   OxContentCustomHostStylesheetsResult,
   OxContentCustomHostThemeTokensOptions,
@@ -50,6 +55,7 @@ export function createOxContentCustomHostPlugin(input: OxContentCustomHostOption
   const oxContentOptions = customHostOxContentOptions(input.oxContent ?? {});
   const resolvedOptions = resolveOptions(oxContentOptions);
   const themeTokens = resolveThemeTokens(input.themeTokens, resolvedOptions.base);
+  const ssrStylesheets = createCustomHostSsrStylesheetController(input.ssrStylesheets);
   let command: "build" | "serve" | undefined;
   let config: ResolvedConfig | undefined;
   let buildRun: Promise<void> | undefined;
@@ -74,7 +80,24 @@ export function createOxContentCustomHostPlugin(input: OxContentCustomHostOption
       if (process.env[LOAD_ENV] === "1" || input.dev?.enabled === false) {
         return;
       }
-      configureDevServer(server, input, resolvedOptions, themeTokens, oxContentOptions);
+      configureDevServer(
+        server,
+        input,
+        resolvedOptions,
+        themeTokens,
+        oxContentOptions,
+        ssrStylesheets,
+      );
+    },
+
+    async buildStart() {
+      if (!config || command !== "build" || input.build?.enabled === false) {
+        return;
+      }
+      if (config.mode === "test" && input.build?.runInTest !== true) {
+        return;
+      }
+      await ssrStylesheets.buildStart(this, config.root);
     },
 
     async closeBundle() {
@@ -90,6 +113,7 @@ export function createOxContentCustomHostPlugin(input: OxContentCustomHostOption
         resolvedOptions,
         themeTokens,
         oxContentOptions,
+        ssrStylesheets,
       );
       await buildRun;
     },

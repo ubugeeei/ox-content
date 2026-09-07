@@ -283,6 +283,68 @@ Solid HTML-string host は、同じ選択済み route / document set から brow
 import します。生成 module には選択された island dynamic-import root だけが入り、
 Vite はその transitive dependency を保持します。
 
+## SSR stylesheet
+
+server-rendered page や layout module が blocking CSS を import する場合は、
+小さな SSR stylesheet root の集合を先に設定し、render 時にその route が選んだ root だけを
+解決します。
+
+```ts
+// vite.config.ts
+oxContentCustomHost({
+  host: "./src/host.ts",
+  ssrStylesheets: {
+    modules: ["src/layout.tsx", "src/pages/**/page.tsx"],
+  },
+});
+
+// host.ts
+const routes = [{ path: "/about", pageModule: "/src/pages/about/page.tsx" }];
+
+export default {
+  routes: routes.map((route) => ({
+    path: route.path,
+    async render(ctx) {
+      const layout = await ctx.loadModule("/src/layout.tsx");
+      const page = await ctx.loadModule(route.pageModule);
+      const ssrStyles = ctx.assets.ssrStylesheets({
+        modules: ["/src/layout.tsx", route.pageModule],
+      });
+      const assets = ctx.assets.document({
+        pageStyles: ssrStyles.stylesheets,
+        clientEntries: ["src/main.ts"],
+      });
+
+      return {
+        html: `<!doctype html><html><head>${assets.headHtml}</head><body>${layout.render(page)}</body></html>`,
+        dependencies: ssrStyles.dependencies,
+      };
+    },
+  })),
+};
+```
+
+rendered HTML string から source module id は推論できないため、host が module identity を
+明示的に渡します。route descriptor には `path` や `inputPath` と同じように page module id を
+保持できます。現在の route が選んだ layout / page root だけを渡してください。route catalogue
+を作るために import された全 page module から style を導出すると、sibling route の CSS まで
+含むため、この問題は解決しません。
+
+development では、選択した SSR root を `ctx.loadModule()` で読んだあとに
+`ctx.assets.ssrStylesheets()` を呼びます。resolver は Vite module graph から blocking
+stylesheet href と dependency file を返し、cached route の invalidation に使えます。
+`ssrStylesheets.modules` も watch されるため、設定された glob に一致する page module の追加や
+削除で route catalogue を更新できます。
+
+production build では、plugin が設定された local JavaScript / TypeScript SSR root を静的に辿り、
+local static import を追跡して、直接 import された plain CSS file から hashed custom-host
+CSS artifact を書きます。external package JavaScript は辿りません。local dynamic import、
+missing root、未解決の local import、Vite root 外に解決された CSS は、黙って style を落とさず
+diagnostic として返します。順序は source import order と route の `modules` order に従います。
+返された style は `ctx.assets.document()` に渡すと、他の returned stylesheet descriptor との
+重複を document asset API 側で dedupe できます。Vite plugin transform が必要な preprocessed
+stylesheet は、明示的な browser / CSS entry に残して `ctx.assets.stylesheets()` を使ってください。
+
 ## Island stylesheet
 
 描画済み route が SSR-visible island の browser module id を知っている場合は、

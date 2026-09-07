@@ -28,6 +28,8 @@ export interface OxContentCustomHostOptions {
   themeTokens?: false | OxContentCustomHostThemeTokensOptions;
   /** Optional custom-host-owned collection assets. */
   collectionAssets?: false | OxContentCustomHostCollectionAssetsOptions;
+  /** Optional SSR page/layout stylesheet discovery for production builds. */
+  ssrStylesheets?: false | OxContentCustomHostSsrStylesheetsOptions;
 }
 
 export interface OxContentCustomHostBuildOptions {
@@ -89,6 +91,16 @@ export interface OxContentCustomHostCollectionAssetsOptions {
   ownedPrefixes?: readonly string[];
   /** Write collection assets during custom-host builds. */
   write?: boolean;
+}
+
+export interface OxContentCustomHostSsrStylesheetsOptions {
+  /**
+   * SSR page or layout module roots used to emit production CSS artifacts.
+   *
+   * Entries may be module ids such as `/src/layout.tsx` or root-relative glob
+   * patterns for page modules.
+   */
+  modules: readonly string[];
 }
 
 export interface OxContentCustomHostModule {
@@ -180,6 +192,9 @@ export interface OxContentCustomHostAssetsContext {
    */
   collectionManifest(): Promise<CollectionAssetManifest | undefined>;
   stylesheets(input: OxContentCustomHostStylesheetsInput): OxContentCustomHostStylesheetsResult;
+  ssrStylesheets(
+    input: OxContentCustomHostSsrStylesheetsInput,
+  ): OxContentCustomHostSsrStylesheetsResult;
   stylesheetContent(
     input: OxContentCustomHostStylesheetContentInput,
   ): Promise<OxContentCustomHostStylesheetContentResult>;
@@ -203,8 +218,10 @@ export interface OxContentCustomHostStylesheet extends DocumentStyleDescriptor {
 }
 
 export interface OxContentCustomHostStylesheetDiagnostic {
-  code: "missing-module" | "missing-resolver";
+  code: "missing-module" | "missing-resolver" | "outside-root" | "unsupported-import";
   moduleId: string;
+  specifier?: string;
+  importer?: string;
   message: string;
 }
 
@@ -213,6 +230,27 @@ export interface OxContentCustomHostStylesheetsResult {
   diagnostics: OxContentCustomHostStylesheetDiagnostic[];
   /** Dev-only source files that should be merged into route dependencies. */
   dependencies: string[];
+}
+
+export interface OxContentCustomHostSsrStylesheetsInput {
+  /** Route-specific SSR page or layout module identities. */
+  modules: readonly string[];
+  /** Override the custom host base path for returned stylesheet hrefs. */
+  base?: string;
+}
+
+export interface OxContentCustomHostSsrStylesheetDescriptor {
+  /** Requested SSR page or layout module identity. */
+  moduleId: string;
+  /** Stylesheets discovered for this SSR root, in cascade order. */
+  stylesheets: readonly OxContentCustomHostStylesheet[];
+  /** Dev-only source files watched for this SSR root. */
+  dependencies: readonly string[];
+}
+
+export interface OxContentCustomHostSsrStylesheetsResult extends OxContentCustomHostStylesheetsResult {
+  /** Per-root descriptors for route-aware host composition. */
+  descriptors: OxContentCustomHostSsrStylesheetDescriptor[];
 }
 
 export interface OxContentCustomHostStylesheetContentInput {

@@ -330,6 +330,72 @@ whole-directory `import.meta.glob()`. The generated module contains only the
 selected island dynamic-import roots; Vite still keeps their transitive
 dependencies.
 
+## SSR stylesheets
+
+When route pages or layouts import blocking CSS from server-rendered modules,
+configure the small set of SSR stylesheet roots up front and resolve the
+route-selected roots during render:
+
+```ts
+// vite.config.ts
+oxContentCustomHost({
+  host: "./src/host.ts",
+  ssrStylesheets: {
+    modules: ["src/layout.tsx", "src/pages/**/page.tsx"],
+  },
+});
+
+// host.ts
+const routes = [{ path: "/about", pageModule: "/src/pages/about/page.tsx" }];
+
+export default {
+  routes: routes.map((route) => ({
+    path: route.path,
+    async render(ctx) {
+      const layout = await ctx.loadModule("/src/layout.tsx");
+      const page = await ctx.loadModule(route.pageModule);
+      const ssrStyles = ctx.assets.ssrStylesheets({
+        modules: ["/src/layout.tsx", route.pageModule],
+      });
+      const assets = ctx.assets.document({
+        pageStyles: ssrStyles.stylesheets,
+        clientEntries: ["src/main.ts"],
+      });
+
+      return {
+        html: `<!doctype html><html><head>${assets.headHtml}</head><body>${layout.render(page)}</body></html>`,
+        dependencies: ssrStyles.dependencies,
+      };
+    },
+  })),
+};
+```
+
+The host supplies module identity explicitly because rendered HTML strings do
+not carry their source module ids. Route descriptors can keep page module ids
+next to `path`, `inputPath`, and other route metadata; pass only the selected
+layout/page roots for the current route. Do not derive a page's styles from a
+shared route catalogue import, because that would include sibling routes loaded
+only to build the catalogue.
+
+In development, call `ctx.loadModule()` for each selected SSR root before
+`ctx.assets.ssrStylesheets()`. The resolver then uses Vite's module graph to
+return blocking stylesheet hrefs plus dependency files that invalidate the
+cached route. `ssrStylesheets.modules` is also watched, so new or deleted page
+module files matching a configured glob can refresh the route catalogue.
+
+In production builds, the plugin statically walks configured local JavaScript
+and TypeScript SSR roots, follows local static imports, and writes hashed
+custom-host CSS artifacts for directly imported plain CSS files. External
+package JavaScript is not traversed. Local dynamic imports, missing roots,
+unresolved local imports, and CSS resolved outside the Vite root are reported
+as diagnostics instead of being silently dropped. Ordering follows the source
+import order and then the route's `modules` order; pass the returned styles
+into `ctx.assets.document()` so overlap with other returned stylesheet
+descriptors is deduplicated by the document asset API. Preprocessed stylesheets
+that need Vite plugin transforms should stay on explicit browser/CSS entries
+and use `ctx.assets.stylesheets()`.
+
 ## Island stylesheets
 
 When a rendered route knows the browser module ids used by SSR-visible islands,
