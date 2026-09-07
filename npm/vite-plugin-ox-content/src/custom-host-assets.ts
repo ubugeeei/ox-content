@@ -9,6 +9,7 @@ import {
   resolveCustomHostStylesheets,
   type CustomHostDevModuleGraph,
 } from "./custom-host-stylesheets";
+import type { CustomHostSsrStylesheetController } from "./custom-host-ssr-stylesheets";
 import type {
   OxContentCustomHostAssetsContext,
   OxContentCustomHostOptions,
@@ -31,6 +32,7 @@ export function createAssetsContext(
   moduleGraph?: CustomHostDevModuleGraph,
   root?: string,
   collectionManifest: () => Promise<CollectionAssetManifest | undefined> = async () => undefined,
+  ssrStylesheets?: CustomHostSsrStylesheetController,
 ): OxContentCustomHostAssetsContext {
   const selfHosted = resolveSelfHostedAssetManifest(options);
   return {
@@ -46,6 +48,26 @@ export function createAssetsContext(
         moduleGraph,
         root,
       });
+    },
+    ssrStylesheets(input) {
+      return (
+        ssrStylesheets?.resolve({
+          ...input,
+          base: input.base ?? options.base,
+          manifest: clientManifest,
+          moduleGraph,
+          root,
+        }) ?? {
+          stylesheets: [],
+          dependencies: [],
+          descriptors: [],
+          diagnostics: input.modules.map((moduleId) => ({
+            code: "missing-resolver",
+            moduleId,
+            message: `SSR stylesheet discovery is not available for "${moduleId}".`,
+          })),
+        }
+      );
     },
     stylesheetContent(input) {
       return resolveCustomHostStylesheetContent({

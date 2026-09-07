@@ -4,6 +4,7 @@ import {
   createCustomHostCollectionAssetsDevController,
   type CustomHostCollectionAssetsDevController,
 } from "./custom-host-collection-assets";
+import type { CustomHostSsrStylesheetController } from "./custom-host-ssr-stylesheets";
 import {
   createBaseContext,
   createContextMemo,
@@ -57,6 +58,7 @@ export function configureDevServer(
   options: ResolvedOptions,
   themeTokens: ResolvedThemeTokens | undefined,
   rawOptions: OxContentOptions,
+  ssrStylesheets: CustomHostSsrStylesheetController,
 ): void {
   const root = server.config.root;
   const outDir = resolveOutDir(server.config, options, root);
@@ -69,6 +71,7 @@ export function configureDevServer(
     server.moduleGraph,
     root,
     async () => collectionAssets?.manifest(),
+    ssrStylesheets,
   );
   let ssrVersion = 0;
   const loadModule = (moduleId: string) =>
@@ -79,10 +82,10 @@ export function configureDevServer(
   const depKeys = new Map<string, Set<string>>();
   const keyBroadDeps = new Map<string, NormalizedCustomHostDependency[]>();
   const globalDependencies = normalizeCustomHostDependencies(root, input.dev?.dependencies);
-  const configuredRouteDependencies = normalizeCustomHostDependencies(
-    root,
-    input.dev?.routeDependencies,
-  );
+  const configuredRouteDependencies = normalizeCustomHostDependencies(root, [
+    ...(input.dev?.routeDependencies ?? []),
+    ...ssrStylesheets.dependencies(),
+  ]);
   let routeCatalogueDependencies = [...configuredRouteDependencies];
   let hostPromise: Promise<OxContentCustomHostModule> | undefined;
   let routesStatePromise: Promise<DevRoutesState> | undefined;

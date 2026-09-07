@@ -1,0 +1,159 @@
+import * as fsSync from "node:fs";
+import * as path from "node:path";
+import {
+  dynamicDiagnostic,
+  fileFromModuleId,
+  isLocalSpecifier,
+  isStyleFile,
+  isSourceFile,
+  isWithinRoot,
+  moduleIdCandidates,
+  normalizeFilePath,
+  outsideRootDiagnostic,
+  parseImports,
+  publicModuleId,
+  unresolvedDiagnostic,
+} from "./custom-host-ssr-imports";
+import type {
+  OxContentCustomHostSsrStylesheetDescriptor,
+  OxContentCustomHostSsrStylesheetsResult,
+  OxContentCustomHostStylesheet,
+  OxContentCustomHostStylesheetDiagnostic,
+} from "./custom-host-types";
+import { withBase } from "./custom-host-utils";
+
+const OUTSIDE_ROOT = { kind: "outside-root" } as const;
+
+export function resolveStaticDevSsrStylesheets(input: {
+  modules: readonly string[];
+  base?: string;
+  root: string;
+}): OxContentCustomHostSsrStylesheetsResult | undefined {
+  const stylesheets: OxContentCustomHostStylesheet[] = [];
+  const diagnostics: OxContentCustomHostStylesheetDiagnostic[] = [];
+  const dependencies = new Set<string>();
+  const descriptors: OxContentCustomHostSsrStylesheetDescriptor[] = [];
+  const seenCss = new Set<string>();
+
+  for (const moduleId of input.modules) {
+    const rootFile = resolveRootModule(moduleId, input.root);
+    if (!rootFile) {
+      diagnostics.push({
+        code: "missing-module",
+        moduleId,
+        message: `SSR stylesheet module "${moduleId}" was not found in the development graph or filesystem.`,
+      });
+      continue;
+    }
+    const record = collectRoot(moduleId, rootFile, input.root, input.base, seenCss, dependencies);
+    stylesheets.push(...record.stylesheets);
+    diagnostics.push(...record.diagnostics);
+    descriptors.push({
+      moduleId,
+      stylesheets: record.stylesheets,
+      dependencies: record.dependencies,
+    });
+  }
+
+  if (stylesheets.length === 0 && diagnostics.length === input.modules.length) {
+    return undefined;
+  }
+  return { stylesheets, diagnostics, dependencies: [...dependencies], descriptors };
+}
+
+function collectRoot(
+  moduleId: string,
+  rootFile: string,
+  root: string,
+  base: string | undefined,
+  seenCss: Set<string>,
+  dependencies: Set<string>,
+) {
+  const stylesheets: OxContentCustomHostStylesheet[] = [];
+  const diagnostics: OxContentCustomHostStylesheetDiagnostic[] = [];
+  const rootDependencies = new Set<string>();
+
+  const visit = (file: string, seen: Set<string>) => {
+    const clean = normalizeFilePath(file);
+    if (seen.has(clean)) {
+      return;
+    }
+    seen.add(clean);
+    dependencies.add(clean);
+    rootDependencies.add(clean);
+    const source = fsSync.readFileSync(clean, "utf8");
+    for (const item of parseImports(source)) {
+      if (!isLocalSpecifier(item.specifier)) {
+        continue;
+      }
+      if (item.dynamic) {
+        diagnostics.push(dynamicDiagnostic(moduleId, item.specifier, clean));
+        continue;
+      }
+      const imported = resolveLocalImport(item.specifier, clean, root);
+      if (imported === OUTSIDE_ROOT) {
+        diagnostics.push(outsideRootDiagnostic(moduleId, item.specifier, clean));
+        continue;
+      }
+      if (!imported) {
+        diagnostics.push(unresolvedDiagnostic(moduleId, item.specifier, clean));
+        continue;
+      }
+      dependencies.add(imported);
+      rootDependencies.add(imported);
+      if (isStyleFile(imported)) {
+        const href = withBase(base ?? "/", publicModuleId(imported, root));
+        if (!seenCss.has(href)) {
+          seenCss.add(href);
+          stylesheets.push({ kind: "style", href, moduleId });
+        }
+      } else {
+        visit(imported, seen);
+      }
+    }
+  };
+
+  visit(rootFile, new Set());
+  return { stylesheets, diagnostics, dependencies: [...rootDependencies] };
+}
+
+function resolveRootModule(moduleId: string, root: string): string | undefined {
+  for (const candidate of moduleIdCandidates(moduleId, root)) {
+    if (isSourceFile(candidate) && fsSync.existsSync(candidate)) {
+      return normalizeFilePath(candidate);
+    }
+  }
+  return undefined;
+}
+
+function resolveLocalImport(
+  specifier: string,
+  importer: string,
+  root: string,
+): string | typeof OUTSIDE_ROOT | undefined {
+  const base = specifier.startsWith(".")
+    ? path.resolve(path.dirname(importer), specifier)
+    : (fileFromModuleId(specifier, root) ?? path.resolve(root, specifier));
+  const resolved = firstExisting(candidateFiles(base));
+  if (!resolved) {
+    return undefined;
+  }
+  if (!isWithinRoot(resolved, root) && isStyleFile(resolved)) {
+    return "outside-root";
+  }
+  return isStyleFile(resolved) || isSourceFile(resolved) ? normalizeFilePath(resolved) : undefined;
+}
+
+function candidateFiles(file: string): string[] {
+  const clean = normalizeFilePath(file);
+  if (path.extname(clean)) {
+    return [clean];
+  }
+  return [".ts", ".tsx", ".js", ".jsx", ".mjs", ".mts", ".css"].map(
+    (extension) => `${clean}${extension}`,
+  );
+}
+
+function firstExisting(files: readonly string[]): string | undefined {
+  return files.find((file) => fsSync.existsSync(file));
+}

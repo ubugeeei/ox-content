@@ -112,6 +112,15 @@ export function createTrackedContext<T extends OxContentCustomHostBaseContext>(
         }
         return result;
       },
+      ssrStylesheets(
+        input: Parameters<OxContentCustomHostBaseContext["assets"]["ssrStylesheets"]>[0],
+      ) {
+        const result = context.assets.ssrStylesheets(input);
+        for (const dependency of result.dependencies) {
+          dependencies.add(dependency);
+        }
+        return result;
+      },
     },
   };
   return { ...tracked, markdown: createCustomHostMarkdownRenderer(tracked) } as T;

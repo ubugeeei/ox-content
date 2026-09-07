@@ -5,6 +5,7 @@ import { writeSelfHostedAssets } from "./assets";
 import type { CollectionAssetManifest } from "./collection-assets";
 import { createAssetsContext, readClientManifest, writeThemeTokens } from "./custom-host-assets";
 import { createCustomHostCollectionAssetsBuildController } from "./custom-host-collection-assets-build";
+import type { CustomHostSsrStylesheetController } from "./custom-host-ssr-stylesheets";
 import {
   createBaseContext,
   createContextMemo,
@@ -55,11 +56,13 @@ export async function runCustomHostBuild(
   options: ResolvedOptions,
   themeTokens: ResolvedThemeTokens | undefined,
   rawOptions: OxContentOptions,
+  ssrStylesheets: CustomHostSsrStylesheetController,
 ): Promise<void> {
   const root = config.root;
   const outDir = resolveOutDir(config, options, root);
   const loaderServer = await createHostLoaderServer(config);
   const clientManifest = await readClientManifest(outDir);
+  await ssrStylesheets.write(outDir);
   let loadCollectionManifest: () => Promise<CollectionAssetManifest | undefined> = async () =>
     undefined;
   const assets = createAssetsContext(
@@ -70,6 +73,7 @@ export async function runCustomHostBuild(
     undefined,
     root,
     () => loadCollectionManifest(),
+    ssrStylesheets,
   );
   const loadModule = (moduleId: string) => loaderServer.ssrLoadModule(moduleId);
 
