@@ -79,6 +79,7 @@ aliases safely, and keeps the same manifest for production and development.
 import {
   createCollectionAssetsMiddleware,
   planCollectionAssets,
+  planCollectionAssetsFromDocuments,
   rewriteCollectionAssetUrls,
   writeCollectionAssets,
 } from "@ox-content/vite-plugin";
@@ -117,6 +118,13 @@ external origins, fragment-only links, non-HTTP schemes such as `data:`,
 `origin` to treat same-origin absolute URLs like root-relative paths; rewritten
 values are still emitted as URL paths. Pass `document: true` when the input is a
 full HTML document.
+
+When the host has a selected set of public Markdown/MDX documents, use
+`planCollectionAssetsFromDocuments()` to build the same manifest from those
+documents' local references. It follows relative Markdown images and links plus
+literal HTML/MDX `href`, `src`, and `poster` attributes, emits diagnostics for
+missing or out-of-`contentRoot` files, and still allows `extraAssets` and custom
+alias mapping.
 
 ## External feeds in a custom host
 

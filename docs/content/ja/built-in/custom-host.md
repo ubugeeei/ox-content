@@ -132,7 +132,7 @@ route の出力 path が重複すると、どの route 同士が衝突したか�
 失敗させます。公開対象の選択はホストが持ち、Ox Content はホストが返した route
 だけを書きます。
 
-## Collection asset
+## コレクションアセット
 
 collection に付随する project image や download file を host が所有し、それを同じ manifest で
 Ox Content に dev 配信 / build 書き出しさせたい場合は `collectionAssets` を使います。
@@ -175,11 +175,39 @@ const manifest = await ctx.assets.collectionManifest();
 const body = manifest
   ? rewriteCollectionAssetUrls({
       html,
-      base: ctx.base,
+      pagePath: ctx.url.pathname,
       manifest,
     }).html
   : html;
 ```
+
+既に公開する Markdown / MDX document の集合が決まっているなら、拡張子 allowlist や広い glob
+ではなく `planCollectionAssetsFromDocuments()` を使えます。
+
+```ts
+collectionAssets: {
+  manifest: async (ctx) => {
+    const result = await planCollectionAssetsFromDocuments({
+      root: ctx.root,
+      contentRoot: "content",
+      documents: [{ documentPath: "content/posts/hello.mdx", pagePath: "/posts/hello" }],
+      extraAssets: [{ sourcePath: "content/posts/og.png", publicPath: "/og/hello.png" }],
+      publicPath: (reference) => [reference.publicPath, `/legacy${reference.publicPath}`],
+    });
+    if (result.diagnostics.length > 0) {
+      throw new Error(result.diagnostics.map((diagnostic) => diagnostic.message).join("\n"));
+    }
+    return result.manifest;
+  },
+}
+```
+
+この helper は選択された document だけから、relative な Markdown image/link URL と、
+literal な HTML / MDX JSX の `href`、`src`、`poster` 属性を見つけます。file は実際の
+document path から解決し、既存の `CollectionAssetManifest` を返します。外部 URL、
+root-absolute URL、data/blob、fragment-only link などの non-local URL は対象外です。
+missing file と `contentRoot` 外への参照は document-scoped diagnostic になり、query
+string と fragment は後続の `rewriteCollectionAssetUrls()` で保持できます。
 
 Solid HTML-string host は、同じ選択済み route / document set から browser island registry を
 生成できます。`@ox-content/vite-plugin-solid` の

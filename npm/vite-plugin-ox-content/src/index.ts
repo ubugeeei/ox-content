@@ -1114,6 +1114,16 @@ export {
   type WriteCollectionAssetsResult,
 } from "./collection-assets";
 export {
+  planCollectionAssetsFromDocuments,
+  type CollectionAssetDocumentDiagnostic,
+  type CollectionAssetDocumentDiagnosticCode,
+  type CollectionAssetDocumentInput,
+  type CollectionAssetDocumentReference,
+  type CollectionAssetResolvedDocumentReference,
+  type PlanCollectionAssetsFromDocumentsInput,
+  type PlanCollectionAssetsFromDocumentsResult,
+} from "./collection-asset-documents";
+export {
   rewriteCollectionAssetUrls,
   type CollectionAssetUrlRewrite,
   type RewriteCollectionAssetUrlsInput,

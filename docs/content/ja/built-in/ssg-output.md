@@ -79,6 +79,7 @@ hash 化・重複排除と、alias の安全な URL encoding もこの API が�
 import {
   createCollectionAssetsMiddleware,
   planCollectionAssets,
+  planCollectionAssetsFromDocuments,
   rewriteCollectionAssetUrls,
   writeCollectionAssets,
 } from "@ox-content/vite-plugin";
@@ -116,6 +117,12 @@ origin、fragment-only link、`data:`、`mailto:`、`javascript:` のような
 非 HTTP scheme、壊れた属性値はそのままです。`origin` を渡すと same-origin の
 absolute URL は root-relative path と同じように扱います。書き換え後の値は URL
 path として出力されます。入力が HTML document 全体なら `document: true` を渡します。
+
+公開する Markdown / MDX document の集合をホストが既に選んでいる場合は、
+`planCollectionAssetsFromDocuments()` でそれらの local reference から同じ manifest
+を作れます。relative な Markdown image/link と literal な HTML / MDX の `href`、
+`src`、`poster` を辿り、missing file や `contentRoot` 外への参照は diagnostic にし、
+`extraAssets` と独自 alias mapping も併用できます。
 
 ## 独自ホストで外部フィードを読む
 

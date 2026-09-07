@@ -220,11 +220,41 @@ const manifest = await ctx.assets.collectionManifest();
 const body = manifest
   ? rewriteCollectionAssetUrls({
       html,
-      base: ctx.base,
+      pagePath: ctx.url.pathname,
       manifest,
     }).html
   : html;
 ```
+
+When the host already knows the public Markdown or MDX documents, use
+`planCollectionAssetsFromDocuments()` instead of globbing media extensions. It
+discovers relative Markdown image/link URLs plus literal HTML and MDX JSX
+`href`, `src`, and `poster` attributes from only those selected documents,
+resolves files against the real document path, and returns the same
+`CollectionAssetManifest`.
+
+```ts
+collectionAssets: {
+  manifest: async (ctx) => {
+    const result = await planCollectionAssetsFromDocuments({
+      root: ctx.root,
+      contentRoot: "content",
+      documents: [{ documentPath: "content/posts/hello.mdx", pagePath: "/posts/hello" }],
+      extraAssets: [{ sourcePath: "content/posts/og.png", publicPath: "/og/hello.png" }],
+      publicPath: (reference) => [reference.publicPath, `/legacy${reference.publicPath}`],
+    });
+    if (result.diagnostics.length > 0) {
+      throw new Error(result.diagnostics.map((diagnostic) => diagnostic.message).join("\n"));
+    }
+    return result.manifest;
+  },
+}
+```
+
+External, root-absolute, data/blob, fragment-only, and other non-local URLs are
+ignored. Missing files and references outside `contentRoot` are reported as
+document-scoped diagnostics, while query strings and fragments stay on the
+reported references and are preserved later by `rewriteCollectionAssetUrls()`.
 
 Solid HTML-string hosts can generate their browser island registry from that
 same selected route/document set. Use `createSolidHtmlHostIslandRegistry()` from
