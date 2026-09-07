@@ -1,17 +1,36 @@
-import { createHash } from "node:crypto";
-import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { normalizeFilePath } from "./custom-host-ssr-imports";
+import { normalizeFilePath, publicModuleId } from "./custom-host-ssr-imports";
 import type {
   OxContentCustomHostStylesheet,
   OxContentCustomHostStylesheetsResult,
 } from "./custom-host-types";
 import { withBase } from "./custom-host-utils";
 
+const VIRTUAL_SSR_STYLESHEET_PREFIX = "\0ox-content:custom-host-ssr-stylesheet:";
+
 export type SsrStylesheetBuildRecord = {
   moduleId: string;
   stylesheet?: OxContentCustomHostStylesheet;
 };
+
+export type WritableSsrStylesheetBuildRecord = SsrStylesheetBuildRecord & {
+  entryName: string;
+  css: readonly { file: string }[];
+  referenceId?: string;
+};
+
+export type SsrStylesheetOutputBundle = Record<string, SsrStylesheetBundleEntry>;
+
+type SsrStylesheetBundleEntry =
+  | {
+      type: "asset";
+      fileName?: string;
+    }
+  | {
+      type: "chunk";
+      fileName?: string;
+      viteMetadata?: { importedCss?: Set<string> | string[] };
+    };
 
 export function resolveBuildSsrStylesheetRecords(input: {
   records: readonly SsrStylesheetBuildRecord[];
@@ -45,28 +64,78 @@ export function ssrStylesheetEntryName(file: string, root: string): string {
     .replace(/\//gu, "-");
 }
 
-export async function writeSsrStylesheetArtifact(
-  record: {
-    moduleId: string;
-    entryName: string;
-    css: readonly { file: string }[];
-  },
-  outDir: string,
-): Promise<OxContentCustomHostStylesheet | undefined> {
+export function ssrStylesheetVirtualId(entryName: string): string {
+  return `${VIRTUAL_SSR_STYLESHEET_PREFIX}${entryName}.css`;
+}
+
+export function isSsrStylesheetVirtualId(id: string): boolean {
+  return id.startsWith(VIRTUAL_SSR_STYLESHEET_PREFIX);
+}
+
+export function ssrStylesheetVirtualCss(
+  record: { css: readonly { file: string }[] },
+  root: string,
+): string {
+  return `${record.css
+    .map((stylesheet) => `@import ${JSON.stringify(publicModuleId(stylesheet.file, root))};`)
+    .join("\n")}\n`;
+}
+
+export function resolveSsrStylesheetBundleOutput(
+  record: WritableSsrStylesheetBuildRecord,
+  bundle: SsrStylesheetOutputBundle,
+  getFileName: (referenceId: string) => string,
+): OxContentCustomHostStylesheet | undefined {
   if (record.css.length === 0) {
     return undefined;
   }
-  const content = (
-    await Promise.all(record.css.map((stylesheet) => fs.readFile(stylesheet.file, "utf8")))
-  ).join("\n");
-  const hash = createHash("sha256").update(content).digest("base64url").slice(0, 8);
-  const outputPath = `assets/${record.entryName}-${hash}.css`;
-  await fs.mkdir(path.join(outDir, "assets"), { recursive: true });
-  await fs.writeFile(path.join(outDir, outputPath), content, "utf8");
+  if (!record.referenceId) {
+    return undefined;
+  }
+  const outputPath = cssOutputPath(bundle, getFileName(record.referenceId), record.entryName);
+  if (!outputPath) {
+    return undefined;
+  }
   return {
     kind: "style",
     href: `/${outputPath}`,
     moduleId: record.moduleId,
     outputPath,
   };
+}
+
+function cssOutputPath(
+  bundle: SsrStylesheetOutputBundle,
+  fileName: string,
+  entryName: string,
+): string | undefined {
+  const entry = bundle[fileName];
+  if (entry?.type === "asset" && fileName.endsWith(".css")) {
+    return fileName;
+  }
+  if (entry?.type === "chunk") {
+    const importedCss = viteImportedCss(entry);
+    if (importedCss[0]) {
+      return importedCss[0];
+    }
+  }
+  return findNamedCssAsset(bundle, entryName);
+}
+
+function findNamedCssAsset(
+  bundle: SsrStylesheetOutputBundle,
+  entryName: string,
+): string | undefined {
+  const prefix = `assets/${entryName}-`;
+  for (const [fileName, entry] of Object.entries(bundle)) {
+    if (entry.type === "asset" && fileName.startsWith(prefix) && fileName.endsWith(".css")) {
+      return fileName;
+    }
+  }
+  return undefined;
+}
+
+function viteImportedCss(chunk: Extract<SsrStylesheetBundleEntry, { type: "chunk" }>): string[] {
+  const importedCss = chunk.viteMetadata?.importedCss;
+  return importedCss ? Array.from(importedCss) : [];
 }
