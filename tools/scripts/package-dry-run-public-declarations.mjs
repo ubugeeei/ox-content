@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from "
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { publicDeclarationEntries } from "./public-declaration-contracts.mjs";
+import { solidHtmlHostRegistryFixture } from "./package-dry-run-solid-html-host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const tscBin = join("node_modules", ".bin", process.platform === "win32" ? "tsc.cmd" : "tsc");
@@ -282,33 +283,6 @@ function runtimeAssertions(namespace, entry) {
         `if (typeof ${namespace}.${name} === "undefined") throw new Error("Missing ${name}");`,
     )
     .join("\n");
-}
-
-function solidHtmlHostRegistryFixture() {
-  return [
-    "import {",
-    "  SOLID_HTML_HOST_MODULES_VIRTUAL_ID,",
-    "  createSolidHtmlHostIslandRegistry,",
-    "  toSolidHtmlHostClientModuleId,",
-    "  type SolidHtmlHostIslandDocument,",
-    "  type SolidHtmlHostIslandEntry,",
-    '} from "@ox-content/vite-plugin-solid";',
-    'import modules, { clientModules } from "virtual:ox-content-solid/html-host/modules";',
-    "",
-    'const documents: SolidHtmlHostIslandDocument[] = [{ documentPath: "content/published.mdx" }];',
-    'const entries: SolidHtmlHostIslandEntry[] = [{ name: "Probe", moduleId: "./src/Probe.tsx" }];',
-    "const registry = createSolidHtmlHostIslandRegistry({ documents, entries });",
-    'const clientModuleId: string = registry.resolveClientModule({ serverModuleId: "./src/Probe.tsx" });',
-    "const virtualModuleId: string = registry.virtualModuleId;",
-    "const normalizedModuleId: string = toSolidHtmlHostClientModuleId(clientModuleId);",
-    "for (const module of clientModules) {",
-    "  const exportName: string = module.exportName;",
-    "  void exportName;",
-    "}",
-    "void modules;",
-    "void virtualModuleId;",
-    "void normalizedModuleId;",
-  ].join("\n");
 }
 
 function tsconfig(mode, files) {

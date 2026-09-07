@@ -77,33 +77,38 @@ binding として compile されます。
 
 `renderMarkdown()` で HTML string を得て、それを独自の Solid page shell に入れる
 host は、Markdown document を Vite module として import しなくても Solid adapter
-を使えます。`renderSolidHtmlHost()` は document-local MDX import を解決し、host が
-渡した server module loader で component を読み、island body を Solid SSR HTML に
-置き換えます。
+を使えます。`createSolidHtmlHostRenderer()` はその host 向けに document-local MDX
+import 解決、server module loading、diagnostics policy、client module id mapping を
+まとめて用意します。
 
 ```ts
-import { renderSolidHtmlHost, type MdxImport } from "@ox-content/vite-plugin-solid";
+import { createSolidHtmlHostRenderer, type MdxImport } from "@ox-content/vite-plugin-solid";
 
 const imports: MdxImport[] = [
   { source: "./Chart.tsx", specifiers: [{ imported: "default", local: "Chart", kind: "default" }] },
 ];
-
-const rendered = await renderSolidHtmlHost({
-  html: markdown.html,
-  documentPath: "/repo/docs/report.mdx",
+const renderIslands = createSolidHtmlHostRenderer({
   root: "/repo",
   srcDir: "docs",
+  loadModule: (moduleId) => viteDevServer.ssrLoadModule(moduleId),
+});
+
+const rendered = await renderIslands(markdown.html, {
+  documentPath: "/repo/docs/report.mdx",
   imports,
   components: { Badge: "./src/components/Badge.tsx" },
-  loadModule: (moduleId) => viteDevServer.ssrLoadModule(moduleId),
-  resolveClientModule: (module) =>
-    module.source === "document" ? `./docs/${module.name}.tsx` : `./components/${module.name}.tsx`,
 });
 ```
 
-module cache は 1 回の render call に閉じます。development edit 後は host 側で page
-state を invalidation し、改めて呼び直してください。`resolveClientModule()` が返した
-identity は各 island の `data-ox-module` に書かれ、`data-ox-export` も一緒に出力されます。
+factory の module cache は 1 回の render call に閉じます。development edit 後は host 側で
+page state を invalidation し、改めて呼び直してください。既定では server module id を
+`toSolidHtmlHostClientModuleId()` に通して client identity にし、diagnostics が出たら
+`SolidHtmlHostRenderError` を throw します。`diagnostics: "collect"` を渡すと throw せず
+diagnostics を結果で受け取れます。独自の browser id や SSR renderer が必要な host は
+`resolveClientModule()` / `renderComponent()` を渡すか、低レベルの `renderSolidHtmlHost()` を
+直接呼べます。
+
+resolved client identity は各 island の `data-ox-module` に書かれ、`data-ox-export` も一緒に出力されます。
 browser 側の loader map でも同じ key を使ってください。これにより、2 つの document が同じ
 local component 名を使っても、downstream の HTML replacement なしで別 module を読めます。
 
