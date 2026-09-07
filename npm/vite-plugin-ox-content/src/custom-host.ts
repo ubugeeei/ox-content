@@ -66,7 +66,7 @@ export function createOxContentCustomHostPlugin(input: OxContentCustomHostOption
       if (process.env[LOAD_ENV] === "1" || input.dev?.enabled === false) {
         return;
       }
-      configureDevServer(server, input, resolvedOptions, themeTokens);
+      configureDevServer(server, input, resolvedOptions, themeTokens, oxContentOptions);
     },
 
     async closeBundle() {

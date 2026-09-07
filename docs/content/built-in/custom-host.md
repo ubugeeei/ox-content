@@ -126,12 +126,18 @@ response, while
 `dev.routeDependencies` also clears and reloads the route catalogue.
 Modules loaded through `ctx.loadModule()` and CSS returned by
 `ctx.assets.stylesheets()` are tracked automatically in development.
+Set `dev.feedOutputs: true` to serve configured RSS, Atom, and JSON feed files
+from `outputs(ctx)` in development. Explicit host routes win when they use the
+same path. Missing feed paths fall through to the host `notFound()` handler or
+Vite, and failed feed renders are not cached so the next matching request can
+retry after the source or module error is fixed.
 
 In production, the plugin runs once from `closeBundle`, after Vite has emitted
 client assets and `.vite/manifest.json`. It opens a temporary middleware-mode
 Vite server only to SSR-load the host and site modules, passes `ctx.loadModule`
 instead of the raw server, and closes the temporary server in `finally`.
-`outputs(ctx)` is build-only and is called only when `feeds` is enabled.
+`outputs(ctx)` is called only when `feeds` is enabled. It is build-only unless
+the development server opts into `dev.feedOutputs`.
 
 `ctx.memo(key, load)` shares one expensive route-catalogue load inside a build
 or development route-catalogue pass. Use the same key from `routes(ctx)` and
@@ -157,6 +163,10 @@ describe that HTML page. Site-output data that is not itself a page belongs in
 `collectionNames`, and `siteDescription`. Ox Content passes that data through
 `planSsgOutputs()` and the existing feed writers, so publish-state filtering,
 validation, output paths, and diagnostics stay shared with the built-in SSG.
+With `dev.feedOutputs: true`, the same feed channels and `outputs(ctx)` data
+are rendered on demand without writing files. The development server still does
+not render every page to serve one feed; hosts should return feed collections or
+programmatic `items` from `outputs(ctx)` for feed-only data.
 
 Set `ssg.minifyHtml: true` for built-in SSG pages or
 `build.minifyHtml: true` on the custom-host plugin to minify production HTML.

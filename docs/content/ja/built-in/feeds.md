@@ -114,10 +114,12 @@ oxContent({
 JSON Feed の各 renderer は、その形式が対応する field を出力します。
 
 独自ホストが route planning の時点で feed data をすでに読み込んでいる場合は、
-`feeds.items` でもう一度読み込む代わりに、build 専用の `outputs(ctx)` lifecycle
+`feeds.items` でもう一度読み込む代わりに、通常は build 専用の `outputs(ctx)` lifecycle
 から返せます。default `items`、名前付き `collections`、任意の `collectionNames`
 を返してください。Ox Content は同じ `writeFeedFiles()` path と publish-state filtering
 を使います。[独自ホスト lifecycle](./custom-host.md) も見てください。
+`oxContentCustomHost()` に `dev.feedOutputs: true` を設定すると、重複した feed
+route を足さずに、Vite 開発中もその coordinated feed file を配信できます。
 
 ## 独自 dev server
 

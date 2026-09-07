@@ -121,10 +121,12 @@ Programmatic items support `title`, `url` or `loc`, optional `id`, `date`,
 format supports.
 
 Custom hosts that already load feed data while planning routes can return that
-data from the build-only `outputs(ctx)` lifecycle instead of reloading it from
+data from the normally build-only `outputs(ctx)` lifecycle instead of reloading it from
 `feeds.items`. Return default `items`, named `collections`, and optional
 `collectionNames`; Ox Content still uses the same `writeFeedFiles()` path and
 publish-state filtering. See [Custom host lifecycle](./custom-host.md).
+Set `dev.feedOutputs: true` on `oxContentCustomHost()` to serve those coordinated
+feed files during Vite development without adding duplicate feed routes.
 
 ## Custom dev servers
 

@@ -16,11 +16,16 @@ import { createTrackedContext, devResponse } from "./custom-host-dev-response";
 import type {
   DevCacheEntry,
   OxContentCustomHostDependency,
+  OxContentCustomHostMemo,
   OxContentCustomHostModule,
   OxContentCustomHostOptions,
   OxContentCustomHostRoute,
   ResolvedThemeTokens,
 } from "./custom-host-types";
+import {
+  createCustomHostDevFeedResponder,
+  CUSTOM_HOST_DEV_FEED_CACHE_PREFIX,
+} from "./custom-host-dev-feeds";
 import {
   canonicalFilePath,
   clearKeyDeps,
@@ -31,7 +36,6 @@ import {
   versionedModuleId,
   writeConnectResponse,
 } from "./custom-host-utils";
-import type { ResolvedOptions } from "./types";
 import {
   anyCustomHostDependencyMatches,
   broadDependencies,
@@ -40,12 +44,19 @@ import {
   normalizeCustomHostDependencies,
   type NormalizedCustomHostDependency,
 } from "./custom-host-watch";
+import type { OxContentOptions, ResolvedOptions } from "./types";
+
+type DevRoutesState = {
+  routes: readonly OxContentCustomHostRoute[];
+  memo: OxContentCustomHostMemo;
+};
 
 export function configureDevServer(
   server: ViteDevServer,
   input: OxContentCustomHostOptions,
   options: ResolvedOptions,
   themeTokens: ResolvedThemeTokens | undefined,
+  rawOptions: OxContentOptions,
 ): void {
   const root = server.config.root;
   const outDir = resolveOutDir(server.config, options, root);
@@ -74,7 +85,7 @@ export function configureDevServer(
   );
   let routeCatalogueDependencies = [...configuredRouteDependencies];
   let hostPromise: Promise<OxContentCustomHostModule> | undefined;
-  let routesPromise: Promise<readonly OxContentCustomHostRoute[]> | undefined;
+  let routesStatePromise: Promise<DevRoutesState> | undefined;
   let routesGeneration = 0;
   let reloadTimer: ReturnType<typeof setTimeout> | undefined;
   const addedWatchPaths = new Set<string>();
@@ -137,17 +148,19 @@ export function configureDevServer(
 
   const clearHost = () => {
     hostPromise = undefined;
-    routesPromise = undefined;
-    routesGeneration += 1;
-    routeCatalogueDependencies = [...configuredRouteDependencies];
+    clearRouteState();
     clearResponses();
   };
 
   const clearRoutes = () => {
-    routesPromise = undefined;
+    clearRouteState();
+    clearResponses();
+  };
+
+  const clearRouteState = () => {
+    routesStatePromise = undefined;
     routesGeneration += 1;
     routeCatalogueDependencies = [...configuredRouteDependencies];
-    clearResponses();
   };
 
   const loadCachedHost = async () => {
@@ -163,8 +176,8 @@ export function configureDevServer(
     return hostPromise;
   };
 
-  const loadCachedRoutes = async () => {
-    if (!routesPromise) {
+  const loadCachedRoutesState = async (): Promise<DevRoutesState> => {
+    if (!routesStatePromise) {
       const generation = routesGeneration;
       const memo = createContextMemo();
       const trackedDependencies = new Set<OxContentCustomHostDependency>();
@@ -176,23 +189,25 @@ export function configureDevServer(
       const current = loadCachedHost()
         .then((host) => loadRoutes(host, context))
         .then((routes) => {
-          if (routesPromise === current && routesGeneration === generation) {
+          if (routesStatePromise === current && routesGeneration === generation) {
             const inferred = normalizeCustomHostDependencies(root, [...trackedDependencies]);
             routeCatalogueDependencies = [...configuredRouteDependencies, ...inferred];
             addWatchPaths(dependencyWatchPaths(routeCatalogueDependencies));
           }
-          return routes;
+          return { routes, memo };
         })
         .catch((error) => {
-          if (routesPromise === current) {
-            routesPromise = undefined;
+          if (routesStatePromise === current) {
+            routesStatePromise = undefined;
           }
           throw error;
         });
-      routesPromise = current;
+      routesStatePromise = current;
     }
-    return routesPromise;
+    return routesStatePromise;
   };
+
+  const loadCachedRoutes = async () => (await loadCachedRoutesState()).routes;
 
   collectionAssets = createCustomHostCollectionAssetsDevController({
     server,
@@ -206,6 +221,16 @@ export function configureDevServer(
       clearResponses();
       scheduleReload();
     },
+  });
+  const feedResponse = createCustomHostDevFeedResponder({
+    server,
+    hostOptions: input,
+    rawOptions,
+    context: baseContext,
+    loadHost: loadCachedHost,
+    loadRoutesState: loadCachedRoutesState,
+    cache,
+    rememberDeps,
   });
 
   const onChange = (_event: string, file: string) => {
@@ -233,7 +258,9 @@ export function configureDevServer(
       clearResponses();
       invalidated = true;
     }
+    let routeStateInvalidated = false;
     for (const key of Array.from(depKeys.get(changed) ?? [])) {
+      routeStateInvalidated ||= key.startsWith(CUSTOM_HOST_DEV_FEED_CACHE_PREFIX);
       clearKey(key);
       invalidated = true;
     }
@@ -241,11 +268,15 @@ export function configureDevServer(
       if (
         dependencies.some((dependency) => anyCustomHostDependencyMatches([dependency], changed))
       ) {
+        routeStateInvalidated ||= key.startsWith(CUSTOM_HOST_DEV_FEED_CACHE_PREFIX);
         clearKey(key);
         invalidated = true;
       }
     }
     if (invalidated) {
+      if (routeStateInvalidated) {
+        clearRouteState();
+      }
       ssrVersion += 1;
       invalidateViteModules(server, changed, true);
       scheduleReload();
@@ -271,16 +302,18 @@ export function configureDevServer(
     }
 
     try {
-      const response = await devResponse({
-        request,
-        server,
-        input,
-        context: baseContext,
-        loadHost: loadCachedHost,
-        loadRoutes: loadCachedRoutes,
-        cache,
-        rememberDeps,
-      });
+      const response =
+        (await feedResponse(request)) ??
+        (await devResponse({
+          request,
+          server,
+          input,
+          context: baseContext,
+          loadHost: loadCachedHost,
+          loadRoutes: loadCachedRoutes,
+          cache,
+          rememberDeps,
+        }));
       if (!response) {
         next();
         return;
