@@ -159,8 +159,24 @@ export function canonicalFilePath(file: string): string {
   try {
     return fsSync.realpathSync.native(resolved);
   } catch {
-    return resolved;
+    return canonicalMissingPath(resolved);
   }
+}
+
+function canonicalMissingPath(file: string): string {
+  const root = path.parse(file).root;
+  let current = file;
+  const trailingSegments: string[] = [];
+  while (current !== root) {
+    trailingSegments.unshift(path.basename(current));
+    current = path.dirname(current);
+    try {
+      return path.join(fsSync.realpathSync.native(current), ...trailingSegments);
+    } catch {
+      // Keep walking until an existing ancestor can anchor the canonical path.
+    }
+  }
+  return file;
 }
 
 export function clearKeyDeps(
