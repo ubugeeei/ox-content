@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.0] - 2026-09-07
+
+### Features
+
+- add opt-in wiki links _(affects: crates: ox_content_mdast, ox_content_napi, ox_content_parser, ox_content_renderer, ox_content_wasm; npm: @ox-content/napi, @ox-content/unplugin)_
+- add heading attributes option _(affects: crates: ox_content_ast, ox_content_mdast, ox_content_napi, ox_content_parser, ox_content_renderer, ox_content_search, ox_content_transform, ox_content_wasm; npm: @ox-content/napi, @ox-content/unplugin, @ox-content/vite-plugin)_
+
+### Bug Fixes
+
+- canonicalize deleted watch paths _(affects: npm: @ox-content/vite-plugin)_
+- pipeline SSR styles through Vite _(affects: npm: @ox-content/vite-plugin)_
+- normalize CRLF line endings _(affects: crates: ox_content_mdast, ox_content_parser, ox_content_renderer)_
+- repair root declaration imports _(affects: npm: @ox-content/vite-plugin; tooling)_
+- annotate changelog impact scopes _(affects: tooling)_
+
 ## [3.0.0] - 2026-09-07
 
 ### Features
