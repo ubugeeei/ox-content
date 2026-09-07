@@ -5,11 +5,12 @@
 //! few inline constructs that can be skipped over in bulk rather than
 //! walked byte by byte.
 
-use memchr::memchr2;
+use memchr::memchr3;
 use ox_content_allocator::Vec;
 use ox_content_ast::{Node, Span};
 
 use super::super::Parser;
+use super::super::line_scan::{is_line_ending_byte, line_terminator_end};
 #[allow(unused_imports)]
 use crate::profile_span_detail;
 
@@ -28,18 +29,18 @@ impl<'a> Parser<'a> {
 
         // The closer is the next backtick run of exactly the opener's
         // length (CommonMark "Code spans"). memchr jumps between runs, and
-        // searching for the newline in the same pass answers the question
+        // searching for the line ending in the same pass answers the question
         // `normalize_code_span` would otherwise re-scan the whole span for.
         let mut cursor = code_start;
         let mut has_newline = false;
         while cursor < bytes.len() {
-            let Some(off) = memchr2(b'`', b'\n', &bytes[cursor..]) else {
+            let Some(off) = memchr3(b'`', b'\n', b'\r', &bytes[cursor..]) else {
                 break;
             };
             cursor += off;
-            if bytes[cursor] == b'\n' {
+            if is_line_ending_byte(bytes[cursor]) {
                 has_newline = true;
-                cursor += 1;
+                cursor = line_terminator_end(bytes, cursor);
                 continue;
             }
             let run = Self::marker_run_len(bytes, cursor, b'`');
@@ -70,8 +71,21 @@ impl<'a> Parser<'a> {
     fn normalize_code_span(&self, raw: &'a str, has_newline: bool) -> &'a str {
         let value: &'a str = if has_newline {
             let mut converted = self.allocator.new_string();
+            let mut skip_lf = false;
             for ch in raw.chars() {
-                converted.push(if ch == '\n' { ' ' } else { ch });
+                if skip_lf && ch == '\n' {
+                    skip_lf = false;
+                    continue;
+                }
+                skip_lf = false;
+                if ch == '\r' {
+                    converted.push(' ');
+                    skip_lf = true;
+                } else if ch == '\n' {
+                    converted.push(' ');
+                } else {
+                    converted.push(ch);
+                }
             }
             converted.into_bump_str()
         } else {

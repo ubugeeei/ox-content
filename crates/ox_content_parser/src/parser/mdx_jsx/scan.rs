@@ -6,6 +6,7 @@ use ox_content_ast::{
     MdxJsxExpressionAttribute, Span,
 };
 
+use super::super::line_scan::{is_line_ending_byte, line_terminator_end};
 use super::braces::{skip_backticks, skip_braces, skip_quoted};
 
 /// Opening tag accepted by this slice.
@@ -36,8 +37,8 @@ pub(super) fn looks_like_jsx_open(bytes: &[u8], at: usize) -> bool {
 pub(super) fn only_ws_until_eol(bytes: &[u8], mut cursor: usize) -> bool {
     while cursor < bytes.len() {
         match bytes[cursor] {
-            b' ' | b'\t' | b'\r' => cursor += 1,
-            b'\n' => return true,
+            b' ' | b'\t' => cursor += 1,
+            byte if is_line_ending_byte(byte) => return true,
             _ => return false,
         }
     }
@@ -45,10 +46,14 @@ pub(super) fn only_ws_until_eol(bytes: &[u8], mut cursor: usize) -> bool {
 }
 
 pub(super) fn after_trailing_line_ws(bytes: &[u8], mut cursor: usize) -> usize {
-    while cursor < bytes.len() && matches!(bytes[cursor], b' ' | b'\t' | b'\r') {
+    while cursor < bytes.len() && matches!(bytes[cursor], b' ' | b'\t') {
         cursor += 1;
     }
-    if cursor < bytes.len() && bytes[cursor] == b'\n' { cursor + 1 } else { cursor }
+    if cursor < bytes.len() && is_line_ending_byte(bytes[cursor]) {
+        line_terminator_end(bytes, cursor)
+    } else {
+        cursor
+    }
 }
 
 pub(super) fn scan_jsx_open<'a>(

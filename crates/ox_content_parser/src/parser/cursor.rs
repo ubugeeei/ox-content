@@ -1,6 +1,9 @@
-use memchr::{memchr, memchr2};
+use memchr::memchr3;
 
 use super::Parser;
+use super::line_scan::{
+    is_line_ending_byte, line_end, line_terminator_end, next_line_start as scan_next_line_start,
+};
 #[allow(unused_imports)]
 use crate::profile_span_detail;
 
@@ -60,8 +63,8 @@ impl<'a> Parser<'a> {
             while pos < bytes.len() && matches!(bytes[pos], b' ' | b'\t') {
                 pos += 1;
             }
-            if pos < bytes.len() && bytes[pos] == b'\n' {
-                pos += 1;
+            if pos < bytes.len() && is_line_ending_byte(bytes[pos]) {
+                pos = line_terminator_end(bytes, pos);
             } else if pos >= bytes.len() {
                 // Spaces/tabs running to end of input with no newline are
                 // a blank final line: consume them. Rewinding instead
@@ -191,7 +194,7 @@ impl<'a> Parser<'a> {
         if !check_tables {
             return BlockProbe { starts_block: false, line_end: None };
         }
-        match memchr2(b'|', b'\n', &bytes[line_start..]) {
+        match memchr3(b'|', b'\n', b'\r', &bytes[line_start..]) {
             Some(off) if bytes[line_start + off] == b'|' => {
                 BlockProbe { starts_block: self.try_parse_table(), line_end: None }
             }
@@ -202,30 +205,20 @@ impl<'a> Parser<'a> {
 
     pub(super) fn line_at(&self, line_start: usize) -> &'a str {
         let bytes = self.source.as_bytes();
-        let end =
-            memchr(b'\n', &bytes[line_start..]).map_or(self.source.len(), |off| line_start + off);
+        let end = line_end(bytes, line_start);
         &self.source[line_start..end]
     }
 
     pub(super) fn next_line_start(&self, line_start: usize) -> usize {
-        let bytes = self.source.as_bytes();
-        match memchr(b'\n', &bytes[line_start..]) {
-            Some(off) => line_start + off + 1,
-            None => self.source.len(),
-        }
+        scan_next_line_start(self.source.as_bytes(), line_start)
     }
 
     pub(super) fn consume_line(&mut self) -> &'a str {
         let start = self.position;
         let bytes = self.source.as_bytes();
-        if let Some(off) = memchr(b'\n', &bytes[start..]) {
-            let line_end = start + off;
-            self.position = line_end + 1;
-            &self.source[start..line_end]
-        } else {
-            self.position = self.source.len();
-            &self.source[start..]
-        }
+        let end = line_end(bytes, start);
+        self.position = line_terminator_end(bytes, end);
+        &self.source[start..end]
     }
 
     /// Finds the first non-space, non-tab byte before the next newline.
@@ -241,7 +234,7 @@ impl<'a> Parser<'a> {
         while cursor < bytes.len() {
             match bytes[cursor] {
                 b' ' | b'\t' => cursor += 1,
-                b'\n' => return None,
+                byte if is_line_ending_byte(byte) => return None,
                 _ => return Some(cursor),
             }
         }

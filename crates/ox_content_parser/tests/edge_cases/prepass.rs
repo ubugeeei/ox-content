@@ -144,12 +144,9 @@ fn definition_without_trailing_newline_resolves() {
 }
 
 #[test]
-fn crlf_definition_does_not_resolve() {
-    // Parity pin, not an endorsement: the standalone passes never
-    // recognized definitions in CRLF sources (the trailing `\r` defeats
-    // the `]:` check and the `\r`-only blank line keeps the paragraph
-    // open), and the fused pass preserves that.
-    assert!(!resolves_reference("[a]\r\n\r\n[a]: /url"));
+fn crlf_definition_resolves() {
+    assert!(resolves_reference("[a]\r\n\r\n[a]: /url"));
+    assert!(resolves_reference("[a]\r\r[a]: /url"));
 }
 
 #[test]

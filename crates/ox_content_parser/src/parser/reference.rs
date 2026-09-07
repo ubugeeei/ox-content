@@ -14,6 +14,7 @@ use ox_content_ast::{Definition, Node, Span};
 use rustc_hash::FxHashMap;
 
 use super::Parser;
+use super::line_scan::{is_line_ending_byte, line_end as scan_line_end, line_terminator_end};
 #[allow(unused_imports)]
 use crate::{profile_span, profile_span_detail};
 
@@ -132,9 +133,9 @@ impl<'a> Parser<'a> {
             k += 1;
             ws_between = true;
         }
-        let title_on_next_line = bytes.get(k) == Some(&b'\n');
+        let title_on_next_line = bytes.get(k).is_some_and(|byte| is_line_ending_byte(*byte));
         if title_on_next_line {
-            k += 1;
+            k = line_terminator_end(bytes, k);
             ws_between = true;
             while matches!(bytes.get(k), Some(b' ' | b'\t')) {
                 k += 1;
@@ -218,7 +219,7 @@ impl<'a> Parser<'a> {
         let mut joined = self.allocator.new_string();
         let mut line_starts = self.allocator.new_vec();
         while pos < bytes.len() {
-            let line_end = memchr::memchr(b'\n', &bytes[pos..]).map_or(bytes.len(), |o| pos + o);
+            let line_end = scan_line_end(bytes, pos);
             let line = &self.source[pos..line_end];
             let stripped = strip_quote_markers(line);
             if stripped.trim().is_empty() {
@@ -227,7 +228,7 @@ impl<'a> Parser<'a> {
             line_starts.push(pos);
             joined.push_str(stripped);
             joined.push('\n');
-            pos = line_end + 1;
+            pos = line_terminator_end(bytes, line_end);
         }
         line_starts.push(pos.min(bytes.len()));
         (joined.into_bump_str(), line_starts)

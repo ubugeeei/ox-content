@@ -1,7 +1,7 @@
-use memchr::memchr;
 use ox_content_ast::{Node, Span};
 
 use super::Parser;
+use super::line_scan::{line_end, next_line_start};
 use crate::error::ParseResult;
 #[allow(unused_imports)]
 use crate::profile_span;
@@ -99,9 +99,8 @@ impl<'a> Parser<'a> {
         let content_start = self.position;
         // The heading content runs to the end of the line; find it in one
         // memchr scan rather than a per-char peek/advance walk.
-        let content_end = memchr(b'\n', &bytes[content_start..])
-            .map_or(self.source.len(), |off| content_start + off);
-        self.position = content_end;
+        let content_end = line_end(bytes, content_start);
+        self.position = next_line_start(bytes, content_start);
 
         // A closing hash sequence only counts when preceded by a space or
         // tab (or when the heading is nothing but hashes); an escaped
@@ -117,11 +116,6 @@ impl<'a> Parser<'a> {
         } else {
             line
         };
-
-        // Consume newline
-        if self.peek() == Some('\n') {
-            self.advance();
-        }
 
         let span = Span::new(start as u32, self.position as u32);
 
@@ -166,5 +160,5 @@ fn is_atx_heading_prefix(bytes: &[u8]) -> bool {
     if hashes == 0 {
         return false;
     }
-    matches!(bytes.get(hashes), None | Some(b' ' | b'\t' | b'\n'))
+    matches!(bytes.get(hashes), None | Some(b' ' | b'\t' | b'\n' | b'\r'))
 }

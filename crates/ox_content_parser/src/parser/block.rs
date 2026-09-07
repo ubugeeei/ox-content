@@ -1,7 +1,10 @@
-use memchr::{memchr, memchr2};
+use memchr::memchr3;
 use ox_content_ast::{Heading, Node, Paragraph, Span};
 
 use super::Parser;
+use super::line_scan::{
+    is_line_ending_byte, line_terminator_end, next_line_start as scan_next_line_start,
+};
 use crate::error::{ParseError, ParseResult};
 #[allow(unused_imports)]
 use crate::{profile_span, profile_span_detail};
@@ -141,19 +144,19 @@ impl<'a> Parser<'a> {
         // Table recognition is the one feature that cannot be decided from
         // the first byte because table headers usually look like ordinary
         // paragraph text. Guard the expensive two-line delimiter check with
-        // a same-line `|` probe so non-table prose does one memchr2 scan and
+        // a same-line `|` probe so non-table prose does one marker scan and
         // then falls through to paragraph parsing — carrying the line end
         // that scan reached, which is the first thing `parse_paragraph`
         // needs.
         let mut first_line_end = None;
         if self.options.tables {
-            match memchr2(b'|', b'\n', &bytes[start..]) {
+            match memchr3(b'|', b'\n', b'\r', &bytes[start..]) {
                 Some(off) if bytes[start + off] == b'|' => {
                     if self.try_parse_table() {
                         return self.parse_table(start);
                     }
                 }
-                Some(off) => first_line_end = Some(start + off + 1),
+                Some(off) => first_line_end = Some(line_terminator_end(bytes, start + off)),
                 None => first_line_end = Some(self.source.len()),
             }
         }
@@ -204,7 +207,7 @@ impl<'a> Parser<'a> {
         // never return `Ok(None)` without progress on a non-blank line.
         let mut content_end = match first_line_end {
             Some(end) => end,
-            None => memchr(b'\n', &bytes[start..]).map_or(self.source.len(), |off| start + off + 1),
+            None => scan_next_line_start(bytes, start),
         };
         self.position = content_end;
 
@@ -221,7 +224,7 @@ impl<'a> Parser<'a> {
             while cursor < bytes.len() && matches!(bytes[cursor], b' ' | b'\t') {
                 cursor += 1;
             }
-            if cursor >= bytes.len() || bytes[cursor] == b'\n' {
+            if cursor >= bytes.len() || is_line_ending_byte(bytes[cursor]) {
                 break;
             }
 
@@ -230,11 +233,7 @@ impl<'a> Parser<'a> {
             // h2, not a paragraph followed by a thematic break), so it
             // must be checked before `line_starts_block`.
             if let Some(depth) = self.setext_underline_depth(line_start, cursor) {
-                let heading_end = if let Some(off) = memchr(b'\n', &bytes[line_start..]) {
-                    line_start + off + 1
-                } else {
-                    self.source.len()
-                };
+                let heading_end = scan_next_line_start(bytes, line_start);
                 self.position = heading_end;
                 let content = self.source[start..content_end].trim();
                 let children = self.parse_inline_block(content, start)?;
@@ -254,10 +253,9 @@ impl<'a> Parser<'a> {
             }
 
             content_end = match probe.line_end {
-                Some(line_end) if line_end < bytes.len() => line_end + 1,
+                Some(line_end) if line_end < bytes.len() => line_terminator_end(bytes, line_end),
                 Some(_) => self.source.len(),
-                None => memchr(b'\n', &bytes[line_start..])
-                    .map_or(self.source.len(), |off| line_start + off + 1),
+                None => scan_next_line_start(bytes, line_start),
             };
             self.position = content_end;
         }
@@ -311,10 +309,10 @@ impl<'a> Parser<'a> {
         while i < bytes.len() && bytes[i] == marker {
             i += 1;
         }
-        while i < bytes.len() && matches!(bytes[i], b' ' | b'\t' | b'\r') {
+        while i < bytes.len() && matches!(bytes[i], b' ' | b'\t') {
             i += 1;
         }
-        if i < bytes.len() && bytes[i] != b'\n' {
+        if i < bytes.len() && !is_line_ending_byte(bytes[i]) {
             return None;
         }
         Some(depth)

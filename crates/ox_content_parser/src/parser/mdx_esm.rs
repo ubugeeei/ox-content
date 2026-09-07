@@ -10,6 +10,7 @@
 use ox_content_ast::{MdxjsEsm, Node, Span};
 
 use super::Parser;
+use super::line_scan::{is_line_ending_byte, line_terminator_end};
 
 #[inline]
 pub(super) fn looks_like_esm(bytes: &[u8], at: usize) -> bool {
@@ -104,7 +105,9 @@ fn scan_esm_statement(source: &str, start: usize) -> usize {
                 b';' if brace == 0 && paren == 0 && bracket == 0 => {
                     return after_trailing_line_ws(bytes, i + 1);
                 }
-                b'\n' if brace == 0 && paren == 0 && bracket == 0 => return i + 1,
+                b if is_line_ending_byte(b) && brace == 0 && paren == 0 && bracket == 0 => {
+                    return line_terminator_end(bytes, i);
+                }
                 _ => i += 1,
             },
             Scan::Squote => {
@@ -138,9 +141,9 @@ fn scan_esm_statement(source: &str, start: usize) -> usize {
                 }
             }
             Scan::LineComment => {
-                if b == b'\n' {
+                if is_line_ending_byte(b) {
                     if brace == 0 && paren == 0 && bracket == 0 {
-                        return i + 1;
+                        return line_terminator_end(bytes, i);
                     }
                     state = Scan::Normal;
                 }
@@ -160,10 +163,14 @@ fn scan_esm_statement(source: &str, start: usize) -> usize {
 }
 
 fn after_trailing_line_ws(bytes: &[u8], mut cursor: usize) -> usize {
-    while cursor < bytes.len() && matches!(bytes[cursor], b' ' | b'\t' | b'\r') {
+    while cursor < bytes.len() && matches!(bytes[cursor], b' ' | b'\t') {
         cursor += 1;
     }
-    if cursor < bytes.len() && bytes[cursor] == b'\n' { cursor + 1 } else { cursor }
+    if cursor < bytes.len() && is_line_ending_byte(bytes[cursor]) {
+        line_terminator_end(bytes, cursor)
+    } else {
+        cursor
+    }
 }
 
 impl<'a> Parser<'a> {

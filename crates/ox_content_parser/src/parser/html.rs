@@ -2,6 +2,7 @@ use memchr::{memchr, memmem};
 use ox_content_ast::{Html, Node, Span};
 
 use super::Parser;
+use super::line_scan::{line_end, next_line_start};
 use crate::error::ParseResult;
 #[allow(unused_imports)]
 use crate::profile_span;
@@ -74,16 +75,19 @@ impl<'a> Parser<'a> {
     /// check unless it actually starts with whitespace.
     fn advance_html_block_until_blank(&mut self) {
         let bytes = self.source.as_bytes();
-        let start = self.position;
-        let mut line_start = start;
+        let mut line_start = self.position;
 
-        for newline_off in memchr::memchr_iter(b'\n', &bytes[start..]) {
-            let newline = start + newline_off;
-            if is_blank_line(&bytes[line_start..newline]) {
+        while line_start < bytes.len() {
+            let current_line_end = line_end(bytes, line_start);
+            if is_blank_line(&bytes[line_start..current_line_end]) {
                 self.position = line_start;
                 return;
             }
-            line_start = newline + 1;
+            let next_line = next_line_start(bytes, line_start);
+            if next_line == line_start {
+                break;
+            }
+            line_start = next_line;
         }
 
         // Trailing line without a newline: a whitespace-only remainder
@@ -126,5 +130,5 @@ fn is_blank_line(line: &[u8]) -> bool {
 /// Byte offset just past the newline of the line containing `at` (or EOF).
 #[inline]
 fn end_of_line_after(bytes: &[u8], at: usize) -> usize {
-    memchr(b'\n', &bytes[at..]).map_or(bytes.len(), |off| at + off + 1)
+    next_line_start(bytes, at)
 }

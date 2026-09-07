@@ -46,6 +46,21 @@ fn thematic_break_accepts_spaces() {
 }
 
 #[test]
+fn crlf_and_lone_cr_parse_as_line_endings() {
+    for source in [
+        "Paragraph.\n\n---\n\nAfter.\n",
+        "Paragraph.\r\n\r\n---\r\n\r\nAfter.\r\n",
+        "Paragraph.\r\r---\r\rAfter.\r",
+    ] {
+        let allocator = Allocator::new();
+        let doc = parse_with_options(&allocator, source, ParserOptions::default());
+        assert!(matches!(&doc.children[0], Node::Paragraph(_)), "{source:?}");
+        assert!(matches!(&doc.children[1], Node::ThematicBreak(_)), "{source:?}");
+        assert!(matches!(&doc.children[2], Node::Paragraph(_)), "{source:?}");
+    }
+}
+
+#[test]
 fn mixed_thematic_break_is_not_recognized() {
     let allocator = Allocator::new();
     let doc = parse_with_options(&allocator, "- * -", ParserOptions::default());

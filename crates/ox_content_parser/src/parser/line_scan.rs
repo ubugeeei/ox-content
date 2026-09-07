@@ -21,6 +21,7 @@
 const ONES: u64 = 0x0101_0101_0101_0101;
 const HIGH: u64 = 0x8080_8080_8080_8080;
 const NEWLINES: u64 = (b'\n' as u64) * ONES;
+const RETURNS: u64 = (b'\r' as u64) * ONES;
 
 /// Sets `0x80` in every byte lane of `word` that is zero.
 ///
@@ -33,8 +34,8 @@ const fn has_zero(word: u64) -> u64 {
     word.wrapping_sub(ONES) & !word & HIGH
 }
 
-/// Byte offset of the newline ending the line that starts at `from`, or
-/// `bytes.len()` when the last line is unterminated.
+/// Byte offset of the line terminator that starts at `from`, or `bytes.len()`
+/// when the last line is unterminated.
 #[inline]
 pub(in crate::parser) fn line_end(bytes: &[u8], from: usize) -> usize {
     #[cfg(target_arch = "aarch64")]
@@ -58,8 +59,9 @@ fn line_end_neon(bytes: &[u8], from: usize) -> usize {
     let mut i = from;
     unsafe {
         let nl = vdupq_n_u8(b'\n');
+        let cr = vdupq_n_u8(b'\r');
         let classify = |v: uint8x16_t| {
-            let m = vceqq_u8(v, nl);
+            let m = vorrq_u8(vceqq_u8(v, nl), vceqq_u8(v, cr));
             vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_u8(m), 4)), 0)
         };
         while i + 32 <= end {
@@ -92,7 +94,7 @@ fn line_end_neon(bytes: &[u8], from: usize) -> usize {
             return end;
         }
     }
-    while i < end && bytes[i] != b'\n' {
+    while i < end && !is_line_ending_byte(bytes[i]) {
         i += 1;
     }
     i
@@ -106,25 +108,42 @@ fn line_end_swar(bytes: &[u8], from: usize) -> usize {
 
     while i + 8 <= end {
         let word = u64::from_le_bytes(copy_eight(bytes, i));
-        let mask = has_zero(word ^ NEWLINES);
+        let mask = has_zero(word ^ NEWLINES) | has_zero(word ^ RETURNS);
         if mask != 0 {
             return i + (mask.trailing_zeros() / 8) as usize;
         }
         i += 8;
     }
 
-    while i < end && bytes[i] != b'\n' {
+    while i < end && !is_line_ending_byte(bytes[i]) {
         i += 1;
     }
     i
 }
 
-/// Byte offset of the next line's start — just past the newline, or `bytes.len()`
-/// at end of input.
+/// Byte offset of the next line's start — just past LF, CRLF, or CR, or
+/// `bytes.len()` at end of input.
 #[inline]
 pub(in crate::parser) fn next_line_start(bytes: &[u8], from: usize) -> usize {
     let end = line_end(bytes, from);
-    if end < bytes.len() { end + 1 } else { end }
+    line_terminator_end(bytes, end)
+}
+
+#[inline]
+pub(in crate::parser) fn line_terminator_end(bytes: &[u8], line_end: usize) -> usize {
+    if line_end >= bytes.len() {
+        return line_end;
+    }
+    if bytes[line_end] == b'\r' && bytes.get(line_end + 1) == Some(&b'\n') {
+        line_end + 2
+    } else {
+        line_end + 1
+    }
+}
+
+#[inline]
+pub(in crate::parser) fn is_line_ending_byte(byte: u8) -> bool {
+    matches!(byte, b'\n' | b'\r')
 }
 
 #[inline]
@@ -149,13 +168,13 @@ mod tests {
                 let bytes = &buffer[..len];
                 for from in 0..=len {
                     let expected =
-                        memchr::memchr(b'\n', &bytes[from..]).map_or(len, |off| from + off);
+                        memchr::memchr2(b'\n', b'\r', &bytes[from..]).map_or(len, |off| from + off);
                     assert_eq!(
                         line_end(bytes, from),
                         expected,
                         "len {len}, newline at {newline_at}, from {from}"
                     );
-                    let expected_start = if expected < len { expected + 1 } else { expected };
+                    let expected_start = line_terminator_end(bytes, expected);
                     assert_eq!(next_line_start(bytes, from), expected_start);
                 }
             }
@@ -183,7 +202,7 @@ mod tests {
                 let mut buffer = [filler; 40];
                 buffer[lead] = b'\n';
                 let bytes = &buffer[..];
-                let expected = memchr::memchr(b'\n', bytes).unwrap_or(bytes.len());
+                let expected = memchr::memchr2(b'\n', b'\r', bytes).unwrap_or(bytes.len());
                 assert_eq!(line_end(bytes, 0), expected, "filler {filler:#x}, newline at {lead}");
             }
         }
@@ -200,7 +219,7 @@ mod tests {
                 let bytes = &buffer[..len];
                 for from in 0..=len {
                     let expected =
-                        memchr::memchr(b'\n', &bytes[from..]).map_or(len, |off| from + off);
+                        memchr::memchr2(b'\n', b'\r', &bytes[from..]).map_or(len, |off| from + off);
                     assert_eq!(
                         line_end(bytes, from),
                         expected,
@@ -226,14 +245,32 @@ mod tests {
         let mut expected_pos = 0;
         let mut lines = 0;
         while expected_pos < bytes.len() {
-            let expected = memchr::memchr(b'\n', &bytes[expected_pos..])
+            let expected = memchr::memchr2(b'\n', b'\r', &bytes[expected_pos..])
                 .map_or(bytes.len(), |off| expected_pos + off);
             assert_eq!(line_end(bytes, pos), expected, "line {lines}");
             pos = next_line_start(bytes, pos);
-            expected_pos = if expected < bytes.len() { expected + 1 } else { expected };
+            expected_pos = line_terminator_end(bytes, expected);
             assert_eq!(pos, expected_pos, "line {lines}");
             lines += 1;
         }
         assert_eq!(lines, 6);
+    }
+
+    #[test]
+    fn recognizes_crlf_and_lone_cr_line_endings() {
+        for (source, expected) in
+            [("a\r\nb\nc\rd", &["a", "b", "c", "d"][..]), ("\r\n\n\r", &["", "", ""][..])]
+        {
+            let bytes = source.as_bytes();
+            let mut pos = 0;
+            let mut line_index = 0;
+            while pos < bytes.len() {
+                let end = line_end(bytes, pos);
+                assert_eq!(&source[pos..end], expected[line_index]);
+                line_index += 1;
+                pos = next_line_start(bytes, pos);
+            }
+            assert_eq!(line_index, expected.len());
+        }
     }
 }

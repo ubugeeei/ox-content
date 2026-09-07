@@ -79,7 +79,7 @@ pub(super) fn skip_backticks(bytes: &[u8], start: usize) -> Option<usize> {
 
 fn skip_line_comment(bytes: &[u8], start: usize) -> usize {
     let mut cursor = start + 2;
-    while cursor < bytes.len() && bytes[cursor] != b'\n' {
+    while cursor < bytes.len() && !matches!(bytes[cursor], b'\n' | b'\r') {
         cursor += 1;
     }
     cursor

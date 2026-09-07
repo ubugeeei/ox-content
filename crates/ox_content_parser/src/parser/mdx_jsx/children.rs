@@ -1,6 +1,7 @@
-use memchr::memchr;
 use ox_content_allocator::{Allocator, Vec};
 use ox_content_ast::{Node, Span};
+
+use super::super::line_scan::{line_end, next_line_start};
 
 pub(super) struct JsxChildSource<'a> {
     pub source: &'a str,
@@ -191,10 +192,7 @@ fn common_line_indent(source: &str) -> usize {
 }
 
 fn line_bounds(bytes: &[u8], line_start: usize) -> (usize, usize) {
-    let line_end =
-        memchr(b'\n', &bytes[line_start..]).map_or(bytes.len(), |offset| line_start + offset);
-    let next_line = if line_end < bytes.len() { line_end + 1 } else { line_end };
-    (line_end, next_line)
+    (line_end(bytes, line_start), next_line_start(bytes, line_start))
 }
 
 fn first_non_whitespace(bytes: &[u8], line_start: usize, line_end: usize) -> Option<usize> {

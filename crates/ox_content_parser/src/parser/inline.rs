@@ -21,6 +21,7 @@ mod smart_punctuation;
 
 use self::marker_scan::InlineMarkerScan;
 use self::script_span::same_marker_neighbor;
+use super::line_scan::{is_line_ending_byte, line_terminator_end};
 
 pub(in crate::parser) use self::autolink::autolink_end;
 pub(in crate::parser) use self::link_target::{
@@ -146,16 +147,19 @@ impl<'a> Parser<'a> {
     ) -> ParseResult<()> {
         let bytes = content.as_bytes();
         match bytes[*pos] {
-            b'\\' if *pos + 1 < content.len() && bytes[*pos + 1] == b'\n' => {
-                let span = Span::new((offset + *pos) as u32, (offset + *pos + 2) as u32);
+            b'\\' if *pos + 1 < content.len() && is_line_ending_byte(bytes[*pos + 1]) => {
+                let end = line_terminator_end(bytes, *pos + 1);
+                let span = Span::new((offset + *pos) as u32, (offset + end) as u32);
                 children.push(Node::Break(ox_content_ast::Break { span }));
-                *pos += 2;
+                *pos = end;
                 // Leading whitespace of the next line is not content.
                 while *pos < content.len() && matches!(bytes[*pos], b' ' | b'\t') {
                     *pos += 1;
                 }
             }
-            b'\n' => Self::parse_line_break(content, offset, children, pos),
+            byte if is_line_ending_byte(byte) => {
+                Self::parse_line_break(content, offset, children, pos);
+            }
             b'&' => {
                 profile_span_detail!("parser::inline_entity");
                 // Entity / numeric character references decode to literal

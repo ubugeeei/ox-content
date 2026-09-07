@@ -1,3 +1,4 @@
+use super::super::line_scan::line_end;
 use super::Parser;
 
 pub(super) struct DefinitionBodyLine {
@@ -7,8 +8,7 @@ pub(super) struct DefinitionBodyLine {
 
 impl Parser<'_> {
     pub(super) fn line_end_at(&self, line_start: usize) -> usize {
-        memchr::memchr(b'\n', &self.source.as_bytes()[line_start..])
-            .map_or(self.source.len(), |offset| line_start + offset)
+        line_end(self.source.as_bytes(), line_start)
     }
 
     pub(super) fn is_blank_line_at(&self, line_start: usize) -> bool {

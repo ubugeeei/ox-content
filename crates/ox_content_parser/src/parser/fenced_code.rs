@@ -1,7 +1,7 @@
-use memchr::memchr;
 use ox_content_ast::{Node, Span};
 
 use super::Parser;
+use super::line_scan::{line_end, line_terminator_end, next_line_start};
 use crate::error::{ParseError, ParseResult};
 #[allow(unused_imports)]
 use crate::{profile_span, profile_span_detail};
@@ -43,25 +43,19 @@ impl<'a> Parser<'a> {
             if count >= fence_len {
                 // A closing fence carries nothing but trailing whitespace
                 // (``` aaa is content, not a closer).
-                let line_end = match memchr(b'\n', &bytes[cursor..]) {
-                    Some(off) => cursor + off,
-                    None => bytes.len(),
-                };
+                let line_end = line_end(bytes, cursor);
                 let only_ws =
                     bytes[cursor..line_end].iter().all(|byte| matches!(byte, b' ' | b'\t' | b'\r'));
                 if only_ws {
                     // Body ends at `line_start`; the fence line ends at
                     // the next newline (inclusive) or EOF.
-                    let after_fence = if line_end < bytes.len() { line_end + 1 } else { line_end };
+                    let after_fence = line_terminator_end(bytes, line_end);
                     return (line_start, after_fence);
                 }
             }
 
             // Not a closing fence — move to the next line.
-            line_start = match memchr(b'\n', &bytes[line_start..]) {
-                Some(off) => line_start + off + 1,
-                None => bytes.len(),
-            };
+            line_start = next_line_start(bytes, line_start);
         }
 
         // No closing fence; consume everything as body.
@@ -92,7 +86,7 @@ impl<'a> Parser<'a> {
         self.skip_whitespace();
         let info_start = self.position;
         while let Some(ch) = self.peek() {
-            if ch == '\n' {
+            if matches!(ch, '\n' | '\r') {
                 break;
             }
             self.advance();
@@ -108,10 +102,8 @@ impl<'a> Parser<'a> {
         // Backslash escapes and entity references apply in info strings.
         let lang = lang.map(|lang| self.unescape_link_component(lang));
 
-        // Skip newline after info string
-        if self.peek() == Some('\n') {
-            self.advance();
-        }
+        let bytes = self.source.as_bytes();
+        self.position = next_line_start(bytes, self.position);
 
         // Fast path: when the opening fence has no indentation, the body
         // lines need no indent stripping — we can find the closing fence
@@ -170,8 +162,8 @@ impl<'a> Parser<'a> {
                     if closing_fence_len >= fence_len {
                         // Skip rest of line
                         while let Some(ch) = self.peek() {
-                            if ch == '\n' {
-                                self.advance();
+                            if matches!(ch, '\n' | '\r') {
+                                self.position = next_line_start(bytes, self.position);
                                 break;
                             }
                             self.advance();
@@ -185,7 +177,7 @@ impl<'a> Parser<'a> {
                 let next_line = self.next_line_start(line_start);
                 let stripped = Self::strip_indent_columns(line, opening_indent);
                 value.push_str(stripped);
-                if self.source.as_bytes().get(line_start + line.len()) == Some(&b'\n') {
+                if line_start + line.len() < bytes.len() {
                     value.push('\n');
                 }
                 self.position = next_line;

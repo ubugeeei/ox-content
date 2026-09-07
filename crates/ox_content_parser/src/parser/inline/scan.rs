@@ -35,6 +35,7 @@ static INLINE_SPECIAL: [u8; 256] = {
     t[b'\\' as usize] = 1;
     t[b'<' as usize] = 1;
     t[b'\n' as usize] = 1;
+    t[b'\r' as usize] = 1;
     t[b'&' as usize] = 1;
     t
 };
@@ -48,7 +49,7 @@ const SHORT_RUN_PREFIX: usize = 8;
 /// Nibble-pair classifier tables for the vectorized paths.
 ///
 /// A byte is special iff `LOW[b & 0x0F] & HIGH[b >> 4]` is nonzero. The ten
-/// markers fall into six (high nibble, low-nibble set) groups — `\n`;
+/// markers fall into six (high nibble, low-nibble set) groups — line endings;
 /// `!`/`&`/`*`; `<`; `[`/`\`/`_`; `` ` ``; `~` — and each group owns one
 /// bit, so the AND is exact: it admits no byte outside the set, and every
 /// byte >= 0x80 maps to a zero high-nibble entry.
@@ -58,7 +59,7 @@ const SHORT_RUN_PREFIX: usize = 8;
 /// instruction, where the flag table needs sixteen loads.
 #[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
 const LOW_NIBBLE: [u8; 16] =
-    [0x10, 0x02, 0, 0, 0, 0, 0x02, 0, 0, 0, 0x03, 0x08, 0x0C, 0, 0x20, 0x08];
+    [0x10, 0x02, 0, 0, 0, 0, 0x02, 0, 0, 0, 0x03, 0x08, 0x0C, 0x01, 0x20, 0x08];
 #[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
 const HIGH_NIBBLE: [u8; 16] = [0x01, 0, 0x02, 0x04, 0, 0x08, 0x10, 0x20, 0, 0, 0, 0, 0, 0, 0, 0];
 
