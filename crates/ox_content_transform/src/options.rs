@@ -12,6 +12,7 @@ pub struct TransformOptions {
     pub superscript: Option<bool>,
     pub subscript: Option<bool>,
     pub smart_punctuation: Option<bool>,
+    pub heading_attributes: Option<bool>,
     pub frontmatter: Option<bool>,
     pub toc_max_depth: Option<u8>,
     pub convert_md_links: Option<bool>,

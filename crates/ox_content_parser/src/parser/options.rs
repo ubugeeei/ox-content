@@ -63,6 +63,15 @@ pub struct ParserOptions {
     /// Default: `false`; not enabled by [`ParserOptions::gfm`].
     pub definition_lists: bool,
 
+    /// Enable Pandoc-style heading attribute blocks.
+    ///
+    /// When set, a trailing `{#id .class}` block on an ATX or setext heading
+    /// becomes [`ox_content_ast::Heading::id`] and
+    /// [`ox_content_ast::Heading::classes`] instead of rendered text.
+    ///
+    /// Default: `false`; not enabled by [`ParserOptions::gfm`].
+    pub heading_attributes: bool,
+
     /// Recognize emphasis whose delimiters sit against East Asian punctuation.
     ///
     /// CommonMark decides whether a `*`/`_` run may open or close from the
@@ -123,6 +132,7 @@ impl Default for ParserOptions {
             smart_punctuation: false,
             math: false,
             definition_lists: false,
+            heading_attributes: false,
             cjk_emphasis: false,
             mdx: false,
             // Not `0`: an unbounded parse of hostile input overflows the
@@ -156,6 +166,7 @@ impl ParserOptions {
             smart_punctuation: false,
             math: false,
             definition_lists: false,
+            heading_attributes: false,
             // Not part of GFM: GitHub renders these runs per CommonMark too.
             cjk_emphasis: false,
             mdx: false,

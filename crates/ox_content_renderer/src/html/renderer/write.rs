@@ -223,7 +223,8 @@ impl HtmlRenderer {
     pub(in crate::html::renderer) fn write_heading_id(&mut self, heading: &Heading<'_>) {
         crate::profile_span!("renderer::write_heading_id");
         self.prepare_heading_id(heading);
-        self.output.push_str(&self.heading_id_scratch);
+        let id = self.heading_id_scratch.clone();
+        self.write_attribute_escaped(&id);
     }
 
     pub(in crate::html::renderer) fn write_heading_permalink_if_needed(
@@ -239,7 +240,8 @@ impl HtmlRenderer {
         self.output.push_str("<a class=\"");
         self.output.push_str(HEADING_PERMALINK_CLASS);
         self.output.push_str("\" href=\"#");
-        self.output.push_str(&self.heading_id_scratch);
+        let id = self.heading_id_scratch.clone();
+        self.write_attribute_escaped(&id);
         if self.heading_text_scratch.is_empty() {
             self.output.push_str("\" aria-label=\"Permalink to this section\">#</a>");
             return;
@@ -252,6 +254,16 @@ impl HtmlRenderer {
     fn prepare_heading_id(&mut self, heading: &Heading<'_>) {
         self.heading_text_scratch.clear();
         collect_heading_text_into(&heading.children, &mut self.heading_text_scratch);
+        if let Some(id) = heading.id {
+            self.heading_id_scratch.clear();
+            self.heading_id_scratch.push_str(id);
+            if let Some(count) = self.heading_id_counts.get_mut(id) {
+                *count += 1;
+            } else {
+                self.heading_id_counts.insert(CompactString::from(id), 1);
+            }
+            return;
+        }
         self.heading_slug_scratch.clear();
         slugify_heading_into(&self.heading_text_scratch, &mut self.heading_slug_scratch);
 

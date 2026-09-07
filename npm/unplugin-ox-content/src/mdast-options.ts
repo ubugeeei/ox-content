@@ -15,6 +15,7 @@ export interface NapiBindings {
       smartPunctuation?: boolean;
       math?: boolean;
       definitionLists?: boolean;
+      headingAttributes?: boolean;
     },
   ) => Uint8Array;
 }
@@ -94,6 +95,12 @@ export interface OxContentMdastOptions {
    * @default false
    */
   definitionLists?: boolean;
+
+  /**
+   * Enable Pandoc-style heading attribute blocks.
+   * @default false
+   */
+  headingAttributes?: boolean;
 }
 
 const DEFAULT_MDAST_OPTIONS: Required<OxContentMdastOptions> = {
@@ -109,6 +116,7 @@ const DEFAULT_MDAST_OPTIONS: Required<OxContentMdastOptions> = {
   smartPunctuation: false,
   math: false,
   definitionLists: false,
+  headingAttributes: false,
 };
 
 export function resolveMdastOptions(
@@ -127,5 +135,6 @@ export function resolveMdastOptions(
     smartPunctuation: options.smartPunctuation ?? DEFAULT_MDAST_OPTIONS.smartPunctuation,
     math: options.math ?? DEFAULT_MDAST_OPTIONS.math,
     definitionLists: options.definitionLists ?? DEFAULT_MDAST_OPTIONS.definitionLists,
+    headingAttributes: options.headingAttributes ?? DEFAULT_MDAST_OPTIONS.headingAttributes,
   };
 }

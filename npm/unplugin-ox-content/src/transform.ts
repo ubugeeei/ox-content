@@ -59,6 +59,7 @@ interface NapiBindings {
       smartPunctuation?: boolean;
       math?: boolean;
       definitionLists?: boolean;
+      headingAttributes?: boolean;
     },
   ) => Uint8Array;
   transformMdastRaw: (
@@ -74,6 +75,7 @@ interface NapiBindings {
       superscript?: boolean;
       subscript?: boolean;
       smartPunctuation?: boolean;
+      headingAttributes?: boolean;
       frontmatter?: boolean;
       tocMaxDepth?: number;
       codeAnnotations?: boolean;
@@ -98,6 +100,7 @@ interface NapiBindings {
       superscript?: boolean;
       subscript?: boolean;
       smartPunctuation?: boolean;
+      headingAttributes?: boolean;
       frontmatter?: boolean;
       tocMaxDepth?: number;
       codeAnnotations?: boolean;
@@ -261,12 +264,13 @@ function createNapiTransformOptions(
   superscript: boolean;
   subscript: boolean;
   smartPunctuation: boolean;
+  headingAttributes: boolean;
   frontmatter: boolean;
   tocMaxDepth: number;
   codeAnnotations: boolean;
   codeAnnotationMetaKey: string;
   math?: boolean;
-  definitionLists?: boolean;
+  definitionLists?: { enabled?: boolean };
 } {
   const codeAnnotations = options.codeAnnotations ?? {
     enabled: false,
@@ -285,6 +289,7 @@ function createNapiTransformOptions(
     superscript: options.superscript,
     subscript: options.subscript,
     smartPunctuation: options.smartPunctuation,
+    headingAttributes: options.headingAttributes,
     frontmatter: options.frontmatter,
     tocMaxDepth: options.tocMaxDepth,
     codeAnnotations: codeAnnotations.enabled,
@@ -792,6 +797,7 @@ function installUnifiedParser(
     superscript: options.superscript,
     subscript: options.subscript,
     smartPunctuation: options.smartPunctuation,
+    headingAttributes: options.headingAttributes,
     math: options.math,
     definitionLists: options.definitionLists,
   });

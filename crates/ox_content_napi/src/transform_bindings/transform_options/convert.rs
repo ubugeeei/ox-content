@@ -17,6 +17,7 @@ impl From<JsTransformOptions> for TransformOptions {
             superscript: value.superscript,
             subscript: value.subscript,
             smart_punctuation: value.smart_punctuation,
+            heading_attributes: value.heading_attributes,
             frontmatter: value.frontmatter,
             toc_max_depth: value.toc_max_depth,
             convert_md_links: value.convert_md_links,

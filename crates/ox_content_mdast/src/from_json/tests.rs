@@ -114,6 +114,24 @@ fn a_hand_written_tree_rebuilds() {
 }
 
 #[test]
+fn heading_h_properties_rebuild() {
+    let allocator = Allocator::new();
+    let json = r#"{"type":"root","children":[{
+        "type":"heading",
+        "depth":2,
+        "data":{"hProperties":{"id":"custom-heading-id","className":["highlight","wide"]}},
+        "children":[{"type":"text","value":"Custom identifier"}]
+    }]}"#;
+
+    let document = from_mdast_json(&allocator, json).expect("payload rebuilds");
+
+    assert_eq!(
+        to_mdast_json(&document),
+        r#"{"type":"root","children":[{"type":"heading","depth":2,"data":{"hProperties":{"id":"custom-heading-id","className":["highlight","wide"]}},"children":[{"type":"text","value":"Custom identifier"}]}]}"#
+    );
+}
+
+#[test]
 fn missing_children_are_read_as_empty() {
     let allocator = Allocator::new();
 

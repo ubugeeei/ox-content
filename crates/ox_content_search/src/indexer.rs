@@ -213,6 +213,8 @@ mod tests {
 
         children.push(Node::Heading(allocator.boxed(Heading {
             depth: 1,
+            id: None,
+            classes: ox_content_allocator::Vec::new_in(&allocator),
             children: heading_children,
             span: Span::new(0, 12),
         })));

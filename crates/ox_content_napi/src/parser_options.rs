@@ -87,6 +87,11 @@ pub struct JsParserOptions {
     ///
     /// Default: `false`.
     pub definition_lists: Option<bool>,
+
+    /// Enable Pandoc-style `{#id .class}` heading attribute blocks.
+    ///
+    /// Default: `false`.
+    pub heading_attributes: Option<bool>,
 }
 
 impl From<JsParserOptions> for ParserOptions {
@@ -126,6 +131,9 @@ impl From<JsParserOptions> for ParserOptions {
         }
         if let Some(v) = opts.definition_lists {
             options.definition_lists = v;
+        }
+        if let Some(v) = opts.heading_attributes {
+            options.heading_attributes = v;
         }
 
         options
@@ -189,6 +197,7 @@ impl FromNapiValue for JsParserOptions {
             smart_punctuation: unsafe { read_flag(env, napi_val, c"smartPunctuation") }?,
             math: unsafe { read_flag(env, napi_val, c"math") }?,
             definition_lists: unsafe { read_flag(env, napi_val, c"definitionLists") }?,
+            heading_attributes: unsafe { read_flag(env, napi_val, c"headingAttributes") }?,
         })
     }
 }

@@ -14,7 +14,12 @@ pub(super) fn extract_toc(doc: &Document, max_depth: u8) -> Vec<TocEntry> {
             && heading.depth <= max_depth
         {
             let text = extract_heading_text(heading);
-            let slug = unique_slug(slugify_heading(&text), &mut slug_counts);
+            let slug = if let Some(id) = heading.id {
+                reserve_slug(id, &mut slug_counts);
+                id.to_string()
+            } else {
+                unique_slug(slugify_heading(&text), &mut slug_counts)
+            };
             push_nested_toc_entry(
                 &mut entries,
                 TocEntry { depth: heading.depth, text, slug, children: Vec::new() },
@@ -88,4 +93,8 @@ fn unique_slug(slug: String, counts: &mut FxHashMap<String, usize>) -> String {
     let unique = if *count == 0 { slug } else { format!("{slug}-{count}") };
     *count += 1;
     unique
+}
+
+fn reserve_slug(slug: &str, counts: &mut FxHashMap<String, usize>) {
+    *counts.entry(slug.to_string()).or_insert(0) += 1;
 }

@@ -156,6 +156,21 @@ fn collect_inline_toc_node(
         Node::Heading(heading) => {
             let include_heading = heading.depth <= max_depth;
             let text = collect_heading_text(&heading.children);
+            if let Some(explicit_id) = heading.id {
+                if let Some(count) = counts.get_mut(explicit_id) {
+                    *count += 1;
+                } else {
+                    counts.insert(explicit_id.to_string(), 1);
+                }
+                if include_heading {
+                    entries.push(InlineTocEntry {
+                        depth: heading.depth,
+                        text,
+                        id: explicit_id.to_string(),
+                    });
+                }
+                return;
+            }
             let mut slug = slugify_heading(&text);
             let id = if let Some(count) = counts.get_mut(slug.as_str()) {
                 let suffix = *count;

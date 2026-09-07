@@ -36,6 +36,7 @@ type NativeTransformOptions = {
   superscript?: boolean;
   subscript?: boolean;
   smartPunctuation?: boolean;
+  headingAttributes?: boolean;
   autolinkUrls?: boolean;
   autolinkTargetBlank?: boolean;
   linkTargetBlank?: boolean;
@@ -62,9 +63,7 @@ type NativeTransformOptions = {
     terms?: Record<string, string>;
     firstUseOnly?: boolean;
   };
-  definitionLists?: {
-    enabled?: boolean;
-  };
+  definitionLists?: { enabled?: boolean };
   magicLinks?: {
     enabled?: boolean;
     aliases?: Record<string, { href: string; label?: string; image?: string }>;
@@ -238,6 +237,7 @@ function createNativeTransformOptions(options: ResolvedOptions): NativeTransform
     superscript: options.superscript ?? false,
     subscript: options.subscript ?? false,
     smartPunctuation: options.smartPunctuation ?? false,
+    headingAttributes: options.headingAttributes ?? false,
     autolinkUrls: options.autolinks,
     autolinkTargetBlank: options.autolinkTargetBlank ?? true,
     linkTargetBlank: options.linkTargetBlank ?? true,

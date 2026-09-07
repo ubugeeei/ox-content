@@ -192,8 +192,25 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
         return { type: "root", children: children ?? [], position } as MdastRoot;
       case KIND_PARAGRAPH:
         return { type: "paragraph", children: children ?? [], position };
-      case KIND_HEADING:
-        return { type: "heading", depth: num0, children: children ?? [], position };
+      case KIND_HEADING: {
+        const node: MdastNode = {
+          type: "heading",
+          depth: num0,
+          children: children ?? [],
+          position,
+        };
+        if (str0 !== undefined || str1 !== undefined) {
+          const hProperties: Record<string, unknown> = {};
+          if (str0 !== undefined) {
+            hProperties.id = str0;
+          }
+          if (str1 !== undefined) {
+            hProperties.className = str1.split(/\s+/).filter(Boolean);
+          }
+          node.data = { hProperties };
+        }
+        return node;
+      }
       case KIND_THEMATIC_BREAK:
         return { type: "thematicBreak", position };
       case KIND_BLOCKQUOTE:
@@ -368,7 +385,7 @@ export function deserializeMdastFromRaw(buffer: Uint8Array, source: string): Mda
     throw new Error("[ox-content] Native parser returned an invalid mdast root.");
   }
 
-  return root;
+  return root as MdastRoot;
 }
 
 function parseMdxAttributes(value: string | undefined): unknown[] {

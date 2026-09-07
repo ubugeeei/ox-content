@@ -76,6 +76,7 @@ export function resolveOptions(options: OxContentOptions): ResolvedOptions {
     superscript: options.superscript ?? false,
     subscript: options.subscript ?? false,
     smartPunctuation: options.smartPunctuation ?? false,
+    headingAttributes: options.headingAttributes ?? false,
     autolinkTargetBlank: options.autolinkTargetBlank ?? true,
     linkTargetBlank: options.linkTargetBlank ?? true,
     sourceSpans: options.sourceSpans ?? false,

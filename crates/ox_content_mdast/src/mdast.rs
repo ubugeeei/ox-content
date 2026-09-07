@@ -80,9 +80,39 @@ impl MdastJsonSerializer {
     fn write_heading(&mut self, heading: &Heading<'_>) {
         self.output.push_str("{\"type\":\"heading\",\"depth\":");
         self.write_u32(u32::from(heading.depth));
+        self.write_heading_data(heading);
         self.output.push_str(",\"children\":");
         self.write_nodes(&heading.children);
         self.output.push('}');
+    }
+
+    fn write_heading_data(&mut self, heading: &Heading<'_>) {
+        if heading.id.is_none() && heading.classes.is_empty() {
+            return;
+        }
+
+        self.output.push_str(",\"data\":{\"hProperties\":{");
+        let wrote = if let Some(id) = heading.id {
+            self.output.push_str("\"id\":");
+            self.write_string(id);
+            true
+        } else {
+            false
+        };
+        if !heading.classes.is_empty() {
+            if wrote {
+                self.output.push(',');
+            }
+            self.output.push_str("\"className\":[");
+            for (index, class_name) in heading.classes.iter().enumerate() {
+                if index > 0 {
+                    self.output.push(',');
+                }
+                self.write_string(class_name);
+            }
+            self.output.push(']');
+        }
+        self.output.push_str("}}");
     }
 
     fn write_thematic_break(&mut self, _thematic_break: &ThematicBreak) {

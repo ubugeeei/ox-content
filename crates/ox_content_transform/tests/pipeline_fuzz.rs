@@ -47,6 +47,7 @@ fn all_features() -> TransformOptions {
         superscript: Some(true),
         subscript: Some(true),
         smart_punctuation: Some(true),
+        heading_attributes: Some(true),
         frontmatter: Some(true),
         toc_max_depth: Some(6),
         convert_md_links: Some(true),

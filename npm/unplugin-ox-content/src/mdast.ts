@@ -64,6 +64,7 @@ export function parseMarkdownToMdast(
     smartPunctuation: resolvedOptions.smartPunctuation,
     math: resolvedOptions.math,
     definitionLists: resolvedOptions.definitionLists,
+    headingAttributes: resolvedOptions.headingAttributes,
   };
   const buffer = requireNapiMethod(napi.parseTransferRaw, "parseTransferRaw")(
     source,
@@ -108,7 +109,7 @@ export function extractTocFromMdast(root: MdastRoot, maxDepth: number): TocEntry
     headings.push({
       depth,
       text,
-      slug: slugify(text),
+      slug: explicitHeadingId(node) ?? slugify(text),
       children: [],
     });
   });
@@ -233,6 +234,21 @@ function collectMdastText(node: { value?: unknown; children?: unknown }): string
   }
 
   return node.children.map((child) => collectMdastText(child as { value?: unknown })).join("");
+}
+
+function explicitHeadingId(node: MdastNode): string | undefined {
+  const data = node.data;
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return undefined;
+  }
+
+  const hProperties = (data as { hProperties?: unknown }).hProperties;
+  if (!hProperties || typeof hProperties !== "object" || Array.isArray(hProperties)) {
+    return undefined;
+  }
+
+  const id = (hProperties as { id?: unknown }).id;
+  return typeof id === "string" && id.length > 0 ? id : undefined;
 }
 
 function slugify(text: string): string {

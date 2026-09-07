@@ -1744,6 +1744,17 @@ export interface OxContentOptions {
   smartPunctuation?: boolean;
 
   /**
+   * Enable Pandoc-style heading attribute blocks.
+   *
+   * A trailing `{#id .class}` block on a heading becomes the rendered
+   * heading's id/classes and is excluded from visible heading text and slug
+   * generation.
+   *
+   * @default false
+   */
+  headingAttributes?: boolean;
+
+  /**
    * Add `target="_blank" rel="noopener noreferrer"` to linkified bare URLs.
    * @default true
    */
@@ -2329,6 +2340,7 @@ export interface ResolvedOptions {
   superscript: boolean;
   subscript: boolean;
   smartPunctuation: boolean;
+  headingAttributes: boolean;
   autolinkTargetBlank?: boolean;
   linkTargetBlank?: boolean;
   sourceSpans?: boolean;

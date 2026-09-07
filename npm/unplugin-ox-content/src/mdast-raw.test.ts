@@ -181,6 +181,79 @@ function createExtensionBuffer(): Uint8Array {
   return buffer;
 }
 
+function createHeadingAttributeBuffer(): Uint8Array {
+  const encoder = new TextEncoder();
+  const strings = ["Custom identifier", "custom-heading-id", "highlight wide"];
+  const stringOffsets = new Map<string, [number, number]>();
+  let stringBytesLength = 0;
+  for (const value of strings) {
+    const bytes = encoder.encode(value);
+    stringOffsets.set(value, [stringBytesLength, bytes.length]);
+    stringBytesLength += bytes.length;
+  }
+
+  const nodeCount = 3;
+  const childIndices = [0, 1];
+  const nodesOffset = HEADER_LEN;
+  const childIndicesOffset = nodesOffset + nodeCount * NODE_RECORD_LEN;
+  const stringsOffset = childIndicesOffset + childIndices.length * 4;
+  const buffer = new Uint8Array(stringsOffset + stringBytesLength);
+  const view = new DataView(buffer.buffer);
+  const stringRange = (value?: string): [number, number] =>
+    value === undefined ? [NONE_U32, 0] : stringOffsets.get(value)!;
+  const writeNode = (
+    index: number,
+    kind: number,
+    childStart = 0,
+    childLen = 0,
+    num0 = 0,
+    str0?: string,
+    str1?: string,
+  ) => {
+    const base = nodesOffset + index * NODE_RECORD_LEN;
+    const [str0Offset, str0Len] = stringRange(str0);
+    const [str1Offset, str1Len] = stringRange(str1);
+    view.setUint8(base, kind);
+    view.setUint8(base + 1, 0);
+    view.setUint16(base + 2, 0, true);
+    view.setUint32(base + 4, 0, true);
+    view.setUint32(base + 8, 0, true);
+    view.setUint32(base + 12, childStart, true);
+    view.setUint32(base + 16, childLen, true);
+    view.setUint32(base + 20, num0, true);
+    view.setUint32(base + 24, 0, true);
+    view.setUint32(base + 28, str0Offset, true);
+    view.setUint32(base + 32, str0Len, true);
+    view.setUint32(base + 36, str1Offset, true);
+    view.setUint32(base + 40, str1Len, true);
+    view.setUint32(base + 44, NONE_U32, true);
+    view.setUint32(base + 48, 0, true);
+    view.setUint32(base + 52, NONE_U32, true);
+    view.setUint32(base + 56, 0, true);
+  };
+
+  view.setUint32(0, MAGIC, true);
+  view.setUint32(4, VERSION, true);
+  view.setUint32(8, nodeCount, true);
+  view.setUint32(12, childIndices.length, true);
+  view.setUint32(16, 0, true);
+  view.setUint32(20, stringBytesLength, true);
+  view.setUint32(24, 2, true);
+
+  writeNode(0, 12, 0, 0, 0, "Custom identifier");
+  writeNode(1, 2, 0, 1, 2, "custom-heading-id", "highlight wide");
+  writeNode(2, 0, 1, 1);
+
+  childIndices.forEach((child, index) => {
+    view.setUint32(childIndicesOffset + index * 4, child, true);
+  });
+  for (const value of strings) {
+    const [offset] = stringOffsets.get(value)!;
+    buffer.set(encoder.encode(value), stringsOffset + offset);
+  }
+  return buffer;
+}
+
 describe("MDX raw mdast transfer", () => {
   it("decodes JSX, ESM, expressions, attributes, and children", () => {
     const root = deserializeMdastFromRaw(createMdxBuffer(), "");
@@ -247,5 +320,21 @@ describe("MDX raw mdast transfer", () => {
       ],
     });
     expect(root.children[1]).toMatchObject({ type: "math", value: "x^2" });
+  });
+
+  it("decodes heading attributes as hProperties", () => {
+    const root = deserializeMdastFromRaw(createHeadingAttributeBuffer(), "");
+
+    expect(root.children[0]).toMatchObject({
+      type: "heading",
+      depth: 2,
+      data: {
+        hProperties: {
+          id: "custom-heading-id",
+          className: ["highlight", "wide"],
+        },
+      },
+      children: [{ type: "text", value: "Custom identifier" }],
+    });
   });
 });

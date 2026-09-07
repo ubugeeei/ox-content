@@ -1,6 +1,6 @@
 use crate::html::{HtmlRenderer, HtmlRendererOptions};
 use ox_content_allocator::Allocator;
-use ox_content_parser::Parser;
+use ox_content_parser::{Parser, ParserOptions};
 
 #[test]
 fn test_render_paragraph() {
@@ -18,6 +18,29 @@ fn test_render_heading() {
     let mut renderer = HtmlRenderer::new();
     let html = renderer.render(&doc);
     assert_eq!(html, "<h1 id=\"hello\">Hello</h1>\n");
+}
+
+#[test]
+fn test_render_heading_attributes_use_explicit_id_and_classes() {
+    let html = render_html_with_options(
+        "### Custom identifier {#custom-heading-id .highlight .wide}",
+        ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+    );
+
+    assert_eq!(
+        html,
+        "<h3 id=\"custom-heading-id\" class=\"highlight wide\">Custom identifier</h3>\n"
+    );
+}
+
+#[test]
+fn test_render_heading_attributes_escape_explicit_attrs() {
+    let html = render_html_with_options(
+        "### Custom {#a\"b .x<y}",
+        ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+    );
+
+    assert_eq!(html, "<h3 id=\"a&quot;b\" class=\"x&lt;y\">Custom</h3>\n");
 }
 
 #[test]
@@ -41,6 +64,13 @@ fn test_render_heading_ids_are_unique_and_unicode() {
 fn render_html(source: &str) -> String {
     let allocator = Allocator::new();
     let doc = Parser::new(&allocator, source).parse().unwrap();
+    let mut renderer = HtmlRenderer::new();
+    renderer.render(&doc)
+}
+
+fn render_html_with_options(source: &str, options: ParserOptions) -> String {
+    let allocator = Allocator::new();
+    let doc = Parser::with_options(&allocator, source, options).parse().unwrap();
     let mut renderer = HtmlRenderer::new();
     renderer.render(&doc)
 }
@@ -139,6 +169,24 @@ fn test_render_inline_toc_uses_unique_and_unicode_ids() {
     let html = renderer.render(&doc);
 
     insta::assert_snapshot!(html);
+}
+
+#[test]
+fn test_render_inline_toc_uses_heading_attribute_id() {
+    let allocator = Allocator::new();
+    let doc = Parser::with_options(
+        &allocator,
+        "[[toc]]\n\n## Custom identifier {#custom-heading-id .highlight}\n",
+        ParserOptions { heading_attributes: true, ..ParserOptions::default() },
+    )
+    .parse()
+    .unwrap();
+    let mut renderer = HtmlRenderer::new();
+    let html = renderer.render(&doc);
+
+    assert!(html.contains("<a href=\"#custom-heading-id\">Custom identifier</a>"), "{html}");
+    assert!(html.contains("<h2 id=\"custom-heading-id\" class=\"highlight\">"), "{html}");
+    assert!(!html.contains("{#custom-heading-id"), "{html}");
 }
 
 #[test]

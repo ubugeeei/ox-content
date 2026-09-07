@@ -169,6 +169,24 @@ fn heading_permalinks_compose_with_explicit_ids() {
 }
 
 #[test]
+fn heading_attributes_reach_html_and_toc() {
+    let result = MarkdownTransformer::from_options(&TransformOptions {
+        gfm: Some(true),
+        heading_attributes: Some(true),
+        ..Default::default()
+    })
+    .transform("## Custom identifier {#custom-heading-id .highlight}");
+
+    assert!(result.errors.is_empty(), "unexpected transform errors: {:?}", result.errors);
+    assert_eq!(
+        result.html,
+        "<h2 id=\"custom-heading-id\" class=\"highlight\">Custom identifier</h2>\n"
+    );
+    assert_eq!(result.toc[0].text, "Custom identifier");
+    assert_eq!(result.toc[0].slug, "custom-heading-id");
+}
+
+#[test]
 fn toc_slugs_are_unique_and_match_heading_ids() {
     let allocator = Allocator::new();
     let doc = Parser::new(

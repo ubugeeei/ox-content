@@ -101,6 +101,7 @@ function resolveOptions(options: OxContentOptions): ResolvedOptions {
     superscript: options.superscript ?? false,
     subscript: options.subscript ?? false,
     smartPunctuation: options.smartPunctuation ?? false,
+    headingAttributes: options.headingAttributes ?? false,
     highlight: options.highlight ?? false,
     codeAnnotations: resolveCodeAnnotationsOptions(options.codeAnnotations),
     mermaid: options.mermaid ?? false,
