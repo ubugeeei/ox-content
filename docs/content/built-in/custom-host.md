@@ -248,6 +248,32 @@ as diagnostics instead of silently dropping styles. Pass the returned styles
 into `ctx.assets.document()` so document-level dedupe, nonce, base, shared CSS,
 and page CSS composition all stay in one place.
 
+Build hosts that deliberately inline critical CSS can read the emitted bytes for
+the same resolved descriptors without deriving filesystem paths from public
+hrefs:
+
+```ts
+const islandStyles = ctx.assets.stylesheets({
+  modules: rendered.clientModules.map((module) => module.moduleId),
+});
+const critical = await ctx.assets.stylesheetContent({
+  stylesheets: islandStyles.stylesheets,
+});
+
+const assets = ctx.assets.document({
+  inlineStyles: critical.stylesheets.map((style) => ({
+    key: `critical:${style.href}`,
+    content: style.content,
+  })),
+});
+```
+
+`stylesheetContent()` is build-only for Vite-emitted stylesheets. In
+development it returns `unavailable` diagnostics, and in build it reports
+`missing-artifact` diagnostics when a descriptor has no recorded artifact or the
+file cannot be read. Ordering follows the input descriptors, so hosts can keep
+their own policy for home-only inlining, linked stylesheets, and dedupe.
+
 ## Theme token stylesheet
 
 `themeTokens` writes and serves a small stylesheet, defaulting to

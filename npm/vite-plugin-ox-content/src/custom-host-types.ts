@@ -171,6 +171,9 @@ export interface OxContentCustomHostAssetsContext {
   clientManifest?: DocumentAssetManifest;
   themeTokens?: ResolvedThemeTokens;
   stylesheets(input: OxContentCustomHostStylesheetsInput): OxContentCustomHostStylesheetsResult;
+  stylesheetContent(
+    input: OxContentCustomHostStylesheetContentInput,
+  ): Promise<OxContentCustomHostStylesheetContentResult>;
   document(input?: RenderDocumentAssetsInput): RenderDocumentAssetsResult;
 }
 
@@ -186,6 +189,8 @@ export interface OxContentCustomHostStylesheet extends DocumentStyleDescriptor {
   href: string;
   /** Module id that requested this stylesheet. */
   moduleId: string;
+  /** Build artifact path relative to the custom-host outDir. */
+  outputPath?: string;
 }
 
 export interface OxContentCustomHostStylesheetDiagnostic {
@@ -199,6 +204,30 @@ export interface OxContentCustomHostStylesheetsResult {
   diagnostics: OxContentCustomHostStylesheetDiagnostic[];
   /** Dev-only source files that should be merged into route dependencies. */
   dependencies: string[];
+}
+
+export interface OxContentCustomHostStylesheetContentInput {
+  /** Stylesheet descriptors returned by `ctx.assets.stylesheets()`. */
+  stylesheets: readonly OxContentCustomHostStylesheet[];
+}
+
+export interface OxContentCustomHostStylesheetContent {
+  stylesheet: OxContentCustomHostStylesheet;
+  href: string;
+  moduleId: string;
+  content: string;
+}
+
+export interface OxContentCustomHostStylesheetContentDiagnostic {
+  code: "unavailable" | "missing-artifact";
+  href: string;
+  moduleId: string;
+  message: string;
+}
+
+export interface OxContentCustomHostStylesheetContentResult {
+  stylesheets: OxContentCustomHostStylesheetContent[];
+  diagnostics: OxContentCustomHostStylesheetContentDiagnostic[];
 }
 
 export interface OxContentCustomHostBaseContext {

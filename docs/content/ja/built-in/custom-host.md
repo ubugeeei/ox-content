@@ -168,6 +168,31 @@ href を返します。entry が見つからない場合は style を黙って�
 返された style は `ctx.assets.document()` に渡すと、document-level dedupe、nonce、base、
 shared CSS、page CSS と同じ場所で合成できます。
 
+critical CSS を明示的に inline したい build host は、public href から filesystem path を
+逆算せず、同じ resolved descriptor から emitted bytes を読めます。
+
+```ts
+const islandStyles = ctx.assets.stylesheets({
+  modules: rendered.clientModules.map((module) => module.moduleId),
+});
+const critical = await ctx.assets.stylesheetContent({
+  stylesheets: islandStyles.stylesheets,
+});
+
+const assets = ctx.assets.document({
+  inlineStyles: critical.stylesheets.map((style) => ({
+    key: `critical:${style.href}`,
+    content: style.content,
+  })),
+});
+```
+
+`stylesheetContent()` は Vite が emit した stylesheet 向けの build-only API です。
+development では `unavailable` diagnostic を返し、build では descriptor に artifact がない、
+または file を読めない場合に `missing-artifact` diagnostic を返します。順序は input
+descriptor に従うため、home-only inline、linked stylesheet、dedupe の policy は host 側で
+維持できます。
+
 ## テーマトークン stylesheet
 
 `themeTokens` は小さな stylesheet を書き出して dev でも配信します。既定 href は
