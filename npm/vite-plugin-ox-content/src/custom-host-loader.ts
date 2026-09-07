@@ -12,6 +12,7 @@ import type {
   OxContentCustomHostRoute,
   OxContentCustomHostRoutesContext,
 } from "./custom-host-types";
+import { createCustomHostMarkdownRenderer } from "./custom-host-markdown";
 import { canonicalFilePath } from "./custom-host-utils";
 import type { ResolvedOptions } from "./types";
 
@@ -88,7 +89,7 @@ export function createBaseContext(
   loadModule: (moduleId: string) => Promise<unknown>,
   assets: OxContentCustomHostAssetsContext,
 ): OxContentCustomHostBaseContext {
-  return {
+  const context = {
     mode,
     root,
     outDir,
@@ -97,6 +98,7 @@ export function createBaseContext(
     loadModule,
     assets,
   };
+  return { ...context, markdown: createCustomHostMarkdownRenderer(context) };
 }
 
 export function createContextMemo(): OxContentCustomHostMemo {

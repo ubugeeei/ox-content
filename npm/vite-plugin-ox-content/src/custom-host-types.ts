@@ -6,6 +6,7 @@ import type {
   RenderDocumentAssetsInput,
   RenderDocumentAssetsResult,
 } from "./document-assets";
+import type { OxContentCustomHostMarkdownRenderer } from "./custom-host-markdown";
 import type { RenderThemeTokenCssOptions, ThemeTokenSource } from "./theme-tokens";
 import type { FeedItemInput, OxContentOptions, ResolvedOptions } from "./types";
 
@@ -246,6 +247,7 @@ export interface OxContentCustomHostBaseContext {
   options: ResolvedOptions;
   loadModule(moduleId: string): Promise<unknown>;
   assets: OxContentCustomHostAssetsContext;
+  markdown: OxContentCustomHostMarkdownRenderer;
 }
 
 export interface OxContentCustomHostMemo {

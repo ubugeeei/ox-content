@@ -111,6 +111,62 @@ route が優先されます。存在しない feed path は host の `notFound()
 through し、失敗した feed render は cache しないため、source や module error を
 直したあとの次の一致リクエストで再試行できます。
 
+## Markdown renderer
+
+すべての独自ホスト context には `ctx.markdown.render()` があります。host が
+Markdown / MDX の source を自分で読みつつ、設定済みの Ox Content rendering
+pipeline は重複実装したくない場合に使います。raw `source` と実際の
+`documentPath` を渡してください。
+
+```ts
+const page = await ctx.markdown.render<{
+  clientModules: Array<{ moduleId: string }>;
+}>({
+  source,
+  documentPath,
+  async renderHtml(markdown) {
+    const solid = await markdown.loadModule("/src/solid-renderer.ts");
+    return solid.render(markdown.html, {
+      documentPath: markdown.documentPath,
+      imports: markdown.transform.imports,
+      root: markdown.root,
+      srcDir: markdown.srcDir,
+      contentRoot: markdown.contentRoot,
+    });
+  },
+});
+
+const styles = ctx.assets.stylesheets({
+  modules: page.metadata?.clientModules.map((module) => module.moduleId) ?? [],
+});
+```
+
+サポートする順序は次の通りです。
+
+1. resolved Ox Content option による Markdown / MDX syntax transform。
+2. built-in HTML / embed transform。provider cache と media output の相対 path は
+   Vite root から解決されます。
+3. legacy `<Island>` HTML transform。
+4. 任意の `renderHtml(markdown)` framework integration。
+5. 呼び出し側が `readerChrome` を上書きしない限り、
+   `oxContent.ssg.readerChrome` による reader-chrome HTML transform。
+
+結果には最終 `html`、framework renderer 前の `markdownHtml`、完全な
+`TransformResult`、flattened `frontmatter`、`toc`、MDX `imports`、MDX `exports`、
+`components`、任意の framework `metadata`、`dependencies` が含まれます。
+入力 `documentPath` は `dependencies` に入るので、返された dependency を route result
+へ merge すると、開発中に source 変更で response cache が invalidation されます。
+`markdown.loadModule()` で読んだ module と renderer callback 内で解決した stylesheet は、
+`ctx.loadModule()` / `ctx.assets.stylesheets()` と同じ development lifecycle で追跡されます。
+そのため、失敗した renderer や変更された renderer は process-global cache なしで復帰できます。
+
+framework integration は host-owned のままです。Solid HTML-string host では callback 内で
+`@ox-content/vite-plugin-solid` の `createSolidHtmlHostRenderer()` を使い、返された
+`html` と、host が asset / hydration に必要とする `clientModules` や diagnostics metadata を
+返してください。`ctx.markdown.render()` は article HTML だけを変換します。copy control を
+有効にする host は、自分の document shell に reader-chrome CSS、script、root attribute を
+含める必要があります。
+
 ## 協調する出力
 
 ホストが描画した HTML route は、既定 SSG と同じ公開 writer に接続されます。

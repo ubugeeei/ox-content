@@ -8,6 +8,14 @@ import { resolveOptions } from "./resolve-options";
 import type { OxContentOptions } from "./types";
 
 export type {
+  OxContentCustomHostMarkdownInput,
+  OxContentCustomHostMarkdownRenderContext,
+  OxContentCustomHostMarkdownRenderer,
+  OxContentCustomHostMarkdownRenderResult,
+  OxContentCustomHostMarkdownResult,
+} from "./custom-host-markdown";
+
+export type {
   MaybePromise,
   OxContentCustomHostAssetsContext,
   OxContentCustomHostBaseContext,

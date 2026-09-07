@@ -9,6 +9,7 @@ import type {
   OxContentCustomHostOptions,
   OxContentCustomHostRoute,
 } from "./custom-host-types";
+import { createCustomHostMarkdownRenderer } from "./custom-host-markdown";
 import {
   deserializeResponse,
   normalizeRoutePath,
@@ -89,9 +90,9 @@ export function createTrackedContext<T extends OxContentCustomHostBaseContext>(
   server: ViteDevServer,
   dependencies: Set<OxContentCustomHostDependency>,
 ): T {
-  return {
+  const tracked = {
     ...context,
-    loadModule: async (moduleId) => {
+    loadModule: async (moduleId: string) => {
       const exports = await context.loadModule(moduleId);
       for (const dependency of collectDevModuleDependencies(
         server.moduleGraph,
@@ -104,7 +105,7 @@ export function createTrackedContext<T extends OxContentCustomHostBaseContext>(
     },
     assets: {
       ...context.assets,
-      stylesheets(input) {
+      stylesheets(input: Parameters<OxContentCustomHostBaseContext["assets"]["stylesheets"]>[0]) {
         const result = context.assets.stylesheets(input);
         for (const dependency of result.dependencies) {
           dependencies.add(dependency);
@@ -112,7 +113,8 @@ export function createTrackedContext<T extends OxContentCustomHostBaseContext>(
         return result;
       },
     },
-  } as T;
+  };
+  return { ...tracked, markdown: createCustomHostMarkdownRenderer(tracked) } as T;
 }
 
 async function renderDevResponse(
