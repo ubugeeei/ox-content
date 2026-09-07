@@ -29,6 +29,7 @@ describe("oxContentSolid", () => {
     expect(solidApi).toHaveProperty("createSolidHtmlHostRenderer");
     expect(solidApi).toHaveProperty("createSolidHtmlHostDomRenderer");
     expect(solidApi).toHaveProperty("createSolidHtmlHostLazyHydrate");
+    expect(solidApi).toHaveProperty("createSolidHtmlHostCollectionDocuments");
     expect(solidApi).toHaveProperty("initSolidHtmlHost");
     expect(solidApi).toHaveProperty("loadSolidHtmlHostDomRuntime");
     expect(solidApi).toHaveProperty("renderSolidHtmlHost");

@@ -101,6 +101,12 @@ export {
   type SolidHtmlHostIslandRegistryContext,
 } from "./html-host-registry";
 export {
+  createSolidHtmlHostCollectionDocuments,
+  resolveSolidHtmlHostCollectionDocuments,
+  type SolidHtmlHostCollectionDocument,
+  type SolidHtmlHostCollectionDocumentsOptions,
+} from "./html-host-collection-documents";
+export {
   resolveSolidIslandStylesheets,
   type ResolveSolidIslandStylesheetsInput,
   type ResolveSolidIslandStylesheetsResult,
