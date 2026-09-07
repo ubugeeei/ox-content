@@ -72,6 +72,35 @@ fn nested_list_child_spans_account_for_marker_indent() {
 }
 
 #[test]
+fn footnote_definition_child_spans_index_the_document_source() {
+    let allocator = Allocator::new();
+    let source = "Ref[^a]\n\n[^a]: first\n\n    second\n\n    third\n";
+    let options = ParserOptions { footnotes: true, ..ParserOptions::gfm() };
+    let doc = parse_with_options(&allocator, source, options);
+
+    let Node::FootnoteDefinition(definition) = &doc.children[1] else {
+        panic!("expected footnote definition, got {:?}", doc.children[1]);
+    };
+
+    for (index, expected_text, expected_span) in [
+        (0, "first", Span::new(15, 20)),
+        (1, "second", Span::new(26, 32)),
+        (2, "third", Span::new(38, 43)),
+    ] {
+        let Node::Paragraph(paragraph) = &definition.children[index] else {
+            panic!("expected footnote paragraph, got {:?}", definition.children[index]);
+        };
+        let Node::Text(text) = &paragraph.children[0] else {
+            panic!("expected paragraph text, got {:?}", paragraph.children[0]);
+        };
+        assert_eq!(text.span, expected_span);
+        assert_eq!(text.span.source_text(source), expected_text);
+    }
+
+    assert_all_spans_index_source(source, &doc.children);
+}
+
+#[test]
 fn table_rows_cells_and_inline_children_index_source() {
     let allocator = Allocator::new();
     let source = "| a | b |\n| - | - |\n| c | d |\n";
