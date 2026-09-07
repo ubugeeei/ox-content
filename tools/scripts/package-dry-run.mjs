@@ -82,6 +82,7 @@ function checkPackage(packageDir) {
     checkVitePluginDeclarations({
       pkg,
       tarball: packed.filename,
+      packDir,
       failures,
       readPackedFile,
     });

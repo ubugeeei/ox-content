@@ -608,6 +608,10 @@ const posts = await queryCollection("blog")
 const page = await queryCollection("docs").path("/docs/getting-started").first();
 ```
 
+When application source files import only `virtual:ox-content/collections`, add
+`"types": ["@ox-content/vite-plugin"]` to `compilerOptions` so TypeScript loads
+the published virtual module declarations.
+
 `include` is intentionally explicit for large sites:
 
 | Field  | Cost                                                   |

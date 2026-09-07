@@ -593,6 +593,8 @@ const posts = await queryCollection("blog")
 const page = await queryCollection("docs").path("/docs/getting-started").first();
 ```
 
+アプリケーションのソースが `virtual:ox-content/collections` だけを import する場合は、TypeScript が公開済みの仮想モジュール宣言を読むように `compilerOptions` に `"types": ["@ox-content/vite-plugin"]` を足してください。
+
 大きなサイトでは `include` は意図して明示です。
 
 | フィールド | コスト                                              |

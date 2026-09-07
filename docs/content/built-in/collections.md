@@ -87,6 +87,19 @@ const total = await queryCollection("content").count();
 The module also exports `getCollection(name)` (all entries as a plain array)
 and `collectionNames`.
 
+If a TypeScript program imports only the virtual module, include the package
+ambient declarations once in `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@ox-content/vite-plugin"]
+  }
+}
+```
+
+No local `declare module "virtual:ox-content/collections"` shim is needed.
+
 ### Builder API
 
 | Method                                     | Behavior                                                     |

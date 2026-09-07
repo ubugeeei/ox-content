@@ -76,6 +76,18 @@ const total = await queryCollection("content").count();
 
 モジュールは `getCollection(name)`（全エントリのプレーン配列）と `collectionNames` も export します。
 
+TypeScript プログラムが仮想モジュールだけを import する場合は、package の ambient declarations を一度 `tsconfig.json` で読ませます。
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@ox-content/vite-plugin"]
+  }
+}
+```
+
+ローカルの `declare module "virtual:ox-content/collections"` shim は不要です。
+
 ### ビルダ API
 
 | メソッド                                   | 挙動                                              |
