@@ -25,6 +25,7 @@ pub struct WasmParserOptions {
     pub(crate) math: bool,
     pub(crate) definition_lists: bool,
     pub(crate) heading_attributes: bool,
+    pub(crate) wiki_links: bool,
     pub(crate) toc_max_depth: u8,
     pub(crate) autolink_urls: bool,
     pub(crate) autolink_patterns: Vec<String>,
@@ -61,6 +62,7 @@ impl WasmParserOptions {
             math: false,
             definition_lists: false,
             heading_attributes: false,
+            wiki_links: false,
             toc_max_depth: 3,
             autolink_urls: true,
             autolink_patterns: vec!["http://".to_string(), "https://".to_string()],
@@ -150,6 +152,12 @@ impl WasmParserOptions {
         self.heading_attributes = value;
     }
 
+    /// Enables Obsidian-style wiki links as link nodes.
+    #[wasm_bindgen(setter = wikiLinks)]
+    pub fn set_wiki_links(&mut self, value: bool) {
+        self.wiki_links = value;
+    }
+
     /// Sets the maximum heading depth included in inline TOCs.
     #[wasm_bindgen(setter = tocMaxDepth)]
     pub fn set_toc_max_depth(&mut self, value: u8) {
@@ -225,6 +233,7 @@ impl From<&WasmParserOptions> for ParserOptions {
         options.math = opts.math;
         options.definition_lists = opts.definition_lists;
         options.heading_attributes = opts.heading_attributes;
+        options.wiki_links = opts.wiki_links;
 
         options
     }
@@ -244,5 +253,18 @@ mod tests {
         let mut enabled = WasmParserOptions::new();
         enabled.set_mdx(true);
         assert!(ParserOptions::from(&enabled).mdx);
+    }
+
+    #[test]
+    fn wiki_links_setter_maps_to_parser_options_without_gfm() {
+        let defaults = ParserOptions::from(&WasmParserOptions::new());
+        assert!(!defaults.wiki_links);
+
+        let mut enabled = WasmParserOptions::new();
+        enabled.set_gfm(true);
+        enabled.set_wiki_links(true);
+        let options = ParserOptions::from(&enabled);
+        assert!(options.gfm);
+        assert!(options.wiki_links);
     }
 }

@@ -45,6 +45,21 @@ fn serializes_heading_attributes_as_h_properties() {
 }
 
 #[test]
+fn serializes_wiki_links_as_links() {
+    let json = parse_json(
+        "[[README|Back to **index**]]",
+        ParserOptions { wiki_links: true, ..ParserOptions::default() },
+    );
+    let link = &json["children"][0]["children"][0];
+
+    assert_eq!(link["type"], "link");
+    assert_eq!(link["url"], "README");
+    assert_eq!(link["title"], serde_json::Value::Null);
+    assert_eq!(link["children"][0]["value"], "Back to ");
+    assert_eq!(link["children"][1]["type"], "strong");
+}
+
+#[test]
 fn serializes_mdx_nodes_and_attributes() {
     let json = parse_json(
         "import Alert from './Alert'\n\n<Alert title=\"Hi\" count={count} {...props}>Hello {name}</Alert>\n",

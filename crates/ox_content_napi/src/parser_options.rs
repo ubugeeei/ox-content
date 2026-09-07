@@ -92,6 +92,11 @@ pub struct JsParserOptions {
     ///
     /// Default: `false`.
     pub heading_attributes: Option<bool>,
+
+    /// Enable Obsidian-style wiki links as link nodes.
+    ///
+    /// Default: `false`.
+    pub wiki_links: Option<bool>,
 }
 
 impl From<JsParserOptions> for ParserOptions {
@@ -134,6 +139,9 @@ impl From<JsParserOptions> for ParserOptions {
         }
         if let Some(v) = opts.heading_attributes {
             options.heading_attributes = v;
+        }
+        if let Some(v) = opts.wiki_links {
+            options.wiki_links = v;
         }
 
         options
@@ -198,6 +206,7 @@ impl FromNapiValue for JsParserOptions {
             math: unsafe { read_flag(env, napi_val, c"math") }?,
             definition_lists: unsafe { read_flag(env, napi_val, c"definitionLists") }?,
             heading_attributes: unsafe { read_flag(env, napi_val, c"headingAttributes") }?,
+            wiki_links: unsafe { read_flag(env, napi_val, c"wikiLinks") }?,
         })
     }
 }
@@ -220,5 +229,20 @@ mod tests {
 
         let defaults = ParserOptions::from(JsParserOptions::default());
         assert!(!defaults.mdx);
+    }
+
+    #[test]
+    fn wiki_links_flag_maps_to_parser_options_without_gfm() {
+        let enabled = ParserOptions::from(JsParserOptions {
+            gfm: Some(true),
+            wiki_links: Some(true),
+            ..JsParserOptions::default()
+        });
+        assert!(enabled.gfm);
+        assert!(enabled.wiki_links);
+
+        let gfm =
+            ParserOptions::from(JsParserOptions { gfm: Some(true), ..JsParserOptions::default() });
+        assert!(!gfm.wiki_links);
     }
 }

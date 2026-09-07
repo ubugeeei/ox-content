@@ -44,6 +44,15 @@ impl<'a> Parser<'a> {
             return Ok(());
         }
 
+        if self.options.wiki_links
+            && bytes.get(link_start + 1) == Some(&b'[')
+            && let Some((link, end)) = self.try_parse_wiki_link(content, offset, link_start)?
+        {
+            children.push(link);
+            *pos = end;
+            return Ok(());
+        }
+
         *pos += 1;
         let text_start = *pos;
         *pos = Self::scan_balanced(content, *pos, b'[', b']');
@@ -145,6 +154,74 @@ impl<'a> Parser<'a> {
         Ok(())
     }
 
+    fn try_parse_wiki_link(
+        &self,
+        content: &'a str,
+        offset: usize,
+        link_start: usize,
+    ) -> ParseResult<Option<(Node<'a>, usize)>> {
+        let Some(close) = Self::scan_wiki_link_close(content.as_bytes(), link_start + 2) else {
+            return Ok(None);
+        };
+        let (inner, inner_offset) =
+            trim_with_offset(&content[link_start + 2..close], link_start + 2);
+        if inner.is_empty() {
+            return Ok(None);
+        }
+
+        let (target_part, label_part, label_part_offset) =
+            split_wiki_link_inner(inner, inner_offset);
+        let (target, target_offset) = trim_with_offset(target_part, inner_offset);
+        if target.is_empty() {
+            return Ok(None);
+        }
+
+        let (label, label_offset) = if let Some(label_part) = label_part {
+            let (label, label_offset) = trim_with_offset(label_part, label_part_offset);
+            if label.is_empty() { (target, target_offset) } else { (label, label_offset) }
+        } else {
+            (target, target_offset)
+        };
+
+        let mut label_nodes = None;
+        if memchr::memchr(b'[', label.as_bytes()).is_some()
+            && self.probe_link_text(label, offset + label_offset, &mut label_nodes)
+        {
+            return Ok(None);
+        }
+
+        let children = match label_nodes.take() {
+            Some(nodes) => nodes,
+            None => self.parse_inline(label, offset + label_offset)?,
+        };
+        Ok(Some((
+            Node::Link(self.allocator.boxed(Link {
+                url: target,
+                title: None,
+                children,
+                span: Span::new((offset + link_start) as u32, (offset + close + 2) as u32),
+            })),
+            close + 2,
+        )))
+    }
+
+    fn scan_wiki_link_close(bytes: &[u8], mut cursor: usize) -> Option<usize> {
+        while cursor + 1 < bytes.len() {
+            match bytes[cursor] {
+                b'\\' => {
+                    cursor += 2;
+                }
+                b'`' => {
+                    cursor = Self::closed_code_span_end(bytes, cursor)
+                        .unwrap_or_else(|| cursor.saturating_add(1));
+                }
+                b']' if bytes[cursor + 1] == b']' => return Some(cursor),
+                _ => cursor += 1,
+            }
+        }
+        None
+    }
+
     /// Reports whether `link_text` already parses to something containing a
     /// link, so the surrounding bracket cannot become one.
     ///
@@ -173,6 +250,20 @@ impl<'a> Parser<'a> {
         *nodes = Some(parsed);
         verdict
     }
+}
+
+fn split_wiki_link_inner(inner: &str, offset: usize) -> (&str, Option<&str>, usize) {
+    if let Some((target, label)) = inner.split_once('|') {
+        (target, Some(label), offset + target.len() + 1)
+    } else {
+        (inner, None, offset)
+    }
+}
+
+fn trim_with_offset(value: &str, offset: usize) -> (&str, usize) {
+    let trimmed_start = value.trim_start();
+    let leading = value.len() - trimmed_start.len();
+    (trimmed_start.trim_end(), offset + leading)
 }
 
 /// Does any node in the tree contain a link?
