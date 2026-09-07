@@ -1,5 +1,27 @@
 # Changelog
 
+## [3.0.0] - 2026-09-07
+
+### Features
+
+- discover SSR stylesheet roots (#1344)
+- discover html host islands from collections (#1343)
+- add configured markdown renderer (#1342)
+- serve feed outputs in dev (#1341)
+- plan collection assets from documents (#1340)
+- share collection asset manifest context (#1339)
+- expose stylesheet artifact content (#1338)
+- add custom host renderer factory (#1337)
+
+### Bug Fixes
+
+- publish virtual collections declarations (#1336)
+- recognize CR line endings (#1334)
+- publish custom host output context types (#1335)
+- remap footnote definition child spans (#1333)
+- parse digit-prefixed inline math (#1332)
+- curl elision apostrophes as closing quotes (#1331)
+
 ## [3.0.0-beta.17] - 2026-09-06
 
 ### Features
