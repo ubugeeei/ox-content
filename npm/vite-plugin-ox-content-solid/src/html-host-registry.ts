@@ -21,8 +21,11 @@ import {
   shouldInvalidate,
   toSolidHtmlHostClientModuleId,
 } from "./html-host-registry-paths";
+import {
+  resolveSolidHtmlHostCollectionDocuments,
+  type SolidHtmlHostCollectionDocumentsOptions,
+} from "./html-host-collection-documents";
 import type { ComponentsMap, ComponentsOption } from "./types";
-
 export { toSolidHtmlHostClientModuleId } from "./html-host-registry-paths";
 
 export const SOLID_HTML_HOST_MODULES_VIRTUAL_ID = "virtual:ox-content-solid/html-host/modules";
@@ -57,6 +60,7 @@ export interface CreateSolidHtmlHostIslandRegistryInput {
     | ((
         context: SolidHtmlHostIslandRegistryContext,
       ) => MaybePromise<readonly SolidHtmlHostIslandDocument[]>);
+  collectionDocuments?: false | SolidHtmlHostCollectionDocumentsOptions;
   entries?:
     | readonly SolidHtmlHostIslandEntry[]
     | ((
@@ -175,7 +179,10 @@ export async function resolveSolidHtmlHostIslandRegistry(
   const components =
     resolvedComponents ??
     (input.components ? await resolveComponentsGlob(input.components, context.root) : {});
-  const documents = await resolveMaybe(input.documents, context);
+  const documents = [
+    ...((await resolveMaybe(input.documents, context)) ?? []),
+    ...((await resolveInputCollectionDocuments(input, context)) ?? []),
+  ];
   const entries = await resolveMaybe(input.entries, context);
   const modules = new Map<string, SolidHtmlHostClientModule>();
   const watchFiles = new Set<string>();
@@ -197,7 +204,7 @@ export async function resolveSolidHtmlHostIslandRegistry(
   const oxContent = customHostOxContentOptions(input.oxContent ?? {});
   const srcDir = oxContent.srcDir ?? "content";
   const contentRoot = resolveContentRootPath({ root: context.root, srcDir });
-  for (const document of documents ?? []) {
+  for (const document of documents) {
     const documentPath = resolveDocumentPath(document.documentPath, context.root);
     watchFiles.add(documentPath);
     for (const dependency of document.dependencies ?? []) {
@@ -251,6 +258,18 @@ export async function resolveSolidHtmlHostIslandRegistry(
     ),
     watchFiles: [...watchFiles],
   };
+}
+
+function resolveInputCollectionDocuments(
+  input: CreateSolidHtmlHostIslandRegistryInput,
+  context: SolidHtmlHostIslandRegistryContext,
+): Promise<readonly SolidHtmlHostIslandDocument[]> | undefined {
+  if (!input.collectionDocuments) return undefined;
+  const collectionInput =
+    input.collectionDocuments.oxContent === undefined
+      ? { ...input.collectionDocuments, oxContent: input.oxContent }
+      : input.collectionDocuments;
+  return resolveSolidHtmlHostCollectionDocuments(collectionInput, context);
 }
 
 function renderModulesVirtualModule(registry: ResolvedSolidHtmlHostIslandRegistry): string {

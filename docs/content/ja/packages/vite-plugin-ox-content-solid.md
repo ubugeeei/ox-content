@@ -124,12 +124,56 @@ hydration ではなく fresh mount の bridge です。既存の Ox Content isla
 authoring 時の slot HTML を読み、target を空にしてから caller の `@solidjs/web` renderer に
 渡します。SSR 済み self-closing island の rendered HTML は children として渡しません。
 
+production custom host では source directory 全体の `import.meta.glob()` ではなく、同じ
+公開ポリシーで選ばれた document だけから browser module map を作ります。page が Ox
+Content collection から来る場合は、registry に設定済み collection source を読ませ、公開
+ルールは `collectionDocuments.select` に残します。独自の catalogue を host が持つ場合は、
+従来通り明示 `documents` callback も使えます。
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import solid from "@solidjs/vite-plugin";
+import { oxContentCustomHost } from "@ox-content/vite-plugin";
+import { createSolidHtmlHostIslandRegistry } from "@ox-content/vite-plugin-solid";
+
+const oxContent = {
+  srcDir: "content",
+  collections: {
+    blog: "blog/**/*.mdx",
+  },
+};
+
+const solidIslands = createSolidHtmlHostIslandRegistry({
+  oxContent,
+  collectionDocuments: {
+    select(document, context) {
+      return context.command === "serve" || document.frontmatter.published === true;
+    },
+  },
+});
+
+export default defineConfig({
+  appType: "custom",
+  plugins: [
+    solidIslands.plugin,
+    oxContentCustomHost({ host: "./src/site-host.ts", oxContent }),
+    solid({ compiler: "native" }),
+  ],
+});
+```
+
+registry は各 file を `documentPath` として保持し、raw Markdown / MDX `source` を読むため、
+document-local import は renderer と同じ module identity になります。flat file と directory
+index を含む collection `source` pattern を再利用し、Vite config 中に
+`virtual:ox-content/collections` を import しません。development では設定済み content root
+配下の追加、変更、削除で registry が invalidation されます。
+
 ```tsx
 import { initIslands } from "@ox-content/islands";
 import { render } from "@solidjs/web";
 import { initSolidHtmlHost } from "@ox-content/vite-plugin-solid/html-host/client";
-
-const modules = import.meta.glob("./{docs,components}/**/*.tsx");
+import modules from "virtual:ox-content-solid/html-host/modules";
 
 initSolidHtmlHost({
   initIslands,

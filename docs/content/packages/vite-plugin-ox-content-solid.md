@@ -229,10 +229,12 @@ slot HTML, clears the target, and lets the caller mount with `@solidjs/web`.
 When SSR produced HTML for a self-closing island, that rendered output is not
 passed back as children.
 
-For production custom hosts, generate the module map from the same
-site-selected document set instead of a broad source-directory glob. Keep the
-publication rule in your site code and share that selected list with both the
-custom host routes and the registry plugin.
+For production custom hosts, generate the module map from the same selected
+document policy instead of a broad source-directory glob. When selected pages
+come from configured Ox Content collections, let the registry read those
+collection sources and keep the publication rule in `collectionDocuments.select`.
+If a host already owns a separate catalogue, the explicit `documents` callback
+remains supported.
 
 ```ts
 // vite.config.ts
@@ -240,25 +242,40 @@ import { defineConfig } from "vite";
 import solid from "@solidjs/vite-plugin";
 import { oxContentCustomHost } from "@ox-content/vite-plugin";
 import { createSolidHtmlHostIslandRegistry } from "@ox-content/vite-plugin-solid";
-import { selectedDocuments } from "./src/site-content";
+
+const oxContent = {
+  srcDir: "content",
+  collections: {
+    blog: "blog/**/*.mdx",
+  },
+};
 
 const solidIslands = createSolidHtmlHostIslandRegistry({
-  documents: async () =>
-    (await selectedDocuments()).map((document) => ({
-      documentPath: document.file,
-      source: document.source,
-    })),
+  oxContent,
+  collectionDocuments: {
+    select(document, context) {
+      return context.command === "serve" || document.frontmatter.published === true;
+    },
+  },
 });
 
 export default defineConfig({
   appType: "custom",
   plugins: [
     solidIslands.plugin,
-    oxContentCustomHost({ host: "./src/site-host.ts" }),
+    oxContentCustomHost({ host: "./src/site-host.ts", oxContent }),
     solid({ compiler: "native" }),
   ],
 });
 ```
+
+The registry preserves each matched file as `documentPath` and reads the raw
+Markdown or MDX `source`, so document-local imports keep the same post-local
+module identity as the renderer. It reuses collection `source` patterns,
+including flat files and directory indexes, without importing
+`virtual:ox-content/collections` during Vite configuration. Development changes
+under the configured content root invalidate the registry, including source
+adds, edits, and deletes.
 
 ```ts
 // src/site-host.ts
