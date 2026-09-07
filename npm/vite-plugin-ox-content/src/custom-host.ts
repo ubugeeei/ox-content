@@ -100,6 +100,18 @@ export function createOxContentCustomHostPlugin(input: OxContentCustomHostOption
       await ssrStylesheets.buildStart(this, config.root);
     },
 
+    resolveId(id) {
+      return ssrStylesheets.resolveId(id);
+    },
+
+    load(id) {
+      return ssrStylesheets.load(id);
+    },
+
+    writeBundle(_options, bundle) {
+      ssrStylesheets.writeBundle(bundle, (referenceId) => this.getFileName(referenceId));
+    },
+
     async closeBundle() {
       if (!config || command !== "build" || input.build?.enabled === false) {
         return;
