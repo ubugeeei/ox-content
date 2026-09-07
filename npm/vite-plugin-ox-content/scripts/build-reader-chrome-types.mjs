@@ -115,8 +115,6 @@ await Promise.all([
   writeFile(join(distDir, "reader-chrome.d.cts"), declarations),
   rm(join(distDir, "reader-chrome.d.mts.map"), { force: true }),
   rm(join(distDir, "reader-chrome.d.cts.map"), { force: true }),
-  rm(join(distDir, "reader-chrome2.d.mts"), { force: true }),
-  rm(join(distDir, "reader-chrome2.d.cts"), { force: true }),
   rm(join(distDir, "reader-chrome2.d.mts.map"), { force: true }),
   rm(join(distDir, "reader-chrome2.d.cts.map"), { force: true }),
 ]);

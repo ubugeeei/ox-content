@@ -4,23 +4,38 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const publicValues = [
+  "createCollectionAssetsMiddleware",
+  "planCollectionAssets",
   "resolveGitLastmods",
   "resolveSelfHostedAssetManifest",
   "planCollectionAssetsFromDocuments",
+  "writeCollectionAssets",
   "writeSelfHostedAssets",
 ];
 const publicTypes = [
+  "CollectionAssetInput",
+  "CollectionAssetManifest",
+  "CollectionAssetManifestEntry",
   "CollectionAssetDocumentDiagnostic",
   "CollectionAssetDocumentDiagnosticCode",
   "CollectionAssetDocumentInput",
   "CollectionAssetDocumentReference",
   "CollectionAssetResolvedDocumentReference",
+  "OxContentCustomHostAssetsContext",
+  "OxContentCustomHostOptions",
+  "OxContentCustomHostSsrStylesheetDescriptor",
+  "OxContentCustomHostSsrStylesheetsInput",
+  "OxContentCustomHostSsrStylesheetsOptions",
+  "OxContentCustomHostSsrStylesheetsResult",
   "OxContentAssetManifest",
   "OxContentAssetPreload",
+  "PlanCollectionAssetsInput",
   "PlanCollectionAssetsFromDocumentsInput",
   "PlanCollectionAssetsFromDocumentsResult",
   "SelfHostedAssetOptions",
   "SsgOutputPageInput",
+  "WriteCollectionAssetsInput",
+  "WriteCollectionAssetsResult",
   "WriteSelfHostedAssetsInput",
   "WriteSelfHostedAssetsResult",
 ];
@@ -61,10 +76,66 @@ export function checkVitePluginDeclarations({ pkg, tarball, packDir, failures, r
   for (const mode of ["bundler", "nodenext", "node16"]) {
     checkVirtualCollectionsConsumer({ pkg, tarball, packDir, failures, mode });
   }
+  for (const skipLibCheck of [false, true]) {
+    checkRootCustomHostConsumer({ pkg, tarball, packDir, failures, skipLibCheck });
+  }
+}
+
+function checkRootCustomHostConsumer({ pkg, tarball, packDir, failures, skipLibCheck }) {
+  const consumerRoot = prepareVitePluginConsumer({
+    pkg,
+    tarball,
+    packDir,
+    name: `vite-plugin-root-custom-host-${skipLibCheck ? "skip" : "strict"}-`,
+  });
+
+  writeFileSync(join(consumerRoot, "package.json"), JSON.stringify({ type: "module" }));
+  writeFileSync(join(consumerRoot, "root-custom-host-fixture.ts"), rootCustomHostFixture());
+  writeFileSync(
+    join(consumerRoot, "tsconfig.json"),
+    tsconfig("bundler", ["root-custom-host-fixture.ts"], skipLibCheck),
+  );
+
+  const result = spawnSync(tscBin, ["-p", join(consumerRoot, "tsconfig.json")], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    const mode = skipLibCheck ? "skipLibCheck" : "strict";
+    failures.push(
+      `${pkg.name} root custom-host ${mode} consumer failed:\n${result.stdout}${result.stderr}`,
+    );
+  }
 }
 
 function checkVirtualCollectionsConsumer({ pkg, tarball, packDir, failures, mode }) {
-  const consumerRoot = mkdtempSync(join(packDir, `vite-plugin-virtual-${mode}-`));
+  const consumerRoot = prepareVitePluginConsumer({
+    pkg,
+    tarball,
+    packDir,
+    name: `vite-plugin-virtual-${mode}-`,
+  });
+
+  writeFileSync(join(consumerRoot, "package.json"), JSON.stringify({ type: "module" }));
+  writeFileSync(join(consumerRoot, "collections-fixture.ts"), collectionsFixture());
+  writeFileSync(join(consumerRoot, "collections-fixture.cts"), cjsCollectionsFixture());
+  writeFileSync(join(consumerRoot, "tsconfig.json"), tsconfig(mode, undefined, true));
+
+  const result = spawnSync(tscBin, ["-p", join(consumerRoot, "tsconfig.json")], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    failures.push(
+      `${pkg.name} virtual collections ${mode} consumer failed:\n${result.stdout}${result.stderr}`,
+    );
+  }
+}
+
+function prepareVitePluginConsumer({ pkg, tarball, packDir, name }) {
+  const consumerRoot = mkdtempSync(join(packDir, name));
   const packageRoot = join(consumerRoot, "node_modules", "@ox-content", "vite-plugin");
   mkdirSync(packageRoot, { recursive: true });
 
@@ -89,21 +160,7 @@ function checkVirtualCollectionsConsumer({ pkg, tarball, packDir, failures, mode
     linkPackageDependency(consumerRoot, "npm/vite-plugin-ox-content", dependency);
   }
 
-  writeFileSync(join(consumerRoot, "package.json"), JSON.stringify({ type: "module" }));
-  writeFileSync(join(consumerRoot, "collections-fixture.ts"), collectionsFixture());
-  writeFileSync(join(consumerRoot, "collections-fixture.cts"), cjsCollectionsFixture());
-  writeFileSync(join(consumerRoot, "tsconfig.json"), tsconfig(mode));
-
-  const result = spawnSync(tscBin, ["-p", join(consumerRoot, "tsconfig.json")], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    failures.push(
-      `${pkg.name} virtual collections ${mode} consumer failed:\n${result.stdout}${result.stderr}`,
-    );
-  }
+  return consumerRoot;
 }
 
 function linkPackageDependency(consumerRoot, packageDir, dependency) {
@@ -192,7 +249,59 @@ function cjsCollectionsFixture() {
   ].join("\n");
 }
 
-function tsconfig(mode) {
+function rootCustomHostFixture() {
+  return [
+    'import { createOxContentCustomHostPlugin, oxContentCustomHost, planCollectionAssets } from "@ox-content/vite-plugin";',
+    'import { createOxContentCustomHostPlugin as createCustomHostSubpath } from "@ox-content/vite-plugin/custom-host";',
+    'import type { CollectionAssetInput, CollectionAssetManifest, CollectionAssetManifestEntry, OxContentCustomHostAssetsContext, OxContentCustomHostOptions, OxContentCustomHostSsrStylesheetsResult, PlanCollectionAssetsInput } from "@ox-content/vite-plugin";',
+    'import type { OxContentCustomHostOptions as SubpathOptions } from "@ox-content/vite-plugin/custom-host";',
+    "",
+    "type IsAny<T> = 0 extends 1 & T ? true : false;",
+    "type ExpectFalse<T extends false> = T;",
+    "type ManifestIsNotAny = ExpectFalse<IsAny<CollectionAssetManifest>>;",
+    "type ContextIsNotAny = ExpectFalse<IsAny<OxContentCustomHostAssetsContext>>;",
+    "type ManifestEntry = CollectionAssetManifest['assets'][number];",
+    "type PublicPathsAreStrings = ManifestEntry['publicPaths'][number] extends string ? true : never;",
+    "",
+    "const options: OxContentCustomHostOptions = {",
+    "  host: {",
+    "    routes: () => [],",
+    "    outputs: () => ({}),",
+    "  },",
+    "};",
+    "const subpathOptions: SubpathOptions = options;",
+    "const input: CollectionAssetInput = { sourcePath: 'content/page.md', publicPath: '/page.md' };",
+    "const planInput: PlanCollectionAssetsInput = { assets: [input] };",
+    "const entry: CollectionAssetManifestEntry = {",
+    "  sourcePath: '/workspace/content/page.md',",
+    "  publicPaths: ['/page.md'],",
+    "  contentPath: '/assets/content/page.md',",
+    "};",
+    "const manifest: CollectionAssetManifest = { assets: [entry] };",
+    "declare const assets: OxContentCustomHostAssetsContext;",
+    "declare const stylesheets: OxContentCustomHostSsrStylesheetsResult;",
+    "async function usePublicTypes(): Promise<string[]> {",
+    "  const planned = await planCollectionAssets(planInput);",
+    "  const customManifest = await assets.collectionManifest();",
+    "  return [",
+    "    ...manifest.assets.flatMap((asset) => asset.publicPaths),",
+    "    ...planned.assets.flatMap((asset) => asset.publicPaths),",
+    "    ...(customManifest?.assets.flatMap((asset) => asset.publicPaths) ?? []),",
+    "    ...stylesheets.stylesheets.map((stylesheet) => stylesheet.href),",
+    "  ];",
+    "}",
+    "",
+    "void createOxContentCustomHostPlugin(options);",
+    "void oxContentCustomHost(options);",
+    "void createCustomHostSubpath(subpathOptions);",
+    "void usePublicTypes;",
+    "void (undefined as unknown as ManifestIsNotAny);",
+    "void (undefined as unknown as ContextIsNotAny);",
+    "void (undefined as unknown as PublicPathsAreStrings);",
+  ].join("\n");
+}
+
+function tsconfig(mode, files, skipLibCheck) {
   const compilerOptions =
     mode === "bundler"
       ? {
@@ -201,7 +310,7 @@ function tsconfig(mode) {
           moduleResolution: "Bundler",
           lib: ["ES2022", "DOM"],
           strict: true,
-          skipLibCheck: true,
+          skipLibCheck,
           noEmit: true,
           types: ["@ox-content/vite-plugin"],
         }
@@ -211,7 +320,7 @@ function tsconfig(mode) {
           moduleResolution: mode === "nodenext" ? "NodeNext" : "Node16",
           lib: ["ES2022", "DOM"],
           strict: true,
-          skipLibCheck: true,
+          skipLibCheck,
           noEmit: true,
           types: ["@ox-content/vite-plugin"],
         };
@@ -220,9 +329,10 @@ function tsconfig(mode) {
     {
       compilerOptions,
       files:
-        mode === "bundler"
+        files ??
+        (mode === "bundler"
           ? ["collections-fixture.ts"]
-          : ["collections-fixture.ts", "collections-fixture.cts"],
+          : ["collections-fixture.ts", "collections-fixture.cts"]),
     },
     null,
     2,

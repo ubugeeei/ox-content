@@ -4,6 +4,7 @@ export const publicDeclarationEntries = [
     packageDir: "npm/vite-plugin-ox-content",
     specifier: "@ox-content/vite-plugin/custom-host",
     distBase: "custom-host",
+    publicDistBase: "custom-host-public",
     values: ["createOxContentCustomHostPlugin", "customHostOxContentOptions"],
     types: [
       "MaybePromise",

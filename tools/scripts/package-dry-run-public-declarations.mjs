@@ -20,7 +20,10 @@ export function checkPublicDeclarationExports({
   if (!entry) return;
 
   for (const extension of ["mts", "cts"]) {
-    const declaration = readPackedFile(tarball, `dist/${entry.distBase}.d.${extension}`);
+    const declaration = readPackedFile(
+      tarball,
+      `dist/${publicDeclarationBase(entry)}.d.${extension}`,
+    );
     checkDeclarationNames({ declaration, entry, extension, failures });
   }
 
@@ -92,8 +95,8 @@ function checkBrowserOnlyGraph({ tarball, entry, failures, readPackedFile }) {
   for (const path of [
     `dist/${entry.distBase}.mjs`,
     `dist/${entry.distBase}.cjs`,
-    `dist/${entry.distBase}.d.mts`,
-    `dist/${entry.distBase}.d.cts`,
+    `dist/${publicDeclarationBase(entry)}.d.mts`,
+    `dist/${publicDeclarationBase(entry)}.d.cts`,
   ]) {
     const content = readPackedFile(tarball, path);
     for (const token of entry.browserOnlyForbidden) {
@@ -102,6 +105,10 @@ function checkBrowserOnlyGraph({ tarball, entry, failures, readPackedFile }) {
       }
     }
   }
+}
+
+function publicDeclarationBase(entry) {
+  return entry.publicDistBase ?? entry.distBase;
 }
 
 function checkTypeConsumer({ tarball, entry, packDir, failures, packedPackages, mode }) {
