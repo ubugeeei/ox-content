@@ -21,12 +21,28 @@ fn test_render_heading() {
 }
 
 #[test]
+fn test_render_crlf_fenced_code_like_lf() {
+    let lf = render_html("```rust\nfn main() {}\n```\n");
+    let crlf = render_html("```rust\r\nfn main() {}\r\n```\r\n");
+
+    assert_eq!(crlf, lf);
+    assert_eq!(crlf, "<pre><code class=\"language-rust\">fn main() {}\n</code></pre>\n");
+}
+
+#[test]
 fn test_render_heading_ids_are_unique_and_unicode() {
     let allocator = Allocator::new();
     let doc = Parser::new(&allocator, "## はじめに\n## はじめに").parse().unwrap();
     let mut renderer = HtmlRenderer::new();
     let html = renderer.render(&doc);
     insta::assert_snapshot!(html);
+}
+
+fn render_html(source: &str) -> String {
+    let allocator = Allocator::new();
+    let doc = Parser::new(&allocator, source).parse().unwrap();
+    let mut renderer = HtmlRenderer::new();
+    renderer.render(&doc)
 }
 
 #[test]

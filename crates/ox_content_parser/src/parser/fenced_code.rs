@@ -119,7 +119,12 @@ impl<'a> Parser<'a> {
                 self.find_fenced_close(fence_char, fence_len, body_start);
             self.position = fence_line_end;
             span = Span::new(start as u32, self.position as u32);
-            &self.source[body_start..body_end]
+            let body = &self.source[body_start..body_end];
+            if body.as_bytes().contains(&b'\r') {
+                self.normalize_code_block_line_endings(body)
+            } else {
+                body
+            }
         } else {
             // Indented opening fence: lines may need leading-space stripping,
             // so a borrowed source slice would be wrong. Materialize only this
@@ -193,5 +198,28 @@ impl<'a> Parser<'a> {
             value,
             span,
         }))))
+    }
+
+    fn normalize_code_block_line_endings(&self, source: &str) -> &'a str {
+        let mut value =
+            ox_content_allocator::String::with_capacity_in(source.len(), self.allocator.bump());
+        let bytes = source.as_bytes();
+        let mut chunk_start = 0;
+        let mut cursor = 0;
+
+        while cursor < bytes.len() {
+            if bytes[cursor] != b'\r' {
+                cursor += 1;
+                continue;
+            }
+
+            value.push_str(&source[chunk_start..cursor]);
+            value.push('\n');
+            cursor += if bytes.get(cursor + 1) == Some(&b'\n') { 2 } else { 1 };
+            chunk_start = cursor;
+        }
+
+        value.push_str(&source[chunk_start..]);
+        value.into_bump_str()
     }
 }

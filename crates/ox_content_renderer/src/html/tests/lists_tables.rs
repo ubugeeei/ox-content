@@ -45,6 +45,15 @@ fn test_render_list_with_bold() {
 }
 
 #[test]
+fn test_render_crlf_tight_list_like_lf() {
+    let lf = render_html("- item one\n- item two\n");
+    let crlf = render_html("- item one\r\n- item two\r\n");
+
+    assert_eq!(crlf, lf);
+    assert_eq!(crlf, "<ul>\n<li>item one</li>\n<li>item two</li>\n</ul>\n");
+}
+
+#[test]
 fn test_render_task_list() {
     let allocator = Allocator::new();
     let parser_options = ox_content_parser::ParserOptions::gfm();
@@ -54,4 +63,11 @@ fn test_render_task_list() {
     let mut renderer = HtmlRenderer::new();
     let html = renderer.render(&doc);
     insta::assert_snapshot!(html);
+}
+
+fn render_html(source: &str) -> String {
+    let allocator = Allocator::new();
+    let doc = Parser::new(&allocator, source).parse().unwrap();
+    let mut renderer = HtmlRenderer::new();
+    renderer.render(&doc)
 }

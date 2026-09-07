@@ -76,12 +76,13 @@ fn serializes_code_breaks_and_ordered_list_start() {
 #[test]
 fn escapes_json_string_bytes_across_chunk_boundaries() {
     // 8-byte-aligned safe prefix, then every escape class: structural,
-    // shorthand control, and \u-encoded control — all must round-trip.
+    // shorthand control, and \u-encoded control. Markdown line endings are
+    // normalized before mdast serialization, so the raw CR becomes LF.
     let source = "```\nabcdefgh\"quote\\back\ttab\rcr\x08bs\x0cff\x01ctl and 日本語テキスト\n```";
     let json = parse_json(source, ParserOptions::default());
     assert_eq!(
         json["children"][0]["value"],
-        "abcdefgh\"quote\\back\ttab\rcr\x08bs\x0cff\x01ctl and 日本語テキスト\n"
+        "abcdefgh\"quote\\back\ttab\ncr\x08bs\x0cff\x01ctl and 日本語テキスト\n"
     );
 }
 
