@@ -144,6 +144,62 @@ or development route-catalogue pass. Use the same key from `routes(ctx)` and
 `outputs(ctx)` to reuse a host-owned content artifact without module-global
 mutable state. Rejected loaders are evicted so the next call can retry.
 
+## Markdown renderer
+
+Every custom-host context exposes `ctx.markdown.render()` for hosts that read
+Markdown or MDX source themselves but want Ox Content to own the configured
+rendering pipeline. Pass the raw `source` and the real `documentPath`.
+
+```ts
+const page = await ctx.markdown.render<{
+  clientModules: Array<{ moduleId: string }>;
+}>({
+  source,
+  documentPath,
+  async renderHtml(markdown) {
+    const solid = await markdown.loadModule("/src/solid-renderer.ts");
+    return solid.render(markdown.html, {
+      documentPath: markdown.documentPath,
+      imports: markdown.transform.imports,
+      root: markdown.root,
+      srcDir: markdown.srcDir,
+      contentRoot: markdown.contentRoot,
+    });
+  },
+});
+
+const styles = ctx.assets.stylesheets({
+  modules: page.metadata?.clientModules.map((module) => module.moduleId) ?? [],
+});
+```
+
+The supported order is:
+
+1. Markdown and MDX syntax transforms from the resolved Ox Content options.
+2. Built-in HTML/embed transforms, with project-relative provider cache and
+   media output paths resolved from the Vite root.
+3. Legacy `<Island>` HTML transform.
+4. Optional `renderHtml(markdown)` framework integration.
+5. Reader-chrome HTML transformation from `oxContent.ssg.readerChrome`, unless
+   the call overrides `readerChrome`.
+
+The result includes final `html`, the pre-framework `markdownHtml`, the full
+`TransformResult`, flattened `frontmatter`, `toc`, MDX `imports`, MDX `exports`,
+`components`, optional framework `metadata`, and `dependencies`. The input
+document path is included in `dependencies`; merge the returned dependencies
+into the route result so development responses invalidate when the source
+changes. Modules loaded with `markdown.loadModule()` and stylesheets resolved
+inside the renderer callback are tracked by the same development lifecycle as
+`ctx.loadModule()` and `ctx.assets.stylesheets()`, so a failed or changed
+renderer can recover without a process-global cache.
+
+The framework integration remains host-owned. For Solid HTML-string hosts, use
+`createSolidHtmlHostRenderer()` from `@ox-content/vite-plugin-solid` inside the
+callback and return its `html` plus any `clientModules` or diagnostics metadata
+the host needs for assets and hydration. `ctx.markdown.render()` only transforms
+the rendered article HTML; hosts that enable copy controls must still include
+reader-chrome CSS, script, and root attributes in their own document shell.
+
 ## Coordinated outputs
 
 Host-rendered HTML routes are connected to the same public output writers as
