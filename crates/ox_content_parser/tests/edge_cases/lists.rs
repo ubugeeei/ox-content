@@ -48,6 +48,26 @@ fn task_list_marker_sets_checked_when_enabled() {
 }
 
 #[test]
+fn crlf_and_lone_cr_tight_lists_stay_tight() {
+    for source in ["- item one\r\n- item two\r\n", "- item one\r- item two\r"] {
+        let allocator = Allocator::new();
+        let doc = parse_with_options(&allocator, source, ParserOptions::gfm());
+
+        match &doc.children[0] {
+            Node::List(list) => {
+                assert!(!list.spread, "{source:?}");
+                assert_eq!(list.children.len(), 2);
+                assert!(!list.children[0].spread, "{source:?}");
+                assert!(!list.children[1].spread, "{source:?}");
+                assert_eq!(flatten_text(&list.children[0].children[0]), "item one");
+                assert_eq!(flatten_text(&list.children[1].children[0]), "item two");
+            }
+            other => panic!("expected list, got {other:?}"),
+        }
+    }
+}
+
+#[test]
 fn nested_list_is_attached_to_previous_item() {
     let allocator = Allocator::new();
     let doc =

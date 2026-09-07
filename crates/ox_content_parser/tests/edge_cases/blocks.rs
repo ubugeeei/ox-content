@@ -98,6 +98,22 @@ fn unclosed_fence_consumes_until_eof() {
 }
 
 #[test]
+fn fenced_code_normalizes_crlf_and_lone_cr_line_endings() {
+    for source in ["```rust\r\nfn main() {}\r\n```\r\n", "```rust\rfn main() {}\r```\r"] {
+        let allocator = Allocator::new();
+        let doc = parse_with_options(&allocator, source, ParserOptions::default());
+
+        match &doc.children[0] {
+            Node::CodeBlock(block) => {
+                assert_eq!(block.lang, Some("rust"));
+                assert_eq!(block.value, "fn main() {}\n");
+            }
+            other => panic!("expected code block, got {other:?}"),
+        }
+    }
+}
+
+#[test]
 fn indented_fence_inside_list_item_stays_nested_block() {
     let allocator = Allocator::new();
     let doc = parse_with_options(

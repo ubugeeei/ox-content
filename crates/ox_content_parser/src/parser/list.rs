@@ -3,6 +3,7 @@ use ox_content_ast::{List, ListItem, Node, Span};
 
 use self::item_source::ListItemSource;
 use super::Parser;
+use super::line_scan::{is_line_ending_byte, line_terminator_end};
 use super::list_item::ParsedListItem;
 use crate::error::ParseResult;
 #[allow(unused_imports)]
@@ -37,9 +38,11 @@ impl<'a> Parser<'a> {
 
             // Consume the marker line.
             self.position += line_len;
-            let consumed_newline = self.peek() == Some('\n');
+            let bytes = self.source.as_bytes();
+            let consumed_newline =
+                self.position < bytes.len() && is_line_ending_byte(bytes[self.position]);
             if consumed_newline {
-                self.advance();
+                self.position = line_terminator_end(bytes, self.position);
             }
 
             let mut lazy_lines = rustc_hash::FxHashSet::default();
