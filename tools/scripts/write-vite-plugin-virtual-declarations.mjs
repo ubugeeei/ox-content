@@ -21,6 +21,7 @@ for (const extension of ["mts", "cts"]) {
   let declaration = await readFile(declarationFile, "utf8");
   declaration = declaration
     .replace(new RegExp(`\\n//# sourceMappingURL=index\\.d\\.${extension}\\.map\\s*$`, "u"), "")
+    .replace(/\n?\/\/#region src\/virtual\.d\.ts\n[\s\S]*?\n\/\/#endregion\n?/u, "\n")
     .trimStart();
   if (!declaration.startsWith(reference)) {
     declaration = `${reference}\n${declaration}`;

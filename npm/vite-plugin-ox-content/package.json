@@ -91,11 +91,11 @@
     },
     "./custom-host": {
       "import": {
-        "types": "./dist/custom-host.d.mts",
+        "types": "./dist/custom-host-public.d.mts",
         "default": "./dist/custom-host.mjs"
       },
       "require": {
-        "types": "./dist/custom-host.d.cts",
+        "types": "./dist/custom-host-public.d.cts",
         "default": "./dist/custom-host.cjs"
       }
     },

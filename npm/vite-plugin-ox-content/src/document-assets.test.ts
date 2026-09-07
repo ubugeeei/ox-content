@@ -19,8 +19,10 @@ describe("document asset public API", () => {
     expect(documentAssets.import.default).toBe("./dist/document-assets.mjs");
     expect(documentAssets.require.types).toBe("./dist/document-assets.d.cts");
     expect(documentAssets.require.default).toBe("./dist/document-assets.cjs");
-    expect(customHost.import.types).toBe("./dist/custom-host.d.mts");
+    expect(customHost.import.types).toBe("./dist/custom-host-public.d.mts");
     expect(customHost.import.default).toBe("./dist/custom-host.mjs");
+    expect(customHost.require.types).toBe("./dist/custom-host-public.d.cts");
+    expect(customHost.require.default).toBe("./dist/custom-host.cjs");
 
     const entries: string[] = require("../vite.config.ts").default.pack.entry;
     expect(entries).toEqual(
