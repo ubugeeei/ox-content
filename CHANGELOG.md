@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.1-beta.0] - 2026-09-08
+
+### Bug Fixes
+
+- repair SSR stylesheet and route invalidation _(affects: npm: @ox-content/vite-plugin)_
+- preserve table escaped pipe spans _(affects: crates: ox_content_parser)_
+- run hooks in footnote definitions _(affects: crates: ox_content_renderer)_
+
 ## [3.1.0] - 2026-09-07
 
 ### Features
