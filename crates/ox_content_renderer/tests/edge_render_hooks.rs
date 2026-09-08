@@ -2,7 +2,8 @@ use ox_content_allocator::Allocator;
 use ox_content_ast::Node;
 use ox_content_parser::{Parser, ParserOptions};
 use ox_content_renderer::{
-    HtmlRenderContext, HtmlRenderControl, HtmlRenderHooks, HtmlRenderer, NoHtmlRenderHooks,
+    HtmlRenderContext, HtmlRenderControl, HtmlRenderHooks, HtmlRenderer, HtmlRendererOptions,
+    NoHtmlRenderHooks,
 };
 
 #[test]
@@ -181,6 +182,85 @@ fn render_hooks_reach_named_mdx_child_nodes() {
         html,
         "<div class=\"ox-island\" data-ox-island=\"Widget\"><section>child</section></div>\n"
     );
+}
+
+#[test]
+fn render_hooks_reach_inline_math_inside_footnote_definitions() {
+    struct Hooks;
+
+    impl HtmlRenderHooks for Hooks {
+        fn render_node(
+            &mut self,
+            node: &Node<'_>,
+            cx: &mut HtmlRenderContext<'_>,
+        ) -> HtmlRenderControl {
+            match node {
+                Node::InlineMath(math) => {
+                    cx.write("<span class=\"my-math\">");
+                    cx.write_escaped(math.value);
+                    cx.write("</span>");
+                    HtmlRenderControl::Handled
+                }
+                _ => HtmlRenderControl::Default,
+            }
+        }
+    }
+
+    let allocator = Allocator::new();
+    let document = Parser::with_options(
+        &allocator,
+        "text[^1]\n\n[^1]: footnote $x^2$ here\n",
+        ParserOptions { math: true, ..ParserOptions::gfm() },
+    )
+    .parse()
+    .unwrap();
+    let html = HtmlRenderer::new().render_with_hooks(&document, &mut Hooks);
+
+    assert!(html.contains("<p>footnote <span class=\"my-math\">x^2</span> here</p>"), "{html}");
+    assert!(!html.contains("ox-math"), "{html}");
+}
+
+#[test]
+fn render_hooks_reach_nested_blocks_inside_semantic_footnote_definitions() {
+    struct Hooks;
+
+    impl HtmlRenderHooks for Hooks {
+        fn render_node(
+            &mut self,
+            node: &Node<'_>,
+            cx: &mut HtmlRenderContext<'_>,
+        ) -> HtmlRenderControl {
+            match node {
+                Node::Strong(strong) => {
+                    cx.write("<mark>");
+                    cx.render_nodes(&strong.children, self);
+                    cx.write("</mark>");
+                    HtmlRenderControl::Handled
+                }
+                _ => HtmlRenderControl::Default,
+            }
+        }
+    }
+
+    let allocator = Allocator::new();
+    let document = Parser::with_options(
+        &allocator,
+        "note[^n]\n\n[^n]: > nested **value**\n",
+        ParserOptions::gfm(),
+    )
+    .parse()
+    .unwrap();
+    let html = HtmlRenderer::with_options(HtmlRendererOptions {
+        semantic_footnotes: true,
+        ..HtmlRendererOptions::default()
+    })
+    .render_with_hooks(&document, &mut Hooks);
+
+    assert!(
+        html.contains("<blockquote>\n<p>nested <mark>value</mark></p>\n</blockquote>"),
+        "{html}"
+    );
+    assert!(!html.contains("<strong>value</strong>"), "{html}");
 }
 
 #[test]
