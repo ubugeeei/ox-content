@@ -33,6 +33,18 @@ defineTheme({
 
 External links, downloads, and hash-only links retain normal browser behavior.
 
+Custom hosts that opt into cross-document navigation should import the shared
+navigation stylesheet instead of writing a bare `@view-transition` rule. It
+uses the same overlay background fix as the built-in SSG and keeps reduced
+motion users on native navigation:
+
+```css
+@import "@ox-content/vite-plugin/styles/mpa-navigation.css";
+```
+
+If your host does not use the built-in `--octc-color-bg` token, set
+`--ox-content-mpa-navigation-bg` to your page background color.
+
 ## Theme Toggle Reveal
 
 `viewTransitions` covers navigation between documents. The theme toggle is a

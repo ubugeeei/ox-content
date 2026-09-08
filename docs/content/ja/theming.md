@@ -23,6 +23,18 @@ defineTheme({
 
 外部リンク、ダウンロード、ハッシュのみのリンクは、普通のブラウザ挙動のままです。
 
+cross-document navigation にオプトインする独自ホストは、生の
+`@view-transition` ルールを書く代わりに共有ナビゲーション CSS を import
+してください。組み込み SSG と同じ overlay background fix を使い、
+`prefers-reduced-motion` の読者には通常のナビゲーションを残します。
+
+```css
+@import "@ox-content/vite-plugin/styles/mpa-navigation.css";
+```
+
+組み込みの `--octc-color-bg` token を使わないホストでは、
+`--ox-content-mpa-navigation-bg` にページ背景色を設定してください。
+
 ## テーマトグルの円形リビール
 
 `viewTransitions` は文書間の遷移の話です。テーマトグルは _同一文書内_ の変更で、既定では即座に切り替わります。読者が操作した位置から広がる円形のリビールにはオプトインします。

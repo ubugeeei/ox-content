@@ -21,7 +21,7 @@ Import what you render. Site-specific theming stays in your app.
 @import "@ox-content/vite-plugin/styles/reader-chrome.css";
 ```
 
-Or pull every feature sheet:
+Or pull every non-navigation feature sheet:
 
 ```css
 @import "@ox-content/vite-plugin/styles/all.css";
@@ -48,11 +48,17 @@ you can load compact Tweet chrome without the full-card sheet.
 | `styles/graphviz.css`        | Graphviz DOT diagrams                                                                                          |
 | `styles/citations.css`       | Citation links and generated bibliography sections                                                             |
 | `styles/not-by-ai.css`       | `<NotByAI />` authorship badge                                                                                 |
-| `styles/all.css`             | The feature sheets above, in that order                                                                        |
+| `styles/mpa-navigation.css`  | Opt-in cross-document View Transition navigation, with stable overlay background and reduced-motion guard      |
+| `styles/all.css`             | The non-navigation feature sheets above, in that order                                                         |
 
 Feature sheets that use `var(--octc-*)` expect `core.css` first, or the same
 tokens defined on your host. Full Tweet chrome defines its own `--ox-tweet-*`
 variables and does not require `core.css`.
+
+`styles/mpa-navigation.css` enables browser navigation transitions, so it is
+not included in `styles/all.css`. Import it only when your custom host wants
+MPA View Transitions. Set `--ox-content-mpa-navigation-bg` when your page
+background does not come from `--octc-color-bg`.
 
 These files are copied from `crates/ox_content_ssg` at package build time. The
 built-in SSG includes the same sources, so official chrome cannot drift from

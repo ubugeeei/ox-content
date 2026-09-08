@@ -24,8 +24,13 @@ const DOCUMENTED_STYLE_IMPORTS = [
   "citations.css",
   "not-by-ai.css",
   "reader-chrome.css",
+  "mpa-navigation.css",
   "all.css",
 ] as const;
+
+const ALL_STYLESHEET_IMPORTS = DOCUMENTED_STYLE_IMPORTS.filter(
+  (name) => name !== "all.css" && name !== "mpa-navigation.css",
+);
 
 const CRATE_SOURCES: Record<
   Exclude<(typeof DOCUMENTED_STYLE_IMPORTS)[number], "all.css">,
@@ -55,6 +60,7 @@ const CRATE_SOURCES: Record<
   "citations.css": ["plugins/citations.css"],
   "not-by-ai.css": ["plugins/not-by-ai.css"],
   "reader-chrome.css": ["html/reader_chrome.css"],
+  "mpa-navigation.css": ["html/mpa_navigation.css"],
 };
 
 function crateCss(relativePath: string): string {
@@ -144,9 +150,10 @@ describe("published component styles", () => {
       );
 
       const allCss = packedCss(tarball, "all.css");
-      for (const name of Object.keys(CRATE_SOURCES)) {
+      for (const name of ALL_STYLESHEET_IMPORTS) {
         expect(allCss).toContain(`@import "./${name}";`);
       }
+      expect(allCss).not.toContain('@import "./mpa-navigation.css";');
     } finally {
       cleanup();
     }

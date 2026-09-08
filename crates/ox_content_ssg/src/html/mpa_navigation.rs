@@ -37,7 +37,9 @@ mod tests {
         // Whatever the snapshots leave transparent has to land on the page
         // color rather than on the compositor's own backdrop.
         assert!(MPA_NAVIGATION_CSS.contains("::view-transition {"));
-        assert!(MPA_NAVIGATION_CSS.contains("background-color: var(--octc-color-bg);"));
+        assert!(MPA_NAVIGATION_CSS.contains(
+            "background-color: var(--ox-content-mpa-navigation-bg, var(--octc-color-bg, Canvas));"
+        ));
     }
 
     #[test]

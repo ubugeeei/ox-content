@@ -14,7 +14,7 @@ const packageRoot = dirname(fileURLToPath(new URL("../package.json", import.meta
 const ssgSrc = join(packageRoot, "../../crates/ox_content_ssg/src");
 const outDir = join(packageRoot, "dist/styles");
 
-/** @typedef {{ name: string, sources: string[] }} StyleEntry */
+/** @typedef {{ name: string, sources: string[], includeInAll?: boolean }} StyleEntry */
 
 /** Public feature stylesheets. Filenames are package API. */
 export const STYLE_ENTRIES = /** @type {const} */ ([
@@ -48,6 +48,7 @@ export const STYLE_ENTRIES = /** @type {const} */ ([
   { name: "citations.css", sources: ["plugins/citations.css"] },
   { name: "not-by-ai.css", sources: ["plugins/not-by-ai.css"] },
   { name: "reader-chrome.css", sources: ["html/reader_chrome.css"] },
+  { name: "mpa-navigation.css", sources: ["html/mpa_navigation.css"], includeInAll: false },
   { name: "theme-transition.css", sources: ["html/theme_transition.css"] },
 ]);
 
@@ -70,7 +71,9 @@ export function copyComponentStyles() {
     writeGenerated(entry.name, entry.sources.map(crateCss).join(""));
   }
 
-  const imports = STYLE_ENTRIES.map((entry) => `@import "./${entry.name}";`).join("\n");
+  const imports = STYLE_ENTRIES.filter((entry) => entry.includeInAll !== false)
+    .map((entry) => `@import "./${entry.name}";`)
+    .join("\n");
   writeGenerated(ALL_STYLESHEET, `${imports}\n`);
 
   return {
