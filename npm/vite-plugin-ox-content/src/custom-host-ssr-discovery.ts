@@ -38,7 +38,7 @@ export type RootRecord = {
   dependencies: string[];
   diagnostics: OxContentCustomHostStylesheetDiagnostic[];
   referenceId?: string;
-  stylesheet?: OxContentCustomHostStylesheet;
+  stylesheets?: readonly OxContentCustomHostStylesheet[];
 };
 
 export async function expandConfiguredModules(

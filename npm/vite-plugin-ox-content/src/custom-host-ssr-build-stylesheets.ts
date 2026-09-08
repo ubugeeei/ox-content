@@ -10,7 +10,7 @@ const VIRTUAL_SSR_STYLESHEET_PREFIX = "\0ox-content:custom-host-ssr-stylesheet:"
 
 export type SsrStylesheetBuildRecord = {
   moduleId: string;
-  stylesheet?: OxContentCustomHostStylesheet;
+  stylesheets?: readonly OxContentCustomHostStylesheet[];
 };
 
 export type WritableSsrStylesheetBuildRecord = SsrStylesheetBuildRecord & {
@@ -29,6 +29,7 @@ type SsrStylesheetBundleEntry =
   | {
       type: "chunk";
       fileName?: string;
+      imports?: string[];
       viteMetadata?: { importedCss?: Set<string> | string[] };
     };
 
@@ -40,16 +41,15 @@ export function resolveBuildSsrStylesheetRecords(input: {
   const seen = new Set<string>();
 
   for (const record of input.records) {
-    if (!record.stylesheet) {
-      continue;
-    }
-    const stylesheet = {
-      ...record.stylesheet,
-      href: withBase(input.base ?? "/", record.stylesheet.href),
-    };
-    if (!seen.has(stylesheet.href)) {
-      seen.add(stylesheet.href);
-      stylesheets.push(stylesheet);
+    for (const recordStylesheet of record.stylesheets ?? []) {
+      const stylesheet = {
+        ...recordStylesheet,
+        href: withBase(input.base ?? "/", recordStylesheet.href),
+      };
+      if (!seen.has(stylesheet.href)) {
+        seen.add(stylesheet.href);
+        stylesheets.push(stylesheet);
+      }
     }
   }
 
@@ -98,54 +98,83 @@ export function resolveSsrStylesheetBundleOutput(
   record: WritableSsrStylesheetBuildRecord,
   bundle: SsrStylesheetOutputBundle,
   getFileName: (referenceId: string) => string,
-): OxContentCustomHostStylesheet | undefined {
+): OxContentCustomHostStylesheet[] {
   if (record.css.length === 0) {
-    return undefined;
+    return [];
   }
   if (!record.referenceId) {
-    return undefined;
+    return [];
   }
-  const outputPath = cssOutputPath(bundle, getFileName(record.referenceId), record.entryName);
-  if (!outputPath) {
-    return undefined;
-  }
-  return {
-    kind: "style",
-    href: `/${outputPath}`,
-    moduleId: record.moduleId,
-    outputPath,
-  };
+  return cssOutputPaths(bundle, getFileName(record.referenceId), record.entryName).map(
+    (outputPath) => ({
+      kind: "style",
+      href: `/${outputPath}`,
+      moduleId: record.moduleId,
+      outputPath,
+    }),
+  );
 }
 
-function cssOutputPath(
+function cssOutputPaths(
   bundle: SsrStylesheetOutputBundle,
   fileName: string,
   entryName: string,
-): string | undefined {
-  const entry = bundle[fileName];
-  if (entry?.type === "asset" && fileName.endsWith(".css")) {
-    return fileName;
-  }
-  if (entry?.type === "chunk") {
-    const importedCss = viteImportedCss(entry);
-    if (importedCss[0]) {
-      return importedCss[0];
+): string[] {
+  const paths: string[] = [];
+  const seenCss = new Set<string>();
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+
+  const addCss = (css: string) => {
+    if (!seenCss.has(css)) {
+      seenCss.add(css);
+      paths.push(css);
+    }
+  };
+
+  const visit = (chunkFileName: string) => {
+    if (visiting.has(chunkFileName) || visited.has(chunkFileName)) {
+      return;
+    }
+    const entry = bundle[chunkFileName];
+    if (!entry) {
+      return;
+    }
+    if (entry.type === "asset") {
+      if (chunkFileName.endsWith(".css")) {
+        addCss(chunkFileName);
+      }
+      return;
+    }
+    visiting.add(chunkFileName);
+    for (const imported of entry.imports ?? []) {
+      visit(imported);
+    }
+    for (const css of viteImportedCss(entry)) {
+      addCss(css);
+    }
+    visiting.delete(chunkFileName);
+    visited.add(chunkFileName);
+  };
+
+  visit(fileName);
+  if (paths.length === 0) {
+    for (const css of findNamedCssAssets(bundle, entryName)) {
+      addCss(css);
     }
   }
-  return findNamedCssAsset(bundle, entryName);
+  return paths;
 }
 
-function findNamedCssAsset(
-  bundle: SsrStylesheetOutputBundle,
-  entryName: string,
-): string | undefined {
+function findNamedCssAssets(bundle: SsrStylesheetOutputBundle, entryName: string): string[] {
   const prefix = `assets/${entryName}-`;
+  const matches: string[] = [];
   for (const [fileName, entry] of Object.entries(bundle)) {
     if (entry.type === "asset" && fileName.startsWith(prefix) && fileName.endsWith(".css")) {
-      return fileName;
+      matches.push(fileName);
     }
   }
-  return undefined;
+  return matches;
 }
 
 function viteImportedCss(chunk: Extract<SsrStylesheetBundleEntry, { type: "chunk" }>): string[] {
