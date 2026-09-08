@@ -65,7 +65,7 @@ export function ssrStylesheetEntryName(file: string, root: string): string {
 }
 
 export function ssrStylesheetVirtualId(entryName: string): string {
-  return `${VIRTUAL_SSR_STYLESHEET_PREFIX}${entryName}.css`;
+  return `${VIRTUAL_SSR_STYLESHEET_PREFIX}${entryName}.js`;
 }
 
 export function isSsrStylesheetVirtualId(id: string): boolean {
@@ -77,8 +77,21 @@ export function ssrStylesheetVirtualCss(
   root: string,
 ): string {
   return `${record.css
-    .map((stylesheet) => `@import ${JSON.stringify(publicModuleId(stylesheet.file, root))};`)
+    .map((stylesheet, index) => stylesheetImport(stylesheet.file, root, index))
     .join("\n")}\n`;
+}
+
+function stylesheetImport(file: string, root: string, index: number): string {
+  const moduleId = JSON.stringify(publicModuleId(file, root));
+  if (isCssModuleFile(file)) {
+    const binding = `__oxContentSsrCssModule${index}`;
+    return `import ${binding} from ${moduleId};\nexport const ${binding}ClassNames = Object.values(${binding});`;
+  }
+  return `import ${moduleId};`;
+}
+
+function isCssModuleFile(file: string): boolean {
+  return /\.module\.css(?:[?#].*)?$/u.test(file);
 }
 
 export function resolveSsrStylesheetBundleOutput(

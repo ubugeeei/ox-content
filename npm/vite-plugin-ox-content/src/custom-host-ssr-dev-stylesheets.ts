@@ -33,7 +33,7 @@ export function resolveStaticDevSsrStylesheets(input: {
   const diagnostics: OxContentCustomHostStylesheetDiagnostic[] = [];
   const dependencies = new Set<string>();
   const descriptors: OxContentCustomHostSsrStylesheetDescriptor[] = [];
-  const seenCss = new Set<string>();
+  const seenAggregateCss = new Set<string>();
 
   for (const moduleId of input.modules) {
     const rootFile = resolveRootModule(moduleId, input.root);
@@ -45,8 +45,13 @@ export function resolveStaticDevSsrStylesheets(input: {
       });
       continue;
     }
-    const record = collectRoot(moduleId, rootFile, input.root, input.base, seenCss, dependencies);
-    stylesheets.push(...record.stylesheets);
+    const record = collectRoot(moduleId, rootFile, input.root, input.base, dependencies);
+    for (const stylesheet of record.stylesheets) {
+      if (!seenAggregateCss.has(stylesheet.href)) {
+        seenAggregateCss.add(stylesheet.href);
+        stylesheets.push(stylesheet);
+      }
+    }
     diagnostics.push(...record.diagnostics);
     descriptors.push({
       moduleId,
@@ -66,12 +71,12 @@ function collectRoot(
   rootFile: string,
   root: string,
   base: string | undefined,
-  seenCss: Set<string>,
   dependencies: Set<string>,
 ) {
   const stylesheets: OxContentCustomHostStylesheet[] = [];
   const diagnostics: OxContentCustomHostStylesheetDiagnostic[] = [];
   const rootDependencies = new Set<string>();
+  const seenRootCss = new Set<string>();
 
   const visit = (file: string, seen: Set<string>) => {
     const clean = normalizeFilePath(file);
@@ -103,8 +108,8 @@ function collectRoot(
       rootDependencies.add(imported);
       if (isStyleFile(imported)) {
         const href = withBase(base ?? "/", publicModuleId(imported, root));
-        if (!seenCss.has(href)) {
-          seenCss.add(href);
+        if (!seenRootCss.has(href)) {
+          seenRootCss.add(href);
           stylesheets.push({ kind: "style", href, moduleId });
         }
       } else {

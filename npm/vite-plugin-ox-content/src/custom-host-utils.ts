@@ -7,6 +7,7 @@ import type {
   OxContentCustomHostRenderResult,
   SerializedResponse,
 } from "./custom-host-types";
+export { invalidateViteModules } from "./custom-host-vite-invalidation";
 import type { ResolvedOptions } from "./types";
 
 export function resultBody(result: OxContentCustomHostRenderResult): string | Uint8Array {
@@ -133,19 +134,6 @@ export function versionedModuleId(moduleId: string, version: number): string {
 
 export function isFileLikeModuleId(moduleId: string): boolean {
   return moduleId.startsWith("/") || moduleId.startsWith(".") || moduleId.includes("\\");
-}
-
-export function invalidateViteModules(server: ViteDevServer, file: string, all = false): void {
-  const moduleGraph = server.moduleGraph as ViteDevServer["moduleGraph"] & {
-    invalidateAll?: () => void;
-  };
-  if (all && typeof moduleGraph.invalidateAll === "function") {
-    moduleGraph.invalidateAll();
-    return;
-  }
-  for (const mod of server.moduleGraph.getModulesByFile(file) ?? []) {
-    server.moduleGraph.invalidateModule(mod);
-  }
 }
 
 export function resolveDependency(root: string, dependency: string): string {
