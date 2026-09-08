@@ -103,7 +103,7 @@ export function createCustomHostSsrStylesheetController(
     },
     writeBundle(bundle, getFileName) {
       for (const record of buildRecords) {
-        record.stylesheet = resolveSsrStylesheetBundleOutput(record, bundle, getFileName);
+        record.stylesheets = resolveSsrStylesheetBundleOutput(record, bundle, getFileName);
       }
     },
     async write(_outDir) {},
@@ -135,7 +135,10 @@ function resolveBuild(
     return missingResolverResult(input.modules);
   }
   const descriptors: OxContentCustomHostSsrStylesheetDescriptor[] = [];
-  const styleRecords: { moduleId: string; stylesheet?: OxContentCustomHostStylesheet }[] = [];
+  const styleRecords: {
+    moduleId: string;
+    stylesheets?: readonly OxContentCustomHostStylesheet[];
+  }[] = [];
   const diagnostics: OxContentCustomHostStylesheetDiagnostic[] = [];
 
   for (const moduleId of input.modules) {
@@ -148,7 +151,7 @@ function resolveBuild(
       });
       continue;
     }
-    const buildRecord = { moduleId, stylesheet: record.stylesheet };
+    const buildRecord = { moduleId, stylesheets: record.stylesheets };
     styleRecords.push(buildRecord);
     diagnostics.push(...record.diagnostics);
     descriptors.push({

@@ -188,12 +188,17 @@ async function writeSourceFiles(root: string): Promise<void> {
   await writeProjectFile(
     root,
     "src/pages/home/page.ts",
-    'import styles from "./home.module.css";\nimport "./home.css";\nexport const marker = "home server-only";\nexport const className = styles.homeTitle;\n',
+    'import { sharedNavClass } from "../../components/SharedNav.ts";\nimport styles from "./home.module.css";\nimport "./home.css";\nexport const marker = "home server-only";\nexport const className = styles.homeTitle;\nexport { sharedNavClass };\n',
   );
   await writeProjectFile(
     root,
     "src/pages/work/page.ts",
-    'import styles from "./work.module.css";\nimport "./work.css";\nexport const marker = "work server-only";\nexport const className = styles.workTitle;\n',
+    'import { sharedNavClass } from "../../components/SharedNav.ts";\nimport styles from "./work.module.css";\nimport "./work.css";\nexport const marker = "work server-only";\nexport const className = styles.workTitle;\nexport { sharedNavClass };\n',
+  );
+  await writeProjectFile(
+    root,
+    "src/components/SharedNav.ts",
+    'import styles from "./shared-nav.module.css";\nexport const sharedNavClass = styles.sharedNavigation;\n',
   );
   await writeProjectFile(
     root,
@@ -217,6 +222,11 @@ async function writeSourceFiles(root: string): Promise<void> {
   );
   await writeProjectFile(root, "src/styles/prose.woff2", "prose-font");
   await writeProjectFile(root, "src/components/nested.css", ".nested{padding:1px}\n");
+  await writeProjectFile(
+    root,
+    "src/components/shared-nav.module.css",
+    ".sharedNavigation{display:flex}\n",
+  );
   await writeProjectFile(
     root,
     "src/pages/home/home.css",
@@ -266,6 +276,7 @@ export default {
         renders += 1;
         const layoutModule = ctx.mode === "build" ? await ctx.loadModule("/src/layout.ts") : { layoutClass: "layout" };
         const pageModule = ctx.mode === "build" ? await ctx.loadModule(route.moduleId) : { className: route.marker };
+        const sharedNavClass = pageModule.sharedNavClass || "sharedNavigation";
         const ssr = ctx.assets.ssrStylesheets({
           modules: ["/src/layout.ts", route.moduleId],
         });
@@ -284,7 +295,7 @@ export default {
           clientEntries: ["src/main.ts"],
         });
         return {
-          html: "<!doctype html><html><head>" + assets.headHtml + "</head><body data-render=\\"" + renders + "\\" data-page-style=\\"" + route.marker + "\\" data-diagnostics=\\"" + diagnostics + "\\" data-style-content-diagnostics=\\"" + content.diagnostics.map((diagnostic) => diagnostic.code).join(",") + "\\"><div class=\\"" + layoutModule.layoutClass + " nested\\"><main class=\\"" + pageModule.className + "\\">" + route.marker + "</main></div></body></html>",
+          html: "<!doctype html><html><head>" + assets.headHtml + "</head><body data-render=\\"" + renders + "\\" data-page-style=\\"" + route.marker + "\\" data-diagnostics=\\"" + diagnostics + "\\" data-style-content-diagnostics=\\"" + content.diagnostics.map((diagnostic) => diagnostic.code).join(",") + "\\"><div class=\\"" + layoutModule.layoutClass + " nested\\"><nav class=\\"" + sharedNavClass + "\\">shared</nav><main class=\\"" + pageModule.className + "\\">" + route.marker + "</main></div></body></html>",
           dependencies: [...ssr.dependencies, ...island.dependencies],
         };
       },

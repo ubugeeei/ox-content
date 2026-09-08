@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { build as viteBuild, createServer } from "vite";
 import {
+  resolveSsrStylesheetBundleOutput,
+  type SsrStylesheetOutputBundle,
+} from "./custom-host-ssr-build-stylesheets";
+import {
   cleanupCustomHostSsrFixtures,
   createProject,
   hasMarker,
@@ -20,6 +24,37 @@ import {
 afterEach(cleanupCustomHostSsrFixtures);
 
 describe("custom host SSR stylesheets", () => {
+  it("collects imported build chunk CSS before direct root CSS", () => {
+    const bundle = {
+      "assets/root.js": {
+        type: "chunk",
+        imports: ["assets/shared.js"],
+        viteMetadata: { importedCss: new Set(["assets/root-a.css", "assets/root-b.css"]) },
+      },
+      "assets/shared.js": {
+        type: "chunk",
+        viteMetadata: { importedCss: ["assets/shared.css", "assets/root-a.css"] },
+      },
+    } satisfies SsrStylesheetOutputBundle;
+
+    const stylesheets = resolveSsrStylesheetBundleOutput(
+      {
+        moduleId: "/src/root.ts",
+        entryName: "src-root",
+        css: [{ file: "/repo/src/root.css" }],
+        referenceId: "root-reference",
+      },
+      bundle,
+      () => "assets/root.js",
+    );
+
+    expect(stylesheets.map((stylesheet) => stylesheet.href)).toEqual([
+      "/assets/shared.css",
+      "/assets/root-a.css",
+      "/assets/root-b.css",
+    ]);
+  });
+
   it("emits route-specific SSR styles without browser-bundling server modules", async () => {
     const root = await createProject("ox-custom-host-ssr-style-build-");
 
@@ -43,12 +78,16 @@ describe("custom host SSR stylesheets", () => {
     const homeCss = await readLinkedCss(root, home);
     const homeTitleClass = elementClass(home, "main");
     const layoutClass = elementClass(home, "div");
+    const sharedNavClass = elementClass(home, "nav");
     expect(homeTitleClass).not.toBe("homeTitle");
     expect(layoutClass).not.toBe("layoutScoped");
+    expect(sharedNavClass).not.toBe("sharedNavigation");
     expect(homeCss).toContain(cssClassSelector(homeTitleClass));
     expect(homeCss).toContain(cssClassSelector(layoutClass));
+    expect(homeCss).toContain(cssClassSelector(sharedNavClass));
     expect(homeCss).not.toContain(".homeTitle{");
     expect(homeCss).not.toContain(".layoutScoped{");
+    expect(homeCss).not.toContain(".sharedNavigation{");
     expect(homeCss).not.toContain(":global");
     expect(homeCss).toMatch(/body\[data-page-style=home\]/u);
     expect(home).toContain(cssClassSelector(homeTitleClass));
@@ -71,6 +110,9 @@ describe("custom host SSR stylesheets", () => {
     }
 
     const workCss = await readLinkedCss(root, work);
+    const workSharedNavClass = elementClass(work, "nav");
+    expect(workSharedNavClass).toBe(sharedNavClass);
+    expect(workCss).toContain(cssClassSelector(workSharedNavClass));
     expect(workCss).toContain(".work");
     expect(workCss).not.toContain(".home");
 
@@ -140,11 +182,13 @@ describe("custom host SSR stylesheets", () => {
   });
 });
 
-function elementClass(html: string, tag: "div" | "main"): string {
+function elementClass(html: string, tag: "div" | "main" | "nav"): string {
   const match =
     tag === "div"
       ? /<div class="([^"]+) nested">/u.exec(html)
-      : /<main class="([^"]+)">/u.exec(html);
+      : tag === "main"
+        ? /<main class="([^"]+)">/u.exec(html)
+        : /<nav class="([^"]+)">/u.exec(html);
   const value = match?.[1]?.split(/\s+/u)[0];
   if (!value) {
     throw new Error(`Missing ${tag} class in ${html}`);
