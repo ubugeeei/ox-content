@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.1-beta.1] - 2026-09-08
+
+### Bug Fixes
+
+- include imported SSR chunk CSS _(affects: npm: @ox-content/vite-plugin)_
+
 ## [3.1.1-beta.0] - 2026-09-08
 
 ### Bug Fixes
