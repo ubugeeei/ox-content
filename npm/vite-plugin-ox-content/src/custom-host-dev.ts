@@ -4,6 +4,8 @@ import {
   createCustomHostCollectionAssetsDevController,
   type CustomHostCollectionAssetsDevController,
 } from "./custom-host-collection-assets";
+import type { DevRoutesState } from "./custom-host-dev-state";
+import { hasRouteHostImportMetaGlob } from "./custom-host-route-glob";
 import type { CustomHostSsrStylesheetController } from "./custom-host-ssr-stylesheets";
 import {
   createBaseContext,
@@ -17,10 +19,8 @@ import { createTrackedContext, devResponse } from "./custom-host-dev-response";
 import type {
   DevCacheEntry,
   OxContentCustomHostDependency,
-  OxContentCustomHostMemo,
   OxContentCustomHostModule,
   OxContentCustomHostOptions,
-  OxContentCustomHostRoute,
   ResolvedThemeTokens,
 } from "./custom-host-types";
 import {
@@ -46,11 +46,6 @@ import {
   type NormalizedCustomHostDependency,
 } from "./custom-host-watch";
 import type { OxContentOptions, ResolvedOptions } from "./types";
-
-type DevRoutesState = {
-  routes: readonly OxContentCustomHostRoute[];
-  memo: OxContentCustomHostMemo;
-};
 
 export function configureDevServer(
   server: ViteDevServer,
@@ -90,6 +85,7 @@ export function configureDevServer(
   let hostPromise: Promise<OxContentCustomHostModule> | undefined;
   let routesStatePromise: Promise<DevRoutesState> | undefined;
   let routesGeneration = 0;
+  let routeHostUsesImportMetaGlob = false;
   let reloadTimer: ReturnType<typeof setTimeout> | undefined;
   const addedWatchPaths = new Set<string>();
 
@@ -193,6 +189,7 @@ export function configureDevServer(
         .then((host) => loadRoutes(host, context))
         .then((routes) => {
           if (routesStatePromise === current && routesGeneration === generation) {
+            routeHostUsesImportMetaGlob = hasRouteHostImportMetaGlob(server, input.host, root);
             const inferred = normalizeCustomHostDependencies(root, [...trackedDependencies]);
             routeCatalogueDependencies = [...configuredRouteDependencies, ...inferred];
             addWatchPaths(dependencyWatchPaths(routeCatalogueDependencies));
@@ -251,7 +248,7 @@ export function configureDevServer(
     if (anyCustomHostDependencyMatches(routeCatalogueDependencies, changed)) {
       ssrVersion += 1;
       invalidateViteModules(server, changed, true);
-      clearRoutes();
+      (routeHostUsesImportMetaGlob ? clearHost : clearRoutes)();
       scheduleReload();
       return;
     }

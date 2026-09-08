@@ -41,6 +41,18 @@ describe("custom host SSR stylesheets", () => {
     expect(home).not.toContain("server-only");
 
     const homeCss = await readLinkedCss(root, home);
+    const homeTitleClass = elementClass(home, "main");
+    const layoutClass = elementClass(home, "div");
+    expect(homeTitleClass).not.toBe("homeTitle");
+    expect(layoutClass).not.toBe("layoutScoped");
+    expect(homeCss).toContain(cssClassSelector(homeTitleClass));
+    expect(homeCss).toContain(cssClassSelector(layoutClass));
+    expect(homeCss).not.toContain(".homeTitle{");
+    expect(homeCss).not.toContain(".layoutScoped{");
+    expect(homeCss).not.toContain(":global");
+    expect(homeCss).toMatch(/body\[data-page-style=home\]/u);
+    expect(home).toContain(cssClassSelector(homeTitleClass));
+    expect(home).toContain(cssClassSelector(layoutClass));
     expect(homeCss).toContain(".layout");
     expect(homeCss).toContain(".nested");
     expect(homeCss).toContain(".home");
@@ -95,6 +107,22 @@ describe("custom host SSR stylesheets", () => {
     expect(updated.text).toContain('href="/docs/src/components/nested-extra.css"');
   });
 
+  it("keeps shared static dev SSR styles in every root descriptor", async () => {
+    const root = await createProject("ox-custom-host-ssr-style-shared-dev-");
+    const server = await trackDevServer(createServer(viteConfig(root, { reloadDebounceMs: 1 })));
+    const listener = await listen(server);
+
+    const response = await read(listener.port, "/docs/shared");
+    expect(response.status).toBe(200);
+    const result = JSON.parse(response.text);
+
+    expect(result.stylesheets).toEqual(["/docs/src/shared.css"]);
+    expect(result.descriptors).toEqual([
+      { moduleId: "/src/shared-a.ts", stylesheets: ["/docs/src/shared.css"] },
+      { moduleId: "/src/shared-b.ts", stylesheets: ["/docs/src/shared.css"] },
+    ]);
+  });
+
   it("reports unsupported local dynamic SSR imports", async () => {
     const root = await createProject("ox-custom-host-ssr-style-diagnostic-");
     await writeProjectFile(
@@ -111,3 +139,19 @@ describe("custom host SSR stylesheets", () => {
     expect(await readLinkedCss(root, home)).not.toContain(".late");
   });
 });
+
+function elementClass(html: string, tag: "div" | "main"): string {
+  const match =
+    tag === "div"
+      ? /<div class="([^"]+) nested">/u.exec(html)
+      : /<main class="([^"]+)">/u.exec(html);
+  const value = match?.[1]?.split(/\s+/u)[0];
+  if (!value) {
+    throw new Error(`Missing ${tag} class in ${html}`);
+  }
+  return value;
+}
+
+function cssClassSelector(className: string): string {
+  return `.${className}`;
+}

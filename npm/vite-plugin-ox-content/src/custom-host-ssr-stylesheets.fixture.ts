@@ -178,7 +178,7 @@ async function writeSourceFiles(root: string): Promise<void> {
   await writeProjectFile(
     root,
     "src/layout.ts",
-    'import "./layout.css";\nimport { nested } from "./components/Nested.ts";\nexport function layout(body) { return `<div class="layout ${nested}">${body}</div>`; }\n',
+    'import styles from "./layout.module.css";\nimport "./layout.css";\nimport { nested } from "./components/Nested.ts";\nexport const layoutClass = styles.layoutScoped;\nexport function layout(body) { return `<div class="${styles.layoutScoped} ${nested}">${body}</div>`; }\n',
   );
   await writeProjectFile(
     root,
@@ -188,12 +188,12 @@ async function writeSourceFiles(root: string): Promise<void> {
   await writeProjectFile(
     root,
     "src/pages/home/page.ts",
-    'import "./home.css";\nexport const marker = "home server-only";\n',
+    'import styles from "./home.module.css";\nimport "./home.css";\nexport const marker = "home server-only";\nexport const className = styles.homeTitle;\n',
   );
   await writeProjectFile(
     root,
     "src/pages/work/page.ts",
-    'import "./work.css";\nexport const marker = "work server-only";\n',
+    'import styles from "./work.module.css";\nimport "./work.css";\nexport const marker = "work server-only";\nexport const className = styles.workTitle;\n',
   );
   await writeProjectFile(
     root,
@@ -207,6 +207,11 @@ async function writeSourceFiles(root: string): Promise<void> {
   );
   await writeProjectFile(
     root,
+    "src/layout.module.css",
+    '.layoutScoped{display:grid}\n:global(body[data-page-style="layout"]){--layout-style:ready}\n',
+  );
+  await writeProjectFile(
+    root,
     "src/styles/prose.css",
     '@font-face{font-family:"prose";src:url("./prose.woff2") format("woff2")}.prose{line-height:1.6}\n',
   );
@@ -217,9 +222,31 @@ async function writeSourceFiles(root: string): Promise<void> {
     "src/pages/home/home.css",
     '.home{color:green;background:url("./home.png")}\n',
   );
+  await writeProjectFile(
+    root,
+    "src/pages/home/home.module.css",
+    '.homeTitle{color:green}\n:global(body[data-page-style="home"]){--home-style:ready}\n',
+  );
   await writeProjectFile(root, "src/pages/home/home.png", "home-image");
   await writeProjectFile(root, "src/pages/work/work.css", ".work{color:blue}\n");
+  await writeProjectFile(root, "src/pages/work/work.module.css", ".workTitle{color:blue}\n");
   await writeProjectFile(root, "src/islands/island.css", ".island{color:purple}\n");
+  await writeProjectFile(root, "src/shared.css", ".shared{color:gold}\n");
+  await writeProjectFile(
+    root,
+    "src/shared-a.ts",
+    'import "./shared.css";\nexport const a = true;\n',
+  );
+  await writeProjectFile(
+    root,
+    "src/shared-child.ts",
+    'import "./shared.css";\nexport const child = true;\n',
+  );
+  await writeProjectFile(
+    root,
+    "src/shared-b.ts",
+    'import { child } from "./shared-child.ts";\nexport const b = child;\n',
+  );
 }
 
 function hostModuleSource(): string {
@@ -232,33 +259,56 @@ const routes = [
 ];
 
 export default {
-  routes: routes.map((route) => ({
-    path: route.path,
-    async render(ctx) {
-      renders += 1;
-      const ssr = ctx.assets.ssrStylesheets({
-        modules: ["/src/layout.ts", route.moduleId],
-      });
-      const island = ctx.assets.stylesheets({ modules: ["/src/islands/client.ts"] });
-      const diagnostics = [...ssr.diagnostics, ...island.diagnostics]
-        .map((diagnostic) => diagnostic.code)
-        .join(",");
-      const content = await ctx.assets.stylesheetContent({ stylesheets: ssr.stylesheets });
-      const assets = ctx.assets.document({
-        islandStyles: [...ssr.stylesheets, ...island.stylesheets],
-        inlineStyles: content.stylesheets.map((stylesheet) => ({
-          key: "critical:" + stylesheet.href,
-          content: stylesheet.content,
-          attrs: { "data-critical": stylesheet.href },
-        })),
-        clientEntries: ["src/main.ts"],
-      });
-      return {
-        html: "<!doctype html><html><head>" + assets.headHtml + "</head><body data-render=\\"" + renders + "\\" data-diagnostics=\\"" + diagnostics + "\\" data-style-content-diagnostics=\\"" + content.diagnostics.map((diagnostic) => diagnostic.code).join(",") + "\\"><div class=\\"layout nested\\"><main>" + route.marker + "</main></div></body></html>",
-        dependencies: [...ssr.dependencies, ...island.dependencies],
-      };
+  routes: [
+    ...routes.map((route) => ({
+      path: route.path,
+      async render(ctx) {
+        renders += 1;
+        const layoutModule = ctx.mode === "build" ? await ctx.loadModule("/src/layout.ts") : { layoutClass: "layout" };
+        const pageModule = ctx.mode === "build" ? await ctx.loadModule(route.moduleId) : { className: route.marker };
+        const ssr = ctx.assets.ssrStylesheets({
+          modules: ["/src/layout.ts", route.moduleId],
+        });
+        const island = ctx.assets.stylesheets({ modules: ["/src/islands/client.ts"] });
+        const diagnostics = [...ssr.diagnostics, ...island.diagnostics]
+          .map((diagnostic) => diagnostic.code)
+          .join(",");
+        const content = await ctx.assets.stylesheetContent({ stylesheets: ssr.stylesheets });
+        const assets = ctx.assets.document({
+          islandStyles: [...ssr.stylesheets, ...island.stylesheets],
+          inlineStyles: content.stylesheets.map((stylesheet) => ({
+            key: "critical:" + stylesheet.href,
+            content: stylesheet.content,
+            attrs: { "data-critical": stylesheet.href },
+          })),
+          clientEntries: ["src/main.ts"],
+        });
+        return {
+          html: "<!doctype html><html><head>" + assets.headHtml + "</head><body data-render=\\"" + renders + "\\" data-page-style=\\"" + route.marker + "\\" data-diagnostics=\\"" + diagnostics + "\\" data-style-content-diagnostics=\\"" + content.diagnostics.map((diagnostic) => diagnostic.code).join(",") + "\\"><div class=\\"" + layoutModule.layoutClass + " nested\\"><main class=\\"" + pageModule.className + "\\">" + route.marker + "</main></div></body></html>",
+          dependencies: [...ssr.dependencies, ...island.dependencies],
+        };
+      },
+    })),
+    {
+      path: "/shared",
+      render(ctx) {
+        const ssr = ctx.assets.ssrStylesheets({
+          modules: ["/src/shared-a.ts", "/src/shared-b.ts"],
+        });
+        return {
+          text: JSON.stringify({
+            stylesheets: ssr.stylesheets.map((stylesheet) => stylesheet.href),
+            descriptors: ssr.descriptors.map((descriptor) => ({
+              moduleId: descriptor.moduleId,
+              stylesheets: descriptor.stylesheets.map((stylesheet) => stylesheet.href),
+            })),
+          }),
+          contentType: "application/json",
+          dependencies: ssr.dependencies,
+        };
+      },
     },
-  })),
+  ],
 };
 `;
 }
