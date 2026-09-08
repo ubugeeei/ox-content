@@ -231,7 +231,9 @@ impl HtmlRenderer {
             Node::Subscript(node) => self.render_subscript_with_hooks(node, hooks),
             Node::FootnoteReference(node) => self.render_footnote_reference(node),
             Node::Definition(_) => {}
-            Node::FootnoteDefinition(node) => self.render_footnote_definition(node),
+            Node::FootnoteDefinition(node) => {
+                self.render_footnote_definition_with_hooks(node, hooks);
+            }
             Node::MdxJsxFlowElement(node) => {
                 self.render_mdx_jsx_flow_element_with_hooks(node, hooks);
             }

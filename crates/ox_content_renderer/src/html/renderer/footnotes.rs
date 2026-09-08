@@ -17,7 +17,7 @@ use ox_content_ast::{FootnoteDefinition, FootnoteReference, Span};
 
 use super::super::escape::write_escaped_into;
 use super::super::heading::slugify_heading_into;
-use super::HtmlRenderer;
+use super::{HtmlRenderHooks, HtmlRenderer};
 
 /// First `-N` tried when a slug repeats, matching the ids the scan produced.
 const FIRST_SUFFIX: usize = 2;
@@ -53,6 +53,19 @@ impl HtmlRenderer {
             return;
         }
         self.render_legacy_footnote_definition(footnote_def);
+    }
+
+    pub(in crate::html::renderer) fn render_footnote_definition_with_hooks<H: HtmlRenderHooks>(
+        &mut self,
+        footnote_def: &FootnoteDefinition<'_>,
+        hooks: &mut H,
+    ) {
+        crate::profile_span!("renderer::visit_footnote_def");
+        if self.options.semantic_footnotes {
+            self.collect_semantic_footnote_definition_with_hooks(footnote_def, hooks);
+            return;
+        }
+        self.render_legacy_footnote_definition_with_hooks(footnote_def, hooks);
     }
 
     pub(in crate::html::renderer) fn finish_semantic_footnotes(&mut self) {
@@ -130,6 +143,24 @@ impl HtmlRenderer {
         self.write("\">↩</a>\n</div>\n");
     }
 
+    fn render_legacy_footnote_definition_with_hooks<H: HtmlRenderHooks>(
+        &mut self,
+        footnote_def: &FootnoteDefinition<'_>,
+        hooks: &mut H,
+    ) {
+        self.write("<div id=\"fn-");
+        self.write_escaped(footnote_def.identifier);
+        self.write("\" class=\"footnote\"");
+        self.write_source_span_attr(footnote_def.span);
+        self.write(">\n");
+        for child in &footnote_def.children {
+            self.render_node_with_hooks(child, hooks);
+        }
+        self.write("<a href=\"#fnref-");
+        self.write_escaped(footnote_def.identifier);
+        self.write("\">↩</a>\n</div>\n");
+    }
+
     fn render_semantic_footnote_reference(&mut self, identifier: &str) {
         let index = self.footnote_index_of(identifier);
         let occurrence = {
@@ -159,6 +190,23 @@ impl HtmlRenderer {
         let start = self.output.len();
         for child in &footnote_def.children {
             self.render_node(child);
+        }
+        self.footnote_records[index].body_html = Some(self.output.split_off(start));
+        self.footnote_records[index].span = Some(footnote_def.span);
+    }
+
+    fn collect_semantic_footnote_definition_with_hooks<H: HtmlRenderHooks>(
+        &mut self,
+        footnote_def: &FootnoteDefinition<'_>,
+        hooks: &mut H,
+    ) {
+        let index = self.footnote_index_of(footnote_def.identifier);
+        if self.footnote_records[index].body_html.is_some() {
+            return;
+        }
+        let start = self.output.len();
+        for child in &footnote_def.children {
+            self.render_node_with_hooks(child, hooks);
         }
         self.footnote_records[index].body_html = Some(self.output.split_off(start));
         self.footnote_records[index].span = Some(footnote_def.span);
