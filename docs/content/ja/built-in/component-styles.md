@@ -22,7 +22,7 @@ description: ssg: false と transformAllPlugins() 向けの、公式コンポー
 @import "@ox-content/vite-plugin/styles/reader-chrome.css";
 ```
 
-全部まとめて取るとき:
+navigation 以外の機能シートをまとめて取るとき:
 
 ```css
 @import "@ox-content/vite-plugin/styles/all.css";
@@ -49,11 +49,17 @@ import なので、コンパクトな Tweet だけ載せてフルカード用シ
 | `styles/graphviz.css`        | Graphviz DOT 図                                                                                               |
 | `styles/citations.css`       | 引用リンクと生成 bibliography section                                                                         |
 | `styles/not-by-ai.css`       | `<NotByAI />` 執筆開示バッジ                                                                                  |
-| `styles/all.css`             | 上の機能シートをこの順で全部                                                                                  |
+| `styles/mpa-navigation.css`  | 文書横断 View Transition ナビゲーション。安定した overlay 背景と reduced-motion guard を含む                  |
+| `styles/all.css`             | 上の navigation 以外の機能シートをこの順で全部                                                                |
 
 `var(--octc-*)` を使う機能シートは、先に `core.css` を読むか、ホスト側で同じ
 トークンを定義してください。フル Tweet の chrome は独自の `--ox-tweet-*` を
 持つので `core.css` は不要です。
+
+`styles/mpa-navigation.css` はブラウザのナビゲーション遷移を有効化するため、
+`styles/all.css` には含めません。独自ホストで MPA View Transitions を使う
+場合だけ import してください。ページ背景が `--octc-color-bg` 由来でない
+場合は `--ox-content-mpa-navigation-bg` を設定してください。
 
 これらのファイルはパッケージビルド時に `crates/ox_content_ssg` からコピー
 されます。組み込み SSG も同じソースを読むので、公式 chrome が独自ホスト向け

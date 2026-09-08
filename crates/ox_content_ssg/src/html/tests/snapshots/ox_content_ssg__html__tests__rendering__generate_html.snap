@@ -2382,7 +2382,7 @@ a:hover {
      browser whose blend arrives late, or a transition that is skipped partway,
      still has the page color behind it rather than a black or white gap. */
   ::view-transition {
-    background-color: var(--octc-color-bg);
+    background-color: var(--ox-content-mpa-navigation-bg, var(--octc-color-bg, Canvas));
   }
 }
 

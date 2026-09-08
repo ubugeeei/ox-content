@@ -168,6 +168,7 @@
     "./styles/citations.css": "./dist/styles/citations.css",
     "./styles/not-by-ai.css": "./dist/styles/not-by-ai.css",
     "./styles/reader-chrome.css": "./dist/styles/reader-chrome.css",
+    "./styles/mpa-navigation.css": "./dist/styles/mpa-navigation.css",
     "./styles/theme-transition.css": "./dist/styles/theme-transition.css"
   },
   "publishConfig": {
