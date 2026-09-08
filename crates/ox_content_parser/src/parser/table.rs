@@ -4,6 +4,9 @@ use ox_content_ast::{AlignKind, Node, Span, Table, TableCell, TableRow};
 
 use super::Parser;
 use super::line_scan::{line_end, next_line_start};
+use super::table_cell_source::{
+    is_escaped_table_pipe, remap_table_cell_inline_spans, unescape_table_pipes,
+};
 use crate::error::ParseResult;
 #[allow(unused_imports)]
 use crate::{profile_span, profile_span_detail};
@@ -120,8 +123,17 @@ impl<'a> Parser<'a> {
         for (cell_content, cell_start, cell_end) in
             Self::table_row_cells_with_offsets(line).take(column_count)
         {
-            let cell_content = self.unescape_table_pipes(cell_content);
-            let cell_children = self.parse_inline_block(cell_content, line_start + cell_start)?;
+            let cell_content = unescape_table_pipes(self.allocator, cell_content);
+            let cell_children = if let Some(source_offsets) = &cell_content.source_offsets {
+                let mut children = self.parse_inline_block(cell_content.content, 0)?;
+                let source_offset = (line_start + cell_start) as u32;
+                for child in &mut children {
+                    remap_table_cell_inline_spans(child, source_offset, source_offsets);
+                }
+                children
+            } else {
+                self.parse_inline_block(cell_content.content, line_start + cell_start)?
+            };
             cells.push(TableCell {
                 children: cell_children,
                 span: Span::new((line_start + cell_start) as u32, (line_start + cell_end) as u32),
@@ -134,38 +146,6 @@ impl<'a> Parser<'a> {
             });
         }
         Ok(TableRow { children: cells, span: Span::new(line_start as u32, line_end as u32) })
-    }
-
-    /// Removes the table-level escape from pipes before inline parsing.
-    ///
-    /// GFM treats `\|` as a literal pipe even inside code spans. Normal inline
-    /// parsing already handles the escape in prose, but code spans preserve
-    /// backslashes, so the table parser must consume it first.
-    fn unescape_table_pipes(&self, content: &'a str) -> &'a str {
-        let bytes = content.as_bytes();
-        if !bytes
-            .iter()
-            .enumerate()
-            .any(|(index, &byte)| byte == b'|' && is_escaped_table_pipe(bytes, index))
-        {
-            return content;
-        }
-
-        let mut unescaped =
-            ox_content_allocator::String::with_capacity_in(content.len(), self.allocator.bump());
-        let mut copied_through = 0;
-        let mut search_start = 0;
-        while let Some(relative) = memchr(b'|', &bytes[search_start..]) {
-            let pipe = search_start + relative;
-            if is_escaped_table_pipe(bytes, pipe) {
-                unescaped.push_str(&content[copied_through..pipe - 1]);
-                unescaped.push('|');
-                copied_through = pipe + 1;
-            }
-            search_start = pipe + 1;
-        }
-        unescaped.push_str(&content[copied_through..]);
-        unescaped.into_bump_str()
     }
 
     /// Iterates table row cells from a line.
@@ -229,10 +209,6 @@ fn trim_cell(cell: &str, offset: usize) -> (&str, usize, usize) {
     let start = offset + cell.len() - cell.trim_start().len();
     let end = start + trimmed.len();
     (trimmed, start, end)
-}
-
-fn is_escaped_table_pipe(bytes: &[u8], pipe: usize) -> bool {
-    bytes[..pipe].iter().rev().take_while(|&&byte| byte == b'\\').count() % 2 == 1
 }
 
 fn delimiter_alignment(cell: &str) -> Option<AlignKind> {

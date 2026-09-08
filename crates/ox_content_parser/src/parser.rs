@@ -32,6 +32,7 @@ mod prepass;
 mod reference;
 mod spans;
 mod table;
+mod table_cell_source;
 
 #[cfg(test)]
 mod tests;
